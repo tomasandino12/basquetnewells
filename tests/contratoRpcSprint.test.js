@@ -4,16 +4,17 @@ import { readFileSync } from 'node:fs';
 
 /**
  * 0048 reemplazó enteras guardar_sesion_medicion y mi_progreso (partiendo de
- * las de 0045) para sumar el sprint. Este test fija que no perdió ninguna
- * rama ni garantía: compara con 0045 los tramos que tienen que quedar
- * iguales y verifica lo nuevo.
+ * las de 0045) para sumar el sprint, y 0049 las volvió a reemplazar para el
+ * yoyo. Este test fija en la última versión que no se perdió ninguna rama ni
+ * garantía: compara con 0045 los tramos que tienen que quedar iguales y
+ * verifica lo nuevo del sprint.
  *
  * Si una migración posterior vuelve a reemplazar alguna, actualizar la ruta
  * (y contratoRpcSalto.test.js).
  */
 
 const leer = (ruta) => readFileSync(ruta, 'utf8').replace(/\r\n/g, '\n').replace(/--.*$/gm, '');
-const nueva = leer('supabase/migrations/0048_sprint.sql');
+const nueva = leer('supabase/migrations/0049_yoyo.sql');
 const previa = leer('supabase/migrations/0045_borrar_velocidad.sql');
 
 function cuerpoDe(sql, nombre, cierre) {
@@ -40,7 +41,7 @@ test('guardar_sesion_medicion conserva las ramas tiro y salto de 0045', () => {
   assert.equal(insertDe(guardar, 'medicion_tiro'), insertDe(guardarPrevia, 'medicion_tiro'));
   assert.equal(insertDe(guardar, 'medicion_salto'), insertDe(guardarPrevia, 'medicion_salto'));
   assert.match(guardar, /security invoker/, 'corre con los permisos y la RLS de quien guarda');
-  assert.match(guardar, /v_tipo not in \('tiro', 'salto', 'sprint'\)/);
+  assert.match(guardar, /v_tipo not in \('tiro', 'salto', 'sprint', 'yoyo'\)/);
   assert.match(guardar, /\(v_tipo = 'salto'\) <> \(v_test_salto is not null\)/);
   assert.match(guardar, /'TEST_DE_SALTO_INVALIDO'/);
   assert.doesNotMatch(guardar, /velocidad/);
