@@ -41,7 +41,7 @@ Al 16/10 hay cuatro ramas abiertas además de esta:
 | Task | Estado |
 |---|---|
 | 0. Decisiones, tag, rama y worktree | hecha (16/10) |
-| 1. Lógica pura: agrupar y ubicar por fecha | pendiente |
+| 1. Lógica pura: agrupar y ubicar por fecha | hecha (16/10) |
 | 2. Lógica pura: "Cómo llega" y resúmenes | pendiente |
 | 3. Migración 0056 y contrato | pendiente |
 | 4. Prueba local con temporada 2025 + repo | pendiente |
