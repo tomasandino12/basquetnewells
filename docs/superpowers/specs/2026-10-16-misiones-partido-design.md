@@ -11,7 +11,7 @@ El prompt dice "el coordinador solo lee" y pide probarlo con su cuenta. Desde **
 
 ## Modelo
 
-Tres tablas nuevas (migración 0054), todas con `revoke all`, grants mínimos por columna, RLS y trigger de sellado (patrón 0026):
+Tres tablas nuevas (migración 0055), todas con `revoke all`, grants mínimos por columna, RLS y trigger de sellado (patrón 0026):
 
 - **`previa_partido`**: `id`, `club_id`, `plantel_id`, `fecha date`, `rival text` (opcional, ≤ `LIMITE.rival`), `partido_id` (nulo hasta vincular; único parcial: un partido tiene a lo sumo una previa), `creado_por/en`. FK compuestas por club al plantel y al partido; `partido.plantel_id` tiene que ser el mismo (lo valida un trigger).
 - **`mision_jugador`**: `previa_id`, `jugador_id`, `orden` (1 o 2), y **o bien** `metrica` + `valor` (entero ≥ 0) **o bien** `texto` (≤ 150): un `check` exige exactamente una de las dos formas. `estado` (`logrado` | `en_proceso` | `no_logrado` | nulo = sin evaluar), `comentario` (≤ 300), `evaluado_por/en` sellados. `unique (previa_id, jugador_id, orden)` impone el máximo de 2. El jugador tiene que tener pertenencia vigente al plantel (policy de insert).
@@ -79,7 +79,7 @@ RPC `security invoker` con id generado en el cliente (idempotencia como 0038):
 - `evaluar_misiones(payload)`: fija `partido_id` (falla con `PARTIDO_DE_OTRO_PLANTEL` o `PARTIDO_YA_VINCULADO`) y escribe estado y comentario de cada misión, todo o nada.
 - Vincular a mano sin evaluar es un `update` de una fila (`partido_id`), sin RPC.
 
-Cada RPC con su caso de rollback en `tests/verificarMisiones.sql` (un payload con una misión inválida al final no deja nada) y `tests/rollback0054.sql` para deshacer la migración en local.
+Cada RPC con su caso de rollback en `tests/verificarMisiones.sql` (un payload con una misión inválida al final no deja nada) y `tests/rollback0055.sql` para deshacer la migración en local.
 
 ## Fuera de alcance
 

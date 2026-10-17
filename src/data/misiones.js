@@ -9,7 +9,7 @@
  * la planilla en esa cancha.
  *
  * La lista de métricas y la de estados están también en los check de
- * 0054_misiones_partido.sql; tests/contratoMisiones.test.js las compara.
+ * 0055_misiones_partido.sql; tests/contratoMisiones.test.js las compara.
  */
 
 import { LIMITE } from './limites.js';

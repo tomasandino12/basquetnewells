@@ -23,8 +23,8 @@
 |---|---|
 | 0. Confirmar la opción del coordinador (spec, "Choque con el código") | hecha: opción A (16/10) |
 | 1. Lógica pura `misiones.js` | hecha |
-| 2. Migración 0054: tablas, RLS, grants, sellado | pendiente |
-| 3. Migración 0054: RPCs `guardar_previa` y `evaluar_misiones` | pendiente |
+| 2. Migración 0055: tablas, RLS, grants, sellado | hecha (SQL sin correr hasta la task 4) |
+| 3. Migración 0055: RPCs `guardar_previa` y `evaluar_misiones` | pendiente |
 | 4. `db push` y verificación en el SQL Editor | pendiente |
 | 5. Repo `misiones.js` y fachada | pendiente |
 | 6. Pantalla de previa (asignar) | pendiente |
@@ -45,19 +45,19 @@
 
 **Tests:** `métricas no incluyen puntos ni tiro`, `sentido fijo por métrica`, `valorReal: sin fila es sin dato, 0 es 0`, `totalesDelEquipo: suma y nulo contagia`, `puntos_rival sólo en equipo`, `vincularPrevias: fijado / fecha / rival / ambiguo / sin_partido`, `un partido fijado no se ofrece a otra previa`, `validarPrevia: más de 2 por jugador, valor no entero, texto y métrica a la vez`.
 
-### Task 2 — Migración 0054: tablas
+### Task 2 — Migración 0055: tablas
 
-**Archivos:** `supabase/migrations/0054_misiones_partido.sql`, `tests/contratoMisiones.test.js`, `tests/contratoLimites.test.js` (sumar 0054 a `TABLAS_NUEVAS`), `src/data/limites.js` (`LIMITES_POR_COLUMNA`), `tests/rollback0054.sql`. Usar `/nueva-migracion`.
+**Archivos:** `supabase/migrations/0055_misiones_partido.sql`, `tests/contratoMisiones.test.js`, `tests/contratoLimites.test.js` (no se toca: finanzas edita esa línea; los largos de 0055 los compara `contratoMisiones`), `tests/rollback0055.sql`. `LIMITES_POR_COLUMNA` y `TABLAS_NUEVAS` se completan al mergear, después de finanzas.
 
 **Qué:** `previa_partido`, `mision_jugador`, `mision_equipo` como en la spec. Lectura y escritura por `puede_ver_plantel` / `puede_escribir_plantel`; insert de `mision_jugador` exige pertenencia vigente; `previa_partido` y `mision_equipo` además leíbles por `es_coordinador_de(club_id)` (opción A). Update por columna: misión `metrica, valor, texto` sólo sin estado (trigger), `estado, comentario` siempre; previa `rival, fecha, partido_id`. Trigger: sella autoría y evaluación, valida que el partido sea del mismo plantel, no deja cambiar `club_id` ni `plantel_id`. Cuentas de jugador: cero filas.
 
 **Aceptación:** los checks de métrica y estado coinciden con `misiones.js`; los largos con `limites.js`.
 
-**Tests:** `contratoMisiones: métricas del check = METRICAS`, `estados del check = ESTADOS`, `orden ≤ MAX_*`; `contratoLimites` con 0054.
+**Tests:** `contratoMisiones: métricas del check = METRICAS`, `estados del check = ESTADOS`, `orden ≤ MAX_*`, `largos del check = LIMITE`, `RLS y revoke en las tres tablas`.
 
-### Task 3 — Migración 0054: RPCs
+### Task 3 — Migración 0055: RPCs
 
-**Archivos:** el mismo `0054_misiones_partido.sql` (todavía sin aplicar), `tests/verificarMisiones.sql`, `tests/rollback0054.sql`.
+**Archivos:** el mismo `0055_misiones_partido.sql` (todavía sin aplicar), `tests/verificarMisiones.sql`, `tests/rollback0055.sql`.
 
 **Qué:** `guardar_previa(payload)` y `evaluar_misiones(payload)`, `security invoker`, con los errores de la spec y la idempotencia por id del cliente. `revoke execute ... from anon`.
 
@@ -107,6 +107,6 @@
 
 ### Task 10 — Cierre
 
-**Archivos:** `supabase/ESQUEMA.md` (sección 0054 y filas en las tablas de RLS).
+**Archivos:** `supabase/ESQUEMA.md` (sección 0055 y filas en las tablas de RLS).
 
 **Aceptación:** prueba con cuenta de entrenador y de coordinador; `npm run test:q` verde; grep de capas limpio (`arquitectura.test.js`); review final de la rama (único subagente aceptable).
