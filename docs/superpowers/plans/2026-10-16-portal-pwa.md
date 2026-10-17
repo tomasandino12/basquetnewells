@@ -11,7 +11,7 @@ Una task = un commit. Al cerrar cada una: `npm run test:q`, commit, y resumen si
 |---|---|
 | 0. Tag y rama | hecha (16/10) |
 | 1. Configuración del portal | hecha (16/10) |
-| 2. CSP para Google Calendar | pendiente |
+| 2. CSP para Google Calendar | hecha (16/10) |
 | 3. Bloque Básquet en la landing | pendiente |
 | 4. Íconos genéricos | pendiente |
 | 5. Manifest y meta de instalación | pendiente |
@@ -29,7 +29,7 @@ Una task = un commit. Al cerrar cada una: `npm run test:q`, commit, y resumen si
 - Archivos: `vercel.json`, `tests/csp.test.js`.
 - Sumar `https://calendar.google.com` a `frame-src`. Nada más cambia en la CSP.
 - Aceptación: el embed carga en un deploy; el resto de la CSP idéntico.
-- Tests: `frame-src permite cada host de calendario que arma portal.js`, `frame-src no tiene comodines`.
+- Tests: `frame-src permite cada host de calendario que arma portal.js`, `frame-src sólo deja YouTube sin cookies y Google Calendar, sin comodines`.
 
 ## Task 3 — Bloque Básquet en la landing (`feat(landing)`)
 - Archivos: `public/index.html` (sección dentro de `#v-landing`, entre `.acciones-landing` y `.beneficios`, más un título "Para los profes" sobre el bento), `src/ui/portalLanding.js`, llamada desde donde se arma la landing en `main.js`, `public/css/publico.css` (breakpoints nuevos sólo en `layout.css`), `tests/landing.test.js`.
