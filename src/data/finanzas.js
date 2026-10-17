@@ -8,6 +8,9 @@
  * llega el texto "1234.50" armado desde el entero, nunca un float.
  */
 
+/** Los mismos que el check de rubro.tipo (0054); tests/contratoFinanzas.test.js los compara. */
+export const TIPOS_RUBRO = ['ingreso', 'egreso'];
+
 /** Tope de numeric(12,2): 9.999.999.999,99. */
 export const MONTO_MAX_CENTAVOS = 999999999999;
 
