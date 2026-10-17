@@ -10,7 +10,7 @@ Una task = un commit. Al cerrar cada una: `npm run test:q`, commit, y resumen si
 | Task | Estado |
 |---|---|
 | 0. Tag y rama | hecha (16/10) |
-| 1. Configuración del portal | pendiente |
+| 1. Configuración del portal | hecha (16/10) |
 | 2. CSP para Google Calendar | pendiente |
 | 3. Bloque Básquet en la landing | pendiente |
 | 4. Íconos genéricos | pendiente |
@@ -21,9 +21,9 @@ Una task = un commit. Al cerrar cada una: `npm run test:q`, commit, y resumen si
 
 ## Task 1 — Configuración del portal (`feat(portal)`)
 - Archivos: `src/data/portal.js`, `tests/portal.test.js`.
-- `PORTAL` con `calendarios: [{ titulo, id }]` (dos) e `inscripcion` (URL); lo que falta va en `null` con `// PENDIENTE`. Funciones puras `urlEmbedCalendario(id)` (vista agenda, `ctz=America/Argentina/Buenos_Aires`, sin título ni impresión) y `enlaceSeguro(url, hostsPermitidos)`.
+- `PORTAL` con `calendarios: [{ titulo, id }]` (dos) e `inscripcion` (URL); lo que falta va en `null` con `// PENDIENTE`. Funciones puras `urlEmbedCalendario(idOUrl)` (vista agenda, `ctz=America/Argentina/Buenos_Aires`; acepta el ID o la URL de embed que copia Google) y `enlaceInscripcion(url)`; `HOSTS_EMBEBIDOS` para el test de CSP.
 - Aceptación: `null`, `http:`, `javascript:` y hosts ajenos devuelven `null`; el ID se codifica en la URL; `arquitectura.test.js` sigue verde (módulo puro).
-- Tests: `urlEmbedCalendario arma la URL de agenda con el ID codificado`, `urlEmbedCalendario sin ID devuelve null`, `enlaceSeguro rechaza http, javascript y hosts no permitidos`, `enlaceSeguro acepta forms.gle y docs.google.com/forms`.
+- Tests: `urlEmbedCalendario arma la URL de agenda con el ID codificado`, `urlEmbedCalendario sin ID devuelve null`, `enlaceInscripcion rechaza http, javascript y hosts no permitidos`, `enlaceInscripcion acepta forms.gle y docs.google.com/forms`.
 
 ## Task 2 — CSP para Google Calendar (`feat(csp)`)
 - Archivos: `vercel.json`, `tests/csp.test.js`.

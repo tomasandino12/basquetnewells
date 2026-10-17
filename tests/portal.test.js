@@ -1,0 +1,61 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { PORTAL, HOSTS_EMBEBIDOS, urlEmbedCalendario, enlaceInscripcion } from '../src/data/portal.js';
+
+/**
+ * Lo que sale de acá termina en un <iframe src> o en un <a href> de la página
+ * pública. Si una URL pegada a mano en la configuración está mal, la tarjeta
+ * tiene que caer a "Próximamente", nunca a un iframe o un link a cualquier lado.
+ */
+
+const ID = 'abc123def@group.calendar.google.com';
+
+test('urlEmbedCalendario arma la URL de agenda con el ID codificado', () => {
+  const u = new URL(urlEmbedCalendario(ID));
+  assert.equal(u.origin, 'https://calendar.google.com');
+  assert.equal(u.pathname, '/calendar/embed');
+  assert.equal(u.searchParams.get('src'), ID);
+  assert.equal(u.searchParams.get('mode'), 'AGENDA');
+  assert.equal(u.searchParams.get('ctz'), 'America/Argentina/Buenos_Aires');
+  assert.ok(urlEmbedCalendario(ID).includes('%40'), 'la @ del ID tiene que ir codificada');
+});
+
+test('urlEmbedCalendario también acepta la URL de embed que copia Google', () => {
+  const pegada = `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(ID)}&ctz=Europe%2FMadrid`;
+  const u = new URL(urlEmbedCalendario(pegada));
+  assert.equal(u.searchParams.get('src'), ID);
+  assert.equal(u.searchParams.get('ctz'), 'America/Argentina/Buenos_Aires');
+});
+
+test('urlEmbedCalendario sin ID o con un ID raro devuelve null', () => {
+  for (const malo of [null, undefined, '', '   ', 42, 'sin-arroba', 'a@b"><script>', 'javascript:alert(1)',
+    'https://evil.com/calendar/embed?src=' + encodeURIComponent(ID)]) {
+    assert.equal(urlEmbedCalendario(malo), null, String(malo));
+  }
+});
+
+test('enlaceInscripcion acepta forms.gle y docs.google.com/forms', () => {
+  assert.equal(enlaceInscripcion('https://forms.gle/AbC123'), 'https://forms.gle/AbC123');
+  const largo = 'https://docs.google.com/forms/d/e/1FAIpQ/viewform';
+  assert.equal(enlaceInscripcion(largo), largo);
+});
+
+test('enlaceInscripcion rechaza http, javascript y hosts no permitidos', () => {
+  for (const malo of [null, '', 'http://forms.gle/AbC123', 'javascript:alert(1)', 'https://forms.gle.evil.com/x',
+    'https://docs.google.com/document/d/1', 'https://evil.com/forms/x', '//forms.gle/x']) {
+    assert.equal(enlaceInscripcion(malo), null, String(malo));
+  }
+});
+
+test('la configuración tiene los dos calendarios y lo que falta va en null', () => {
+  assert.equal(PORTAL.calendarios.length, 2);
+  for (const c of PORTAL.calendarios) {
+    assert.ok(c.titulo);
+    assert.ok(c.id === null || urlEmbedCalendario(c.id), `ID inválido en "${c.titulo}"`);
+  }
+  assert.ok(PORTAL.inscripcion === null || enlaceInscripcion(PORTAL.inscripcion), 'URL de inscripción inválida');
+});
+
+test('cada URL de embed sale de un host declarado en HOSTS_EMBEBIDOS', () => {
+  assert.ok(HOSTS_EMBEBIDOS.includes(new URL(urlEmbedCalendario(ID)).hostname));
+});
