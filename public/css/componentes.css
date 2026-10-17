@@ -698,6 +698,10 @@ svg.g{width:100%;display:block;overflow:visible}
 .inv-fila{width:100%;text-align:left;font:inherit;color:inherit;border:0}
 .inv-cantidad{display:flex;align-items:center;gap:var(--sp-2)}
 
+/* Finanzas: las filas tocables de rubros y movimientos son botones a todo el
+   ancho, como las del inventario. */
+.fin-fila{width:100%;text-align:left;font:inherit;color:inherit;border:0}
+
 /* ---- pizarra táctica (jugadas): cancha, fichas y trazos, siempre por clase.
    Un atributo fill/stroke con var() no lo interpreta el SVG: por eso
    pizarra.js sólo escribe `class`, nunca color, acá vive el único valor. ---- */

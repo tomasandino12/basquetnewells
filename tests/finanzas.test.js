@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   montoDesdeTexto, montoParaBase, formatearPesos, MONTO_MAX_CENTAVOS,
-  resumenDelPeriodo, rangoDelMes, mesVecino, nombreDelMes,
+  resumenDelPeriodo, rangoDelMes, mesVecino, nombreDelMes, validarRubro, nombreRepetido,
 } from '../src/data/finanzas.js';
 
 /*
@@ -157,4 +157,21 @@ test('rangoDelMes cruza diciembre a enero', () => {
 test('nombreDelMes en castellano', () => {
   assert.equal(nombreDelMes(2026, 10), 'octubre 2026');
   assert.equal(nombreDelMes(2027, 1), 'enero 2027');
+});
+
+/* ---------- Rubros ---------- */
+
+test('validarRubro recorta el nombre y exige tipo de la lista', () => {
+  assert.deepEqual(validarRubro({ nombre: '  Arbitrajes ', tipo: 'egreso' }), { fila: { nombre: 'Arbitrajes', tipo: 'egreso' } });
+  assert.match(validarRubro({ nombre: '   ', tipo: 'egreso' }).error, /nombre/);
+  assert.match(validarRubro({ nombre: 'Rifas', tipo: '' }).error, /ingreso o egreso/);
+  assert.match(validarRubro({ nombre: 'Rifas', tipo: 'transferencia' }).error, /ingreso o egreso/);
+  assert.match(validarRubro({ nombre: 'x'.repeat(61), tipo: 'ingreso' }).error, /60/);
+});
+
+test('nombreRepetido no distingue mayúsculas y saltea el propio', () => {
+  const rubros = [{ id: 'a', nombre: 'Arbitrajes' }, { id: 'b', nombre: 'Rifas' }];
+  assert.equal(nombreRepetido(rubros, 'arbitrajes'), true);
+  assert.equal(nombreRepetido(rubros, 'Arbitrajes', 'a'), false);
+  assert.equal(nombreRepetido(rubros, 'Cuotas'), false);
 });

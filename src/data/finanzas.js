@@ -8,6 +8,8 @@
  * llega el texto "1234.50" armado desde el entero, nunca un float.
  */
 
+import { LIMITE } from './limites.js';
+
 /** Los mismos que el check de rubro.tipo (0054); tests/contratoFinanzas.test.js los compara. */
 export const TIPOS_RUBRO = ['ingreso', 'egreso'];
 
@@ -125,4 +127,21 @@ export function resumenDelPeriodo(movimientos, rubros) {
   }
   const orden = (a, b) => (a.tipo === b.tipo ? b.total - a.total : a.tipo === 'ingreso' ? -1 : 1);
   return { ingresos, egresos, resultado: ingresos - egresos, porRubro: [...porRubro.values()].sort(orden) };
+}
+
+/** Alta o renombre de un rubro → { fila } o { error }. */
+export function validarRubro({ nombre, tipo }) {
+  const limpio = (nombre ?? '').trim();
+  if (!limpio) return { error: 'Poné un nombre para el rubro.' };
+  if (limpio.length > LIMITE.nombreRubro) {
+    return { error: `El nombre puede tener hasta ${LIMITE.nombreRubro} letras.` };
+  }
+  if (!TIPOS_RUBRO.includes(tipo)) return { error: 'Elegí si es de ingreso o egreso.' };
+  return { fila: { nombre: limpio, tipo } };
+}
+
+/** "Arbitrajes" y "arbitrajes" son el mismo rubro (índice único de 0054). */
+export function nombreRepetido(rubros, nombre, idPropio = null) {
+  const buscado = nombre.trim().toLowerCase();
+  return rubros.some((r) => r.id !== idPropio && r.nombre.toLowerCase() === buscado);
 }
