@@ -8,9 +8,18 @@
 | Biblioteca de ejercicios y notas | todo el club | (no se muestra en su pantalla) | todo el club |
 | Panorama agregado y Profes | no | sí | sí, con el botón **Coordinar** |
 | Habilitar, asignar, quitar | nunca | a otros, en su club | a otros, en su club |
+| Finanzas (rubros y movimientos, 0054) | nada | carga, edita y borra (borrado lógico, con rastro) | igual que el coordinador |
 
 Todo esto lo hace cumplir la base (RLS), no la interfaz. Detalle en
 `supabase/ESQUEMA.md`.
+
+**Finanzas.** La pestaña FINANZAS muestra el mes elegido: ingresos, egresos,
+resultado, totales por rubro y los movimientos. Los rubros (Patrocinios,
+Arbitrajes…) se crean desde ahí y no se borran: se desactivan. Un movimiento
+borrado deja de sumar pero queda en la base, con quién y cuándo; cada edición
+guarda cómo estaba antes (`movimiento_cambio`). Verificación de permisos:
+`tests/verificarFinanzas.sql` en el SQL Editor (todo `OK`). No se publica a las
+familias: eso es otro módulo (ver la spec de finanzas).
 
 Lo que **no** se hace desde la app, a propósito:
 - Crear un coordinador.

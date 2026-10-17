@@ -40,8 +40,8 @@ El coordinador registra ingresos y egresos del básquet (patrocinios, alquiler d
   - Lista de movimientos del mes (fecha, rubro, descripción, monto con signo, ícono de link si tiene comprobante). Tocar uno abre la edición.
   - Botón "Cargar movimiento" y acceso a "Rubros".
   - Estado vacío: sin rubros → invita a crear rubros primero; con rubros y sin movimientos → "Todavía no hay movimientos en octubre".
-- Formulario de movimiento (alta y edición, misma pantalla `p-coord-movimiento`): fecha (hoy por defecto), rubro (sólo activos, agrupados por tipo), monto (`inputmode="decimal"`), descripción, link al comprobante. En edición, botón "Borrar" con confirmación ("Queda registrado quién lo borró").
-- `p-coord-rubros`: lista por tipo, alta (nombre + tipo), renombrar, activar/desactivar.
+- Formulario de movimiento (alta y edición, en una hoja sobre `p-coord-finanzas`, como el inventario): fecha (hoy por defecto), rubro (sólo activos, agrupados por tipo), monto (`inputmode="decimal"`), descripción, link al comprobante. En edición, botón "Borrar" con confirmación ("Queda registrado quién lo borró").
+- `p-coord-rubros`: lista por tipo; alta (nombre + tipo), renombrar y activar/desactivar en hojas.
 - Mobile-first: base celular, en notebook (`min-width` en `layout.css`) totales en fila y lista más ancha. Áreas táctiles ≥ 44px, `hover` sólo dentro de `@media (hover: hover)`. HTML con `html\`\`` de `ui/html.js`, errores con `ui/errores.js`. Seguir `DESIGN.md`.
 
 ## Fuera de alcance
@@ -59,8 +59,8 @@ Publicación a familias, aranceles o pagos por familia, importar Excel, gráfico
 
 Una tabla nueva `resumen_publicado`: `club_id`, `periodo` (primer día del mes), `datos jsonb` (ingresos, egresos, resultado y totales por **nombre de rubro**, nada de movimientos ni descripciones), `publicado_por/en`. La crea una RPC que el coordinador llama eligiendo el mes: calcula los totales en ese momento y guarda la **foto fija**. Inmutable (sin update; para corregir se publica otra versión y la vigente es la más nueva). Las familias leerían sólo esa tabla (o una función que la devuelva), nunca `movimiento`. Nada del modelo de este módulo lo impide: los rubros son genéricos, los totales ya se calculan por rubro y mes, y las tablas internas siguen con RLS de coordinación.
 
-## Puntos para confirmar antes de ejecutar
+## Notas de ejecución
 
-1. **`npm run backup` no existe** en `package.json`. ¿Tenés otro método (backup del panel de Supabase, `npx supabase db dump`), o se agrega el script como tarea 0 (sin dependencias: usa la CLI que ya está)?
-2. `git status` no está limpio (archivos sin seguir: `docs/arquitectura-capas*`, `docs/prompt-revision-ux.md`, `.claude/skills/ui-ux-pro-max/`, un plan viejo). Para el tag `pre-finanzas` hay que commitearlos o ignorarlos; decidís vos.
+1. `npm run backup` lo trae el módulo de backup (rama `feat/backup`); el push de 0054 espera a que esté en `main`.
+2. El número 0054 también lo reservan los planes de historia del jugador y de misiones: el que se aplique segundo se renumera antes del push (archivo, `contratoFinanzas` y `contratoLimites`).
 3. Hoy `componentes.css` tiene dos `@media` de ancho (`max-width:420px`, `min-width:64rem`) fuera de `layout.css`. Lo nuevo respeta la regla; esos dos no se tocan en este módulo.
