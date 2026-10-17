@@ -12,7 +12,7 @@ Una task = un commit. Al cerrar cada una: `npm run test:q`, commit, y resumen si
 | 0. Tag y rama | hecha (16/10) |
 | 1. Configuración del portal | hecha (16/10) |
 | 2. CSP para Google Calendar | hecha (16/10) |
-| 3. Bloque Básquet en la landing | pendiente |
+| 3. Bloque Básquet en la landing | hecha (16/10) |
 | 4. Íconos genéricos | pendiente |
 | 5. Manifest y meta de instalación | pendiente |
 | 6. Service worker | pendiente |
