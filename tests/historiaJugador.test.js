@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { FUENTES, temporadaDeFecha, agruparHistoria } from '../src/data/historiaJugador.js';
+import {
+  FUENTES, temporadaDeFecha, agruparHistoria, comoLlega, comoTermino, totalesDePartidos, resumenDeTemporada,
+} from '../src/data/historiaJugador.js';
 
 // Un chico que estuvo en U15 2025 y hoy está en U17 2026.
 const T25 = { id: 't25', nombre: '2025' };
@@ -60,7 +62,7 @@ test('temporadaDeFecha: la pertenencia vigente llega hasta hoy y una fecha nula 
 });
 
 test('una fecha fuera de todo rango va a sin temporada, al final', () => {
-  const datos = { ...base(), corporales: [{ fecha: '2026-01-10', peso: 60 }] };
+  const datos = { ...base(), corporales: [{ fechaMedicion: '2026-01-10', pesoKg: 60 }] };
   const grupos = agruparHistoria(datos);
   const ultimo = grupos.at(-1);
   assert.equal(ultimo.temporada, null);
@@ -76,7 +78,7 @@ test('citado en dos categorías: una temporada con las dos', () => {
   const datos = base();
   datos.planteles.push({ id: 'u21-26', temporadaId: 't26', categoria: 'U21M', profes: ['Caro', 'Dani'] });
   datos.pertenencias.push({ plantelId: 'u21-26', temporadaId: 't26', desde: '2026-05-01', hasta: null });
-  datos.corporales = [{ fecha: '2026-06-01', peso: 61 }];
+  datos.corporales = [{ fechaMedicion: '2026-06-01', pesoKg: 61 }];
   const grupos = agruparHistoria(datos);
   assert.equal(grupos.length, 2);
   const g26 = grupo(grupos, 't26');
@@ -126,4 +128,127 @@ test('FUENTES declara cómo se ubica cada una', () => {
     ['planFisico', 'cargas', 'recursos', 'saltos', 'sprints', 'yoyos', 'corporales', 'tiro', 'partidos'],
   );
   assert.ok(FUENTES.every((f) => f.ubicar === 'plantel' || f.ubicar === 'fecha'));
+});
+
+/* ---------- Task 2: cómo llega, cómo terminó, totales y resumen ---------- */
+
+// Tiempo de vuelo de 500 ms → 30,7 cm; de 450 ms → 24,8 cm (salto.js).
+const conDatos2025 = () => ({
+  ...base(),
+  saltos: [
+    { sesionId: 's1', plantelId: 'u15-25', fecha: '2025-06-01', testSalto: 'cmj', intento: 1, tiempoVueloMs: 450 },
+    { sesionId: 's2', plantelId: 'u15-25', fecha: '2025-11-01', testSalto: 'cmj', intento: 1, tiempoVueloMs: 500 },
+    { sesionId: 's2', plantelId: 'u15-25', fecha: '2025-11-01', testSalto: 'cmj', intento: 2, tiempoVueloMs: 480 },
+    { sesionId: 's3', plantelId: 'u15-25', fecha: '2025-11-01', testSalto: 'abalakov', intento: 1, tiempoVueloMs: 520 },
+    // Ya en U17: no es "cómo llega".
+    { sesionId: 's4', plantelId: 'u17-26', fecha: '2026-04-01', testSalto: 'cmj', intento: 1, tiempoVueloMs: 530 },
+  ],
+  sprints: [
+    { sesionId: 'p1', plantelId: 'u15-25', fecha: '2025-10-01', distanciaM: 20, intento: 1, tiempoMs: 3600, origen: 'propio' },
+    { sesionId: 'p1', plantelId: 'u15-25', fecha: '2025-10-01', distanciaM: 20, intento: 2, tiempoMs: 3500, origen: 'propio' },
+    { sesionId: 'p2', plantelId: 'u15-25', fecha: '2025-11-10', distanciaM: 30, intento: 1, tiempoMs: 4800, origen: 'propio' },
+  ],
+  yoyos: [
+    { sesionId: 'y1', plantelId: 'u15-25', fecha: '2025-09-01', idas: 40, origen: 'propio' },
+    // Ausente en la última: no borra el dato anterior.
+    { sesionId: 'y2', plantelId: 'u15-25', fecha: '2025-11-20', idas: null, origen: 'propio' },
+  ],
+  corporales: [
+    { fechaMedicion: '2025-04-01', alturaCm: 165, pesoKg: 55 },
+    { fechaMedicion: '2025-10-01', alturaCm: 168, pesoKg: null },
+  ],
+  cargas: [
+    { clave: 'sentadilla', nombre: 'Sentadilla', kg: 20, fecha: '2025-05-01' },
+    { clave: 'sentadilla', nombre: 'Sentadilla', kg: 25, fecha: '2025-09-01' },
+  ],
+  tiro: [
+    { sesionId: 'b1', plantelId: 'u15-25', fecha: '2025-08-01', posicion: 1, anotados: 6, intentos: 10 },
+    { sesionId: 'b1', plantelId: 'u15-25', fecha: '2025-08-01', posicion: 2, anotados: 4, intentos: 10 },
+    // La última batería fue una ausencia completa: vale la anterior.
+    { sesionId: 'b2', plantelId: 'u15-25', fecha: '2025-11-01', posicion: 1, anotados: null, intentos: null },
+  ],
+});
+
+test('cómo llega toma lo último anterior a la temporada actual', () => {
+  const llega = comoLlega(conDatos2025());
+  const cmj = llega.saltos.find((s) => s.test === 'cmj');
+  assert.equal(cmj.fecha, '2025-11-01');
+  assert.equal(Math.round(cmj.alturaCm * 10) / 10, 30.7);
+  assert.equal(llega.altura.valor, 168);
+  assert.equal(llega.peso.valor, 55);
+  assert.equal(llega.peso.fecha, '2025-04-01');
+  assert.deepEqual(llega.yoyo, { fecha: '2025-09-01', idas: 40 });
+  assert.deepEqual(llega.cargas, [{ nombre: 'Sentadilla', kg: 25, fecha: '2025-09-01' }]);
+  assert.deepEqual(llega.tiro, { fecha: '2025-08-01', anotados: 10, intentos: 20 });
+  assert.equal(llega.vacio, false);
+});
+
+test('cómo llega sin mediciones da null, no 0', () => {
+  const llega = comoLlega(base());
+  assert.equal(llega.altura, null);
+  assert.equal(llega.peso, null);
+  assert.equal(llega.yoyo, null);
+  assert.equal(llega.tiro, null);
+  assert.deepEqual(llega.saltos, []);
+  assert.deepEqual(llega.sprints, []);
+  assert.deepEqual(llega.cargas, []);
+  assert.equal(llega.vacio, true);
+});
+
+test('cómo llega sin pertenencia vigente es null: no hay a qué llegar', () => {
+  const datos = conDatos2025();
+  datos.pertenencias = datos.pertenencias.map((p) => ({ ...p, hasta: p.hasta ?? '2026-06-01' }));
+  assert.equal(comoLlega(datos), null);
+});
+
+test('el salto se separa por test y el sprint por distancia', () => {
+  const llega = comoLlega(conDatos2025());
+  assert.deepEqual(llega.saltos.map((s) => s.test), ['cmj', 'abalakov']);
+  assert.deepEqual(llega.sprints.map((s) => [s.distanciaM, s.tiempoMs]), [[20, 3500], [30, 4800]]);
+  assert.equal(llega.sprints[0].velocidad, 5.7);
+});
+
+test('cómo terminó usa sólo lo de esa temporada', () => {
+  const grupos = agruparHistoria(conDatos2025());
+  const termino26 = comoTermino(grupos.find((g) => g.temporada.id === 't26'));
+  assert.equal(termino26.saltos[0].fecha, '2026-04-01');
+  assert.equal(termino26.sprints.length, 0);
+  assert.equal(termino26.peso, null);
+});
+
+test('totales de partidos: un total de puros nulos es null, no 0', () => {
+  const t = totalesDePartidos([
+    { pts: null, minSegundos: null, dosAnotados: null, dosIntentados: null },
+    { pts: null, minSegundos: null },
+  ]);
+  assert.equal(t.jugados, 2);
+  assert.equal(t.puntos, null);
+  assert.equal(t.minutos, null);
+  assert.equal(t.dos, null);
+});
+
+test('totales de partidos suman sólo lo leído, en anotados de intentados', () => {
+  const t = totalesDePartidos([
+    { pts: 10, minSegundos: 1200, dosAnotados: 3, dosIntentados: 7, libresAnotados: 4, libresIntentados: 4 },
+    { pts: null, minSegundos: 600, dosAnotados: 2, dosIntentados: 3 },
+  ]);
+  assert.equal(t.puntos, 10);
+  assert.equal(t.minutos, 30);
+  assert.deepEqual([t.dos.anotados, t.dos.intentos], [5, 10]);
+  assert.equal(t.tres, null);
+  assert.deepEqual(totalesDePartidos([]), { jugados: 0, puntos: null, minutos: null, dos: null, tres: null, libres: null });
+});
+
+test('el resumen nombra el plan físico antes que los partidos', () => {
+  const datos = conDatos2025();
+  datos.planFisico = [{ plantelId: 'u15-25', sesiones: 24 }];
+  datos.recursos = [{ fecha: '2025-05-01', titulo: 'Movilidad' }];
+  datos.partidos = [{ plantelId: 'u15-25', fecha: '2025-05-10' }, { plantelId: 'u15-25', fecha: '2025-06-10' }];
+  const g25 = agruparHistoria(datos).find((g) => g.temporada?.id === 't25');
+  assert.equal(resumenDeTemporada(g25), 'Plan físico: 24 sesiones · 1 material · 8 mediciones físicas · 2 partidos');
+});
+
+test('el resumen de una temporada vacía no inventa ceros', () => {
+  const g26 = agruparHistoria(base()).find((g) => g.temporada.id === 't26');
+  assert.equal(resumenDeTemporada(g26), 'Sin plan físico · Sin mediciones físicas');
 });
