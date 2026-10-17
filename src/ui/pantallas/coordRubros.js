@@ -1,5 +1,5 @@
 import { obtenerRubros, agregarRubro, editarRubro } from '../../data/repositorio.js';
-import { validarRubro, nombreRepetido } from '../../data/finanzas.js';
+import { validarRubro, nombreRepetido, ROTULO_TIPO } from '../../data/finanzas.js';
 import { LIMITE } from '../../data/limites.js';
 import { obtenerClubActual } from '../sesion.js';
 import { toast } from '../nav.js';
@@ -24,9 +24,6 @@ const YA_EXISTE = 'Ya hay un rubro con ese nombre.';
 const mensajeDeError = (e) => (e?.code === '23505' ? YA_EXISTE : mensajeAlGuardar(e, {
   permiso: /NO_SE_PUDO|row-level security|permission denied/i,
 }));
-
-/** "Ingreso (+)": el tipo se lee en texto y con signo, no sólo por color. */
-export const ROTULO_TIPO = { ingreso: 'Ingreso (+)', egreso: 'Egreso (−)' };
 
 function filaHtml(r) {
   return html`
@@ -83,6 +80,7 @@ function campoNombre(valor) {
 async function guardarCon(boton, accion) {
   if (boton.disabled) return;
   const texto = boton.textContent;
+  $('rubro-aviso').innerHTML = '';
   boton.disabled = true;
   boton.textContent = 'Guardando…';
   try {

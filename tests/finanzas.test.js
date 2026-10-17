@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   montoDesdeTexto, montoParaBase, formatearPesos, MONTO_MAX_CENTAVOS,
   resumenDelPeriodo, rangoDelMes, mesVecino, nombreDelMes, validarRubro, nombreRepetido,
+  validarMovimiento, montoParaEditar,
 } from '../src/data/finanzas.js';
 
 /*
@@ -174,4 +175,39 @@ test('nombreRepetido no distingue mayúsculas y saltea el propio', () => {
   assert.equal(nombreRepetido(rubros, 'arbitrajes'), true);
   assert.equal(nombreRepetido(rubros, 'Arbitrajes', 'a'), false);
   assert.equal(nombreRepetido(rubros, 'Cuotas'), false);
+});
+
+/* ---------- Movimientos ---------- */
+
+const base = { fecha: '2026-10-05', rubroId: 'r-pat', monto: '1.234,50', descripcion: ' Sponsor camisetas ', comprobanteUrl: '' };
+
+test('validarMovimiento arma la fila en centavos y recorta textos', () => {
+  assert.deepEqual(validarMovimiento(base, RUBROS), {
+    fila: { fecha: '2026-10-05', rubroId: 'r-pat', centavos: 123450, descripcion: 'Sponsor camisetas', comprobanteUrl: null },
+  });
+  const conLink = validarMovimiento({ ...base, comprobanteUrl: ' https://drive.google.com/x ' }, RUBROS);
+  assert.equal(conLink.fila.comprobanteUrl, 'https://drive.google.com/x');
+});
+
+test('validarMovimiento dice qué campo está mal', () => {
+  assert.deepEqual(validarMovimiento({ ...base, monto: '12.5' }, RUBROS).campo, 'monto');
+  assert.deepEqual(validarMovimiento({ ...base, fecha: '' }, RUBROS).campo, 'fecha');
+  assert.deepEqual(validarMovimiento({ ...base, fecha: '1999-12-31' }, RUBROS).campo, 'fecha');
+  assert.deepEqual(validarMovimiento({ ...base, rubroId: '' }, RUBROS).campo, 'rubro');
+  assert.deepEqual(validarMovimiento({ ...base, rubroId: 'r-nada' }, RUBROS).campo, 'rubro');
+  const sinHttps = validarMovimiento({ ...base, comprobanteUrl: 'drive.google.com/x' }, RUBROS);
+  assert.equal(sinHttps.campo, 'comprobante');
+  assert.match(sinHttps.error, /https:\/\//);
+  assert.equal(validarMovimiento({ ...base, descripcion: 'x'.repeat(301) }, RUBROS).campo, 'descripcion');
+});
+
+test('validarMovimiento acepta un rubro inactivo sólo si es el que ya tenía', () => {
+  assert.equal(validarMovimiento({ ...base, rubroId: 'r-rifa' }, RUBROS).campo, 'rubro');
+  assert.ok(validarMovimiento({ ...base, rubroId: 'r-rifa' }, RUBROS, { rubroOriginal: 'r-rifa' }).fila);
+});
+
+test('montoParaEditar vuelve al formato que se escribe', () => {
+  assert.equal(montoParaEditar(123450), '1.234,50');
+  assert.equal(montoParaEditar(50000), '500');
+  assert.equal(montoDesdeTexto(montoParaEditar(123456789)).centavos, 123456789);
 });

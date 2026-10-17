@@ -701,6 +701,20 @@ svg.g{width:100%;display:block;overflow:visible}
 /* Finanzas: las filas tocables de rubros y movimientos son botones a todo el
    ancho, como las del inventario. */
 .fin-fila{width:100%;text-align:left;font:inherit;color:inherit;border:0}
+.fin-sub{display:block;font-weight:400}
+.fin-fecha{flex:0 0 auto;font-size:var(--fs-125);color:var(--gris)}
+.fin-monto{flex:0 0 auto;font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-145)}
+/* El color acompaña al signo y a la palabra, nunca va solo. */
+.fin-ingreso{color:var(--sube)}
+.fin-egreso{color:var(--baja)}
+.fin-mes{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-4)}
+.fin-mes .btn.chico{min-width:var(--tap);padding:0}
+.fin-mes-nombre{margin:0;font-family:var(--ff-titulo);font-size:var(--fs-titulo-chico);text-transform:uppercase;letter-spacing:.04em;text-align:center}
+.fin-totales{display:grid;gap:var(--sp-2);margin-bottom:var(--sp-5)}
+.fin-total{margin:0}
+.fin-total .eyebrow{margin:0 0 var(--sp-1)}
+.fin-cifra{font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-220)}
+.fin-total .det{font-size:var(--fs-115);color:var(--gris);margin:0}
 
 /* ---- pizarra táctica (jugadas): cancha, fichas y trazos, siempre por clase.
    Un atributo fill/stroke con var() no lo interpreta el SVG: por eso

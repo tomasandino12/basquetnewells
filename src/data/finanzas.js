@@ -13,6 +13,9 @@ import { LIMITE } from './limites.js';
 /** Los mismos que el check de rubro.tipo (0054); tests/contratoFinanzas.test.js los compara. */
 export const TIPOS_RUBRO = ['ingreso', 'egreso'];
 
+/** "Ingreso (+)": el tipo se lee en texto y con signo, no sólo por color. */
+export const ROTULO_TIPO = { ingreso: 'Ingreso (+)', egreso: 'Egreso (−)' };
+
 /** Tope de numeric(12,2): 9.999.999.999,99. */
 export const MONTO_MAX_CENTAVOS = 999999999999;
 
@@ -144,4 +147,36 @@ export function validarRubro({ nombre, tipo }) {
 export function nombreRepetido(rubros, nombre, idPropio = null) {
   const buscado = nombre.trim().toLowerCase();
   return rubros.some((r) => r.id !== idPropio && r.nombre.toLowerCase() === buscado);
+}
+
+/** Centavos → texto para el campo de edición ("1.234,50", "500"), que montoDesdeTexto vuelve a leer igual. */
+export function montoParaEditar(centavos) {
+  const texto = formatearPesos(centavos).slice(2);
+  return texto.endsWith(',00') ? texto.slice(0, -3) : texto;
+}
+
+/**
+ * Formulario de movimiento → { fila } o { error, campo }. `campo` dice cuál
+ * marcar. Un rubro desactivado no se ofrece al cargar, pero un movimiento
+ * viejo que ya lo tenía se puede editar sin cambiarlo (`rubroOriginal`).
+ */
+export function validarMovimiento({ fecha, rubroId, monto, descripcion, comprobanteUrl }, rubros, { rubroOriginal = null } = {}) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha ?? '') || fecha < '2000-01-01') {
+    return { error: 'Elegí la fecha del movimiento.', campo: 'fecha' };
+  }
+  const rubro = rubros.find((r) => r.id === rubroId);
+  if (!rubro || (!rubro.activo && rubro.id !== rubroOriginal)) {
+    return { error: 'Elegí un rubro.', campo: 'rubro' };
+  }
+  const leido = montoDesdeTexto(monto);
+  if (leido.error) return { error: leido.error, campo: 'monto' };
+  const texto = (descripcion ?? '').trim();
+  if (texto.length > LIMITE.descripcionMovimiento) {
+    return { error: `La descripción puede tener hasta ${LIMITE.descripcionMovimiento} letras.`, campo: 'descripcion' };
+  }
+  const link = (comprobanteUrl ?? '').trim();
+  if (link && (!link.startsWith('https://') || link.length > LIMITE.enlace)) {
+    return { error: 'El link al comprobante tiene que empezar con https:// (copialo desde Drive).', campo: 'comprobante' };
+  }
+  return { fila: { fecha, rubroId, centavos: leido.centavos, descripcion: texto, comprobanteUrl: link || null } };
 }

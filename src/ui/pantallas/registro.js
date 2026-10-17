@@ -22,6 +22,7 @@ import { renderPanorama } from './coordPanorama.js';
 import { renderProfes } from './coordProfes.js';
 import { renderInventarioCoordinacion, renderInventarioLectura } from './inventario.js';
 import { renderRubros } from './coordRubros.js';
+import { renderFinanzas } from './coordFinanzas.js';
 import { renderMiPerfil } from './miPerfil.js';
 import { refrescarPlanFisico } from './planFisico.js';
 import { renderFisico, iniciarFisico } from './fisico.js';
@@ -63,6 +64,7 @@ export function registrarPantallas() {
   registrarPantalla('p-coord-panorama', { titulo: 'Panorama', render: renderPanorama });
   registrarPantalla('p-coord-profes', { titulo: 'Profes', render: renderProfes });
   registrarPantalla('p-coord-inventario', { titulo: 'Inventario', render: renderInventarioCoordinacion });
+  registrarPantalla('p-coord-finanzas', { titulo: 'Finanzas', render: renderFinanzas });
   registrarPantalla('p-coord-rubros', { titulo: 'Rubros', render: renderRubros });
   registrarPantalla('p-mi-perfil', { titulo: 'Mi perfil', render: renderMiPerfil });
   // Modo jugador (0030): sólo lectura, sólo lo suyo.
