@@ -7,7 +7,7 @@ Pedido de la reunión con los profes del 15/10: no fomentar el individualismo po
 El prompt dice "el coordinador solo lee" y pide probarlo con su cuenta. Desde **0018** el coordinador puro no lee **ningún** dato individual (`jugador`, `partido`, `estadistica_*`, `meta_zona`: cero filas) y no tiene la pantalla de plantel ni la ficha: su shell es Panorama / Profes / Inventario. Una misión individual es un dato de un menor, así que dejársela ver revierte 0018.
 
 **Propuesta (A):** el coordinador puro lee sólo lo de equipo —la previa (fecha y rival) y las misiones de equipo con su estado— y lo ve en Panorama como "Logros del equipo" por categoría, sin poder editar. Las misiones individuales siguen la regla de 0018: cero filas. Quien es coordinador **y** entrenador del plantel escribe, como en todo lo demás (`puede_escribir_plantel`).
-Alternativas: (B) que vea también las individuales, rompiendo 0018 y sumando una vista de datos de jugador para coordinación; (C) que no vea nada. Este documento asume **A**.
+**Decidido (16/10): opción A.** Descartadas: (B) que vea también las individuales (rompe 0018) y (C) que no vea nada.
 
 ## Modelo
 

@@ -21,8 +21,8 @@
 
 | Task | Estado |
 |---|---|
-| 0. Confirmar la opción del coordinador (spec, "Choque con el código") | pendiente |
-| 1. Lógica pura `misiones.js` | pendiente |
+| 0. Confirmar la opción del coordinador (spec, "Choque con el código") | hecha: opción A (16/10) |
+| 1. Lógica pura `misiones.js` | hecha |
 | 2. Migración 0054: tablas, RLS, grants, sellado | pendiente |
 | 3. Migración 0054: RPCs `guardar_previa` y `evaluar_misiones` | pendiente |
 | 4. `db push` y verificación en el SQL Editor | pendiente |

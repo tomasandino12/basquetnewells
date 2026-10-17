@@ -31,6 +31,8 @@ export const LIMITE = {
   notasLinea: 1000,
   detalleMaterial: 120,
   notaPaso: 300,
+  textoMision: 150,
+  comentarioMision: 300,
 };
 
 /** 'tabla.columna' → largo máximo. Es el espejo exacto de 0028 y de los checks en línea de las tablas nuevas (0035, 0052). */
