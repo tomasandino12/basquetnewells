@@ -69,3 +69,57 @@ export function formatearPesos(centavos, { signo = false } = {}) {
   if (signo && centavos > 0) return `+ ${texto}`;
   return texto;
 }
+
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio',
+  'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+const dosCifras = (n) => String(n).padStart(2, '0');
+
+/** Mes (1–12) → fechas ISO para filtrar `fecha >= desde and fecha < hasta`. */
+export function rangoDelMes(anio, mes) {
+  const siguiente = mesVecino(anio, mes, 1);
+  return {
+    desde: `${anio}-${dosCifras(mes)}-01`,
+    hasta: `${siguiente.anio}-${dosCifras(siguiente.mes)}-01`,
+  };
+}
+
+/** El mes anterior (paso -1) o el siguiente (paso 1). */
+export function mesVecino(anio, mes, paso) {
+  const indice = anio * 12 + (mes - 1) + paso;
+  return { anio: Math.floor(indice / 12), mes: (indice % 12) + 1 };
+}
+
+export function nombreDelMes(anio, mes) {
+  return `${MESES[mes - 1]} ${anio}`;
+}
+
+/**
+ * Movimientos del mes → totales en centavos. Los borrados no suman: siguen en
+ * la base con su rastro, pero no son plata que entró o salió.
+ *
+ * `porRubro` sólo trae rubros con movimientos en el período (activos o no:
+ * desactivar un rubro no borra lo que pasó), ingresos primero y cada grupo de
+ * mayor a menor.
+ */
+export function resumenDelPeriodo(movimientos, rubros) {
+  const rubroPorId = new Map(rubros.map((r) => [r.id, r]));
+  const porRubro = new Map();
+  let ingresos = 0;
+  let egresos = 0;
+  for (const m of movimientos) {
+    if (m.borradoEn) continue;
+    const rubro = rubroPorId.get(m.rubroId);
+    // Sin el rubro no se sabe el signo: mejor romper que sumar del lado equivocado.
+    if (!rubro) throw new Error('RUBRO_DESCONOCIDO');
+    if (rubro.tipo === 'ingreso') ingresos += m.centavos;
+    else egresos += m.centavos;
+    const linea = porRubro.get(rubro.id)
+      ?? { rubroId: rubro.id, nombre: rubro.nombre, tipo: rubro.tipo, total: 0, cantidad: 0 };
+    linea.total += m.centavos;
+    linea.cantidad += 1;
+    porRubro.set(rubro.id, linea);
+  }
+  const orden = (a, b) => (a.tipo === b.tipo ? b.total - a.total : a.tipo === 'ingreso' ? -1 : 1);
+  return { ingresos, egresos, resultado: ingresos - egresos, porRubro: [...porRubro.values()].sort(orden) };
+}

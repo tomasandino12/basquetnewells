@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   montoDesdeTexto, montoParaBase, formatearPesos, MONTO_MAX_CENTAVOS,
+  resumenDelPeriodo, rangoDelMes, mesVecino, nombreDelMes,
 } from '../src/data/finanzas.js';
 
 /*
@@ -75,4 +76,85 @@ test('formatearPesos pone signo en texto además del color', () => {
   assert.equal(formatearPesos(-50000, { signo: true }), '− $ 500,00');
   assert.equal(formatearPesos(-50000), '− $ 500,00');
   assert.equal(formatearPesos(0, { signo: true }), '$ 0,00');
+});
+
+/* ---------- Resumen del período ---------- */
+
+const RUBROS = [
+  { id: 'r-pat', nombre: 'Patrocinios', tipo: 'ingreso', activo: true },
+  { id: 'r-rifa', nombre: 'Rifas', tipo: 'ingreso', activo: false },
+  { id: 'r-arb', nombre: 'Arbitrajes', tipo: 'egreso', activo: true },
+  { id: 'r-can', nombre: 'Alquiler de cancha', tipo: 'egreso', activo: true },
+  { id: 'r-mat', nombre: 'Material', tipo: 'egreso', activo: true },
+];
+
+const mov = (id, rubroId, centavos, extra = {}) => ({ id, rubroId, centavos, borradoEn: null, ...extra });
+
+test('los totales cuadran con datos de prueba', () => {
+  // A mano: ingresos 150.000 + 23.456,78 = 173.456,78; egresos 12.000 +
+  // 12.000 + 45.000 = 69.000; resultado 104.456,78.
+  const r = resumenDelPeriodo([
+    mov('1', 'r-pat', 15000000),
+    mov('2', 'r-pat', 2345678),
+    mov('3', 'r-arb', 1200000),
+    mov('4', 'r-arb', 1200000),
+    mov('5', 'r-can', 4500000),
+  ], RUBROS);
+  assert.equal(r.ingresos, 17345678);
+  assert.equal(r.egresos, 6900000);
+  assert.equal(r.resultado, 10445678);
+  assert.deepEqual(r.porRubro, [
+    { rubroId: 'r-pat', nombre: 'Patrocinios', tipo: 'ingreso', total: 17345678, cantidad: 2 },
+    { rubroId: 'r-can', nombre: 'Alquiler de cancha', tipo: 'egreso', total: 4500000, cantidad: 1 },
+    { rubroId: 'r-arb', nombre: 'Arbitrajes', tipo: 'egreso', total: 2400000, cantidad: 2 },
+  ]);
+});
+
+test('un movimiento borrado no suma', () => {
+  const r = resumenDelPeriodo([
+    mov('1', 'r-pat', 10000),
+    mov('2', 'r-pat', 99999, { borradoEn: '2026-10-05T12:00:00Z' }),
+    mov('3', 'r-mat', 5000, { borradoEn: '2026-10-05T12:00:00Z' }),
+  ], RUBROS);
+  assert.equal(r.ingresos, 10000);
+  assert.equal(r.egresos, 0);
+  assert.deepEqual(r.porRubro.map((x) => [x.rubroId, x.cantidad]), [['r-pat', 1]]);
+});
+
+test('rubro inactivo con movimientos del mes aparece', () => {
+  const r = resumenDelPeriodo([mov('1', 'r-rifa', 30000)], RUBROS);
+  assert.equal(r.ingresos, 30000);
+  assert.equal(r.porRubro[0].nombre, 'Rifas');
+});
+
+test('resultado negativo cuando egresos superan ingresos', () => {
+  const r = resumenDelPeriodo([mov('1', 'r-pat', 10000), mov('2', 'r-can', 25000)], RUBROS);
+  assert.equal(r.resultado, -15000);
+});
+
+test('mes sin movimientos da ceros', () => {
+  assert.deepEqual(resumenDelPeriodo([], RUBROS), { ingresos: 0, egresos: 0, resultado: 0, porRubro: [] });
+});
+
+test('suma en centavos no arrastra error de coma flotante', () => {
+  const r = resumenDelPeriodo([mov('1', 'r-pat', 10), mov('2', 'r-pat', 20)], RUBROS);
+  assert.equal(r.ingresos, 30);
+  assert.equal(formatearPesos(r.ingresos), '$ 0,30');
+});
+
+test('un movimiento de un rubro desconocido rompe en vez de sumar a ciegas', () => {
+  assert.throws(() => resumenDelPeriodo([mov('1', 'r-nada', 100)], RUBROS), /RUBRO_DESCONOCIDO/);
+});
+
+test('rangoDelMes cruza diciembre a enero', () => {
+  assert.deepEqual(rangoDelMes(2026, 10), { desde: '2026-10-01', hasta: '2026-11-01' });
+  assert.deepEqual(rangoDelMes(2026, 12), { desde: '2026-12-01', hasta: '2027-01-01' });
+  assert.deepEqual(mesVecino(2026, 12, 1), { anio: 2027, mes: 1 });
+  assert.deepEqual(mesVecino(2027, 1, -1), { anio: 2026, mes: 12 });
+  assert.deepEqual(mesVecino(2026, 6, 1), { anio: 2026, mes: 7 });
+});
+
+test('nombreDelMes en castellano', () => {
+  assert.equal(nombreDelMes(2026, 10), 'octubre 2026');
+  assert.equal(nombreDelMes(2027, 1), 'enero 2027');
 });
