@@ -4,6 +4,7 @@ import { avisoDeError } from '../errores.js';
 import { html } from '../html.js';
 import { $ } from '../dom.js';
 import { abrirPrevia } from './previa.js';
+import { abrirEvaluacion } from './misionesPartido.js';
 
 const formatearFecha = (iso) => {
   const [anio, mes, dia] = iso.split('-');
@@ -41,7 +42,7 @@ export async function renderMisionesDelPlantel(club, plantel) {
   );
   destino.innerHTML = html`<div class="lista-2col">${previas.map((p) => {
     const conPartido = vinculos.get(p.id)?.partidoId != null;
-    return html`<div class="tarj tocable" data-previa="${p.id}" role="button" tabindex="0">
+    return html`<div class="tarj tocable" data-previa="${p.id}" data-con-partido="${conPartido}" role="button" tabindex="0">
       <div class="tarj-h">
         <span class="t">${p.rival ?? 'Rival sin nombre'}</span>
         <span class="n">${formatearFecha(p.fecha)}</span>
@@ -50,7 +51,8 @@ export async function renderMisionesDelPlantel(club, plantel) {
     </div>`;
   })}</div>`.toString();
   destino.querySelectorAll('[data-previa]').forEach((f) => {
-    const abrir = () => abrirPrevia(f.dataset.previa);
+    // Con el partido cargado lo que falta es evaluar; antes, armar las misiones.
+    const abrir = () => (f.dataset.conPartido === 'true' ? abrirEvaluacion(f.dataset.previa) : abrirPrevia(f.dataset.previa));
     f.addEventListener('click', abrir);
     f.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); } });
   });

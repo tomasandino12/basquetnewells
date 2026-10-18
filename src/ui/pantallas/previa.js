@@ -16,6 +16,7 @@ import { ICONO } from '../componentes/iconos.js';
 import { html, crudo } from '../html.js';
 import { $ } from '../dom.js';
 import { avisoDeError, mensajeAlGuardar, mostrarAviso } from '../errores.js';
+import { abrirEvaluacion } from './misionesPartido.js';
 
 const contenedor = () => $('previa-contenido');
 
@@ -98,7 +99,7 @@ function pintar() {
     <div class="pad">
       <div class="eyebrow">Misiones del partido</div>
       <p class="p">Antes del partido, un aporte concreto para cada chico y un objetivo para el equipo. Después marcás cómo salió.</p>
-      ${evaluada ? html`<div class="al" role="status"><div class="tx">Este partido ya se evaluó. Las misiones ya no se pueden cambiar.</div></div>` : ''}
+      ${evaluada ? html`<div class="al" role="status"><div class="tx">Este partido ya se evaluó. Las misiones ya no se pueden cambiar; sí podés corregir cómo salió cada una desde la evaluación.</div></div>` : ''}
 
       <div class="tarj">
         <div class="campo">
@@ -137,6 +138,7 @@ function pintar() {
     </div>
     <div class="pie-fijo">
       ${evaluada ? '' : html`<button type="button" class="btn" id="btn-guardar-previa">Guardar misiones</button>`}
+      ${existe ? html`<button type="button" class="btn sec" id="btn-evaluar-previa">${evaluada ? 'Ver la evaluación' : 'Evaluar el partido'}</button>` : ''}
     </div>
   `.toString();
 
@@ -157,6 +159,7 @@ function pintar() {
     });
   });
   $('btn-guardar-previa')?.addEventListener('click', guardar);
+  $('btn-evaluar-previa')?.addEventListener('click', () => abrirEvaluacion(borrador.previaId));
 }
 
 /**

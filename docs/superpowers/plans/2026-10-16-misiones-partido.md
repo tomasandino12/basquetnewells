@@ -21,7 +21,8 @@
 ## Componentes reusados por falta de uno propio
 
 - Task 6: `.tarj`, `.tarj-h`, `.chips-tema`/`.chip-tema`, `.campo`, `.btn.sec.chico`, `.pie-fijo`, `.seccion-cab`, `.estado-vacio`, hoja y `.btn-icono` (tacho). Lo único nuevo en CSS son 4 reglas de `.mision-fila` / `.mision-tx` en `componentes.css` (una línea de misión con su botón de quitar): no había una fila de lista con acción por línea.
-(se completa en las tasks 7 a 9)
+- Task 7: los tres estados son `.chip-tema` con `aria-pressed` (no había un selector de tres opciones: `.segmentado` es de dos), con glifo ✓ ◐ ✕ y la palabra; el elegir-partido es una `.tarj.tocable`. Sin CSS nuevo.
+(se completa en las tasks 8 y 9)
 
 ## Estado
 
@@ -34,7 +35,7 @@
 | 4. `db push` y verificación en el SQL Editor | push hecho 18/10 (prod 0001–0055); falta pegar `tests/verificarMisiones.sql` en el SQL Editor |
 | 5. Repo `misiones.js` y fachada | hecha |
 | 6. Pantalla de previa (asignar) | hecha (sin probar en navegador: el preview de esta sesión sirve la carpeta principal y hace falta login) |
-| 7. Pantalla de evaluación y vínculo a mano | pendiente |
+| 7. Pantalla de evaluación y vínculo a mano | hecha (sin probar en navegador, igual que la 6) |
 | 8. Logros en el plantel y misiones en la ficha | pendiente |
 | 9. Logros en Panorama (coordinador) | pendiente |
 | 10. ESQUEMA.md, prueba por rol y review final | pendiente |
