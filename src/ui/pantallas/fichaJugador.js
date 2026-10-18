@@ -2,7 +2,7 @@ import {
   obtenerJugadoresDelPlantel, obtenerPertenenciasDeJugador,
   obtenerSesionesDeMedicion, obtenerMedicionesTiroDelPlantel,
   obtenerMedicionesSaltoDelPlantel, obtenerMedicionesSprintDelPlantel, obtenerMedicionesYoyoDelPlantel,
-  obtenerEstadisticasDelPlantel, obtenerPartidosDelPlantel, obtenerEnviosDeJugador,
+  obtenerEstadisticasDelPlantel, obtenerPartidosDelPlantel, obtenerEnviosDeJugador, obtenerMisionesDelJugador,
   obtenerMedicionesCorporalesDeJugador, crearMedicionCorporal, borrarMedicionCorporal,
   actualizarFechaNacimiento, obtenerCargasDelPlantel, sacarDelPlantel,
 } from '../../data/repositorio.js';
@@ -32,6 +32,8 @@ import { botonIcono, ICONO } from '../componentes/iconos.js';
 import { abrirGuiaSalto } from '../componentes/guiaSalto.js';
 import { seccionSprint } from '../componentes/seccionSprint.js';
 import { seccionYoyo } from '../componentes/seccionYoyo.js';
+import { seccionMisiones } from '../componentes/seccionMisiones.js';
+import { misionesConPrevia } from '../../data/misiones.js';
 import { avisoEstimaciones } from '../componentes/avisoEstimaciones.js';
 import { abrirProtocoloCorporal } from '../componentes/protocoloCorporal.js';
 import { html, crudo } from '../html.js';
@@ -360,7 +362,7 @@ export async function renderFicha() {
   // están pintados arriba, así que un error de red trayendo la historia no
   // puede dejar la ficha entera en blanco.
   try {
-    const [sesiones, medicionesTiro, saltos, sprints, yoyos, corporales, partidos, estadisticas, envios] = await Promise.all([
+    const [sesiones, medicionesTiro, saltos, sprints, yoyos, corporales, partidos, estadisticas, envios, misiones] = await Promise.all([
       obtenerSesionesDeMedicion(club.id, plantel.id),
       obtenerMedicionesTiroDelPlantel(club.id, plantel.id),
       obtenerMedicionesSaltoDelPlantel(club.id, plantel.id),
@@ -370,6 +372,8 @@ export async function renderFicha() {
       obtenerPartidosDelPlantel(club.id, plantel.id),
       obtenerEstadisticasDelPlantel(club.id, plantel.id),
       obtenerEnviosDeJugador(club.id, jugadorId),
+      // Un agregado: si falla, la ficha se dibuja sin la sección.
+      obtenerMisionesDelJugador(jugadorId).catch(() => null),
     ]);
 
     const bateria = ultimaBateriaDeJugador(sesiones, medicionesTiro, jugadorId);
@@ -392,6 +396,7 @@ export async function renderFicha() {
       ${seccionSalto(sesionesDeSaltoDelJugador)}
       ${seccionSprint(sesionesDeSprint(sprints.filter((x) => x.jugadorId === jugadorId)))}
       ${seccionYoyo(sesionesDeYoyo(yoyos.filter((x) => x.jugadorId === jugadorId)))}
+      ${misiones ? seccionMisiones(misionesConPrevia(misiones.misiones, misiones.previas)) : ''}
       ${avisoEstimaciones()}
       ${seccionRecursos(envios)}
     `;
