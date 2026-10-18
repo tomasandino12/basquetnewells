@@ -69,3 +69,8 @@ function nombreArchivo(titulo, concepto, apellido, fecha, nombreOriginal) {
   var ext = extensionDe(nombreOriginal);
   return partes.join(' - ') + (ext ? '.' + ext : '');
 }
+
+/** Para comparar títulos de preguntas sin que importen mayúsculas ni espacios de más. */
+function claveTitulo(titulo) {
+  return String(titulo == null ? '' : titulo).replace(/\s+/g, ' ').trim().toLowerCase();
+}

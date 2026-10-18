@@ -90,3 +90,8 @@ test('no confunde 1234567 con 11234567', () => {
   assert.equal(g.dniDeCarpeta('PAZ, Ana — 11234567'), '11234567');
   assert.notEqual(g.dniDeCarpeta('PAZ, Ana — 11234567'), '1234567');
 });
+
+test('compara títulos sin importar mayúsculas ni espacios de más', () => {
+  assert.equal(g.claveTitulo('  DNI del   Jugador (sin puntos) '), g.claveTitulo('dni del jugador (sin puntos)'));
+  assert.notEqual(g.claveTitulo('Apellido del jugador'), g.claveTitulo('Nombre del jugador'));
+});
