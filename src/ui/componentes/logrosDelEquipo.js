@@ -12,10 +12,10 @@ const formatearFecha = (iso) => {
  * plantel, nunca de un jugador: la sensación que busca es la de unión por
  * algo logrado en conjunto. `logros` sale de `logrosDelEquipo`.
  */
-export function bloqueLogros(logros, { titulo = 'Logros del equipo' } = {}) {
+export function bloqueLogros(logros, { titulo = 'Logros del equipo', conTarjeta = true } = {}) {
   return html`
     <div class="eyebrow">${titulo}</div>
-    <div class="tarj">
+    <div class="${conTarjeta ? 'tarj' : ''}">
       <div class="cifra">${logros.length}</div>
       <div class="det">${logros.length === 1 ? 'logro en la temporada' : 'logros en la temporada'}</div>
       ${logros.length

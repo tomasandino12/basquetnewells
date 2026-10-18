@@ -38,3 +38,9 @@ test('logros del equipo: contador y lista', () => {
   assert.match(t, /El rival hace como máximo 59 puntos/);
   assert.match(bloqueLogros([]).toString(), /<div class="cifra">0<\/div>[\s\S]*Cuando el equipo cumpla/);
 });
+
+test('logros dentro de otra tarjeta no abren una tarjeta anidada', () => {
+  const t = bloqueLogros([], { conTarjeta: false }).toString();
+  assert.doesNotMatch(t, /class="tarj"/);
+  assert.match(bloqueLogros([]).toString(), /class="tarj"/);
+});

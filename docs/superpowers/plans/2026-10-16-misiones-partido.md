@@ -23,7 +23,7 @@
 - Task 6: `.tarj`, `.tarj-h`, `.chips-tema`/`.chip-tema`, `.campo`, `.btn.sec.chico`, `.pie-fijo`, `.seccion-cab`, `.estado-vacio`, hoja y `.btn-icono` (tacho). Lo único nuevo en CSS son 4 reglas de `.mision-fila` / `.mision-tx` en `componentes.css` (una línea de misión con su botón de quitar): no había una fila de lista con acción por línea.
 - Task 7: los tres estados son `.chip-tema` con `aria-pressed` (no había un selector de tres opciones: `.segmentado` es de dos), con glifo ✓ ◐ ✕ y la palabra; el elegir-partido es una `.tarj.tocable`. Sin CSS nuevo.
 - Task 8: los logros usan `.tarj` + `.cifra` + `.tabla-ev`/`.fila-ev.dos` (como las secciones de la ficha); la sección de la ficha es `.tabla-ev` con `.chip`. Sin CSS nuevo.
-(se completa en la task 9)
+- Task 9: Panorama reusa `bloqueLogros` (sin la `.tarj` propia, adentro de `.tarjeta-cat`). Sin CSS nuevo.
 
 ## Estado
 
@@ -38,7 +38,7 @@
 | 6. Pantalla de previa (asignar) | hecha (sin probar en navegador: el preview de esta sesión sirve la carpeta principal y hace falta login) |
 | 7. Pantalla de evaluación y vínculo a mano | hecha (sin probar en navegador, igual que la 6) |
 | 8. Logros en el plantel y misiones en la ficha | hecha |
-| 9. Logros en Panorama (coordinador) | pendiente |
+| 9. Logros en Panorama (coordinador) | hecha |
 | 10. ESQUEMA.md, prueba por rol y review final | pendiente |
 
 ---
