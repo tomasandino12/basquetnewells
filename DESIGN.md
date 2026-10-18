@@ -210,6 +210,8 @@ abrirHoja({ titulo: jugador.nombre, cuerpo: html`<div class="tarj">…</div>` })
 
 **Piezas chicas que ya existen** (usalas antes de crear otra): `.btn` / `.btn.sec` / `.btn.chico`, `.eyebrow` (con `.der` para un dato a la derecha), `.h2` y `.p`, `.chip` (`.sube`, `.baja`, `.sin`), `.campo` (con `.ayuda`), `.sin` para un dato que falta, `.mono`, `.sr` para texto sólo para lectores de pantalla, y el toast con `toast()` de `src/ui/nav.js`. Un `.btn:disabled` se lee como apagado y no sólo por color (fondo `--fondo-chip`, texto `--gris` ≥ 4.5:1, sin animación de apretado). Los gráficos de `graficos.js` salen con `role="img"` y un `aria-label` que cuenta el resumen en texto; los glifos decorativos (`.ic`) llevan `aria-hidden="true"`.
 
+**Pestañas internas** — `.pestanas` (`role="tablist"`) con un `.pest` por pestaña (`role="tab"`, `aria-selected`, `.on` con el filete del club abajo): partir una pantalla larga sin sumar ítems a la barra de abajo. Las usan RECURSOS y la ficha del jugador (Físico, Tiro, Partidos, Historia; reparto en `src/data/pestanasFicha.js`). Con `.fija` quedan pegadas arriba al bajar (`position:sticky` dentro de `.cuerpo`). No confundir con `.segmentado`, que elige una opción dentro de un formulario.
+
 ## Checklist para una pantalla o función nueva
 
 1. `npm run test:q` en verde: nada de colores literales, `var(--x)` inexistentes ni transiciones prohibidas.

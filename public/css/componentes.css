@@ -533,6 +533,10 @@ svg.g{width:100%;display:block;overflow:visible}
 .pestanas{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:0;border-bottom:1px solid var(--linea)}
 .pest{min-height:48px;border:0;background:none;color:var(--gris-cl);font-family:var(--ff-titulo);font-size:var(--fs-160);letter-spacing:.06em;text-transform:uppercase;border-bottom:2px solid transparent}
 .pest.on{color:var(--tinta);border-bottom-color:var(--primario)}
+/* En la ficha del jugador las pestañas quedan pegadas arriba al bajar: se
+   cambia de pestaña sin volver al principio. El fondo tapa lo que pasa por
+   debajo. */
+.pestanas.fija{position:sticky;top:0;z-index:1;background:var(--papel)}
 
 /* Etapa 5 — lista de ejercicios */
 .chips-tema{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
