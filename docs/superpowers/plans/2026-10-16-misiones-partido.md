@@ -25,7 +25,7 @@
 | 1. Lógica pura `misiones.js` | hecha |
 | 2. Migración 0055: tablas, RLS, grants, sellado | hecha |
 | 3. Migración 0055: RPCs `guardar_previa` y `evaluar_misiones` | hecha; verificada en local 18/10 (12/12 OK, en transacción con rollback) |
-| 4. `db push` y verificación en el SQL Editor | espera a que finanzas aplique 0054 (orden acordado 18/10) |
+| 4. `db push` y verificación en el SQL Editor | push hecho 18/10 (prod 0001–0055); falta pegar `tests/verificarMisiones.sql` en el SQL Editor |
 | 5. Repo `misiones.js` y fachada | pendiente |
 | 6. Pantalla de previa (asignar) | pendiente |
 | 7. Pantalla de evaluación y vínculo a mano | pendiente |
