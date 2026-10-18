@@ -276,6 +276,15 @@ Yo-Yo Endurance L1 (idas de 20 m) con pitidos de la app (spec `docs/superpowers/
 - `guardar_sesion_medicion` (0049) suma la rama `yoyo` (mediciones `{ jugadorId, idas }`); conserva todo lo de 0048.
 - `tests/contratoYoyo.test.js` compara el tope de idas con `IDAS_MAX`; `tests/contratoRpcYoyo.test.js`, que 0049 no perdió nada de 0048.
 
+### Finanzas: `rubro`, `movimiento`, `movimiento_cambio` (0054)
+Ingresos y egresos del básquet, carga interna del coordinador. Spec: `docs/superpowers/specs/2026-10-16-finanzas-design.md`.
+
+- `rubro`: `(club_id, nombre, tipo, activo)`. `tipo` es `ingreso` o `egreso` y **no tiene grant de update**: cambiarlo daría vuelta el signo de todo lo cargado. Único por `(club_id, lower(nombre))`. Sin delete: se desactiva (deja de ofrecerse al cargar, sigue sumando en los meses donde se usó). Nombres genéricos, nunca una persona.
+- `movimiento`: `fecha`, `monto numeric(12,2) check (monto > 0)` (el signo sale del rubro), `descripcion`, `comprobante_url` (opcional, `https://`; la app no aloja archivos). FK compuesta `(club_id, rubro_id) → rubro(club_id, id)`. **Baja lógica**: el cliente manda cualquier `borrado_en` y `sellar_movimiento` lo pisa con `now()` y `auth.uid()` en `borrado_por`, sin dejar cambiar nada más en la misma sentencia; una fila borrada no se edita ni se desborra. Sin delete.
+- `movimiento_cambio`: el rastro. `registrar_cambio_movimiento` (trigger `after update`, security definer) guarda `to_jsonb(old)` con `accion` (`edicion` o `baja`), quién y cuándo. El cliente sólo lo lee.
+- RLS: las tres, sólo `es_coordinador_de(club_id)` (con o sin rol de entrenador). Un profe sin rol de coordinador y un jugador: cero filas. Verificación: `tests/verificarFinanzas.sql`. Rollback: `tests/rollback0054.sql`.
+- En JS todo va en centavos enteros (`src/data/finanzas.js`); `tests/contratoFinanzas.test.js` compara tipos y tope con la migración.
+
 ## Políticas RLS
 
 Hasta 0015 la autorización era sólo por club: quien tenía una fila en `miembro_club` veía **todos los planteles**. Desde 0016 pasa por la asignación, y **lectura y escritura son ejes separados**. Desde 0018 el coordinador no lee datos individuales.
@@ -288,6 +297,7 @@ Hasta 0015 la autorización era sólo por club: quien tenía una fila en `miembr
 | `ejercicio`, `nota_ejercicio`, `recurso`, `perfil_entrenador` | todo el club | todo el club (la UI de coordinación no lo muestra) | todo el club |
 | `variacion_ejercicio` (0052), `jugada` (0035) | todo el club | **nada** (`es_entrenador_de`) | todo el club |
 | `material` (inventario) | lee todo el club | lee y **escribe** todo el club | lee y escribe |
+| `rubro`, `movimiento`, `movimiento_cambio` (0054, finanzas) | **nada** | lee y escribe su club (sin delete; el rastro sólo se lee) | lee y escribe |
 | Panel: pendientes, miembros, asignaciones, panorama | **rechaza** | su club | su club |
 | Habilitar, asignar, cerrar | **nunca** | a otros, en su club | a otros, en su club |
 | `solicitud_jugador`, `cuenta_jugador` (0029) | sus planteles asignados | **nada** | sus planteles asignados |

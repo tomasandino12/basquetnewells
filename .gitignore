@@ -7,3 +7,6 @@ graphify-out/
 
 # Material de referencia (entrevistas, planillas): no se publica
 documentos/
+
+# Backups de la base (scripts/backup.mjs): nombres de menores y hashes de contraseñas
+backups/

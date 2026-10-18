@@ -231,7 +231,15 @@
    ===================================================================== */
 /* Grilla de RECURSOS: una columna en celular (acá, porque componentes.css se carga después y pisaría el corte de abajo). */
 .rec-grilla{grid-template-columns:minmax(0,1fr)}
+/* Totales de FINANZAS: en celular, uno por renglón con la cifra a la derecha
+   (apilados ocupaban media pantalla); desde 40rem, tres tarjetas en fila. */
+.fin-totales{grid-template-columns:minmax(0,1fr)}
+.fin-total{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;column-gap:var(--sp-3)}
+.fin-total .det{flex-basis:100%;text-align:right}
 @media (min-width:40rem){
+  .fin-totales{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .fin-total{display:block}
+  .fin-total .det{text-align:left}
   .pad{padding:var(--sp-5) var(--sp-6)}
   .hoja .video-embed{margin-inline:calc(-1 * var(--sp-6))}
   .lista-2col{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3)}
