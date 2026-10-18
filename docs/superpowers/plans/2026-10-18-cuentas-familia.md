@@ -31,7 +31,11 @@ commit. Sin merge ni push: lo hace la coordinadora con el ok de Tomás.
   `tests/inscriptos.test.js`, `tests/fixtures/sintetico/para-semillero.xlsx`.
 - Leer filas de la pestaña, filtrar por categoría, normalizar mail
   (minúsculas, recorte), validar fecha con `validarFechaNacimiento`, armar el
-  payload de la RPC. Reusar la normalización de nombre del import CABB.
+  payload de la RPC. Reusar sólo la normalización de nombre del import CABB,
+  sin mezclar lógica de `parserCabb.js`. Es el **tercer formato de
+  planilla** (CABB, físico, inscriptos): antes de escribirlo, parar y
+  decidir con Tomás si toca armar el registro de parsers de CLAUDE.md, como
+  refactor en su propio commit.
 - Tests: "lee las columnas del fixture", "falta una columna → error claro",
   "filtra por categoría", "descarta mail inválido sin perder la fila",
   "junta filas repetidas del mismo chico con dos mails".
