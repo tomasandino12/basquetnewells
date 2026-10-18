@@ -73,10 +73,12 @@ Una planilla de la cuenta del básquet donde cada formulario vuelca sus respuest
 | `Fecha de nacimiento` | celda de fecha, formato `dd/mm/aaaa` |
 | `Categoría` | texto exacto de la opción del desplegable, ej. `U13 - MIXTO (2014 y 2013)` |
 | `Mail del responsable` | el verificado por Google, en minúsculas |
+| `Rama` | `Masculino` o `Femenino`. Sale de la categoría si dice MASCULINO o FEMENINO; si es MIXTO (Escuelita, U9, U11, U13), de la pregunta "Rama" |
 
 - **Cómo queda la decisión 1:** se mantiene para lo que protege, que es la custodia de documentos: archivos, DNIs y ficha médica nunca salen de la cuenta del básquet. Lo que va a Semillero son 5 datos que el profe ya carga hoy a mano, sin DNI ni salud. No hay conexión: una persona descarga y sube el archivo. Igual es una **excepción a la decisión 1 tal como estaba escrita**: tiene que aprobarla Tomás, y el texto de privacidad del formulario dice que nombre, fecha de nacimiento, categoría y mail se cargan en la app del club.
 
 ## Formulario: lo que se suma (y nada más)
+- Pregunta **"Rama"** (opción múltiple, obligatoria: Masculino / Femenino), después de la categoría (condicionada al agregado "Para Semillero"). Las categorías mixtas no la traen y Semillero separa por rama. Si contradice a la categoría, manda la categoría.
 - Partir "Apellido y Nombre" en dos; validación del DNI; las 6 preguntas de subida (sección nueva "Documentación"); recopilar mail verificado.
 - Texto de **para qué se usan los datos y quién los ve** (borrador marcado `[VALIDAR CON COORDINACIÓN]`): lo ve sólo la coordinación del básquet; se usa para fichar en la CABB y la ficha de emergencia; queda en la cuenta del club; se borra la documentación después del fichaje.
 - Casilla **no premarcada** de mails de recaudación, con el texto del checklist de `00-orden-de-trabajo.md` (con `[material, viajes, …]` a completar con Javier).
