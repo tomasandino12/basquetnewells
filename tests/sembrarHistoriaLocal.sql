@@ -72,6 +72,12 @@ begin
     (p15, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
      'zztest-profe15@historia.test', null, now(),
      now(), now(), '{"provider":"email","providers":["email"]}', '{"nombre":"ZZTEST Profe U15 2025"}');
+  -- Auth no acepta NULL en estas columnas: sin esto el login falla con
+  -- "converting NULL to string is unsupported".
+  update auth.users set confirmation_token = '', recovery_token = '', email_change = '',
+         email_change_token_new = '', email_change_token_current = '', reauthentication_token = '',
+         phone_change = '', phone_change_token = ''
+   where id in (p17, p15);
   insert into auth.identities (id, user_id, provider_id, provider, identity_data, created_at, updated_at)
   values (gen_random_uuid(), p17, p17::text, 'email',
           jsonb_build_object('sub', p17::text, 'email', 'zztest-profe17@historia.test', 'email_verified', true),
