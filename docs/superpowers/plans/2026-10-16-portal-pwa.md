@@ -17,7 +17,7 @@ Una task = un commit. Al cerrar cada una: `npm run test:q`, commit, y resumen si
 | 5. Manifest y meta de instalación | hecha (18/10) |
 | 6. Service worker | hecha (18/10) |
 | 7. Guía para la coordinación | hecha (18/10) |
-| 8. Verificación en navegador y celular | pendiente |
+| 8. Verificación en navegador y celular | local hecha (18/10); falta preview de Vercel y celulares |
 
 ## Task 1 — Configuración del portal (`feat(portal)`)
 - Archivos: `src/data/portal.js`, `tests/portal.test.js`.
@@ -66,3 +66,10 @@ Una task = un commit. Al cerrar cada una: `npm run test:q`, commit, y resumen si
 - Preview de Vercel (pedir OK antes de pushear la rama): Manifest sin errores, instalable, Cache Storage sin `supabase.co`, login con Google, deploy con cambio visible → se ve al recargar.
 - Celulares (lo prueba Tomás): instalar en Android y iPhone, abrir sin barra, login con email y Google en el instalado, recuperar clave.
 - Anotar resultados en la tabla de Estado.
+
+### Resultados (18/10)
+- **Local** (esbuild, 380 px y 1280 px): landing sin scroll horizontal; bloque Básquet en "Próximamente" sin config y con un formulario y un calendario público de prueba inyectados (iframe en sandbox, vista agenda); "Ya tengo cuenta" → ingresar (con botón de Google), "Crear cuenta" → ¿Quién sos?; consola sin errores propios.
+- **Manifest**: se sirve, los 3 íconos y el apple-touch-icon responden 200 con sus medidas.
+- **Service worker**: en local el registro con alcance `/` falla a propósito (esbuild no manda `Service-Worker-Allowed`) y la app sigue igual. Registrado a mano con alcance `/public/`: Cache Storage sólo con fuentes, vendor y escudo; un pedido real a `supabase.co` no quedó guardado. Después se desregistró y se borró.
+- **Merge**: `main` sin cambios nuevos. Merge de prueba de las 5 ramas (backup, finanzas, misiones, historia, portal-pwa) en un worktree temporal: sin conflictos y `test:q` verde.
+- **Falta** (necesita push de la rama para el preview de Vercel, con OK de Tomás): DevTools → Manifest sin errores e instalable, SW registrado con alcance `/`, Cache Storage sin `supabase.co` después de entrar, login con Google, un deploy con cambio visible que llega al recargar. Y en los celulares: instalar en Android y en iPhone, abrir sin barra, login con email y con Google en la instalada, recuperar la clave.
