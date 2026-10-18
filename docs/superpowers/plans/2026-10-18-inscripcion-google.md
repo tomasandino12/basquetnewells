@@ -27,6 +27,7 @@ Spec: `docs/superpowers/specs/2026-10-18-inscripcion-google-design.md`. Una task
 ## Task 3 — Tablero
 - **Archivo:** `google/sheets/TABLERO.md`.
 - **Qué:** pestañas (respuestas de cada formulario, Tablero, Entregas a mano, Sin inscripción), fórmulas listas para pegar con `;`, formato condicional, cómo compartir (sólo coordinación, nunca "Publicar en la web").
+- **Además (si se aprueba el agregado):** planilla "Para Semillero" con `IMPORTRANGE`, una fila por DNI sin mostrarlo, encabezados exactos de la spec.
 - **Acepta:** cada columna de documento de la spec tiene su fórmula; las fórmulas usan `;` y nombres en español (`CONTAR.SI.CONJUNTO`, `UNICOS`, `HIPERVINCULO`).
 
 ## Task 4 — Formularios

@@ -59,6 +59,23 @@ Una planilla de la cuenta del básquet donde cada formulario vuelca sus respuest
 - Link a la carpeta: `=HIPERVINCULO("https://drive.google.com/drive/search?q=" & DNI; "Abrir")`, que abre la búsqueda de Drive y muestra la carpeta del chico. Así el script no necesita permiso de Sheets. (Si Tomás prefiere el link directo, el script escribe el ID en una hoja y suma el scope `spreadsheets`: hay que decidirlo.)
 - Quien envió documentación pero no está en Inscripción aparece en una hoja "Sin inscripción" (`FILTRO` + `CONTAR.SI`).
 
+## Agregado: planilla "Para Semillero" (pedido de cuentas-familia, prompt 08)
+**Condicionado** a que Tomás apruebe esta spec y la spec v2 de cuentas-familia. Los datos de la inscripción alimentan el plantel de Semillero y el vínculo con el padre sale de su mail. Acá sólo se arma la planilla; el importador es de cuentas-familia.
+
+- **Planilla aparte**, "Para Semillero <temporada>", no una pestaña del tablero. Razón: en Sheets, *Descargar → Microsoft Excel* baja **todas** las pestañas; si estuviera en el tablero, el .xlsx llevaría DNIs, ficha médica y links. La planilla aparte trae los datos con `IMPORTRANGE` desde la de respuestas (no necesita script ni scopes nuevos) y se comparte sólo con quien importa.
+- Una fila por chico (la última respuesta de cada DNI). El DNI se usa para quitar duplicados pero **no se muestra**.
+- Columnas, en este orden y con estos encabezados exactos en la fila 1:
+
+| Columna | Contenido |
+|---|---|
+| `Apellido` | como lo escribió el adulto, sin cambios |
+| `Nombre` | ídem |
+| `Fecha de nacimiento` | celda de fecha, formato `dd/mm/aaaa` |
+| `Categoría` | texto exacto de la opción del desplegable, ej. `U13 - MIXTO (2014 y 2013)` |
+| `Mail del responsable` | el verificado por Google, en minúsculas |
+
+- **Cómo queda la decisión 1:** se mantiene para lo que protege, que es la custodia de documentos: archivos, DNIs y ficha médica nunca salen de la cuenta del básquet. Lo que va a Semillero son 5 datos que el profe ya carga hoy a mano, sin DNI ni salud. No hay conexión: una persona descarga y sube el archivo. Igual es una **excepción a la decisión 1 tal como estaba escrita**: tiene que aprobarla Tomás, y el texto de privacidad del formulario dice que nombre, fecha de nacimiento, categoría y mail se cargan en la app del club.
+
 ## Formulario: lo que se suma (y nada más)
 - Partir "Apellido y Nombre" en dos; validación del DNI; las 6 preguntas de subida (sección nueva "Documentación"); recopilar mail verificado.
 - Texto de **para qué se usan los datos y quién los ve** (borrador marcado `[VALIDAR CON COORDINACIÓN]`): lo ve sólo la coordinación del básquet; se usa para fichar en la CABB y la ficha de emergencia; queda en la cuenta del club; se borra la documentación después del fichaje.
