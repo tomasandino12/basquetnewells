@@ -3,6 +3,7 @@
  * Semillero" a lo que el profe revisa y confirma. Sin red ni DOM.
  * Spec: docs/superpowers/specs/2026-10-18-cuentas-familia-design.md §3.
  */
+import { clavearNombre } from '../parser/parserCabb.js';
 
 // Texto exacto del desplegable del formulario de inscripción (11 opciones).
 // `null` = Semillero no tiene esa categoría; se saltea con aviso. U13 mixto
@@ -86,4 +87,50 @@ export function inscriptosDelPlantel(filas, codigoCategoria) {
     }
   }
   return { inscriptos: [...porChico.values()], salteadas, advertencias };
+}
+
+/**
+ * Cruza los inscriptos con el padrón del club (`padron`: [{ id, nombreClave,
+ * fechaNacimiento? }]; la fecha sólo viene de las fichas que el profe ve).
+ * El jugador se reconoce por apellido + nombre + fecha dentro del club:
+ * - 'existente': misma clave y la fecha coincide o no se conoce.
+ * - 'conflicto': la clave existe pero con otra fecha; puede ser un homónimo.
+ *   Queda sin tildar hasta que el profe lo decida.
+ * - 'nuevo': no hay nadie con esa clave.
+ * La clave es la misma que arma el alta (`clavearNombre` sobre "Apellido,
+ * Nombre"): si la CABB lo escribió distinto ("Juan M."), figura como nuevo y
+ * el dedup del import de la CABB lo ofrece después, como siempre.
+ */
+export function cruzarConPadron(inscriptos, padron) {
+  const porClave = new Map();
+  for (const p of padron) {
+    if (!porClave.has(p.nombreClave)) porClave.set(p.nombreClave, []);
+    porClave.get(p.nombreClave).push(p);
+  }
+  return inscriptos.map((i) => {
+    const claveNombre = clavearNombre(i.nombreLimpio);
+    const candidatos = porClave.get(claveNombre) ?? [];
+    if (candidatos.length === 0) return { ...i, estado: 'nuevo', nombreClave: claveNombre };
+    const igual = candidatos.find((c) => c.fechaNacimiento === i.fechaNacimiento);
+    if (igual) return { ...i, estado: 'existente', jugadorId: igual.id };
+    const sinFecha = candidatos.filter((c) => !c.fechaNacimiento);
+    if (sinFecha.length === 1 && sinFecha.length === candidatos.length) {
+      return { ...i, estado: 'existente', jugadorId: sinFecha[0].id };
+    }
+    return { ...i, estado: 'conflicto', nombreClave: claveNombre };
+  });
+}
+
+/**
+ * Las filas que se mandan a `importar_inscriptos`, de lo que el profe dejó
+ * tildado. Un conflicto aceptado es un chico distinto: se desambigua con su
+ * fecha, como el alta manual de homónimos.
+ */
+export function filasParaImportar(cruzados) {
+  return cruzados.map((c) => {
+    const base = { fechaNacimiento: c.fechaNacimiento, mails: c.mails };
+    if (c.estado === 'existente') return { ...base, jugadorId: c.jugadorId };
+    const nueva = { ...base, nombreClave: c.nombreClave, nombreLimpio: c.nombreLimpio };
+    return c.estado === 'conflicto' ? { ...nueva, desambiguador: c.fechaNacimiento } : nueva;
+  });
 }

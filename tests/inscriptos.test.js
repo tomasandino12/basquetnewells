@@ -129,3 +129,53 @@ test('inscriptosDelPlantel: un mail inválido avisa pero el chico entra sin mail
   assert.deepEqual(r.inscriptos[0].mails, []);
   assert.match(r.advertencias[0], /no es válido/);
 });
+
+/* ---------- cruce con el padrón ---------- */
+
+import { cruzarConPadron, filasParaImportar } from '../src/data/inscriptos.js';
+
+const insc = (extra) => ({
+  apellido: 'Pérez', nombre: 'Juan', nombreLimpio: 'Pérez, Juan',
+  fechaNacimiento: '2012-04-03', mails: ['a@b.com'], ...extra,
+});
+
+test('cruzarConPadron: sin nadie con ese nombre es nuevo', () => {
+  const [r] = cruzarConPadron([insc({})], [{ id: 'j1', nombreClave: 'GOMEZ ANA', fechaNacimiento: null }]);
+  assert.equal(r.estado, 'nuevo');
+  assert.equal(r.nombreClave, 'PEREZ JUAN');
+});
+
+test('cruzarConPadron: mismo nombre y fecha (con o sin tildes) es el existente', () => {
+  const [r] = cruzarConPadron([insc({})], [{ id: 'j1', nombreClave: 'PEREZ JUAN', fechaNacimiento: '2012-04-03' }]);
+  assert.deepEqual([r.estado, r.jugadorId], ['existente', 'j1']);
+});
+
+test('cruzarConPadron: ficha sin fecha (viene de la CABB) es el existente', () => {
+  const [r] = cruzarConPadron([insc({})], [{ id: 'j1', nombreClave: 'PEREZ JUAN', fechaNacimiento: null }]);
+  assert.deepEqual([r.estado, r.jugadorId], ['existente', 'j1']);
+});
+
+test('cruzarConPadron: mismo nombre con otra fecha es un conflicto, no un existente', () => {
+  const [r] = cruzarConPadron([insc({})], [{ id: 'j1', nombreClave: 'PEREZ JUAN', fechaNacimiento: '2011-09-09' }]);
+  assert.equal(r.estado, 'conflicto');
+});
+
+test('cruzarConPadron: dos homónimos en el padrón, gana el de la misma fecha', () => {
+  const padron = [
+    { id: 'j1', nombreClave: 'PEREZ JUAN', fechaNacimiento: '2011-09-09' },
+    { id: 'j2', nombreClave: 'PEREZ JUAN', fechaNacimiento: '2012-04-03' },
+  ];
+  assert.equal(cruzarConPadron([insc({})], padron)[0].jugadorId, 'j2');
+});
+
+test('filasParaImportar: existente por id, nuevo por nombre, conflicto desambiguado con la fecha', () => {
+  const filas = filasParaImportar([
+    { ...insc({}), estado: 'existente', jugadorId: 'j1' },
+    { ...insc({ apellido: 'Gómez', nombreLimpio: 'Gómez, Ana' }), estado: 'nuevo', nombreClave: 'GOMEZ ANA' },
+    { ...insc({}), estado: 'conflicto', nombreClave: 'PEREZ JUAN' },
+  ]);
+  assert.deepEqual(filas[0], { fechaNacimiento: '2012-04-03', mails: ['a@b.com'], jugadorId: 'j1' });
+  assert.equal(filas[1].nombreClave, 'GOMEZ ANA');
+  assert.equal(filas[1].desambiguador, undefined);
+  assert.equal(filas[2].desambiguador, '2012-04-03');
+});
