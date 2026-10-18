@@ -60,7 +60,7 @@ Una planilla de la cuenta del básquet donde cada formulario vuelca sus respuest
 - Quien envió documentación pero no está en Inscripción aparece en una hoja "Sin inscripción" (`FILTRO` + `CONTAR.SI`).
 
 ## Agregado: planilla "Para Semillero" (pedido de cuentas-familia, prompt 08)
-**Condicionado** a que Tomás apruebe esta spec y la spec v2 de cuentas-familia. Los datos de la inscripción alimentan el plantel de Semillero y el vínculo con el padre sale de su mail. Acá sólo se arma la planilla; el importador es de cuentas-familia.
+**Excepción aprobada por Tomás** al aprobar la spec de cuentas-familia (commit a1b7d1b de `claude/cuentas-familia-c6c955`). Los datos de la inscripción alimentan el plantel de Semillero y el vínculo con el padre sale de su mail. Acá sólo se arma la planilla; el importador es de cuentas-familia.
 
 - **Planilla aparte**, "Para Semillero <temporada>", no una pestaña del tablero. Razón: en Sheets, *Descargar → Microsoft Excel* baja **todas** las pestañas; si estuviera en el tablero, el .xlsx llevaría DNIs, ficha médica y links. La planilla aparte trae los datos con `IMPORTRANGE` desde la de respuestas (no necesita script ni scopes nuevos) y se comparte sólo con quien importa.
 - Una fila por chico (la última respuesta de cada DNI). El DNI se usa para quitar duplicados pero **no se muestra**.
@@ -75,10 +75,10 @@ Una planilla de la cuenta del básquet donde cada formulario vuelca sus respuest
 | `Mail del responsable` | el verificado por Google, en minúsculas |
 | `Rama` | `Masculino` o `Femenino`. Sale de la categoría si dice MASCULINO o FEMENINO; si es MIXTO (Escuelita, U9, U11, U13), de la pregunta "Rama" |
 
-- **Cómo queda la decisión 1:** se mantiene para lo que protege, que es la custodia de documentos: archivos, DNIs y ficha médica nunca salen de la cuenta del básquet. Lo que va a Semillero son 5 datos que el profe ya carga hoy a mano, sin DNI ni salud. No hay conexión: una persona descarga y sube el archivo. Igual es una **excepción a la decisión 1 tal como estaba escrita**: tiene que aprobarla Tomás, y el texto de privacidad del formulario dice que nombre, fecha de nacimiento, categoría y mail se cargan en la app del club.
+- **Cómo queda la decisión 1:** se mantiene para lo que protege, que es la custodia de documentos: archivos, DNIs y ficha médica nunca salen de la cuenta del básquet. Lo que va a Semillero son 5 datos que el profe ya carga hoy a mano, sin DNI ni salud. No hay conexión: una persona descarga y sube el archivo. Es una **excepción a la decisión 1 tal como estaba escrita**, aprobada por Tomás, y el texto de privacidad del formulario dice que nombre, fecha de nacimiento, categoría y mail se cargan en la app del club.
 
 ## Formulario: lo que se suma (y nada más)
-- Pregunta **"Rama"** (opción múltiple, obligatoria: Masculino / Femenino), después de la categoría (condicionada al agregado "Para Semillero"). Las categorías mixtas no la traen y Semillero separa por rama. Si contradice a la categoría, manda la categoría.
+- Pregunta **"Rama"** (opción múltiple, obligatoria: Masculino / Femenino), después de la categoría (la pide "Para Semillero"). Las categorías mixtas no la traen y Semillero separa por rama. Si contradice a la categoría, manda la categoría.
 - Partir "Apellido y Nombre" en dos; validación del DNI; las 6 preguntas de subida (sección nueva "Documentación"); recopilar mail verificado.
 - Texto de **para qué se usan los datos y quién los ve** (borrador marcado `[VALIDAR CON COORDINACIÓN]`): lo ve sólo la coordinación del básquet; se usa para fichar en la CABB y la ficha de emergencia; queda en la cuenta del club; se borra la documentación después del fichaje.
 - Casilla **no premarcada** de mails de recaudación, con el texto del checklist de `00-orden-de-trabajo.md` (con `[material, viajes, …]` a completar con Javier).
