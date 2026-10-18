@@ -24,7 +24,7 @@ export function bloqueLogros(logros, { titulo = 'Logros del equipo', conTarjeta 
             <div class="f">${formatearFecha(l.fecha)}</div>
             <div>${textoDeMision(l)}${l.rival ? html` <span class="sin">· ${l.rival}</span>` : ''}</div>
           </div>`)}</div>`
-        : html`<div class="p">Cuando el equipo cumpla un objetivo y lo marques como logrado, aparece acá.</div>`}
+        : html`<div class="p">Las misiones del equipo se arman antes del partido, en Datos → Misiones → Armar misiones. Cuando evalúes una como Logrado, aparece acá.</div>`}
     </div>
   `;
 }
