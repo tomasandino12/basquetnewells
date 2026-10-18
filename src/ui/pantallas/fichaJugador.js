@@ -348,7 +348,7 @@ export async function renderFicha() {
     </div>
     <div class="pad" id="ficha-acceso"></div>
     <div class="pad" id="ficha-corporal"><div class="p" role="status">Cargando mediciones…</div></div>
-    <div class="pad" id="ficha-historia"><div class="p" role="status">Cargando historia del jugador…</div></div>
+    <div class="pad" id="ficha-actual"><div class="p" role="status">Cargando datos de la temporada…</div></div>
     <div class="pad" id="ficha-cargas"></div>
   `;
 
@@ -388,7 +388,7 @@ export async function renderFicha() {
     const historial = historialDePartidosDelJugador(partidos, estadisticas, jugadorId);
     const sesionesDeSaltoDelJugador = sesionesDeSalto(saltos.filter((x) => x.jugadorId === jugadorId), corporales);
 
-    $('ficha-historia').innerHTML = `
+    $('ficha-actual').innerHTML = `
       ${seccionCancha(bateria, bateriaConDatos)}
       ${bloqueDeSerie('ficha-triples', 'Tiro de tres', series.triples, 'Todavía no hay datos de triples, ni de práctica ni de partido.')}
       ${bloqueDeSerie('ficha-libres', 'Tiro libre', series.libres, 'Todavía no hay datos de libres, ni de práctica ni de partido.')}
@@ -408,9 +408,9 @@ export async function renderFicha() {
     dibujarSerie('ficha-triples', series.triples);
     dibujarSerie('ficha-libres', series.libres);
     $('btn-guia-salto')?.addEventListener('click', () => abrirGuiaSalto(club));
-    $('ficha-historia').querySelectorAll('[data-como-medir]').forEach((b) => b.addEventListener('click', () => abrirProtocoloCorporal(club)));
+    $('ficha-actual').querySelectorAll('[data-como-medir]').forEach((b) => b.addEventListener('click', () => abrirProtocoloCorporal(club)));
   } catch (e) {
-    $('ficha-historia').innerHTML = avisoInline(textoDeError(e, 'No se pudo cargar la historia del jugador.'));
+    $('ficha-actual').innerHTML = avisoInline(textoDeError(e, 'No se pudieron cargar los datos de la temporada.'));
   }
 }
 
