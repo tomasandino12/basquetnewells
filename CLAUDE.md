@@ -10,7 +10,7 @@ App móvil para clubes formadores de básquet (piloto: Newell's, multi-club desd
 ## Comandos
 - `npm run test:q` — toda la suite, salida mínima (~300 bytes). **Usar este.** Si algo falla, correr sólo ese archivo: `node --test tests/<archivo>.test.js`.
 - `npm test` — la misma suite con salida TAP de ~60 KB. Evitarlo: gasta ~15k tokens por corrida.
-- `npx supabase db push` — aplica migraciones a la base real. Pedir confirmación antes.
+- `npx supabase db push` — aplica migraciones a la base real. Pedir confirmación antes, y **antes de cada `db push` parar y preguntar si se corrió `npm run backup`** (`docs/BACKUP.md`).
 
 ## Dónde está cada cosa
 - `src/data/repositorio.js`: **fachada** de 15 líneas, sólo `export * from './repos/<área>.js'`. El código está en `src/data/repos/`: `auth`, `clubes`, `coordinacion`, `ejercicios`, `fisico`, `inventario`, `jugadores`, `mediciones`, `partidos`, `recursos`. `src/data/cliente.js`: el cliente Supabase compartido (`obtenerCliente`, `TAMANIO_PAGINA`).
