@@ -47,7 +47,7 @@
 
 ### Task 2 — Migración 0055: tablas
 
-**Archivos:** `supabase/migrations/0055_misiones_partido.sql`, `tests/contratoMisiones.test.js`, `tests/contratoLimites.test.js` (no se toca: finanzas edita esa línea; los largos de 0055 los compara `contratoMisiones`), `tests/rollback0055.sql`. `LIMITES_POR_COLUMNA` y `TABLAS_NUEVAS` se completan al mergear, después de finanzas.
+**Archivos:** `supabase/migrations/0055_misiones_partido.sql`, `tests/contratoMisiones.test.js`, `tests/contratoLimites.test.js` (no se toca: finanzas edita esa línea; los largos de 0055 los compara `contratoMisiones`), `tests/rollback0055.sql`. `LIMITES_POR_COLUMNA` y `TABLAS_NUEVAS` se completaron después del merge de finanzas (18/10).
 
 **Qué:** `previa_partido`, `mision_jugador`, `mision_equipo` como en la spec. Lectura y escritura por `puede_ver_plantel` / `puede_escribir_plantel`; insert de `mision_jugador` exige pertenencia vigente; `previa_partido` y `mision_equipo` además leíbles por `es_coordinador_de(club_id)` (opción A). Update por columna: misión `metrica, valor, texto` sólo sin estado (trigger), `estado, comentario` siempre; previa `rival, fecha, partido_id`. Trigger: sella autoría y evaluación, valida que el partido sea del mismo plantel, no deja cambiar `club_id` ni `plantel_id`. Cuentas de jugador: cero filas.
 

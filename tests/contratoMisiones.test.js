@@ -11,8 +11,9 @@ import { LIMITE } from '../src/data/limites.js';
  * pantalla ofrece algo que la base rechaza, o la base deja entrar una métrica
  * de anotación que el club pidió no usar.
  *
- * Los largos se comparan acá y no en contratoLimites.test.js porque esa lista
- * la está editando feat/finanzas: se suman ahí al mergear las dos ramas.
+ * Los largos los compara también contratoLimites.test.js (0055 está en
+ * TABLAS_NUEVAS); acá se repiten para que el test de misiones diga qué columna
+ * de qué tabla se desincronizó.
  */
 
 const ARCHIVO = '0055_misiones_partido.sql';
