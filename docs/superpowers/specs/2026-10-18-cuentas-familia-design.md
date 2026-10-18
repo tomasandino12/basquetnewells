@@ -8,8 +8,8 @@ Migración `0057_cuentas_familia.sql` (reservada por la coordinadora).
 
 ## 1. Qué entra
 
-- El padre llena una sola vez el formulario de Inscripción (Google, sin
-  login), que ya pide su mail.
+- El padre llena una sola vez el formulario de Inscripción (Google; con o
+  sin login, ver §2), que ya pide su mail.
 - El profe de la categoría importa los inscriptos a su plantel en Semillero,
   sin cargarlos a mano. Así cada chico queda con el mail de su adulto
   responsable.
@@ -34,17 +34,20 @@ mostrar los partidos de su categoría actual.
 | A. DNI + nacimiento contra un hash | Falsa: ~10⁸ DNIs casi correlativos, el hash se revierte en segundos. Es guardar el DNI con otro nombre (choca con el prompt 05). | Alto. |
 | B. Código por chico que reparte el club | Fuerte. | El club reparte ~120 códigos; choca con "el padre carga y queda linkeado". |
 | C. Categoría + nombre + fecha, tipeados en la app | Débil: nombre y categoría salen de la CABB y la fecha se adivina en ~365 intentos. | Bajo, pero el padre carga dos veces. |
-| **D. Mail del responsable, del formulario** | Buena: el mail lo verificó Google o Supabase, y nadie lo adivina. | Un import por plantel, que igual hacía falta para no cargar chicos a mano. |
+| **D1. Mail tipeado en el formulario** (Inscripción sin login) | Buena del lado de la app: para vincularse hay que entrar con ese mail, verificado por Google o Supabase. Débil del lado del formulario: cualquiera tipea cualquier mail. | Un import por plantel, que igual hacía falta para no cargar chicos a mano. |
+| **D2. Mail verificado de la cuenta de Google del formulario** (Inscripción con login obligatorio, según la spec actual de inscripción) | La mejor: ese mail lo pone Google, no lo escribe el padre. Se vincula sólo quien llenó el formulario. Dos hijos son dos respuestas con el mismo mail. | El mismo import que D1. A las familias sin cuenta de Google les suma un paso: crearla con su mail de siempre (la guía de inscripción lo explica). |
 
-**Recomendación: D, sin C.** El padre no tipea nada en la app. Si entró con
+**Recomendación: D, sin C, y D2 si la Inscripción queda con login de
+Google.** Elige Tomás entre D1 y D2: en la app es el mismo código, sólo cambia
+de qué columna sale el mail. El padre no tipea nada en la app. Si entró con
 otro mail, el coordinador corrige el mail en la ficha del chico, y no queda
 ninguna puerta para adivinar. B queda como escalón por si el resguardo 3 lo
 pide.
 
 **Riesgo que queda** (aceptado por Tomás con su razón: nadie llena el
-formulario entero de un chico que no es suyo). El formulario no pide login,
-así que alguien podría inscribir al chico de otro con su propio mail. Lo
-frenan tres cosas:
+formulario entero de un chico que no es suyo). Alguien podría inscribir al
+chico de otro. Con D1 lo haría con cualquier mail. Con D2 sólo con su propia
+cuenta de Google, que queda registrada. Lo frenan tres cosas:
 - El import marca cuando un chico ya existente llega con un mail nuevo.
 - El profe confirma cada fila.
 - La lista del coordinador muestra todos los vínculos.
