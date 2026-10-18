@@ -1,7 +1,7 @@
 # Inscripción y documentación en Google — diseño
 
 **Fecha:** 18/10/2026 · **Rama:** `claude/inscripcion-google-41cf4e` · **Tag previo:** `pre-inscripcion-google`
-**Prompt:** 05 de Tomás, más sus agregados del 18/10 (login, reinscripción, formularios nuevos sin código). No toca el código de la app: Apps Script + Forms + Sheets, versionado en `google/`.
+**Prompt:** 05 de Tomás, más sus agregados del 18/10 (login, reinscripción, formularios nuevos sin código, aranceles, buscador, ayuda para familias). No toca el código de la app: Apps Script + Forms + Sheets, versionado en `google/`.
 
 ## Qué resuelve
 Hoy los DNIs y fotos de los chicos llegan por WhatsApp a celulares de profes. Pasa a: el adulto completa formularios de la cuenta de Google del básquet → un script deja cada archivo en **la carpeta del chico** con nombre legible → una planilla tablero muestra por chico qué está y qué falta. Ahí quedan sus DNIs, aranceles, pase, rifas y lo que se pida después. Ningún archivo ni DNI pasa por Semillero ni Supabase.
@@ -32,9 +32,16 @@ Todos piden login (los que tienen subidas lo exigen igual) y **recopilan el mail
 |---|---|
 | Inscripción (el actual, chicos nuevos) | DNI jugador frente / dorso, DNI adulto frente / dorso, foto del jugador, foto del adulto |
 | Reinscripción (nuevo, ver abajo) | nada obligatorio |
-| Los que sume coordinación (pase, aranceles, rifas…) | lo que pida cada uno |
+| Comprobante de aranceles (nuevo, ver abajo) | comprobante de pago |
+| Los que sume coordinación (pase, rifas…) | lo que pida cada uno |
 
-Una pregunta de subida por documento, 1 archivo, imágenes o PDF, 10 MB. **El título de la pregunta es el tipo de documento**: la pregunta "Comprobante rifa" deja `Comprobante rifa - SANCHEZ - 2026-10-18 14.30.jpg` en `Jugadores/SANCHEZ, Pedro — 11111111/`.
+Una pregunta de subida por documento, 1 archivo, imágenes o PDF, 10 MB. **El título de la pregunta es el tipo de documento**: la pregunta "Comprobante rifa" deja `Comprobante rifa - SANCHEZ - 2026-10-18 14.30.jpg` en `Jugadores/SANCHEZ, Pedro — 11111111/`. Si el formulario tiene una pregunta titulada exactamente `Concepto`, su respuesta se suma al nombre: `Comprobante de pago - Arancel octubre 2026 - SANCHEZ - 2026-10-18 14.30.jpg`.
+
+## Que las familias entiendan qué hacer
+No suponemos que saben de computadoras. En todos los formularios (y en la plantilla, para que los nuevos lo hereden):
+- **Arranque de 2 o 3 líneas:** para qué es, qué tener a mano antes de empezar ("el DNI del chico y el tuyo, para sacarles foto de frente y de dorso") y qué pasa después ("el coordinador lo revisa; si falta algo te avisa tu profe").
+- **Cada pregunta de archivo con una ayuda corta:** "Sacale una foto con el celular al frente del DNI, sobre una mesa y con luz, que se lean los números".
+- **Guía para padres** en lenguaje simple (un Google Doc del básquet, enlazable desde la página pública): cómo entrar con Google, cómo crear una cuenta de Google con el mail de siempre sin abrir un Gmail, cómo sacar y subir las fotos desde el celular, qué formulario usar en cada caso (inscripción la primera vez, reinscripción los años siguientes, aranceles cada vez que pagan).
 
 ## Login (decidido por Tomás, 18/10)
 Una pregunta de subir archivo hace que todo el formulario pida cuenta de Google. Tomás lo prefiere: el adulto queda identificado y su **mail verificado** es el vínculo con el chico (lo usa cuentas-familia). Un adulto con dos chicos manda dos respuestas con el mismo mail.
@@ -45,6 +52,10 @@ Descartado: web app con subida anónima (endpoint público que escribe en el Dri
 Formulario aparte para chicos que ya se inscribieron alguna vez. Pide las 3 preguntas estándar y **sólo lo que cambia**: categoría y rama, altura y peso, teléfono y domicilio, contacto de urgencia, "¿Cambió algo de salud desde la última inscripción?" (Sí / No; si sí, una sección con el detalle) y las autorizaciones y la casilla de recaudación (se renuevan cada año). No pide fotos de DNI, grupo sanguíneo ni fecha de nacimiento.
 - Si el DNI no aparece en ninguna inscripción anterior, el chico sale en la hoja **"Revisar"** del tablero: probablemente le tocaba la inscripción completa.
 - Los datos que no cambian (fecha de nacimiento, grupo sanguíneo, DNIs) se toman de su última inscripción, por DNI.
+
+## Comprobante de aranceles
+Hoy llegan por WhatsApp y no se puede controlar quién pagó qué. Formulario hecho con la plantilla: las 3 preguntas estándar, `Concepto` (desplegable que el coordinador actualiza con los conceptos vigentes: "Arancel octubre 2026", "Cuota anual 2026"…) y `Comprobante de pago` (archivo). El archivo cae en la carpeta del chico con el concepto en el nombre.
+**Un comprobante subido no es un pago verificado** (decisión del prompt 09). El tablero distingue tres estados por concepto: ❌ no hay comprobante · 📎 comprobante subido, sin verificar · ✅ verificado. El coordinador verifica anotando una fila en la hoja **"Pagos verificados"** (DNI, concepto, fecha, quién verificó); no se escribe sobre las pestañas de respuestas, porque Forms las reescribe al cambiar preguntas.
 
 ## Script de organización (`google/apps-script/`)
 - Proyecto **standalone** en la cuenta del básquet. Mira los formularios que están dentro de una carpeta de Drive: **`Formularios con archivos`**. Ésa es toda la configuración: un formulario que el coordinador mete en esa carpeta queda incluido; uno que saca, deja de procesarse. **No hay que tocar código ni el editor.**
@@ -77,7 +88,9 @@ Una planilla de respuestas en la cuenta del básquet: cada formulario vuelca en 
 - **Columna "Alta"**: `Nueva` si su inscripción de esta temporada es la completa, `Reinscripción` si vino por la corta. Ese es el modo de ver que se reinscribió esta temporada. Chicos que estaban la temporada pasada y todavía no se reinscribieron: hoja **"Faltan reinscribir"**.
 - Una columna por documento: ✅ si alguna respuesta de **cualquier temporada** con ese DNI tiene esa subida, o hay una fila en "Entregas a mano"; si no ❌ (`CONTAR.SI.CONJUNTO`, separador `;`). Para aranceles y rifas, que son de una temporada, la fórmula cuenta sólo desde el inicio de temporada. Columna "Completo" y formato condicional.
 - Link a la carpeta: `=HIPERVINCULO("https://drive.google.com/drive/search?q=" & DNI; "Abrir")`, que abre la búsqueda de Drive en la carpeta del chico. Así el script no necesita permiso de Sheets.
+- Hoja **"Pagos"**: una fila por chico, una columna por concepto activo (la lista de conceptos está en Config), con ❌ / 📎 / ✅.
 - Hoja **"Revisar"**: reinscripciones sin inscripción anterior, y envíos de otros formularios con un DNI que no está en el padrón.
+- Hoja **"Buscar"**, pensada para el celular: el coordinador escribe nombre, apellido o DNI en una sola celda arriba. Si coincide un solo chico, se ve **en vertical** (una fila por dato, cómoda en pantalla angosta): nombre, categoría, alta, cada documento con ✅/❌, cada concepto de pago con ❌/📎/✅ y el link a su carpeta. Si coinciden varios (mismo apellido), muestra la lista con su DNI para que escriba el DNI. Fórmulas `FILTRO`, `ENCONTRAR` y `TRANSPONER`; sin script.
 
 ## Planilla "Para Semillero" (pedido de cuentas-familia, prompt 08)
 **Excepción aprobada por Tomás** al aprobar la spec de cuentas-familia (commit a1b7d1b de `claude/cuentas-familia-c6c955`). Acá sólo se arma la planilla; el importador es de cuentas-familia.
@@ -100,20 +113,22 @@ Una planilla de respuestas en la cuenta del básquet: cada formulario vuelca en 
 - Las 3 preguntas estándar (parten "Apellido y Nombre" en dos y validan el DNI); pregunta **"Rama"** (Masculino / Femenino, obligatoria) después de la categoría; sección "Documentación" con las 6 subidas; recopilar mail verificado.
 - Texto de **para qué se usan los datos y quién los ve** (borrador marcado `[VALIDAR CON COORDINACIÓN]`): lo ve sólo la coordinación del básquet; se usa para fichar en la CABB, la ficha de emergencia y cargar al chico en la app del club (nombre, fecha de nacimiento, categoría, mail); los documentos quedan en la cuenta del club.
 - Casilla **no premarcada** de mails de recaudación, con el texto del checklist de `00-orden-de-trabajo.md` (`[material, viajes, …]` a completar con Javier).
-- Los campos de la CABB que falten. **Bloqueado: falta la lista.**
+- **Campos de la CABB — supuesto:** son los del formulario actual más las 6 fotos (Tomás, 18/10). Tomás va a preguntar si falta algo; si aparece un campo que no se puede capturar con Forms, paro y aviso.
 
 ## Fuera de scope
 Conexión de Semillero con Sheets/Drive, borrado automático, mails a padres, links prellenados, rediseñar el formulario, `clasp`. El enlace de los formularios en la página pública lo resuelve portal.
+
+**Siguiente paso (no se hace acá):** una vista dentro de Semillero con el estado de documentación y pagos de cada chico. Implica conectar Semillero con Sheets o Drive: es un prompt aparte, y mostraría sólo los estados, nunca los archivos ni el DNI.
 
 ## Reglas que no se negocian
 Nunca "Publicar en la web" planillas ni respuestas. El vaciado de Drive es manual. La prueba se hace con formularios de prueba y DNIs inventados (`11111111`, `22222222`), nunca reales.
 
 ## Decisiones
 - ~~¿Separar inscripción y documentación?~~ No: un solo formulario, con login y mail verificado (Tomás, 18/10).
-- ~~¿Formularios de pase y aranceles?~~ Los crea coordinación con la plantilla, sin código (Tomás, 18/10).
+- ~~¿Formularios de pase y aranceles?~~ Pase lo crea coordinación con la plantilla; aranceles lo dejamos armado (Tomás, 18/10).
+- ~~Lista de campos de la CABB~~ Supuesto: formulario actual + 6 fotos (Tomás, 18/10).
 - **Pendientes de Tomás:**
   1. Carpeta por chico para siempre (`Jugadores/…`) en vez de una por temporada.
   2. Barrido cada 10 minutos en vez de disparador al enviar.
   3. ¿La CABB pide fotos del DNI cada temporada?
   4. Link a la carpeta por búsqueda de Drive (recomendado) o directo (suma scope `spreadsheets`).
-  5. **La lista de campos de la CABB.**
