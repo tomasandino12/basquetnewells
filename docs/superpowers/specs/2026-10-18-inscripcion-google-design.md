@@ -1,6 +1,7 @@
 # Inscripción y documentación en Google — diseño
 
 **Fecha:** 18/10/2026 · **Rama:** `claude/inscripcion-google-41cf4e` · **Tag previo:** `pre-inscripcion-google`
+**Estado:** aprobada por Tomás el 18/10.
 **Prompt:** 05 de Tomás, más sus agregados del 18/10 (login, reinscripción, formularios nuevos sin código, aranceles, buscador, ayuda para familias). No toca el código de la app: Apps Script + Forms + Sheets, versionado en `google/`.
 
 ## Qué resuelve
@@ -138,8 +139,8 @@ Nunca "Publicar en la web" planillas ni respuestas. El vaciado de Drive es manua
 - ~~Lista de campos de la CABB~~ Los del formulario actual + 6 fotos (Tomás, 18/10).
 - ~~¿Fotos del DNI cada temporada?~~ No; la reinscripción las pide sólo si el DNI cambió (Tomás, 18/10).
 - Link a la carpeta: búsqueda de Drive por DNI (es sólo cómo abre el link "Abrir carpeta" del tablero; el directo pediría permiso sobre las planillas).
-- **Pendientes de Tomás:**
+- **Aprobadas por Tomás (18/10):**
   - Carpeta por chico para siempre (`Jugadores/…`) en vez de una por temporada.
   - Barrido cada 10 minutos en vez de disparador al enviar.
-  - Consentimiento de datos obligatorio, uso de imagen opcional (recomendado).
-  - Email del deportista opcional para menores (recomendado) u obligatorio con el del adulto.
+  - Consentimiento de datos obligatorio; uso de imagen opcional, no premarcada.
+  - Email del deportista opcional (Forms no puede hacerlo obligatorio según la edad), con la ayuda "si es menor de 13, dejalo vacío o poné el tuyo".

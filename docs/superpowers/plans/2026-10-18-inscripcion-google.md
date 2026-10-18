@@ -5,7 +5,7 @@ Spec: `docs/superpowers/specs/2026-10-18-inscripcion-google-design.md`. Una task
 ## Estado
 | # | Task | Estado |
 |---|---|---|
-| 0 | Tag, insumo del formulario, `.gitignore` (`docs/insumos/`) y `.vercelignore` (`google/`), spec y plan | hecho |
+| 0 | Tag, insumo del formulario, `.gitignore` (`docs/insumos/`) y `.vercelignore` (`google/`), spec y plan (aprobados 18/10) | hecho |
 | 1 | Funciones puras del script + test | pendiente |
 | 2 | Script de barrido y `appsscript.json` | pendiente |
 | 3 | Tablero, Pagos, Buscar y planilla "Para Semillero" (fórmulas) | pendiente |
