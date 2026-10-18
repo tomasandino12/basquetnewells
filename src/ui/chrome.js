@@ -60,6 +60,12 @@ export const TABS_JUGADOR = [
   { id: 'p-jug-jugadas', texto: 'Jugadas', icono: ICONOS.pizarra },
 ];
 
+// La familia: una sola pestaña. Los contenidos (asistencia, aranceles) entran
+// con su módulo y su revisión de permisos (spec de cuentas de familia, §6.3).
+export const TABS_FAMILIA = [
+  { id: 'p-fam-chicos', texto: 'Mis chicos', icono: ICONOS.plantel },
+];
+
 export const PANTALLA_PERFIL = 'p-mi-perfil';
 
 /** Las pestañas del modo actual. */
@@ -67,6 +73,7 @@ export function tabsDelModo() {
   const modo = obtenerModo();
   if (modo === 'coordinar') return TABS_COORDINACION;
   if (modo === 'jugar') return TABS_JUGADOR;
+  if (modo === 'familia') return TABS_FAMILIA;
   return TABS;
 }
 
@@ -75,6 +82,7 @@ export function pantallaInicialDelModo() {
   const modo = obtenerModo();
   if (modo === 'coordinar') return TABS_COORDINACION[0].id;
   if (modo === 'jugar') return TABS_JUGADOR[0].id;
+  if (modo === 'familia') return TABS_FAMILIA[0].id;
   return TABS[1].id;
 }
 
@@ -87,6 +95,7 @@ export function pantallaDeInicio() {
   const modo = obtenerModo();
   if (modo === 'coordinar') return TABS_COORDINACION[0].id;
   if (modo === 'jugar') return TABS_JUGADOR[0].id;
+  if (modo === 'familia') return TABS_FAMILIA[0].id;
   return TABS[0].id;
 }
 

@@ -14,8 +14,8 @@ commit. Sin merge ni push: lo hace la coordinadora con el ok de Tomás.
 | 2 | Migración 0057 + contratos | hecha |
 | 3 | Verificación y rollback SQL | hecha (12/12 en local, ida y vuelta) |
 | 4 | db push (con backup) | pendiente |
-| 5 | Repo `familia.js` | pendiente |
-| 6 | Plantel → Importar inscriptos | pendiente |
+| 5 | Repo `familia.js` | hecha |
+| 6 | Plantel → Importar inscriptos | hecha (falta probar en navegador) |
 | 7 | Arranque + shell familia: Mis chicos | pendiente |
 | 8 | Coordinación → Familias y mails en la ficha | pendiente |
 | 9 | Docs y cierre | pendiente |

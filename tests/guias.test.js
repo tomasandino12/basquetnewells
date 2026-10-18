@@ -14,6 +14,7 @@ const PESTANAS = {
   entrenar: idsDe('TABS'),
   coordinar: idsDe('TABS_COORDINACION'),
   jugar: idsDe('TABS_JUGADOR'),
+  familia: idsDe('TABS_FAMILIA'),
 };
 
 test('cada guía tiene entre 1 y 3 pasos', () => {

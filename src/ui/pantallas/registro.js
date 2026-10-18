@@ -35,6 +35,7 @@ import { renderJugFisico } from './jugFisico.js';
 import { renderJugSesion } from './jugSesion.js';
 import { renderJugProgreso } from './jugProgreso.js';
 import { renderJugJugadas, iniciarJugJugadas } from './jugJugadas.js';
+import { renderFamChicos } from './famChicos.js';
 
 /**
  * Punto único donde se registran las pantallas. Existe para que main.js no
@@ -77,6 +78,8 @@ export function registrarPantallas() {
   registrarPantalla('p-jug-sesion', { titulo: 'Sesión', render: renderJugSesion });
   registrarPantalla('p-jug-progreso', { titulo: 'Mi progreso', render: renderJugProgreso });
   registrarPantalla('p-jug-jugadas', { titulo: 'Jugadas', render: renderJugJugadas });
+  // Modo familia (0057): sus chicos y nada más.
+  registrarPantalla('p-fam-chicos', { titulo: 'Mis chicos', render: renderFamChicos });
   setAbrirFicha(abrirFicha);
   setAbrirEjercicio(abrirEjercicio);
   setAbrirJugada(abrirJugada);
