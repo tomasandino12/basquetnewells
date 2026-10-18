@@ -26,6 +26,8 @@ Al 16/10 hay cuatro ramas abiertas además de esta:
 
 **Orden recomendado:** backup → finanzas (0054) → misiones (0055) → historia (0056). Las tasks 1 a 4 de esta rama sólo crean archivos nuevos (más una función en `repos/jugadores.js`), así que **pueden avanzar ya**, en paralelo. Desde la task 5 (la ficha), esperar a que misiones esté mergeada en `main` y traerla con `sync_with_base_branch`. El bloque de misiones dentro de la historia queda para después, como el primer uso de la extensión (spec §4).
 
+**Base local (18/10):** la función de 0056 está aplicada **a mano** (psql), sin fila en `supabase_migrations.schema_migrations`. Un `db reset` la borra: hay que volver a aplicarla con `docker exec -i <db> psql -U postgres < supabase/migrations/0056_historia_jugador.sql`. Ni la función ni sus pruebas leen tablas de 0054 o 0055.
+
 ## Restricciones globales
 
 - Sólo lectura. La migración no crea, cambia ni borra policies, y no otorga nada sobre tablas. Si hiciera falta: **parar**.
