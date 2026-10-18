@@ -296,6 +296,15 @@ Ingresos y egresos del básquet, carga interna del coordinador. Spec: `docs/supe
 - RLS: las tres, sólo `es_coordinador_de(club_id)` (con o sin rol de entrenador). Un profe sin rol de coordinador y un jugador: cero filas. Verificación: `tests/verificarFinanzas.sql`. Rollback: `tests/rollback0054.sql`.
 - En JS todo va en centavos enteros (`src/data/finanzas.js`); `tests/contratoFinanzas.test.js` compara tipos y tope con la migración.
 
+### Historia del jugador: `historia_del_jugador` (0056)
+Su recorrido temporada por temporada (spec `docs/superpowers/specs/2026-10-16-historia-jugador-design.md`). Una sola función `security definer` (`stable`, `search_path = ''`), sólo lectura, que devuelve un jsonb de **ese** jugador: sin promedios ni filas de otros chicos. No crea ni cambia ninguna policy y no otorga nada sobre tablas; `tests/contratoHistoria.test.js` lo verifica.
+
+- **Regla:** entrenador del club del jugador y una `pertenencia` del chico con `hasta is null` en un plantel con `puede_ver_plantel`. Si no, `42501`, con el mismo error para un jugador que no existe. **El coordinador queda afuera** (sigue con `panorama_del_club`, 0018); quien tiene los dos roles entra por el de entrenador. Un profe dado de baja, una cuenta de jugador o una cuenta sin club tampoco.
+- **Por qué función y no policies de lectura:** las policies se suman con OR y cambiarían lo que devuelve cada consulta existente (por ejemplo, las categorías de la cabecera de la ficha); además habría que repetirlas en una docena de tablas. La función concentra el permiso nuevo en un archivo y se revoca con un `revoke execute`.
+- **Decisión de producto (D2, Tomás, 16/10):** el profe que suma a su plantel a un chico de otra categoría ve **toda** su historia, peso y altura incluidos. La ventana de 0039 (que esconde las medidas corporales cargadas antes de la pertenencia) **no se aplica en esta función**; sigue rigiendo para leer, editar y borrar en `medicion_corporal`. Consecuencia asumida: a un profe le alcanza con sumar a un chico de su club a su plantel para ver su recorrido.
+- **Qué devuelve:** `temporadas`, `planteles` (con los `profes` que los tuvieron a cargo, vigentes y cerrados, por el nombre de Auth), `pertenencias`, `planFisico` (el plan de la **categoría**: no hay asistencia, así que no dice a cuántas sesiones fue), `cargas`, `recursos`, `saltos`, `sprints`, `yoyos`, `corporales`, `tiro` y `partidos`. Las claves que no son del marco (`planteles`, `temporadas`, `pertenencias`) son las `FUENTES` de `src/data/historiaJugador.js`: sumar misiones o asistencia es `create or replace` de la función con una clave más, una línea en `FUENTES` y un bloque en `historiaTemporadas.js`.
+- **Verificación:** `tests/verificarHistoria.sql` (6 casos: el profe de U17 ve 2025; no ve a un chico de U15 ajeno; ni coordinador, ni jugador, ni baja, ni un jugador inexistente). Para probar en el navegador, `tests/sembrarHistoriaLocal.sql` carga una temporada 2025 de mentira **sólo en la base local**.
+
 ## Políticas RLS
 
 Hasta 0015 la autorización era sólo por club: quien tenía una fila en `miembro_club` veía **todos los planteles**. Desde 0016 pasa por la asignación, y **lectura y escritura son ejes separados**. Desde 0018 el coordinador no lee datos individuales.
@@ -332,6 +341,7 @@ Las funciones, todas `security definer` con `set search_path = ''`:
 | `crear_solicitud_jugador(club, plantel)`, `mi_solicitud_jugador()` | quien no es staff ni tiene cuenta, con mail confirmado y una sola pendiente; el plantel debe ser de la temporada vigente (0029) |
 | `solicitudes_del_plantel(plantel)` | el entrenador de ese plantel; el nombre que escribió el chico sale de los metadatos de Auth (0029) |
 | `panorama_del_club(club)` | por plantel: jugadores, partidos, última medición; tiro de batería sumado por (sesión, posición); y desde 0022, tiro en partidos sumado por partido (triples y libres, anotados e intentados de a pares, con el rival). Sin porcentajes: los calcula `estadisticas.js` |
+| `historia_del_jugador(jugador)` (0056) | el recorrido completo de un chico para el entrenador que lo tiene hoy en un plantel que puede ver; sin coordinador (ver abajo) |
 
 **Límite conocido:** `usuarios_pendientes()` muestra a cualquier coordinador todas las cuentas sin club de la plataforma. Con un solo club (hoy) es exacto. Desde 0029 no lista a quien ya tiene una cuenta de jugador vigente: sin ese filtro, un chico figuraría entre los "pendientes de habilitar", a un toque de quedar como entrenador con acceso a datos de otros menores. `clubes_para_solicitar()` tiene el límite equivalente. Ver `docs/COORDINACION.md`.
 

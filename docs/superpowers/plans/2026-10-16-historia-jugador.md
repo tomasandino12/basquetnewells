@@ -51,7 +51,7 @@ Al 16/10 hay cuatro ramas abiertas además de esta:
 | 4. Prueba local con temporada 2025 + repo | hecha (18/10; verificarHistoria 6/6 OK en local, 0056 aplicada a mano sin reset; el seed se probó con rollback, todavía no se cargó) |
 | 5. Refactor: `ficha-historia` → `ficha-actual` | hecha (18/10) |
 | 6. Sección en la ficha | código hecho (18/10, `test:q` verde); **falta probarla en el navegador a 375 px** (ver nota) |
-| 7. Docs y `db push` | push hecho (18/10, 0001–0056 en producción); faltan ESQUEMA.md y SEGURIDAD-LANZAMIENTO.md |
+| 7. Docs y `db push` | hecha (18/10): 0056 en producción, `ESQUEMA.md` y `SEGURIDAD-LANZAMIENTO.md` al día |
 
 ---
 
