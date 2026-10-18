@@ -1,5 +1,7 @@
 # Plan — Portal del básquet + PWA
 
+> **Reemplazado el 18/10 por el plan de `2026-10-18-portal-v2-design.md`.** Las tasks 1–7 siguen hechas y se reaprovechan; la 8 queda sin hacer en este enfoque.
+
 Spec: `docs/superpowers/specs/2026-10-16-portal-pwa-design.md`. Rama `feat/portal-pwa`, tag `pre-portal-pwa`.
 Una task = un commit. Al cerrar cada una: `npm run test:q`, commit, y resumen simple de qué probar en el navegador. Sin merge: lo hace Tomás.
 

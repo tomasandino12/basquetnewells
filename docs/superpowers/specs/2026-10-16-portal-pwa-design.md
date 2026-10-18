@@ -1,5 +1,7 @@
 # Portal del básquet en la landing + PWA — diseño
 
+> **Reemplazada el 18/10 por `2026-10-18-portal-v2-design.md`.** Tomás probó el preview: el bloque dentro de la landing no le sirvió. Se conserva como historia de las tasks 1–7.
+
 Fecha: 16/10/2026 · Rama: `feat/portal-pwa` · Tag de vuelta atrás: `pre-portal-pwa`
 
 ## Qué hay hoy
