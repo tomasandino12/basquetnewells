@@ -59,31 +59,43 @@ nunca recibe un DNI.
 ## 3. El puente: planilla "Para Semillero"
 
 **Punto a aprobar por Tomás: es una excepción a la decisión 1 del prompt 05**,
-que decía que nada del formulario pasa a Semillero. Pasan 5 datos, sin DNI ni
+que decía que nada del formulario pasa a Semillero. Pasan 6 datos (los 5 de siempre más la rama), sin DNI ni
 datos médicos, y el profe los descarga a mano. No es una conexión automática.
 
 Formato, fijado por inscripción (su commit b0f510a). Es una planilla aparte
 armada con `IMPORTRANGE`, no una pestaña del tablero, porque el `.xlsx` de
 Sheets baja todas las pestañas y se llevaría DNIs.
 - Fila 1, en este orden: `Apellido | Nombre | Fecha de nacimiento | Categoría
-  | Mail del responsable`. Una fila por chico, y un adulto con dos chicos
+  | Mail del responsable | Rama`. Una fila por chico, y un adulto con dos chicos
   aparece en dos filas.
 - La fecha va como celda de fecha (dd/mm/aaaa). El mail es el verificado por
   Google, en minúsculas.
 - Lo lee el `xlsx` vendorizado, con un test de contrato contra un fixture
   sintético.
 
-**Categoría.** Llega el texto del desplegable ("U15 - MASCULINO/FEMENINO (2012
-y 2011)", etc.). Hoy Semillero tiene `U13M, U15M, U17M, U21M, MAY_M, MAY_F`.
-- Un mapeo fijo en JS, con su test, traduce texto del formulario → código.
-- Las categorías que Semillero no tiene (Escuelita, U9, U11 y las femeninas
-  menores) se saltean, y el import dice cuántas filas quedaron afuera.
-- El formulario no dice la rama en las MASCULINO/FEMENINO. **Recomendado:**
-  que el formulario sume la pregunta "Rama" (Masculino/Femenino) para esas
-  categorías, como sexta columna. Mientras no exista, el profe destilda en la
-  vista previa a quien no sea de su plantel.
-- **Pendiente:** inscripción listó 8 opciones y dijo que son 11. Hay que
-  confirmarlo contra el formulario real antes de la task 1.
+**Categoría y rama.** Llegan el texto exacto del desplegable y una sexta
+columna `Rama` ("Masculino" o "Femenino"), definidas por inscripción en
+eacf568. Si la categoría ya dice MASCULINO o FEMENINO, la rama sale de ahí, y
+si la columna la contradice manda la categoría. En las MIXTO, la rama sale de
+la columna. Un mapeo fijo en JS, con un test que cubre las 11 opciones:
+
+| Formulario | Rama | Semillero |
+|---|---|---|
+| U13 - MIXTO (2014 y 2013) | Masculino | `U13M` |
+| U15 - MASCULINO (2012 y 2011) | — | `U15M` |
+| U17 - MASCULINO (2010 y 2009) | — | `U17M` |
+| U21 - MASCULINO (2008, 2007, 2006 y 2005) | — | `U21M` |
+| MAYORES FEMENINO | — | `MAY_F` |
+| ESCUELITA - MIXTO, U9 - MIXTO, U11 - MIXTO | cualquiera | se saltea |
+| U13 - MIXTO | Femenino | se saltea |
+| U15, U17 y U21 - FEMENINO | — | se saltea |
+| U13 - MIXTO sin rama, o texto desconocido | — | se saltea |
+
+**Se saltean con aviso** las categorías que Semillero no tiene: Escuelita,
+U9, U11 y las femeninas menores, incluida una chica de U13 (no existe
+`U13F`). El import dice cuántas filas quedaron afuera y por qué, y no guarda
+nada de ellas. `MAY_M` nunca llega por este formulario. Cuando Semillero sume
+una categoría, se agrega una fila al mapeo.
 
 **Quién es quién.** No hay clave estable: el jugador se reconoce por apellido
 + nombre + fecha de nacimiento, dentro del club.

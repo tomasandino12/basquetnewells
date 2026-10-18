@@ -9,7 +9,7 @@ commit. Sin merge ni push: lo hace la coordinadora con el ok de Tomás.
 
 | # | Task | Estado |
 |---|---|---|
-| 0 | Columnas de "Para Semillero" (b0f510a); faltan rama y lista de categorías | en curso |
+| 0 | Columnas de "Para Semillero" (b0f510a + eacf568) | hecha |
 | 1 | Lógica pura `inscriptos.js` | pendiente |
 | 2 | Migración 0057 + contratos | pendiente |
 | 3 | Verificación y rollback SQL | pendiente |
@@ -23,8 +23,7 @@ commit. Sin merge ni push: lo hace la coordinadora con el ok de Tomás.
 ## 0. Columnas de "Para Semillero"
 - Por la coordinadora: inscripción armó la planilla aparte (b0f510a) con apellido,
   nombre, fecha de nacimiento, categoría y mail del responsable. Sin DNI.
-- Falta: confirmar las 11 categorías del formulario y si suma la pregunta
-  "Rama" (spec §3). Se pide por la coordinadora.
+- Hecho: 11 categorías y columna "Rama" (eacf568); mapeo en spec §3.
 
 ## 1. Lógica pura `inscriptos.js`
 - Archivos: `src/data/inscriptos.js`, `src/data/limites.js`,
