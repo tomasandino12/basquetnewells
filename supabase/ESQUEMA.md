@@ -244,6 +244,17 @@ El dibujo del ejercicio (filas, varias pelotas, rebote, rotación). Columna `jso
 - La forma la valida `src/data/pizarraEjercicio.js`. La base sólo impone que sea un objeto, que no pase de 65536 bytes (el `TOPES.bytes` de la jugada) y que ninguna nota de paso pase de 300 caracteres (reusa `jugada_notas_validas`). `tests/contratoPizarraEjercicio.test.js` compara los números con el JS.
 - Va en el ejercicio y no en `jugada`: un ejercicio no es una jugada de partido. La escribe **sólo quien creó el ejercicio** (la policy de update de 0015/0027); el `grant update (pizarra)` no abre el insert.
 
+### Misiones del partido: `previa_partido`, `mision_jugador`, `mision_equipo` (0055)
+Lo que el profe le pide a cada chico y al equipo antes de un partido, y cómo salió (spec `docs/superpowers/specs/2026-10-16-misiones-partido-design.md`). Hay datos de menores en las individuales.
+
+- `previa_partido`: plantel + `fecha` + `rival` opcional. **Existe antes que el `partido`**, que nace con el import: `partido_id` queda nulo hasta que el profe evalúa o lo elige a mano (trigger: el partido tiene que ser del mismo plantel; índice único parcial, un partido tiene a lo sumo una previa). El emparejamiento por fecha y rival lo calcula `vincularPrevias` (`src/data/misiones.js`) y nunca se escribe solo. `importar_partido` no cambió.
+- `mision_jugador` (hasta 2 por chico y previa) y `mision_equipo` (hasta 3 por previa): o `metrica` + `valor`, o `texto`, nunca las dos (check). **Lista cerrada de métricas, sin puntos ni tiro**: `reb_of`, `reb_def`, `reb_tot`, `ast`, `rec`, `tap`, `per`, `fal`, y `puntos_rival` sólo en equipo. El sentido (al menos / como máximo) lo fija la métrica en `misiones.js`, no la base. `tests/contratoMisiones.test.js` compara listas, estados, topes y largos con el JS.
+- `estado` (`logrado` | `en_proceso` | `no_logrado`, nulo = sin evaluar) y `comentario` los pone el profe; **ningún trigger ni función los calcula**. Una misión evaluada no cambia de consigna ni se borra (`MISION_EVALUADA`); sólo su estado o comentario. `evaluado_por/en` los sella el trigger.
+- RLS: escribe `puede_escribir_plantel`; lee `puede_ver_plantel`. **El coordinador puro lee la previa y `mision_equipo`** (para los logros en Panorama) y **cero filas de `mision_jugador`**, como en 0018. La cuenta de jugador no tiene acceso. Insert de `mision_jugador` exige pertenencia vigente al plantel.
+- Escrituras de varias filas por RPC `security invoker`, todo o nada: `guardar_previa(payload)` (crea o reemplaza la previa y todas sus misiones; los ids los genera el cliente, así el reintento no duplica) y `evaluar_misiones(payload)` (fija el partido y escribe los estados). Las dos fallan con `SIN_PERMISO` si quien llama no escribe en el plantel (el coordinador ve la previa), y además `PREVIA_AJENA`, `PREVIA_NO_ENCONTRADA`, `MISION_EVALUADA`, `MISION_NO_ENCONTRADA`, `PARTIDO_DE_OTRO_PLANTEL`, `PARTIDO_YA_VINCULADO`.
+- Un logro de equipo es una `mision_equipo` en `logrado`; el contador es de la temporada porque el plantel ya lo es. No hay conteo ni orden de misiones individuales en ninguna pantalla.
+- Verificación contra la base: `tests/verificarMisiones.sql` (12 casos); deshacer en local: `tests/rollback0055.sql`.
+
 ### Salto: `medicion_salto` y pierna en `medicion_corporal` (0043)
 CMJ y Abalakov medidos con video en cámara lenta (spec `docs/superpowers/specs/2026-09-23-evaluacion-salto-design.md`). El video nunca llega a la base.
 
@@ -292,7 +303,8 @@ Hasta 0015 la autorización era sólo por club: quien tenía una fila en `miembr
 | | Entrenador | Coordinador (sólo) | Los dos roles |
 |---|---|---|---|
 | `plantel` (nombre de la categoría) | sus asignadas vigentes | todos los de su club | la unión |
-| `jugador`, `pertenencia`, `partido`, `estadistica_*`, `sesion_medicion`, `medicion_*`, `medicion_corporal`, `envio_recurso`, `meta_zona` | sus asignadas vigentes | **nada** | sus asignadas vigentes |
+| `jugador`, `pertenencia`, `partido`, `estadistica_*`, `sesion_medicion`, `medicion_*`, `medicion_corporal`, `envio_recurso`, `meta_zona`, `mision_jugador` (0055) | sus asignadas vigentes | **nada** | sus asignadas vigentes |
+| `previa_partido`, `mision_equipo` (0055) | sus asignadas vigentes | **lee** (sólo lectura), para los logros en Panorama | sus asignadas vigentes |
 | `jugadores_del_club_para_dedup` | sí | **rechaza** | sí |
 | `ejercicio`, `nota_ejercicio`, `recurso`, `perfil_entrenador` | todo el club | todo el club (la UI de coordinación no lo muestra) | todo el club |
 | `variacion_ejercicio` (0052), `jugada` (0035) | todo el club | **nada** (`es_entrenador_de`) | todo el club |
@@ -331,9 +343,10 @@ Son `security definer` por obligación, no por comodidad: se llaman desde las po
 
 | Camino | Tablas |
 |---|---|
-| `plantel_id` directo | `plantel`, `pertenencia`, `partido`, `sesion_medicion`, `meta_zona` |
+| `plantel_id` directo | `plantel`, `pertenencia`, `partido`, `sesion_medicion`, `meta_zona`, `previa_partido` |
 | vía `partido_id` | `estadistica_jugador_partido` |
 | vía `sesion_id` | `medicion_tiro`, `medicion_salto`, `medicion_sprint`, `medicion_yoyo` |
+| vía `previa_id` | `mision_jugador`, `mision_equipo` |
 | vía `pertenencia` del jugador | `jugador`, `medicion_corporal`, `envio_recurso` |
 
 Un chico citado en dos categorías tiene dos pertenencias vigentes: con que **alguna** dé acceso alcanza.
