@@ -280,3 +280,153 @@ comment on table mision_jugador is
   'Hasta 2 misiones por jugador y previa, con número o con texto. Sin puntos ni tiro. Estado lo marca el profe. v0055.';
 comment on table mision_equipo is
   'Hasta 3 misiones de equipo por previa: totales propios o puntos del rival. Logrado = logro del plantel. v0055.';
+
+
+/* ---------- RPC: guardar_previa ---------- */
+
+-- Guarda la previa y TODAS sus misiones en una transacción: con el wifi del
+-- gimnasio, media previa guardada le mostraría al profe un plantel donde
+-- algunos chicos tienen misión y otros no, sin saber por qué.
+--
+-- Reemplaza las misiones: borra las de la previa y vuelve a insertar las del
+-- payload. Si alguna ya está evaluada, el trigger de sellado frena el borrado
+-- con MISION_EVALUADA y no queda nada a medias. Los ids los genera el
+-- cliente una vez y los manda en cada intento, así el reintento deja lo mismo
+-- (mismo arreglo que 0038). security invoker: RLS como un insert directo.
+create function guardar_previa(payload jsonb)
+returns jsonb
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  v_previa_id uuid := (payload->>'previaId')::uuid;
+  v_club_id uuid := (payload->>'clubId')::uuid;
+  v_plantel_id uuid := (payload->>'plantelId')::uuid;
+  v_fecha date := (payload->>'fecha')::date;
+  v_rival text := nullif(btrim(payload->>'rival'), '');
+  v_plantel_existente uuid;
+  v_jugador int := 0;
+  v_equipo int := 0;
+  m jsonb;
+begin
+  if v_previa_id is null then
+    raise exception 'PREVIA_SIN_ID' using errcode = 'P0001';
+  end if;
+  -- Explícito y no sólo RLS: el coordinador VE la previa, y sin esto un
+  -- payload sin misiones le contestaría éxito sin haber escrito nada.
+  if not puede_escribir_plantel(v_plantel_id) then
+    raise exception 'SIN_PERMISO' using errcode = 'P0001';
+  end if;
+
+  select p.plantel_id into v_plantel_existente from previa_partido p where p.id = v_previa_id;
+  if found then
+    if v_plantel_existente <> v_plantel_id then
+      raise exception 'PREVIA_AJENA' using errcode = 'P0001';
+    end if;
+    update previa_partido set fecha = v_fecha, rival = v_rival where id = v_previa_id;
+  else
+    begin
+      insert into previa_partido (id, club_id, plantel_id, fecha, rival)
+      values (v_previa_id, v_club_id, v_plantel_id, v_fecha, v_rival);
+    exception when unique_violation then
+      -- El id existe pero no se ve (RLS): no es una previa de quien llama.
+      raise exception 'PREVIA_AJENA' using errcode = 'P0001';
+    end;
+  end if;
+
+  delete from mision_jugador where previa_id = v_previa_id;
+  delete from mision_equipo where previa_id = v_previa_id;
+
+  for m in select * from jsonb_array_elements(coalesce(payload->'misionesJugador', '[]'::jsonb))
+  loop
+    insert into mision_jugador (id, club_id, previa_id, jugador_id, orden, metrica, valor, texto)
+    values ((m->>'id')::uuid, v_club_id, v_previa_id, (m->>'jugadorId')::uuid, (m->>'orden')::smallint,
+            m->>'metrica', (m->>'valor')::int, m->>'texto');
+    v_jugador := v_jugador + 1;
+  end loop;
+
+  for m in select * from jsonb_array_elements(coalesce(payload->'misionesEquipo', '[]'::jsonb))
+  loop
+    insert into mision_equipo (id, club_id, previa_id, orden, metrica, valor, texto)
+    values ((m->>'id')::uuid, v_club_id, v_previa_id, (m->>'orden')::smallint,
+            m->>'metrica', (m->>'valor')::int, m->>'texto');
+    v_equipo := v_equipo + 1;
+  end loop;
+
+  return jsonb_build_object('previaId', v_previa_id, 'misionesJugador', v_jugador, 'misionesEquipo', v_equipo);
+end;
+$$;
+
+revoke execute on function guardar_previa(jsonb) from public, anon;
+grant  execute on function guardar_previa(jsonb) to authenticated;
+
+
+/* ---------- RPC: evaluar_misiones ---------- */
+
+-- Fija el partido de la previa y escribe la evaluación de todas sus misiones,
+-- todo o nada. El estado lo manda el profe misión por misión: esta función no
+-- calcula ni infiere ninguno. estado null = desmarcar (se equivocó de botón).
+-- Volver a mandar lo mismo deja lo mismo: no hace falta id de guardado.
+create function evaluar_misiones(payload jsonb)
+returns jsonb
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  v_previa_id uuid := (payload->>'previaId')::uuid;
+  v_partido_id uuid := (payload->>'partidoId')::uuid;
+  v_actual uuid;
+  v_plantel_id uuid;
+  v_n int := 0;
+  e jsonb;
+  v_estado text;
+  v_comentario text;
+begin
+  select p.partido_id, p.plantel_id into v_actual, v_plantel_id
+  from previa_partido p where p.id = v_previa_id;
+  if not found then
+    raise exception 'PREVIA_NO_ENCONTRADA' using errcode = 'P0001';
+  end if;
+  -- El coordinador ve la previa pero no evalúa (ver guardar_previa).
+  if not puede_escribir_plantel(v_plantel_id) then
+    raise exception 'SIN_PERMISO' using errcode = 'P0001';
+  end if;
+
+  if v_partido_id is not null and v_partido_id is distinct from v_actual then
+    begin
+      -- El trigger de la previa rechaza un partido de otro plantel.
+      update previa_partido set partido_id = v_partido_id where id = v_previa_id;
+    exception when unique_violation then
+      raise exception 'PARTIDO_YA_VINCULADO' using errcode = 'P0001';
+    end;
+  end if;
+
+  for e in select * from jsonb_array_elements(coalesce(payload->'evaluaciones', '[]'::jsonb))
+  loop
+    v_estado := e->>'estado';
+    v_comentario := nullif(btrim(e->>'comentario'), '');
+    if v_estado is null then v_comentario := null; end if;
+
+    if e->>'tipo' = 'jugador' then
+      update mision_jugador set estado = v_estado, comentario = v_comentario
+      where id = (e->>'id')::uuid and previa_id = v_previa_id;
+    elsif e->>'tipo' = 'equipo' then
+      update mision_equipo set estado = v_estado, comentario = v_comentario
+      where id = (e->>'id')::uuid and previa_id = v_previa_id;
+    else
+      raise exception 'TIPO_DE_MISION_INVALIDO' using errcode = 'P0001';
+    end if;
+    if not found then
+      raise exception 'MISION_NO_ENCONTRADA' using errcode = 'P0001';
+    end if;
+    v_n := v_n + 1;
+  end loop;
+
+  return jsonb_build_object('previaId', v_previa_id, 'evaluadas', v_n);
+end;
+$$;
+
+revoke execute on function evaluar_misiones(jsonb) from public, anon;
+grant  execute on function evaluar_misiones(jsonb) to authenticated;

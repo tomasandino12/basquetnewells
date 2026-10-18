@@ -86,3 +86,18 @@ test('el coordinador no lee misiones individuales', () => {
   assert.ok(m);
   assert.doesNotMatch(m[0], /es_coordinador_de/);
 });
+
+test('las RPC son security invoker, chequean el permiso y no se otorgan a anon', () => {
+  for (const f of ['guardar_previa', 'evaluar_misiones']) {
+    const cuerpo = sql.match(new RegExp(String.raw`create function ${f}\(payload jsonb\)[\s\S]*?\n\$\$;`));
+    assert.ok(cuerpo, f);
+    assert.match(cuerpo[0], /security invoker/, f);
+    assert.doesNotMatch(cuerpo[0], /security definer/, f);
+    // El coordinador ve la previa: sin este chequeo, un payload vacío "pasa".
+    assert.match(cuerpo[0], /puede_escribir_plantel\(v_plantel_id\)/, f);
+    // La base nunca decide un estado: sólo copia el que manda el profe.
+    assert.doesNotMatch(cuerpo[0], /estado\s*=\s*'/, f);
+    assert.match(sql, new RegExp(String.raw`revoke execute on function ${f}\(jsonb\) from public, anon;`), f);
+    assert.match(sql, new RegExp(String.raw`grant  execute on function ${f}\(jsonb\) to authenticated;`), f);
+  }
+});

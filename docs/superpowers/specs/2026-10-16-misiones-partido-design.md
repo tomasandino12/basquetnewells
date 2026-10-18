@@ -75,8 +75,9 @@ Tres botones con ícono **y** palabra: Logrado / En proceso / No logrado, más u
 
 RPC `security invoker` con id generado en el cliente (idempotencia como 0038):
 
-- `guardar_previa(payload)`: crea o actualiza la previa y reemplaza sus misiones sin evaluar en una transacción (las que no vienen se borran; tocar una evaluada falla con `MISION_EVALUADA`). Reintentar el mismo payload da el mismo resultado.
+- `guardar_previa(payload)`: crea o actualiza la previa y reemplaza todas sus misiones en una transacción (borra y vuelve a insertar con los ids del cliente). Si alguna ya está evaluada, falla entera con `MISION_EVALUADA`: después del partido la previa sólo se evalúa. Reintentar el mismo payload da el mismo resultado.
 - `evaluar_misiones(payload)`: fija `partido_id` (falla con `PARTIDO_DE_OTRO_PLANTEL` o `PARTIDO_YA_VINCULADO`) y escribe estado y comentario de cada misión, todo o nada.
+- Las dos fallan con `SIN_PERMISO` si quien llama no escribe en el plantel: el coordinador ve la previa, y sin ese chequeo un payload vacío le contestaría éxito.
 - Vincular a mano sin evaluar es un `update` de una fila (`partido_id`), sin RPC.
 
 Cada RPC con su caso de rollback en `tests/verificarMisiones.sql` (un payload con una misión inválida al final no deja nada) y `tests/rollback0055.sql` para deshacer la migración en local.
