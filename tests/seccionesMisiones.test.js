@@ -36,7 +36,7 @@ test('logros del equipo: contador y lista', () => {
   assert.match(t, /<div class="cifra">1<\/div>/);
   assert.match(t, /logro en la temporada/);
   assert.match(t, /El rival hace como máximo 59 puntos/);
-  assert.match(bloqueLogros([]).toString(), /<div class="cifra">0<\/div>[\s\S]*Cuando el equipo cumpla/);
+  assert.match(bloqueLogros([]).toString(), /<div class="cifra">0<\/div>[\s\S]*Datos → Misiones/);
 });
 
 test('logros dentro de otra tarjeta no abren una tarjeta anidada', () => {
