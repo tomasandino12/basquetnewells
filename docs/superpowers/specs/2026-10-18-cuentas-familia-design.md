@@ -1,136 +1,152 @@
 # Cuentas de familia — diseño
 
-Estado: **esperando aprobación de Tomás**. Fecha: 2026-10-18. Prompt 08, con
-el cambio de decisión del 18/10: el vínculo lo crea el padre, sin aprobación
-previa. Tag de partida: `pre-cuentas-familia`. Migración: `0057` (a confirmar
-con la coordinadora).
+Estado: **esperando aprobación de Tomás** (v2, 18/10). Prompt 08 con dos
+decisiones de Tomás del 18/10: el vínculo no lo aprueba el coordinador antes,
+y **los datos que el padre carga en el formulario de Inscripción alimentan
+tanto el plantel de Semillero como el vínculo**. Tag `pre-cuentas-familia`.
+Migración `0057_cuentas_familia.sql` (reservada por la coordinadora).
 
 ## 1. Qué entra
 
-Un familiar se registra como cualquiera (mail o Google), se vincula él mismo
-con su hijo y ve una pantalla **"Mis chicos"** con nombre y categoría de cada
-hijo vinculado. Nada más. Varios familiares por chico y varios chicos por
-familiar. El coordinador ve todos los vínculos (quién, a qué chico, cuándo) y
-puede dar de baja cualquiera.
+- El padre llena una sola vez el formulario de Inscripción (Google, sin
+  login), que ya pide su mail.
+- El profe de la categoría importa los inscriptos a su plantel en Semillero,
+  sin cargarlos a mano. Así cada chico queda con el mail de su adulto
+  responsable.
+- El padre entra a Semillero con ese mail desde el botón de padres del portal
+  (Google o mail confirmado) y **queda vinculado solo**, sin tipear nada.
+- Ve **"Mis chicos"**: nombre y categoría de cada hijo vinculado. Nada más.
+- Varios familiares por chico (un mail por fila) y varios chicos por
+  familiar.
+- El coordinador ve todos los vínculos (quién, qué chico, cuándo, por qué
+  vía) y puede dar de baja cualquiera.
 
 Fuera: que la familia edite datos de la app, mensajería, estadísticas,
-mediciones, misiones, cuentas de jugador, aranceles y asistencia.
+mediciones, misiones, cuentas de jugador, aranceles, asistencia y calendario.
+El vínculo es con el **jugador**, no con la categoría: cuando el chico cambia
+de categoría el vínculo sigue, y un módulo de calendario futuro va a poder
+mostrar los partidos de su categoría actual.
 
-## 2. Con qué dato engancha la app al padre con el chico
+## 2. Con qué dato engancha la app al padre
 
-El problema: la carga completa (grupo sanguíneo, condiciones médicas, DNI)
-vive en Google Forms y **la app nunca la ve**. Así que "nadie carga tantos
-campos para un chico que no es suyo" protege al formulario, no al vínculo: lo
-único que la app puede comparar es lo que ya tiene en Supabase o lo que el
-club le entregue.
+| Opción | Seguridad | Costo |
+|---|---|---|
+| A. DNI + nacimiento contra un hash | Falsa: ~10⁸ DNIs casi correlativos, el hash se revierte en segundos. Es guardar el DNI con otro nombre (choca con el prompt 05). | Alto. |
+| B. Código por chico que reparte el club | Fuerte. | El club reparte ~120 códigos; choca con "el padre carga y queda linkeado". |
+| C. Categoría + nombre + fecha, tipeados en la app | Débil: nombre y categoría salen de la CABB y la fecha se adivina en ~365 intentos. | Bajo, pero el padre carga dos veces. |
+| **D. Mail del responsable, del formulario** | Buena: el mail lo verificó Google o Supabase, y nadie lo adivina. | Un import por plantel, que igual hacía falta para no cargar chicos a mano. |
 
-| Opción | Qué pide | Seguridad | Costo |
-|---|---|---|---|
-| A. DNI + nacimiento contra un hash | el club carga en Supabase un hash del DNI de cada chico | **Falsa**: un DNI son ~10⁸ valores casi correlativos; el hash se revierte en segundos. Es guardar el DNI con otro nombre, contra la decisión del prompt 05. Un hash con "pimienta" secreta pide función de servidor. | Alto: proceso de carga de DNIs + servidor. |
-| B. Código por chico que entrega el club | el padre tipea un código de 8 caracteres que el coordinador le pasa (impreso o por WhatsApp) | **Fuerte**: no se adivina, no sale de ninguna planilla. | Medio: el club reparte ~120 códigos; un padre sin código no puede vincularse. Choca con "el padre carga y queda linkeado". |
-| C. Categoría + nombre y apellido + fecha de nacimiento | lo que el padre ya sabe, comparado con `jugador.fecha_nacimiento` (existe desde 0012) | **Débil**: nombre y categoría salen de las planillas CABB y la fecha se adivina en ~365 intentos. Lo frenan el límite de intentos y el control posterior. | Bajo: nada nuevo que guardar, nada que repartir. |
+**Recomendación: D, sin C.** El padre no tipea nada en la app. Si entró con
+otro mail, el coordinador corrige el mail en la ficha del chico, y no queda
+ninguna puerta para adivinar. B queda como escalón por si el resguardo 3 lo
+pide.
 
-**Recomendación: C ahora, con B ya diseñada como escalón.** Lo que la familia
-ve en este módulo (nombre y categoría de un chico que ya conoce) es lo mismo
-que publica la CABB, así que un vínculo falso hoy no expone nada nuevo. Cuando
-entre contenido sensible (resguardo 3), el vínculo pasa a exigir el código B:
-es una columna y un parámetro más en la misma función, sin rehacer nada.
+**Riesgo que queda** (aceptado por Tomás con su razón: nadie llena el
+formulario entero de un chico que no es suyo). El formulario no pide login,
+así que alguien podría inscribir al chico de otro con su propio mail. Lo
+frenan tres cosas:
+- El import marca cuando un chico ya existente llega con un mail nuevo.
+- El profe confirma cada fila.
+- La lista del coordinador muestra todos los vínculos.
 
-Reglas de C:
-- El padre elige categoría de la temporada vigente (catálogo de
-  `clubes_para_solicitar()`, 0029), escribe nombre y apellido y la fecha.
-- Hay vínculo sólo si **exactamente un** jugador con pertenencia vigente a ese
-  plantel tiene esa fecha **y** su `nombre_clave` contiene el apellido y el
-  nombre normalizados (misma normalización que el import). Mellizos: cada uno
-  con su nombre, dos vínculos.
-- Cero coincidencias o más de una: el mismo mensaje genérico, sin decir qué
-  campo falló: *"No encontramos a ese chico. Si recién se inscribió, puede que
-  el club todavía no lo haya cargado: probá en unos días o consultalo con el
-  coordinador."*
-- **Chico que no está en el padrón** (o sin fecha cargada): no se crea nada,
-  ni jugador ni solicitud pendiente. El padre vuelve a intentar cuando el
-  club lo cargue (el coordinador completa la fecha desde la ficha, como hoy).
-- **Otro club**: imposible por construcción; el plantel elegido fija el club y
-  la búsqueda nunca sale de él.
-- **Límite de intentos**: 5 fallidos por cuenta cada 24 h, y la función se
-  niega a seguir. Se cuentan en una tabla propia, sin guardar lo tipeado.
+No hace falta service role key, función de servidor ni conexión
+Apps Script → Supabase: el puente es un archivo que baja el profe y la base
+nunca recibe un DNI.
 
-Sin invitación por mail: **no hace falta service role key ni función de
-servidor**. Todo es RLS y RPC en la base, como la cuenta de jugador.
+## 3. El puente: pestaña "Para Semillero"
 
-## 3. Datos y frontera
+En el tablero de inscripción (sesión de inscripción, prompt 05) se suma una
+pestaña armada con fórmulas: **apellido, nombre, fecha de nacimiento,
+categoría y mail del responsable**. Sin DNI, sin datos médicos. Se baja como
+`.xlsx` (Archivo → Descargar), y el `xlsx` vendorizado ya lo lee. Nombres de
+columna fijos, con un test de contrato contra un fixture sintético.
 
-`miembro_club` no se toca: una familia no es staff y su `check` sigue igual.
-Igual que la cuenta de jugador (spec 2026-09-20 §3), **la familia no recibe
-`select` sobre ninguna tabla de dominio**: sólo `execute` sobre sus funciones.
-Así la exclusión de estadísticas, mediciones y misiones no depende de acordarse
-de cada tabla: la familia no puede leer ninguna, y un test de contrato falla
-si aparece un grant fuera de la lista declarada.
+En Semillero, el plantel suma **"Importar inscriptos"** (entrenador asignado,
+como el import CABB):
+- Toma sólo las filas de la categoría de ese plantel.
+- Propone para cada fila "es este jugador" (reusa el dedup del import CABB,
+  `jugadores_del_club_para_dedup`) o "ficha nueva".
+- El profe confirma y una RPC `security invoker` hace todo en una
+  transacción, con verificación de rollback: crea la ficha y la pertenencia
+  si hace falta, completa `fecha_nacimiento` si estaba vacía y anota el mail.
+- Así se cumple el resguardo 4: el padre no crea jugadores, el profe sí. Y
+  como el plantel fija el club, nadie se vincula con un chico de otro club.
+- Chico que no está en el padrón: no hay vínculo hasta que el profe lo
+  importe. Al entrar, el padre ve *"Todavía no encontramos a tu hijo. El club
+  lo suma cuando procesa la inscripción: volvé en unos días."*
 
-- **`vinculo_familia`** `(id, user_id default auth.uid(), club_id, jugador_id,
-  desde, hasta, cerrado_por)`. Único parcial `(user_id, jugador_id) where hasta
-  is null`. Sin `delete` ni `insert` directo: alta por función, baja por cierre
-  sellado con trigger (`hasta`, `cerrado_por`). Cerrar y no borrar: dentro de
-  dos años tiene que poder saberse quién estuvo vinculado a qué chico.
-- **`intento_vinculo_familia`** `(user_id, creado_en)`: sólo los fallidos. Sin
-  grants al cliente; la escribe y la cuenta la función.
-- Patrón 0026: `revoke all`, grant mínimo por columna, RLS, trigger de sellado.
+## 4. Datos y frontera
+
+`miembro_club` no se toca. Igual que la cuenta de jugador (spec 2026-09-20 §3),
+**la familia no recibe `select` sobre ninguna tabla de dominio**, sólo
+`execute` sobre sus funciones. Así la exclusión de estadísticas, mediciones y
+misiones no depende de acordarse de cada tabla. Un test de contrato falla si
+aparece un grant fuera de la lista declarada. Ninguna policy existente se
+modifica: el import escribe `jugador` y `pertenencia` con los permisos que el
+entrenador ya tiene.
+
+- **`responsable_jugador`** `(id, club_id, jugador_id, email, cargado_por,
+  cargado_en)`: el mail en minúsculas, único por `(jugador_id, email)`. Lo
+  escribe y lo lee el staff del plantel (RLS por `puede_escribir_plantel`) y
+  el coordinador lo corrige. Es dato del adulto, no del chico.
+- **`vinculo_familia`** `(id, user_id, club_id, jugador_id, via, desde,
+  hasta, cerrado_por)`, con `via` = `'mail'` hoy. Único parcial
+  `(user_id, jugador_id) where hasta is null`. Sin insert ni delete del
+  cliente. La baja es un cierre sellado por trigger, no un borrado: tiene que
+  poder saberse quién estuvo vinculado a qué chico. Un vínculo cerrado por el
+  coordinador no se vuelve a abrir solo.
+- Patrón 0026: `revoke all`, grant por columna, RLS, trigger de sellado.
 
 | Función | Quién | Qué hace |
 |---|---|---|
-| `vincular_familia(plantel, nombre, fecha)` | autenticado que no es staff ni jugador | aplica §2 y crea el vínculo. `security definer`. |
-| `mis_chicos()` | familia | nombre limpio, categoría y club de cada vínculo vigente. Es lo que arranca la app. |
-| `desvincularme(vinculo)` | la propia familia | cierra un vínculo suyo. |
-| `vinculos_familia_del_club(club)` | coordinador | todos, con chico, categoría, fecha, nombre de Auth y mail enmascarado (patrón `solicitudes_del_plantel`). |
-| `cerrar_vinculo_familia(vinculo)` | coordinador del club | baja. Las policies de profes y coordinador no se modifican. |
+| `importar_inscriptos(payload)` | entrenador del plantel | §3. `security invoker`. |
+| `vincular_por_mail()` | autenticado, mail confirmado, sin staff ni cuenta de jugador | crea los vínculos que falten para su mail. `security definer`. |
+| `mis_chicos()` | familia | nombre limpio, categoría vigente y club de cada vínculo abierto. |
+| `vinculos_familia_del_club(club)` | coordinador | todos, con chico, categoría, fecha, vía, nombre de Auth y mail enmascarado. |
+| `cerrar_vinculo_familia(id)` | coordinador del club | baja. |
 
-Staff o cuenta de jugador que intenta vincularse: rechazo con mensaje claro.
-Un profe que además es padre queda para después (anotado como límite).
+Un profe que además es padre queda para después: anotado como límite.
 
-## 4. Pantallas
+## 5. Pantallas
 
-- "Todavía no tenés club" suma **"Soy familiar de un jugador"**, al lado de
-  "Soy jugador de un club" → formulario de §2. Es la entrada desde el botón de
-  padres del portal.
-- Shell `modo = 'familia'` con una sola pantalla, **Mis chicos**: tarjeta por
-  hijo (nombre, categoría), botón "Sumar otro chico" y "Desvincular". El
-  arranque de `main.js` consulta `mis_chicos()` sólo cuando no hay club ni
-  ficha de jugador: para el staff no agrega llamadas.
-- Coordinación suma **Familias**: lista de vínculos con fecha y quién, y
-  "Dar de baja".
-- Estética interna clara (feedback "dos estéticas"); mobile-first del prompt.
+- **"Todavía no tenés club"** (la puerta de entrada desde el portal): antes de
+  mostrarse llama a `vincular_por_mail()`. Si hay vínculos, entra al shell
+  familia; si no, suma el aviso de §3. Para el staff no agrega llamadas.
+- Shell `modo = 'familia'` con una pantalla, **Mis chicos**.
+- **Plantel → Importar inscriptos** (§3).
+- **Coordinación → Familias**: la lista de vínculos y "Dar de baja".
+- **Ficha del chico**: el staff ve y corrige los mails de responsables.
+- Estética interna clara, mobile-first, áreas táctiles ≥44px.
 
-Capas: repo nuevo `src/data/repos/familia.js` + línea en la fachada; lógica
-pura en `src/data/familia.js` (validar el formulario, normalizar nombre —
-reusando la del import—). Límites de texto en `limites.js` con su `check`.
+Capas: repo nuevo `src/data/repos/familia.js` + línea en la fachada. Lógica
+pura en `src/data/inscriptos.js`: leer la pestaña, filtrar por categoría,
+normalizar mail, armar el payload. Largos en `limites.js` con su `check`.
 
-## 5. Resguardos (decisión de Tomás, 18/10)
+## 6. Resguardos
 
 1. La familia ve sólo lo no sensible de sus hijos vinculados, más lo público.
-   Estadísticas, mediciones y misiones quedan fuera por construcción (§3).
-2. Control posterior, no aprobación: el coordinador ve y da de baja.
+   Estadísticas, mediciones y misiones quedan fuera por construcción (§4).
+2. Control posterior: el coordinador ve y da de baja.
 3. **Cuando un módulo futuro sume contenido sensible para la familia
-   (asistencia, prompt 04; aranceles, prompt 09), se revisa si el vínculo
-   necesita aprobación del coordinador o el código B antes de mostrarlo.** Esa
-   revisión es parte de la spec de ese módulo, no opcional.
-4. Un padre no se vincula fuera de su club ni crea jugadores (§2).
+   (asistencia, prompt 04; aranceles, prompt 09), su spec revisa si el
+   vínculo necesita aprobación del coordinador, o el código B, antes de
+   mostrarlo.** La columna `via` existe para eso.
+4. El padre no crea jugadores ni se vincula fuera de su club (§3).
 
-Riesgo aceptado por Tomás: los datos de C no son secretos. Lo frenan el límite
-de intentos, que un vínculo hoy no muestra nada nuevo y la lista del
-coordinador. Se anota en `docs/SEGURIDAD-LANZAMIENTO.md`.
+## 7. Verificación
 
-## 6. Verificación
-
-- `tests/familia.test.js`: validación y normalización del formulario.
-- `tests/contratoAccesoFamilia.test.js`: los grants a la familia en 0057 son
-  exactamente los declarados.
-- `tests/contratoLimites.test.js` cubre los largos nuevos.
-- `tests/verificarCuentasFamilia.sql` (usuarios sintéticos, con rollback): la
-  familia A no ve los chicos de B; ninguna familia lee `jugador`,
-  `estadistica_jugador_partido`, mediciones ni misiones por PostgREST; sin
-  vínculos no ve nada; vínculo cerrado no ve nada; datos equivocados no
-  vinculan y no dicen qué falló; el sexto intento se rechaza; un plantel de
-  otro club no se puede usar; un profe y un coordinador siguen viendo lo
-  mismo que antes.
+- Tests puros: `tests/inscriptos.test.js` (columnas, filtro por categoría,
+  mail inválido o vacío, filas repetidas).
+- Contratos: `tests/contratoAccesoFamilia.test.js` (grants exactos) y
+  `tests/contratoLimites.test.js` (largos).
+- `tests/verificarCuentasFamilia.sql`, con usuarios sintéticos y rollback:
+  - la familia A no ve los chicos de B;
+  - ninguna familia lee `jugador`, `estadistica_jugador_partido`, mediciones,
+    misiones ni `responsable_jugador` por PostgREST;
+  - sin vínculos o con el vínculo cerrado no ve nada;
+  - un mail sin confirmar no vincula y un vínculo cerrado no se reabre;
+  - el import de un profe en un plantel ajeno falla;
+  - profe y coordinador ven lo mismo que antes.
+- Más `tests/rollback0057.sql`.
 - `grep` de `service_role` en el repo y en `public/` + `src/`: cero.
 - `npm run test:q` en verde antes de cada commit.
