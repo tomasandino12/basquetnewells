@@ -4,6 +4,8 @@ import {
   METRICAS, ESTADOS, MAX_POR_JUGADOR, MAX_DE_EQUIPO, metricasPara,
   valorReal, totalesDelEquipo, vincularPrevias, validarPrevia,
   prepararPayloadPrevia, textoDeMision, textoDelValor,
+  previaDesdeFila, misionDesdeFila, estadisticaDeMisionDesdeFila, COLUMNAS_ESTADISTICA_DE_MISION,
+  logrosDelEquipo, misionesConPrevia,
 } from '../src/data/misiones.js';
 import { LIMITE } from '../src/data/limites.js';
 
@@ -194,4 +196,39 @@ test('textos sin jerga', () => {
   assert.equal(textoDelValor({ metrica: 'ast', valor: 2 }, 1), '1 asistencia · misión: al menos 2');
   assert.equal(textoDelValor({ metrica: 'ast', valor: 2 }, null), 'sin dato · misión: al menos 2');
   assert.equal(textoDelValor({ texto: 'hablar' }, null), null);
+});
+
+test('mappers: camelCase y la misión de equipo sin jugador', () => {
+  assert.deepEqual(previaDesdeFila({ id: 'p', club_id: 'c', plantel_id: 'pl', fecha: '2026-10-18', rival: null, partido_id: null }),
+    { id: 'p', clubId: 'c', plantelId: 'pl', fecha: '2026-10-18', rival: null, partidoId: null });
+  const m = misionDesdeFila({ id: 'm', previa_id: 'p', orden: 1, metrica: 'per', valor: 10, texto: null, estado: null, comentario: null });
+  assert.equal(m.jugadorId, null);
+  assert.equal(m.previaId, 'p');
+  const e = estadisticaDeMisionDesdeFila({ jugador_id: 'j', reb_tot: 0, tap_cometidos: null, fal_cometidas: 3 });
+  assert.equal(e.rebTot, 0);
+  assert.equal(e.tapCometidos, null);
+  assert.equal(e.falCometidas, 3);
+  assert.doesNotMatch(COLUMNAS_ESTADISTICA_DE_MISION, /pts|anotados|puntos/);
+});
+
+test('logrosDelEquipo: sólo los logrados, del más reciente al más viejo', () => {
+  const previas = [
+    { id: 'a', fecha: '2026-10-11', rival: 'A', plantelId: 'p' },
+    { id: 'b', fecha: '2026-10-18', rival: 'B', plantelId: 'p' },
+  ];
+  const misiones = [
+    { id: '1', previaId: 'a', orden: 1, estado: 'logrado' },
+    { id: '2', previaId: 'b', orden: 2, estado: 'logrado' },
+    { id: '3', previaId: 'b', orden: 1, estado: 'logrado' },
+    { id: '4', previaId: 'b', orden: 3, estado: 'en_proceso' },
+    { id: '5', previaId: 'x', orden: 1, estado: 'logrado' },
+  ];
+  assert.deepEqual(logrosDelEquipo(previas, misiones).map((m) => m.id), ['3', '2', '1']);
+  assert.equal(logrosDelEquipo(previas, misiones)[0].rival, 'B');
+});
+
+test('misionesConPrevia: orden cronológico con fecha y rival', () => {
+  const previas = [{ id: 'a', fecha: '2026-10-11', rival: null, partidoId: 'pa' }, { id: 'b', fecha: '2026-10-18', rival: 'B', partidoId: null }];
+  const r = misionesConPrevia([{ id: '1', previaId: 'a', orden: 1 }, { id: '2', previaId: 'b', orden: 1 }], previas);
+  assert.deepEqual(r.map((m) => [m.id, m.fecha, m.partidoId]), [['2', '2026-10-18', null], ['1', '2026-10-11', 'pa']]);
 });

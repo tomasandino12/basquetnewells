@@ -220,3 +220,62 @@ export function textoDelValor(mision, real) {
   const hecho = real == null ? 'sin dato' : `${real} ${unidad(m, real)}`;
   return `${hecho} · misión: ${SENTIDO[m.sentido]} ${mision.valor}`;
 }
+
+/* ---------- filas de la base → dominio (los usa repos/misiones.js) ---------- */
+
+export const previaDesdeFila = (f) => ({
+  id: f.id,
+  clubId: f.club_id,
+  plantelId: f.plantel_id,
+  fecha: f.fecha,
+  rival: f.rival,
+  partidoId: f.partido_id,
+});
+
+/** Sirve para las dos tablas: la de equipo no trae jugador_id. */
+export const misionDesdeFila = (f) => ({
+  id: f.id,
+  previaId: f.previa_id,
+  jugadorId: f.jugador_id ?? null,
+  orden: f.orden,
+  metrica: f.metrica,
+  valor: f.valor,
+  texto: f.texto,
+  estado: f.estado,
+  comentario: f.comentario,
+});
+
+/** Sólo las columnas que puede pedir una misión, más el jugador. */
+export const estadisticaDeMisionDesdeFila = (f) => {
+  const e = { jugadorId: f.jugador_id };
+  for (const m of METRICAS) if (m.fuente !== 'partido') e[m.campo] = f[m.columna];
+  return e;
+};
+
+export const COLUMNAS_ESTADISTICA_DE_MISION = ['jugador_id', ...new Set(METRICAS.filter((m) => m.fuente !== 'partido').map((m) => m.columna))].join(', ');
+
+const masReciente = (a, b) => (a.fecha < b.fecha ? 1 : a.fecha > b.fecha ? -1 : a.orden - b.orden);
+
+/**
+ * Los logros del equipo: las misiones de equipo marcadas Logrado, con la
+ * fecha y el rival de su previa, de la más reciente a la más vieja.
+ */
+export function logrosDelEquipo(previas, misionesEquipo) {
+  const porId = new Map(previas.map((p) => [p.id, p]));
+  return misionesEquipo
+    .filter((m) => m.estado === 'logrado' && porId.has(m.previaId))
+    .map((m) => ({ ...m, fecha: porId.get(m.previaId).fecha, rival: porId.get(m.previaId).rival, plantelId: porId.get(m.previaId).plantelId }))
+    .sort(masReciente);
+}
+
+/**
+ * Las misiones de un chico en orden cronológico (la más reciente arriba), con
+ * la fecha y el rival. Sin totales ni conteos: la ficha no compara.
+ */
+export function misionesConPrevia(misiones, previas) {
+  const porId = new Map(previas.map((p) => [p.id, p]));
+  return misiones
+    .filter((m) => porId.has(m.previaId))
+    .map((m) => ({ ...m, fecha: porId.get(m.previaId).fecha, rival: porId.get(m.previaId).rival, partidoId: porId.get(m.previaId).partidoId }))
+    .sort(masReciente);
+}
