@@ -56,19 +56,52 @@ No hace falta service role key, función de servidor ni conexión
 Apps Script → Supabase: el puente es un archivo que baja el profe y la base
 nunca recibe un DNI.
 
-## 3. El puente: pestaña "Para Semillero"
+## 3. El puente: planilla "Para Semillero"
 
-En el tablero de inscripción (sesión de inscripción, prompt 05) se suma una
-pestaña armada con fórmulas: **apellido, nombre, fecha de nacimiento,
-categoría y mail del responsable**. Sin DNI, sin datos médicos. Se baja como
-`.xlsx` (Archivo → Descargar), y el `xlsx` vendorizado ya lo lee. Nombres de
-columna fijos, con un test de contrato contra un fixture sintético.
+**Punto a aprobar por Tomás: es una excepción a la decisión 1 del prompt 05**,
+que decía que nada del formulario pasa a Semillero. Pasan 5 datos, sin DNI ni
+datos médicos, y el profe los descarga a mano. No es una conexión automática.
+
+Formato, fijado por inscripción (su commit b0f510a). Es una planilla aparte
+armada con `IMPORTRANGE`, no una pestaña del tablero, porque el `.xlsx` de
+Sheets baja todas las pestañas y se llevaría DNIs.
+- Fila 1, en este orden: `Apellido | Nombre | Fecha de nacimiento | Categoría
+  | Mail del responsable`. Una fila por chico, y un adulto con dos chicos
+  aparece en dos filas.
+- La fecha va como celda de fecha (dd/mm/aaaa). El mail es el verificado por
+  Google, en minúsculas.
+- Lo lee el `xlsx` vendorizado, con un test de contrato contra un fixture
+  sintético.
+
+**Categoría.** Llega el texto del desplegable ("U15 - MASCULINO/FEMENINO (2012
+y 2011)", etc.). Hoy Semillero tiene `U13M, U15M, U17M, U21M, MAY_M, MAY_F`.
+- Un mapeo fijo en JS, con su test, traduce texto del formulario → código.
+- Las categorías que Semillero no tiene (Escuelita, U9, U11 y las femeninas
+  menores) se saltean, y el import dice cuántas filas quedaron afuera.
+- El formulario no dice la rama en las MASCULINO/FEMENINO. **Recomendado:**
+  que el formulario sume la pregunta "Rama" (Masculino/Femenino) para esas
+  categorías, como sexta columna. Mientras no exista, el profe destilda en la
+  vista previa a quien no sea de su plantel.
+- **Pendiente:** inscripción listó 8 opciones y dijo que son 11. Hay que
+  confirmarlo contra el formulario real antes de la task 1.
+
+**Quién es quién.** No hay clave estable: el jugador se reconoce por apellido
++ nombre + fecha de nacimiento, dentro del club.
+- Con fecha igual y nombre que coincide, es el mismo jugador.
+- Ficha sin fecha (vino de la CABB) y nombre que coincide: es una sugerencia
+  que el profe confirma. El dedup del import CABB (`jugadores_del_club_para_dedup`)
+  se reusa sólo para leer candidatos; la lógica de `parserCabb.js` no se toca.
+- Homónimos con distinta fecha son dos jugadores. Si dos fichas coinciden, el
+  profe elige.
+- **Cambio de categoría de un año a otro:** el chico ya existe en el club
+  (es único por club, no por categoría). El import le suma la pertenencia al
+  plantel nuevo y el vínculo con la familia sigue igual, porque es con el
+  jugador.
 
 En Semillero, el plantel suma **"Importar inscriptos"** (entrenador asignado,
 como el import CABB):
-- Toma sólo las filas de la categoría de ese plantel.
-- Propone para cada fila "es este jugador" (reusa el dedup del import CABB,
-  `jugadores_del_club_para_dedup`) o "ficha nueva".
+- Toma sólo las filas que mapean a la categoría de ese plantel.
+- Vista previa por fila: "es este jugador", "ficha nueva" o "no es de acá".
 - El profe confirma y una RPC `security invoker` hace todo en una
   transacción, con verificación de rollback: crea la ficha y la pertenencia
   si hace falta, completa `fecha_nacimiento` si estaba vacía y anota el mail.
@@ -77,6 +110,8 @@ como el import CABB):
 - Chico que no está en el padrón: no hay vínculo hasta que el profe lo
   importe. Al entrar, el padre ve *"Todavía no encontramos a tu hijo. El club
   lo suma cuando procesa la inscripción: volvé en unos días."*
+- Es el tercer formato de planilla. Antes de escribirlo se decide con Tomás si
+  se arma el registro de parsers de CLAUDE.md.
 
 ## 4. Datos y frontera
 
