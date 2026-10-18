@@ -13,12 +13,12 @@ commit. Sin merge ni push: lo hace la coordinadora con el ok de Tomás.
 | 1 | Lógica pura `inscriptos.js` + `parserInscriptos.js` | hecha (3d20aae) |
 | 2 | Migración 0057 + contratos | hecha |
 | 3 | Verificación y rollback SQL | hecha (12/12 en local, ida y vuelta) |
-| 4 | db push (con backup) | pendiente |
+| 4 | db push (con backup) | pendiente: Tomás prueba todo en local, confirma el backup, y recién ahí se aplica |
 | 5 | Repo `familia.js` | hecha |
-| 6 | Plantel → Importar inscriptos | hecha (falta probar en navegador) |
-| 7 | Arranque + shell familia: Mis chicos | pendiente |
-| 8 | Coordinación → Familias y mails en la ficha | pendiente |
-| 9 | Docs y cierre | pendiente |
+| 6 | Plantel → Importar inscriptos | hecha, probada en navegador |
+| 7 | Arranque + shell familia: Mis chicos | hecha, probada en navegador |
+| 8 | Coordinación → Familias y mails en la ficha | hecha, probada en navegador |
+| 9 | Docs y cierre | hecha |
 
 ## 0. Columnas de "Para Semillero"
 - Por la coordinadora: inscripción armó la planilla aparte (b0f510a) con apellido,
