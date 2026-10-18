@@ -23,8 +23,8 @@
 |---|---|
 | 0. Confirmar la opción del coordinador (spec, "Choque con el código") | hecha: opción A (16/10) |
 | 1. Lógica pura `misiones.js` | hecha |
-| 2. Migración 0055: tablas, RLS, grants, sellado | hecha (SQL sin correr hasta la task 4) |
-| 3. Migración 0055: RPCs `guardar_previa` y `evaluar_misiones` | hecha (SQL sin correr hasta la task 4) |
+| 2. Migración 0055: tablas, RLS, grants, sellado | hecha |
+| 3. Migración 0055: RPCs `guardar_previa` y `evaluar_misiones` | hecha; verificada en local 18/10 (12/12 OK, en transacción con rollback) |
 | 4. `db push` y verificación en el SQL Editor | espera a que finanzas aplique 0054 (orden acordado 18/10) |
 | 5. Repo `misiones.js` y fachada | pendiente |
 | 6. Pantalla de previa (asignar) | pendiente |
