@@ -23,6 +23,7 @@ const contenedor = () => $('previa-contenido');
 // El borrador vive en el módulo mientras la pantalla está abierta. Los ids de
 // la previa y de cada misión se generan una sola vez, acá: un reintento de
 // "Guardar" manda los mismos y no duplica (guardar_previa, 0055).
+let pedida = null;
 let borrador = null;
 let jugadores = [];
 let existe = false;
@@ -30,7 +31,8 @@ let evaluada = false;
 
 /** `previaId` null = previa nueva. */
 export function abrirPrevia(previaId = null) {
-  borrador = previaId ? { previaId } : null;
+  pedida = previaId;
+  borrador = null;
   ir('p-previa', { push: true });
 }
 
@@ -55,7 +57,6 @@ export async function renderPrevia() {
   }
   contenedor().innerHTML = html`<div class="pad"><div class="p" role="status">Cargando…</div></div>`.toString();
 
-  const pedida = borrador?.previaId ?? null;
   try {
     jugadores = (await obtenerJugadoresDelPlantel(club.id, plantel.id))
       .sort((a, b) => a.nombreLimpio.localeCompare(b.nombreLimpio, 'es'));
@@ -72,7 +73,7 @@ export async function renderPrevia() {
         misionesEquipo: previa.misionesEquipo,
       };
       existe = true;
-    } else {
+    } else if (!borrador) {
       borrador = borradorNuevo(club, plantel);
       existe = false;
     }

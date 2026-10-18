@@ -39,7 +39,7 @@
 | 7. Pantalla de evaluación y vínculo a mano | hecha (sin probar en navegador, igual que la 6) |
 | 8. Logros en el plantel y misiones en la ficha | hecha |
 | 9. Logros en Panorama (coordinador) | hecha |
-| 10. ESQUEMA.md, prueba por rol y review final | pendiente |
+| 10. ESQUEMA.md, prueba por rol y review final | hecha en lo que no necesita login: ESQUEMA.md, greps de capas/ranking/anotación limpios, RLS por rol probada en SQL (verificarMisiones 12/12). Falta la prueba en el navegador con login de profe y de coordinador (la hace Tomás) |
 
 ---
 
