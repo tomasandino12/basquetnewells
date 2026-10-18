@@ -16,8 +16,9 @@ export const PORTAL = Object.freeze({
     // PENDIENTE: ID del calendario de eventos y recaudación.
     Object.freeze({ titulo: 'Eventos y recaudación', id: null }),
   ]),
-  // PENDIENTE: link del formulario de Google (el corto forms.gle/... o el largo).
-  inscripcion: null,
+  // Formulario de inscripción. Respaldo: la spec v2 (§3) pasa la lista de
+  // formularios a una tabla que carga la coordinación desde su panel.
+  inscripcion: 'https://docs.google.com/forms/d/e/1FAIpQLSfXI11Sruothw4K67u6deMbRgfK0uZO00sfE-DBgsqam3peBQ/viewform',
 });
 
 /** Hosts que la página pública mete en un iframe. La CSP (frame-src) tiene que permitirlos. */

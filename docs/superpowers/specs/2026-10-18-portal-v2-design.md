@@ -1,6 +1,6 @@
 # Portal del básquet y Semillero separados — diseño (v2)
 
-Estado: **borrador para aprobar por Tomás**. Fecha: 18/10/2026. Rama `feat/portal-pwa` (se rehace encima; nada mergeado). Reemplaza el enfoque de `2026-10-16-portal-pwa-design.md`: el bloque dentro de la landing no le sirvió.
+Estado: **borrador para aprobar por Tomás**. Fecha: 18/10/2026. Rama `feat/portal-pwa` (se rehace encima; nada mergeado). Reemplaza `2026-10-16-portal-pwa-design.md`: el bloque dentro de la landing no le sirvió.
 
 ## 1. Qué cambia
 
@@ -8,60 +8,72 @@ Hoy hay una sola página: la landing de Semillero con un bloque de básquet aden
 
 | | Portal "Básquet Newell's" | Semillero (la app) |
 |---|---|---|
-| Para quién | Familias y cualquiera que busque al club | Profes, coordinación, jugadores y familias vinculadas |
+| Para quién | Familias y cualquiera que busque al club | Profes, coordinación y jugadores |
 | URL | `/` | `/app` |
 | Estética | Negra, como newellsoldboys.com.ar (`publico.css`) | La actual: landing negra para entrar, app clara adentro |
 | Instalable | No | **Sí**: manifest y service worker pasan acá |
-| Datos | Ninguno: estático, no toca la base | Todo, protegido por RLS |
+| Datos | Sólo la lista de formularios activos (§3) | Todo, protegido por RLS |
 
-El portal es el link que se reparte. Desde ahí un botón lleva a Semillero, que conserva su landing actual (crear cuenta / ingresar) sin el bloque de básquet. El link directo a `/app` es el que usan los profes y jugadores: lo instalan en el celular y abren siempre ahí.
+El portal es el link que se reparte. Un botón lleva a Semillero, que conserva su landing actual (crear cuenta / ingresar) sin el bloque de básquet. `/app` es el link de profes y jugadores: lo instalan y abren siempre ahí.
 
-## 2. Qué tiene el portal
-
-Una sola página, mobile-first, en este orden:
+## 2. Qué tiene el portal (mobile-first, en este orden)
 
 1. **Presentación del club** (escudo y nombre ya en uso; sin usos nuevos del escudo hasta que el club lo apruebe).
-2. **Familias: inscripción y trámites.** Tres botones a formularios de Google: *Inscripción* (la primera vez), *Reinscripción* (los años siguientes) y *Comprobante de aranceles*, más el link a la *Guía para padres*. **Cada botón lleva ayuda paso a paso**: qué tener a mano, qué pasa después, qué hacer si no tienen cuenta de Google (pedido de Tomás: no suponer que saben de computadoras). Los textos se alinean con los formularios de `claude/inscripcion-google-41cf4e` y se revisan contra ellos.
-3. **Calendarios**: partidos/torneos y eventos/recaudación (los dos Google Calendar ya resueltos en esta rama).
-4. **Información**: categorías, entrenamientos, contacto (texto fijo que pasa el club; hasta entonces "Próximamente").
-5. **Entrar**, dos tarjetas: **Familias** → `/app` (ven "Mis chicos"; la ayuda dice "entrá con el mismo mail con que llenaste el formulario") y **Profes, jugadores y coordinación** → `/app`, con cómo instalarla (Android: menú → Instalar; iPhone: Compartir → Agregar a inicio).
+2. **"¿Qué tengo que hacer?"**: pasos numerados que llevan a cada sección: 1) inscribir al chico, 2) mandar la documentación, 3) pagar y subir el comprobante, 4) mirar el calendario.
+3. **Formularios** (§3): cada uno con una línea de para qué es y qué tener a mano ("Antes de empezar, tené a mano: el DNI del chico y el tuyo, la credencial de la obra social…") y qué pasa después. Nunca se replican preguntas: el formulario vive en Google, y los DNI, fotos y datos de salud **nunca pasan por Semillero**.
+4. **Calendarios**: partidos/torneos y eventos/recaudación (dos Google Calendar, ya resueltos en esta rama).
+5. **Información**: categorías, entrenamientos, contacto (texto fijo que pasa el club; hasta entonces "Próximamente").
+6. **Entrar a Semillero**: botón a `/app` con cómo instalarla (Android: menú → Instalar; iPhone: Compartir → Agregar a inicio).
+7. **"¿Dudas? Escribile al coordinador"**: un enlace de contacto (WhatsApp o mail) en `portal.js`; **dato pendiente del club**, porque no hay mail propio.
 
-Todos los enlaces viven en un solo archivo, `src/data/portal.js` (ya existe: se le suman los formularios y la guía). Un enlace en `null` se ve como "Próximamente".
+Textos en voseo y sin suponer que saben de computadoras (pedido de Tomás). El calendario, la información y el contacto viven en `src/data/portal.js`; un valor en `null` se ve como "Próximamente".
 
-## 3. Rutas y login (lo que obliga a que Tomás toque Supabase)
+## 3. Formularios que carga la coordinación (decisión que Tomás debe aprobar)
 
-- `vercel.json`: `/` → portal, `/app` → la página de Semillero (la misma `index.html` de hoy, así el hash de la CSP y los tests no se mueven). `/public/index.html` sigue respondiendo.
-- Login: `urlDeRetorno()` devuelve `origin + pathname`; desde `/app` pasa a ser `https://app-semillero.vercel.app/app`. **Tomás tiene que agregar esa URL a "Redirect URLs" en Supabase Auth** (Authentication → URL Configuration; ver `docs/CONFIGURAR-AUTH.md`). Agregar no rompe lo que anda, así que **se hace antes del deploy**. No se cambia código de login.
-- Mails ya enviados (confirmar cuenta, recuperar clave) apuntan a `/`, que ahora es el portal. Un script mínimo del portal detecta `code=`, `access_token` o `type=recovery` y manda a `/app` conservando la query y el hash, para que esos links sigan andando.
-- Quien ya tenía la app abierta en `/` verá el portal y toca "Entrar". La app instalada abre `/app` directo.
+**Pedido**: la coordinación suma, edita, ordena y oculta formularios desde su panel (ej. "hay que pagar las rifas: el coordinador suma el form, el padre lo abre y sube el comprobante"). **Esto rompe la regla "lo público no lee la base"** de la v1, así que se hace con la superficie más chica posible:
 
-## 4. PWA: pasa a `/app`
+- **Tabla nueva `formulario_portal`** (migración **0058**; la 0057 es de cuentas de familia): `club_id`, `titulo`, `texto`, `enlace`, `orden`, `activo`, `creado_por`, fechas. **Sin ningún dato de jugadores, familias ni nada que se le parezca.**
+- **Lectura anónima por una sola función**, `formularios_publicos(club)`, que devuelve **título, texto y enlace de las filas activas, en orden**. El visitante anónimo no recibe `select` sobre la tabla: sólo `execute` de esa función.
+- **Escritura sólo del coordinador del club** (RLS + grants por columna; sin `delete`: se oculta con `activo = false`, queda el rastro de quién y cuándo). Patrón `0026_material.sql`.
+- **Enlace validado dos veces**, en el panel y con un `check` de la base: sólo `https://docs.google.com/forms/…` o `https://forms.gle/…`. Largos en `limites.js` con su `check`; `contratoLimites` y un test de contrato comparan JS y SQL.
+- **Pantalla "Coordinación → Formularios"** en Semillero: lista, agregar, editar, subir/bajar, mostrar/ocultar, con el aviso "esto lo ve cualquiera: no pongas nombres de chicos". Lo mostrado se escapa con `html\`\``.
+- **Portal**: la lectura pasa por `repositorio.js` → `repos/portal.js` (área nueva, una línea en la fachada). El portal lleva el mismo import map inline que la app, por lo que su hash en la CSP es el mismo y no hace falta tocarla. Si la base no responde, el portal muestra "No pudimos cargar los formularios, probá de nuevo" y todo lo demás sigue andando.
+- Hoy se carga **Inscripción** (`docs.google.com/forms/d/e/1FAIpQLSf…`). Hasta que exista la migración, queda en `portal.js` como respaldo.
 
-Manifest (`id`, `start_url`, `scope`: `/app`), `<link rel="manifest">`, íconos y registro del service worker quedan **sólo en la página de Semillero**. `Service-Worker-Allowed: /app`. El service worker mantiene las mismas reglas (nunca cachea otro origen ni `/src` ni CSS; vendor, fuentes e íconos cache-primero con versión por hash). El portal no lo registra. Los tests se ajustan al nuevo alcance.
+**Riesgo que queda**: una cuenta de coordinador comprometida podría publicar un enlace malicioso, acotado a dominios de Google, y quedaría registrado quién lo creó; se oculta con un toque. Se acepta.
 
-## 5. Lo que NO hace esta spec (y quién lo hace)
+## 4. Rutas y login (Tomás toca Supabase)
 
-- **Cuenta de familia, importador de inscriptos, tabla de vínculos, "Mis chicos"**: `claude/cuentas-familia-c6c955` (spec aprobada, migración **0057** suya). Esta spec **no agrega migración**.
-- **Formularios, scripts de Drive, carpetas por chico, reinscripción corta**: `claude/inscripcion-google-41cf4e` (aprobada). Los archivos y datos de salud viven en Google, no en Semillero.
-- Pagos, calendario dentro de la app, mensajería, notificaciones push, noticias con CMS, dominio propio.
+- `vercel.json`: `/` → portal, `/app` → la `index.html` de hoy (así los tests y el hash de CSP no se mueven). `/public/index.html` sigue respondiendo.
+- `urlDeRetorno()` devuelve `origin + pathname`: desde `/app` es `https://app-semillero.vercel.app/app`. **Tomás agrega esa URL a "Redirect URLs" en Supabase Auth** (`docs/CONFIGURAR-AUTH.md`) **antes del deploy** (agregar no rompe nada). No se cambia código de login.
+- Los mails ya enviados apuntan a `/`: un script mínimo del portal detecta `code=`, `access_token` o `type=recovery` y manda a `/app` conservando query y hash.
 
-## 6. Seguridad y privacidad
+## 5. PWA: pasa a `/app`
 
-- El portal no importa `repositorio.js`, no usa Supabase ni tiene import map: no necesita hash nuevo en la CSP. Sólo `frame-src` ya permite `calendar.google.com`.
-- Los calendarios son públicos: nunca nombres de jugadores en los eventos (ya está en `docs/COORDINACION.md`). Los iframes de Google ponen cookies de Google: **agregar una línea a la política de privacidad** (texto lo revisa Tomás o el club).
-- Los formularios y archivos de las familias quedan fuera del control de la RLS: es decisión de Tomás ("que usen los formularios y el almacenamiento de Google"), y la política de privacidad debe decir que ese tratamiento es del club.
+Manifest (`id`, `start_url`, `scope`: `/app`), `<link rel="manifest">`, íconos y registro del service worker quedan sólo en la página de Semillero; `Service-Worker-Allowed: /app`. Mismas reglas del service worker (nunca cachea otro origen, `/src` ni CSS). El portal no lo registra.
 
-## 7. Qué se reaprovecha y qué se desarma de la v1
+## 6. Fuera de alcance
 
-Se queda: `portal.js` (+ formularios), CSP de Calendar, íconos, manifest, service worker y sus tests, la guía de `COORDINACION.md`. Se desarma: el bloque `#basquet` y los títulos de `index.html`; `portalLanding.js` pasa a servir al portal; `canonical`, `og:*`, `sitemap` y `tests/metadatos.test.js` se ajustan (portal en `/`, app en `/app`).
+- **Login y cuentas de padres**: otro módulo (Cuentas de familia, prompt 08), con su spec, RLS y función de servidor, bloqueado hasta que el club confirme quién crea los vínculos. **No se diseña acá y el portal no tiene botón de padres.**
+- Formularios con archivos, carpetas por chico y reinscripción: `claude/inscripcion-google-41cf4e`.
+- Pagos, calendario dentro de la app, mensajería, push, noticias con CMS, dominio propio.
 
-## 8. A confirmar con Tomás
+## 7. Privacidad
 
-1. **Rutas `/` y `/app`** y que él agrega la Redirect URL antes del deploy.
-2. **Dominio**: hoy es `app-semillero.vercel.app` para todo. "basquetnewells" sería un alias de Vercel (gratis) que cambia canonical, Open Graph y la configuración de Supabase; propongo dejarlo para después, no bloquea nada.
-3. **Portal no instalable**: sólo Semillero se instala. ¿Está bien?
-4. **Orden de merge**: este cambio toca `index.html` y `main.js`, igual que cuentas-familia. Propongo mergear **primero cuentas-familia** y rehacer esto encima; lo verifico con un merge de prueba.
+Calendarios públicos: nunca nombres de jugadores en eventos. Los iframes de Google ponen cookies de Google: una línea en la política de privacidad (texto lo revisa Tomás o el club), que también diga que los formularios y archivos de las familias son tratamiento del club en Google, fuera de la RLS (decisión de Tomás).
 
-## 9. Aceptación
+## 8. Qué se reaprovecha
 
-`/` abre el portal negro sin scroll horizontal a 380 px y sin ningún pedido a Supabase; `/app` abre la landing de Semillero y el login con email y con Google vuelve a `/app`; los links viejos de mail siguen andando; DevTools → Manifest sin errores en `/app` y no hay manifest en `/`; Cache Storage sin `supabase.co`; `npm run test:q` verde; las 5+ ramas en vuelo mergean sin conflictos.
+Se queda: `portal.js`, CSP de Calendar, íconos, manifest, service worker y tests, guía de `COORDINACION.md`. Se desarma: el bloque `#basquet` de `index.html`; `portalLanding.js` pasa a servir al portal; `canonical`, `og:*`, `sitemap` y `metadatos.test.js` se ajustan.
+
+## 9. A confirmar con Tomás
+
+1. **Formularios desde el panel (§3)**: aprobación explícita de que el portal lea de la base esa única función. Si prefiere cero lectura, la alternativa es la lista fija en `portal.js` (cada formulario nuevo es un cambio de código).
+2. **Rutas `/` y `/app`** y que él agrega la Redirect URL antes del deploy.
+3. **Dominio** "basquetnewells": alias de Vercel que cambia canonical, Open Graph y Supabase; propongo dejarlo para después.
+4. **Contacto** del coordinador (WhatsApp o mail) para "¿Dudas?".
+5. **Orden de merge**: toca `index.html` y `main.js`, que también tocan otras ramas; hago un merge de prueba con todas antes de avisar que está lista.
+
+## 10. Aceptación
+
+`/` abre el portal negro sin scroll horizontal a 380 px, con un único pedido a Supabase (la función anónima); `/app` abre la landing de Semillero y el login con email y Google vuelve a `/app`; los links viejos de mail siguen andando; Manifest sin errores en `/app` y ninguno en `/`; Cache Storage sin `supabase.co`; un anónimo no puede leer ni escribir `formulario_portal` fuera de la función; un coordinador de otro club no ve ni edita los formularios de este; `npm run test:q` verde; las ramas en vuelo mergean sin conflictos.
