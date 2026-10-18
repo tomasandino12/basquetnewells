@@ -10,7 +10,7 @@ commit. Sin merge ni push: lo hace la coordinadora con el ok de Tomás.
 | # | Task | Estado |
 |---|---|---|
 | 0 | Columnas de "Para Semillero" (b0f510a + eacf568) | hecha |
-| 1 | Lógica pura `inscriptos.js` | pendiente |
+| 1 | Lógica pura `inscriptos.js` + `parserInscriptos.js` | hecha (3d20aae) |
 | 2 | Migración 0057 + contratos | pendiente |
 | 3 | Verificación y rollback SQL | pendiente |
 | 4 | db push (con backup) | pendiente |
@@ -81,6 +81,7 @@ commit. Sin merge ni push: lo hace la coordinadora con el ok de Tomás.
   importarlo dos veces no duplica.
 
 ## 7. Arranque + shell familia
+- Textos para familias de la spec §5: pasos numerados, voseo, qué hacer si no ven a su hijo.
 - Archivos: `src/ui/main.js`, `src/ui/sesion.js` (`modo = 'familia'`),
   `src/ui/chrome.js` (`TABS_FAMILIA`), `src/ui/pantallas/misChicos.js`.
 - Sin club y sin ficha de jugador → `vincular_por_mail()` + `mis_chicos()`.

@@ -169,6 +169,14 @@ Un profe que además es padre queda para después: anotado como límite.
 - **Ficha del chico**: el staff ve y corrige los mails de responsables.
 - Estética interna clara, mobile-first, áreas táctiles ≥44px.
 
+**Textos para familias** (pedido de Tomás: sin suponer que saben de
+computadoras). En el alta y en Mis chicos, textos cortos, en voseo y con pasos
+numerados que digan: qué es Semillero, qué pueden hacer acá (ver a sus hijos
+vinculados y nada más), dónde se carga cada cosa (los formularios y los
+documentos van por la página del básquet, no por WhatsApp) y qué hacer si no
+ven a su hijo: *"Avisale al coordinador"*. Mostrar con qué mail entraron, para
+que se note si es otro del que usaron en el formulario.
+
 Capas: repo nuevo `src/data/repos/familia.js` + línea en la fachada. Lógica
 pura en `src/data/inscriptos.js`: leer la pestaña, filtrar por categoría,
 normalizar mail, armar el payload. Largos en `limites.js` con su `check`.
