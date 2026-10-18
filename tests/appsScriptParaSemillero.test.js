@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const tablero = readFileSync(new URL('../google/sheets/TABLERO.md', import.meta.url), 'utf8');
+// Con core.autocrlf el .md puede llegar con CRLF; el bloque se busca con \n.
+const tablero = readFileSync(new URL('../google/sheets/TABLERO.md', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 
 // Contrato con el importador de cuentas-familia (spec, "Planilla Para Semillero").
 const ENCABEZADOS = ['Apellido', 'Nombre', 'Fecha de nacimiento', 'Categoría', 'Mail del responsable', 'Rama'];
