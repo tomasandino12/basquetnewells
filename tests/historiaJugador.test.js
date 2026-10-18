@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   FUENTES, temporadaDeFecha, agruparHistoria, comoLlega, comoTermino, totalesDePartidos, resumenDeTemporada,
+  historiaDesdeJson,
 } from '../src/data/historiaJugador.js';
 
 // Un chico que estuvo en U15 2025 y hoy está en U17 2026.
@@ -251,4 +252,14 @@ test('el resumen nombra el plan físico antes que los partidos', () => {
 test('el resumen de una temporada vacía no inventa ceros', () => {
   const g26 = agruparHistoria(base()).find((g) => g.temporada.id === 't26');
   assert.equal(resumenDeTemporada(g26), 'Sin plan físico · Sin mediciones físicas');
+});
+
+test('historiaDesdeJson completa las listas que falten y no inventa claves', () => {
+  const h = historiaDesdeJson({ temporadas: [T25], partidos: [{ pts: null }], otra: [1] });
+  assert.deepEqual(h.temporadas, [T25]);
+  assert.deepEqual(h.partidos, [{ pts: null }]);
+  assert.deepEqual(h.cargas, []);
+  assert.deepEqual(h.planteles, []);
+  assert.equal(h.otra, undefined);
+  assert.deepEqual(historiaDesdeJson(null).saltos, []);
 });

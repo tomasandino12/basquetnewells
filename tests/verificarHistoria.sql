@@ -66,10 +66,10 @@ begin
     insert into miembro_club (user_id, club_id, es_entrenador, es_coordinador) values
       (v_p17, v_club, true, false), (v_p15, v_club, true, false),
       (v_c, v_club, false, true), (v_baja, v_club, true, false);
-    insert into asignacion_plantel (miembro_club_user_id, miembro_club_club_id, plantel_id, origen, hasta) values
-      (v_p17, v_club, v_u17_26, 'manual', null),
-      (v_p15, v_club, v_u15_25, 'manual', now() - interval '10 months'),
-      (v_baja, v_club, v_u17_26, 'manual', null);
+    insert into asignacion_plantel (miembro_club_user_id, miembro_club_club_id, plantel_id, origen, desde, hasta) values
+      (v_p17, v_club, v_u17_26, 'manual', now(), null),
+      (v_p15, v_club, v_u15_25, 'manual', now() - interval '20 months', now() - interval '10 months'),
+      (v_baja, v_club, v_u17_26, 'manual', now(), null);
     -- La baja a mano: con la asignación todavía abierta, para probar que
     -- alcanza con el rol apagado.
     update miembro_club set es_entrenador = false, baja_en = now(), baja_por = v_c
@@ -78,10 +78,10 @@ begin
     insert into jugador (id, club_id, nombre_clave, nombre_limpio) values
       (v_a, v_club, 'ZZTEST VIENE', 'ZZTEST, VIENE'),
       (v_b, v_club, 'ZZTEST AJENO', 'ZZTEST, AJENO');
-    insert into pertenencia (club_id, jugador_id, plantel_id, temporada_id, desde, hasta) values
-      (v_club, v_a, v_u15_25, v_t25, '2025-03-01', '2025-12-15'),
-      (v_club, v_a, v_u17_26, v_t26, '2026-03-01', null),
-      (v_club, v_b, v_u15_26, v_t26, '2026-03-01', null);
+    insert into pertenencia (club_id, jugador_id, plantel_id, temporada_id, desde, hasta, cerrado_por) values
+      (v_club, v_a, v_u15_25, v_t25, '2025-03-01', '2025-12-15', v_p15),
+      (v_club, v_a, v_u17_26, v_t26, '2026-03-01', null, null),
+      (v_club, v_b, v_u15_26, v_t26, '2026-03-01', null, null);
 
     -- Una batería y una medida de 2025. La medida se cargó antes de que
     -- existiera su pertenencia en U17: la ventana de 0039 la escondería.

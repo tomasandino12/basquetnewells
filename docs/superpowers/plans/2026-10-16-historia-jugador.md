@@ -44,7 +44,7 @@ Al 16/10 hay cuatro ramas abiertas además de esta:
 | 1. Lógica pura: agrupar y ubicar por fecha | hecha (16/10) |
 | 2. Lógica pura: "Cómo llega" y resúmenes | hecha (16/10; fija la forma de cada fuente, ver el comentario de `historiaJugador.js`) |
 | 3. Migración 0056 y contrato | hecha (18/10; se prueba contra la base en la Task 4) |
-| 4. Prueba local con temporada 2025 + repo | pendiente |
+| 4. Prueba local con temporada 2025 + repo | hecha (18/10; verificarHistoria 6/6 OK en local, 0056 aplicada a mano sin reset; el seed se probó con rollback, todavía no se cargó) |
 | 5. Refactor: `ficha-historia` → `ficha-actual` | **espera merge de misiones** |
 | 6. Sección en la ficha | pendiente |
 | 7. Docs y `db push` | pendiente (orden de merge) |

@@ -232,3 +232,14 @@ export function resumenDeTemporada(grupo) {
   ];
   return partes.filter(Boolean).join(' · ');
 }
+
+/**
+ * Lo que devuelve historia_del_jugador (0056) ya viene en camelCase y con la
+ * forma de FUENTES. Esto sólo garantiza que cada lista exista: una clave que
+ * falte (una migración vieja, una fuente nueva todavía sin aplicar) es una
+ * lista vacía, nunca un error al pintar.
+ */
+export function historiaDesdeJson(json) {
+  const claves = ['temporadas', 'planteles', 'pertenencias', ...FUENTES.map((f) => f.clave)];
+  return Object.fromEntries(claves.map((c) => [c, Array.isArray(json?.[c]) ? json[c] : []]));
+}
