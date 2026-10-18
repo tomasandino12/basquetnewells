@@ -10,3 +10,6 @@ documentos/
 
 # Backups de la base (scripts/backup.mjs): nombres de menores y hashes de contraseñas
 backups/
+
+# Insumos de trabajo (estructura de formularios, listas de la CABB): no van a git
+docs/insumos/
