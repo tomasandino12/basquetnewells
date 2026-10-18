@@ -17,7 +17,7 @@ Tomás quiere que en la carpeta del chico esté todo: DNIs, aranceles, pase, rif
 
 `Jugadores/<APELLIDO, Nombre — DNI>/` — una carpeta para siempre. La temporada se ve en la fecha del nombre de cada archivo.
 
-Esto cambia el `Inscripciones <temporada>/…` del objetivo 1 del prompt. **Lo tiene que aprobar Tomás.** Consecuencia: los DNIs de un chico quedan guardados mientras juegue en el club, no sólo hasta el fichaje. El vaciado sigue siendo manual (decisión 8); la guía propone vaciar la carpeta de quien se va del club. **Pregunta para Tomás:** ¿la CABB pide las fotos del DNI de nuevo cada temporada? Si sí, la reinscripción las pide y conviene vaciar después de cada fichaje.
+Esto cambia el `Inscripciones <temporada>/…` del objetivo 1 del prompt. **Lo tiene que aprobar Tomás.** Consecuencia: los DNIs de un chico quedan guardados mientras juegue en el club, no sólo hasta el fichaje. El vaciado sigue siendo manual (decisión 8); la guía propone vaciar la carpeta de quien se va del club. Las fotos del DNI no se piden cada año (Tomás, 18/10): sólo si el DNI cambió.
 
 ## Clave común y formulario estándar
 En todos los formularios, tres preguntas con **título exacto** (el script las busca por título):
@@ -55,7 +55,7 @@ Formulario aparte para chicos que ya se inscribieron alguna vez. Pide las 3 preg
 |---|---|
 | Categoría y Rama · Altura actual · Domicilio · Teléfono del deportista y del familiar a cargo · Email del deportista · Adulto responsable · Institución, año y turno · Obra social y número de afiliado · "¿Cambió algo de salud desde la última inscripción?" (Sí / No; si sí, sección con afecciones, alergias, cirugías, indicaciones y medicación) · En caso de urgencia llamar a · Autorizaciones y casilla de recaudación (se renuevan cada año) | DNI (sólo la clave) · Nacionalidad · Fecha de nacimiento · Número de socio · Grupo sanguíneo · Altura del padre y de la madre · Lateralidad · Club de procedencia · Fotos de DNI y fotos |
 
-Si la CABB pide las fotos de DNI cada temporada (decisión 3 de abajo), pasan a la columna de la izquierda.
+Si el DNI cambió (renovación, cambio de domicilio): la reinscripción pregunta "¿Cambió el DNI del jugador?" (Sí / No) y, si es Sí, una sección con las dos subidas de frente y dorso, opcionales. El archivo nuevo convive con el viejo en la carpeta, con su fecha.
 - Si el DNI no aparece en ninguna inscripción anterior, el chico sale en la hoja **"Revisar"** del tablero: probablemente le tocaba la inscripción completa.
 - Los datos que no cambian (fecha de nacimiento, grupo sanguíneo, DNIs) se toman de su última inscripción, por DNI.
 
@@ -94,7 +94,7 @@ Una planilla de respuestas en la cuenta del básquet: cada formulario vuelca en 
 - **Columna "Alta"**: `Nueva` si su inscripción de esta temporada es la completa, `Reinscripción` si vino por la corta. Ese es el modo de ver que se reinscribió esta temporada. Chicos que estaban la temporada pasada y todavía no se reinscribieron: hoja **"Faltan reinscribir"**.
 - Una columna por documento: ✅ si alguna respuesta de **cualquier temporada** con ese DNI tiene esa subida, o hay una fila en "Entregas a mano"; si no ❌ (`CONTAR.SI.CONJUNTO`, separador `;`). Para aranceles y rifas, que son de una temporada, la fórmula cuenta sólo desde el inicio de temporada. Columna "Completo" y formato condicional.
 - Link a la carpeta: `=HIPERVINCULO("https://drive.google.com/drive/search?q=" & DNI; "Abrir")`, que abre la búsqueda de Drive en la carpeta del chico. Así el script no necesita permiso de Sheets.
-- Hoja **"Pagos"**: una fila por chico, una columna por concepto activo (la lista de conceptos está en Config), con ❌ / 📎 / ✅.
+- Hoja **"Pagos"**: una fila por chico, una columna por concepto activo (la lista de conceptos está en Config, ej. "Arancel octubre 2026", "Abono CABB 2026"), con ❌ / 📎 / ✅.
 - Hoja **"Revisar"**: reinscripciones sin inscripción anterior, y envíos de otros formularios con un DNI que no está en el padrón.
 - Ni Buscar ni "Para Semillero" muestran **nunca** la ficha médica.
 - Hoja **"Buscar"**, pensada para el celular: el coordinador escribe nombre, apellido o DNI en una sola celda arriba. Si coincide un solo chico, se ve **en vertical** (una fila por dato, cómoda en pantalla angosta): nombre, categoría, alta, cada documento con ✅/❌, cada concepto de pago con ❌/📎/✅ y el link a su carpeta. Si coinciden varios (mismo apellido), muestra la lista con su DNI para que escriba el DNI. Fórmulas `FILTRO`, `ENCONTRAR` y `TRANSPONER`; sin script.
@@ -136,10 +136,10 @@ Nunca "Publicar en la web" planillas ni respuestas. El vaciado de Drive es manua
 - ~~¿Separar inscripción y documentación?~~ No: un solo formulario, con login y mail verificado (Tomás, 18/10).
 - ~~¿Formularios de pase y aranceles?~~ Pase lo crea coordinación con la plantilla; aranceles lo dejamos armado (Tomás, 18/10).
 - ~~Lista de campos de la CABB~~ Los del formulario actual + 6 fotos (Tomás, 18/10).
+- ~~¿Fotos del DNI cada temporada?~~ No; la reinscripción las pide sólo si el DNI cambió (Tomás, 18/10).
+- Link a la carpeta: búsqueda de Drive por DNI (es sólo cómo abre el link "Abrir carpeta" del tablero; el directo pediría permiso sobre las planillas).
 - **Pendientes de Tomás:**
-  1. Carpeta por chico para siempre (`Jugadores/…`) en vez de una por temporada.
-  2. Barrido cada 10 minutos en vez de disparador al enviar.
-  3. ¿La CABB pide fotos del DNI cada temporada?
-  4. Link a la carpeta por búsqueda de Drive (recomendado) o directo (suma scope `spreadsheets`).
-  5. Consentimiento de datos obligatorio, uso de imagen opcional (recomendado).
-  6. Email del deportista opcional para menores (recomendado) u obligatorio con el del adulto.
+  - Carpeta por chico para siempre (`Jugadores/…`) en vez de una por temporada.
+  - Barrido cada 10 minutos en vez de disparador al enviar.
+  - Consentimiento de datos obligatorio, uso de imagen opcional (recomendado).
+  - Email del deportista opcional para menores (recomendado) u obligatorio con el del adulto.
