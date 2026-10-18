@@ -9,7 +9,7 @@ Spec: `docs/superpowers/specs/2026-10-18-inscripcion-google-design.md`. Una task
 | 1 | Funciones puras del script + test | hecho |
 | 2 | Script de barrido y `appsscript.json` | hecho |
 | 3 | Tablero, Pagos, Buscar y planilla "Para Semillero" (fórmulas) | hecho |
-| 4 | Formularios: inscripción, reinscripción, aranceles, plantilla, guía para padres | pendiente |
+| 4 | Formularios: inscripción, reinscripción, aranceles, plantilla, guía para padres | hecho |
 | 5 | Guía de instalación, de formularios nuevos y de prueba | pendiente |
 
 ## Task 1 — Funciones puras
