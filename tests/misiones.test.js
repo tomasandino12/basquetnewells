@@ -5,7 +5,7 @@ import {
   valorReal, totalesDelEquipo, vincularPrevias, validarPrevia,
   prepararPayloadPrevia, textoDeMision, textoDelValor,
   previaDesdeFila, misionDesdeFila, estadisticaDeMisionDesdeFila, COLUMNAS_ESTADISTICA_DE_MISION,
-  logrosDelEquipo, misionesConPrevia,
+  logrosDelEquipo, misionesConPrevia, siguientePasoDeMisiones,
 } from '../src/data/misiones.js';
 import { LIMITE } from '../src/data/limites.js';
 
@@ -231,4 +231,20 @@ test('misionesConPrevia: orden cronológico con fecha y rival', () => {
   const previas = [{ id: 'a', fecha: '2026-10-11', rival: null, partidoId: 'pa' }, { id: 'b', fecha: '2026-10-18', rival: 'B', partidoId: null }];
   const r = misionesConPrevia([{ id: '1', previaId: 'a', orden: 1 }, { id: '2', previaId: 'b', orden: 1 }], previas);
   assert.deepEqual(r.map((m) => [m.id, m.fecha, m.partidoId]), [['2', '2026-10-18', null], ['1', '2026-10-11', 'pa']]);
+});
+
+test('siguientePasoDeMisiones: armar, esperar o evaluar según la previa más reciente', () => {
+  const v = (mapa) => new Map(Object.entries(mapa).map(([id, partidoId]) => [id, { partidoId, motivo: partidoId ? 'fecha' : 'sin_partido' }]));
+  const p = (id, fecha, evaluada = false) => ({ id, fecha, evaluada });
+  assert.deepEqual(siguientePasoDeMisiones([], new Map()), { paso: 'armar', previa: null });
+  // Sin partido todavía: esperar.
+  const sinPartido = [p('a', '2026-10-18')];
+  assert.deepEqual(siguientePasoDeMisiones(sinPartido, v({ a: null })), { paso: 'esperar', previa: sinPartido[0] });
+  // Con partido y sin evaluar: evaluar.
+  assert.equal(siguientePasoDeMisiones(sinPartido, v({ a: 'x' })).paso, 'evaluar');
+  // Ya evaluada: el ciclo cerró, toca armar la siguiente.
+  assert.deepEqual(siguientePasoDeMisiones([p('a', '2026-10-18', true)], v({ a: 'x' })), { paso: 'armar', previa: null });
+  // Manda la más reciente por fecha, no por orden de llegada.
+  const dos = [p('vieja', '2026-09-01', true), p('nueva', '2026-10-25')];
+  assert.equal(siguientePasoDeMisiones(dos, v({ vieja: 'x', nueva: null })).previa.id, 'nueva');
 });

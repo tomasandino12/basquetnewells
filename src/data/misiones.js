@@ -279,3 +279,18 @@ export function misionesConPrevia(misiones, previas) {
     .map((m) => ({ ...m, fecha: porId.get(m.previaId).fecha, rival: porId.get(m.previaId).rival, partidoId: porId.get(m.previaId).partidoId }))
     .sort(masReciente);
 }
+
+/**
+ * Qué le toca hacer al profe con las misiones, mirando la previa más reciente
+ * (por fecha): armar las del próximo partido, esperar a que se cargue el
+ * partido, o evaluar. Una previa ya evaluada cierra el ciclo y vuelve a
+ * "armar". `previas` trae `evaluada` (alguna misión con estado) y `vinculos`
+ * es lo que devuelve `vincularPrevias`. No decide nada por el profe: sólo
+ * dice dónde está parado el ciclo.
+ */
+export function siguientePasoDeMisiones(previas, vinculos) {
+  const ultima = [...previas].sort((a, b) => (a.fecha < b.fecha ? 1 : a.fecha > b.fecha ? -1 : 0))[0];
+  if (!ultima || ultima.evaluada) return { paso: 'armar', previa: null };
+  const conPartido = vinculos.get(ultima.id)?.partidoId != null;
+  return { paso: conPartido ? 'evaluar' : 'esperar', previa: ultima };
+}
