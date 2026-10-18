@@ -41,7 +41,7 @@ mostrar los partidos de su categoría actual.
 **Recomendación: D, sin C, y D2 si la Inscripción queda con login de
 Google.** Elige Tomás entre D1 y D2: en la app es el mismo código, sólo cambia
 de qué columna sale el mail. El padre no tipea nada en la app. Si entró con
-otro mail, el coordinador corrige el mail en la ficha del chico, y no queda
+otro mail, el profe del plantel corrige el mail en la ficha del chico, y no queda
 ninguna puerta para adivinar. B queda como escalón por si el resguardo 3 lo
 pide.
 
@@ -139,7 +139,8 @@ entrenador ya tiene.
 - **`responsable_jugador`** `(id, club_id, jugador_id, email, cargado_por,
   cargado_en)`: el mail en minúsculas, único por `(jugador_id, email)`. Lo
   escribe y lo lee el staff del plantel (RLS por `puede_escribir_plantel`) y
-  el coordinador lo corrige. Es dato del adulto, no del chico.
+  lo corrige el mismo profe desde la ficha (el coordinador no lo lee: ve los
+  vínculos ya hechos). Es dato del adulto, no del chico.
 - **`vinculo_familia`** `(id, user_id, club_id, jugador_id, via, desde,
   hasta, cerrado_por)`, con `via` = `'mail'` hoy. Único parcial
   `(user_id, jugador_id) where hasta is null`. Sin insert ni delete del
