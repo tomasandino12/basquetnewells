@@ -6,6 +6,15 @@
 <link rel="icon" href="/public/escudo.png" type="image/png">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#131316">
+<!-- Instalable como app (spec portal-pwa). El ícono es genérico, no el
+     escudo: el escudo no suma usos nuevos hasta que el club lo apruebe.
+     iOS no lee los íconos del manifest: necesita su apple-touch-icon. -->
+<link rel="manifest" href="/public/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/public/icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Inferiores">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>Inferiores · Seguimiento de jugadores</title>
 <meta name="description" content="Seguimiento del desarrollo de jugadores en inferiores de básquet: partidos, mediciones y biblioteca de ejercicios.">
 
