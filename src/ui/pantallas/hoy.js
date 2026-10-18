@@ -18,6 +18,7 @@ import { ir } from '../main.js';
 import { $ } from '../dom.js';
 import { textoDeError } from '../errores.js';
 import { saludoSegunHora } from '../../data/saludo.js';
+import { cargarBloqueMisiones } from './misionesAcceso.js';
 
 const contenedor = () => $('hoy-contenido');
 
@@ -165,7 +166,8 @@ export async function renderHoy() {
     .sort((a, b) => b.fecha.localeCompare(a.fecha));
 
   if (!sesionesTiro.length) {
-    contenedor().innerHTML = `<div class="pad"><h2 class="h2">${saludoSegunHora(new Date().getHours())}</h2>${estadoVacioHtml(plantel.categoria)}</div>`;
+    contenedor().innerHTML = `<div class="pad"><h2 class="h2">${saludoSegunHora(new Date().getHours())}</h2><div id="hoy-misiones"></div>${estadoVacioHtml(plantel.categoria)}</div>`;
+    cargarBloqueMisiones('hoy-misiones', club, plantel);
     $('btn-vacio-plantel').addEventListener('click', () => ir('p-plantel'));
     $('btn-vacio-partido').addEventListener('click', () => ir('p-datos'));
     $('btn-vacio-medir').addEventListener('click', () => ir('p-medir'));
@@ -219,11 +221,13 @@ export async function renderHoy() {
     contenedor().innerHTML = `
       <div class="pad">
         <h2 class="h2">${saludoSegunHora(new Date().getHours())}</h2>
+        <div id="hoy-misiones"></div>
         <div class="p">Hubo una batería el ${escaparHtml(formatearFechaCorta(actual.fecha))} en ${escaparHtml(plantel.categoria)}, pero quedó sin ninguna medición: todos los jugadores figuran como ausentes.</div>
         <button class="btn" id="btn-hoy-medir">Hacer una medición</button>
       </div>
     `;
     $('btn-hoy-medir').addEventListener('click', () => ir('p-medir'));
+    cargarBloqueMisiones('hoy-misiones', club, plantel);
     return;
   }
 
@@ -251,6 +255,7 @@ export async function renderHoy() {
   // proyecto los trata como series aparte y nunca los mezcla.
   contenedor().innerHTML = `
     <div class="pad">
+      <div id="hoy-misiones"></div>
       <div class="contexto">${escaparHtml(plantel.categoria)} · batería del ${escaparHtml(formatearFechaCorta(actual.fecha))} · ${jugadoresQueMidieron} jugador${jugadoresQueMidieron === 1 ? '' : 'es'} midió${jugadoresQueMidieron === 1 ? '' : 'eron'}</div>
 
       ${totalActual ? `
@@ -288,6 +293,7 @@ export async function renderHoy() {
     </div>
   `;
 
+  cargarBloqueMisiones('hoy-misiones', club, plantel);
   $('btn-hoy-medir').addEventListener('click', () => ir('p-medir'));
   $('btn-hoy-plantel')?.addEventListener('click', () => ir('p-plantel'));
   $('btn-hoy-metas').addEventListener('click', () => ir('p-metas', { push: true }));
