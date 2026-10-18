@@ -1,5 +1,6 @@
 import {
   obtenerJugadoresDelPlantel, obtenerMedicionesCorporalesDelClub, obtenerSolicitudesDelPlantel,
+  obtenerMisionesDeEquipo,
 } from '../../data/repositorio.js';
 import { vigentePorJugador } from '../../data/antropometria.js';
 import { obtenerClubActual, obtenerPlantelActivo, obtenerPlanteles } from '../sesion.js';
@@ -8,6 +9,8 @@ import { ir } from '../main.js';
 import { $ } from '../dom.js';
 import { textoDeError } from '../errores.js';
 import { abrirSolicitudes } from './aprobarJugador.js';
+import { logrosDelEquipo } from '../../data/misiones.js';
+import { bloqueLogros } from '../componentes/logrosDelEquipo.js';
 
 const contenedor = () => $('plantel-contenido');
 
@@ -110,14 +113,20 @@ export async function renderPlantel() {
   let jugadores;
   let mediciones = [];
   let solicitudes = [];
+  let logros = [];
   try {
     // Las mediciones van juntas con el plantel para poder marcar quién está
     // sin medir. Si sólo fallara esta consulta la lista igual se dibuja: es
     // preferible un plantel sin el detalle de altura que ningún plantel.
-    [jugadores, mediciones, solicitudes] = await Promise.all([
+    // Los logros son un agregado, como las solicitudes: si no se pueden leer
+    // el plantel se dibuja igual, sin ese bloque.
+    [jugadores, mediciones, solicitudes, logros] = await Promise.all([
       obtenerJugadoresDelPlantel(club.id, plantel.id),
       obtenerMedicionesCorporalesDelClub(club.id).catch(() => []),
       obtenerSolicitudesDelPlantel(plantel.id).catch(() => []),
+      obtenerMisionesDeEquipo(club.id, plantel.id)
+        .then(({ previas, misiones }) => logrosDelEquipo(previas, misiones))
+        .catch(() => null),
     ]);
   } catch (e) {
     $('plantel-estado').textContent = textoDeError(e, 'No se pudo cargar el plantel.');
@@ -138,6 +147,7 @@ export async function renderPlantel() {
       ${avisoDeSolicitudesHtml(solicitudes)}
       <div class="eyebrow">${escaparHtml(plantel.categoria)} <span class="der">${jugadores.length} jugador${jugadores.length === 1 ? '' : 'es'}</span></div>
       <div class="lista-2col" id="plantel-lista">${jugadores.map((j) => filaJugador(j, porJugador.get(j.id) ?? null)).join('')}</div>
+      ${logros ? bloqueLogros(logros) : ''}
     </div>
     <div class="pie-fijo"><button class="btn sec" id="btn-agregar-jugador">Agregar jugador a mano</button></div>
   `;

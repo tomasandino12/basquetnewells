@@ -1,8 +1,10 @@
 import {
   obtenerPlantelesDelClub, obtenerCatalogoDeCategorias, obtenerTemporadasDelClub,
-  obtenerPanoramaDelClub, obtenerMiembrosDelClub, obtenerAsignacionesDelClub,
+  obtenerPanoramaDelClub, obtenerMiembrosDelClub, obtenerAsignacionesDelClub, obtenerMisionesDeEquipo,
 } from '../../data/repositorio.js';
 import { armarPanorama, textoSinDatos, hayAlgoParaMostrar } from '../../data/coordinacion.js';
+import { logrosDelEquipo } from '../../data/misiones.js';
+import { bloqueLogros } from '../componentes/logrosDelEquipo.js';
 import { ejeComun } from '../../data/estadisticas.js';
 import { obtenerClubActual } from '../sesion.js';
 import { escaparHtml, textoPorcentaje, formatearFechaCorta } from '../nav.js';
@@ -165,7 +167,7 @@ function tablasDeTarjeta(t) {
   return tablas;
 }
 
-function tarjetaHtml(t) {
+function tarjetaHtml(t, logros) {
   const cuerpo = hayAlgoParaMostrar(t)
     ? `${TIPOS.map((tipo) => resumenTipoHtml(t, tipo)).join('')}${verDetallesHtml(`Historial de ${t.categoria}`, tablasDeTarjeta(t))}`
     : `<div class="det sin-tiros">Todavía no hay baterías ni partidos con tiros en ${escaparHtml(t.categoria)}.</div>`;
@@ -175,6 +177,7 @@ function tarjetaHtml(t) {
       ${operativosHtml(t)}
       ${aCargoHtml(t)}
       ${cuerpo}
+      ${logros ? bloqueLogros(logros, { conTarjeta: false }) : ''}
     </article>
   `;
 }
@@ -185,15 +188,25 @@ export async function renderPanorama() {
   contenedor().innerHTML = '<div class="pad"><div class="p" role="status">Cargando el panorama…</div></div>';
 
   let vista;
+  let logrosPorPlantel = null;
   try {
-    const [planteles, catalogo, temporadas, panorama, miembros, asignaciones] = await Promise.all([
+    const [planteles, catalogo, temporadas, panorama, miembros, asignaciones, equipo] = await Promise.all([
       obtenerPlantelesDelClub(club.id),
       obtenerCatalogoDeCategorias(),
       obtenerTemporadasDelClub(club.id),
       obtenerPanoramaDelClub(club.id),
       obtenerMiembrosDelClub(club.id),
       obtenerAsignacionesDelClub(club.id),
+      // Sólo lo del equipo: la base no le deja ver misiones de un chico. Un
+      // agregado: si falla, el panorama se dibuja igual sin los logros.
+      obtenerMisionesDeEquipo(club.id).catch(() => null),
     ]);
+    if (equipo) {
+      logrosPorPlantel = new Map();
+      for (const l of logrosDelEquipo(equipo.previas, equipo.misiones)) {
+        logrosPorPlantel.set(l.plantelId, [...(logrosPorPlantel.get(l.plantelId) ?? []), l]);
+      }
+    }
     vista = armarPanorama({ planteles, catalogo, temporadas, panorama, miembros, asignaciones });
   } catch (e) {
     const mensaje = textoDeError(e, 'No se pudo cargar el panorama.');
@@ -210,7 +223,7 @@ export async function renderPanorama() {
     <div class="pad">
       <div class="eyebrow">Temporada ${escaparHtml(vista.temporada.nombre)}</div>
       <div class="p">Cada categoría contra sí misma a lo largo de la temporada. No se comparan entre sí: son chicos distintos en momentos distintos.</div>
-      <div class="panorama">${vista.tarjetas.map(tarjetaHtml).join('')}</div>
+      <div class="panorama">${vista.tarjetas.map((t) => tarjetaHtml(t, logrosPorPlantel ? (logrosPorPlantel.get(t.plantelId) ?? []) : null)).join('')}</div>
     </div>
   `;
 
