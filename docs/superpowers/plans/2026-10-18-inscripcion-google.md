@@ -32,7 +32,7 @@ Spec: `docs/superpowers/specs/2026-10-18-inscripcion-google-design.md`. Una task
 ## Task 4 — Formularios
 - **Archivo:** `google/formularios/FORMULARIOS.md`.
 - **Qué:** en todos, arranque de 2–3 líneas (para qué es, qué tener a mano, qué pasa después) y ayuda en cada pregunta de archivo. Cambios a Inscripción (3 preguntas estándar, Rama, sección Documentación con las 6 subidas, mail verificado, texto de privacidad `[VALIDAR CON COORDINACIÓN]`, casilla de recaudación no premarcada); formularios Reinscripción, Comprobante de aranceles (con `Concepto`) y Plantilla completos. Además `google/formularios/PADRES.md`: el texto de la guía para padres, en lenguaje simple, para pegar en un Google Doc.
-- **Supuesto CABB:** formulario actual + 6 fotos. Si Tomás trae un campo que Forms no puede capturar, paro y aviso.
+- **Campos:** los oficiales de la spec (formulario actual + 6 fotos); reinscripción con la tabla de qué se repite. Autorizaciones y email del deportista según lo que decida Tomás.
 - **Acepta:** los títulos de las preguntas estándar coinciden con `config.gs` (test `tests/appsScriptTitulos.test.js`).
 
 ## Task 5 — Guía

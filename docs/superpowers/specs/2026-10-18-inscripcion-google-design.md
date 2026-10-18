@@ -49,7 +49,13 @@ Una pregunta de subir archivo hace que todo el formulario pida cuenta de Google.
 Descartado: web app con subida anónima (endpoint público que escribe en el Drive del club).
 
 ## Reinscripción
-Formulario aparte para chicos que ya se inscribieron alguna vez. Pide las 3 preguntas estándar y **sólo lo que cambia**: categoría y rama, altura y peso, teléfono y domicilio, contacto de urgencia, "¿Cambió algo de salud desde la última inscripción?" (Sí / No; si sí, una sección con el detalle) y las autorizaciones y la casilla de recaudación (se renuevan cada año). No pide fotos de DNI, grupo sanguíneo ni fecha de nacimiento.
+Formulario aparte para chicos que ya se inscribieron alguna vez. Pide las 3 preguntas estándar y **sólo lo que cambia**:
+
+| Se repite cada año | No se repite (sale de su última inscripción completa) |
+|---|---|
+| Categoría y Rama · Altura actual · Domicilio · Teléfono del deportista y del familiar a cargo · Email del deportista · Adulto responsable · Institución, año y turno · Obra social y número de afiliado · "¿Cambió algo de salud desde la última inscripción?" (Sí / No; si sí, sección con afecciones, alergias, cirugías, indicaciones y medicación) · En caso de urgencia llamar a · Autorizaciones y casilla de recaudación (se renuevan cada año) | DNI (sólo la clave) · Nacionalidad · Fecha de nacimiento · Número de socio · Grupo sanguíneo · Altura del padre y de la madre · Lateralidad · Club de procedencia · Fotos de DNI y fotos |
+
+Si la CABB pide las fotos de DNI cada temporada (decisión 3 de abajo), pasan a la columna de la izquierda.
 - Si el DNI no aparece en ninguna inscripción anterior, el chico sale en la hoja **"Revisar"** del tablero: probablemente le tocaba la inscripción completa.
 - Los datos que no cambian (fecha de nacimiento, grupo sanguíneo, DNIs) se toman de su última inscripción, por DNI.
 
@@ -90,6 +96,7 @@ Una planilla de respuestas en la cuenta del básquet: cada formulario vuelca en 
 - Link a la carpeta: `=HIPERVINCULO("https://drive.google.com/drive/search?q=" & DNI; "Abrir")`, que abre la búsqueda de Drive en la carpeta del chico. Así el script no necesita permiso de Sheets.
 - Hoja **"Pagos"**: una fila por chico, una columna por concepto activo (la lista de conceptos está en Config), con ❌ / 📎 / ✅.
 - Hoja **"Revisar"**: reinscripciones sin inscripción anterior, y envíos de otros formularios con un DNI que no está en el padrón.
+- Ni Buscar ni "Para Semillero" muestran **nunca** la ficha médica.
 - Hoja **"Buscar"**, pensada para el celular: el coordinador escribe nombre, apellido o DNI en una sola celda arriba. Si coincide un solo chico, se ve **en vertical** (una fila por dato, cómoda en pantalla angosta): nombre, categoría, alta, cada documento con ✅/❌, cada concepto de pago con ❌/📎/✅ y el link a su carpeta. Si coinciden varios (mismo apellido), muestra la lista con su DNI para que escriba el DNI. Fórmulas `FILTRO`, `ENCONTRAR` y `TRANSPONER`; sin script.
 
 ## Planilla "Para Semillero" (pedido de cuentas-familia, prompt 08)
@@ -113,7 +120,9 @@ Una planilla de respuestas en la cuenta del básquet: cada formulario vuelca en 
 - Las 3 preguntas estándar (parten "Apellido y Nombre" en dos y validan el DNI); pregunta **"Rama"** (Masculino / Femenino, obligatoria) después de la categoría; sección "Documentación" con las 6 subidas; recopilar mail verificado.
 - Texto de **para qué se usan los datos y quién los ve** (borrador marcado `[VALIDAR CON COORDINACIÓN]`): lo ve sólo la coordinación del básquet; se usa para fichar en la CABB, la ficha de emergencia y cargar al chico en la app del club (nombre, fecha de nacimiento, categoría, mail); los documentos quedan en la cuenta del club.
 - Casilla **no premarcada** de mails de recaudación, con el texto del checklist de `00-orden-de-trabajo.md` (`[material, viajes, …]` a completar con Javier).
-- **Campos de la CABB — supuesto:** son los del formulario actual más las 6 fotos (Tomás, 18/10). Tomás va a preguntar si falta algo; si aparece un campo que no se puede capturar con Forms, paro y aviso.
+- **Campos oficiales** (Tomás, 18/10): son exactamente los del formulario actual (5 secciones: identificación y contacto, perfil deportivo, académicos, ficha médica, autorizaciones) más las 6 fotos. Todos se capturan con Forms. Sobre esa lista sólo cambia: "Apellido y nombre del deportista" partido en dos, "DNI / Pasaporte" con la validación, "Rama" nueva y la sección de fotos.
+- **Autorizaciones** (decisión de Tomás, abajo): recomiendo **"Consentimiento de datos" obligatoria** (sin él no corresponde guardar la ficha médica de un menor) y **"Uso de imagen" opcional**, casilla no premarcada que no bloquea la inscripción.
+- **"Email del deportista"** es obligatorio y muchos chicos no tienen mail (Escuelita, U9, U11). Propuesta: opcional, con la ayuda "si es menor de 13, dejalo vacío o poné el tuyo". Decisión de Tomás.
 
 ## Fuera de scope
 Conexión de Semillero con Sheets/Drive, borrado automático, mails a padres, links prellenados, rediseñar el formulario, `clasp`. El enlace de los formularios en la página pública lo resuelve portal.
@@ -126,9 +135,11 @@ Nunca "Publicar en la web" planillas ni respuestas. El vaciado de Drive es manua
 ## Decisiones
 - ~~¿Separar inscripción y documentación?~~ No: un solo formulario, con login y mail verificado (Tomás, 18/10).
 - ~~¿Formularios de pase y aranceles?~~ Pase lo crea coordinación con la plantilla; aranceles lo dejamos armado (Tomás, 18/10).
-- ~~Lista de campos de la CABB~~ Supuesto: formulario actual + 6 fotos (Tomás, 18/10).
+- ~~Lista de campos de la CABB~~ Los del formulario actual + 6 fotos (Tomás, 18/10).
 - **Pendientes de Tomás:**
   1. Carpeta por chico para siempre (`Jugadores/…`) en vez de una por temporada.
   2. Barrido cada 10 minutos en vez de disparador al enviar.
   3. ¿La CABB pide fotos del DNI cada temporada?
   4. Link a la carpeta por búsqueda de Drive (recomendado) o directo (suma scope `spreadsheets`).
+  5. Consentimiento de datos obligatorio, uso de imagen opcional (recomendado).
+  6. Email del deportista opcional para menores (recomendado) u obligatorio con el del adulto.
