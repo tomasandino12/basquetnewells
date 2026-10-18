@@ -13,7 +13,7 @@ Una task = un commit. Al cerrar cada una: `npm run test:q`, commit, y resumen si
 | 1. Configuración del portal | hecha (16/10) |
 | 2. CSP para Google Calendar | hecha (16/10) |
 | 3. Bloque Básquet en la landing | hecha (16/10) |
-| 4. Íconos genéricos | pendiente |
+| 4. Íconos genéricos | hecha (18/10) |
 | 5. Manifest y meta de instalación | pendiente |
 | 6. Service worker | pendiente |
 | 7. Guía para la coordinación | pendiente |
@@ -40,7 +40,7 @@ Una task = un commit. Al cerrar cada una: `npm run test:q`, commit, y resumen si
 
 ## Task 4 — Íconos genéricos (`feat(pwa)`)
 - Archivos: `public/icons/icono.svg`, `icono-192.png`, `icono-512.png`, `icono-maskable-512.png`, `apple-touch-icon.png` (180), `tests/iconosPwa.test.js`.
-- Pelota de básquet con los tokens de la app sobre `#131316`; el maskable deja el dibujo dentro del 80 % central. PNG generados una vez con un canvas en el navegador del panel; el script no se commitea.
+- Pelota de básquet con los tokens de la app sobre `#131316`; el maskable deja el dibujo dentro del 80 % central. PNG generados una vez con un script de Node sin dependencias (zlib) que rasteriza la misma figura; el script no se commitea.
 - Aceptación: no usan el escudo; se ven bien en el preview de Chrome (Application → Manifest).
 - Tests: `cada PNG tiene las medidas que dice su nombre` (lee el IHDR), `ningún ícono de la PWA es el escudo` (hash distinto).
 

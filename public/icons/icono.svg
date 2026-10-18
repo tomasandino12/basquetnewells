@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Ícono genérico de la app instalada: una pelota en el color del club.
+       Los PNG de esta carpeta son esta misma figura rasterizada (radio 176;
+       150 en el maskable, para quedar dentro de la zona segura). -->
+  <defs><clipPath id="pelota"><circle cx="256" cy="256" r="176"/></clipPath></defs>
+  <rect width="512" height="512" fill="#131316"/>
+  <circle cx="256" cy="256" r="176" fill="#D9122E"/>
+  <g clip-path="url(#pelota)" fill="none" stroke="#131316" stroke-width="13.2">
+    <path d="M256 80V432M80 256H432"/>
+    <path d="M146.9 118.7Q229.6 256 146.9 393.3M365.1 118.7Q282.4 256 365.1 393.3"/>
+  </g>
+</svg>
