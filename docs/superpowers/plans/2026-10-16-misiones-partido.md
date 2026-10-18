@@ -20,7 +20,8 @@
 
 ## Componentes reusados por falta de uno propio
 
-(se completa en las tasks 6 a 9)
+- Task 6: `.tarj`, `.tarj-h`, `.chips-tema`/`.chip-tema`, `.campo`, `.btn.sec.chico`, `.pie-fijo`, `.seccion-cab`, `.estado-vacio`, hoja y `.btn-icono` (tacho). Lo único nuevo en CSS son 4 reglas de `.mision-fila` / `.mision-tx` en `componentes.css` (una línea de misión con su botón de quitar): no había una fila de lista con acción por línea.
+(se completa en las tasks 7 a 9)
 
 ## Estado
 
@@ -32,7 +33,7 @@
 | 3. Migración 0055: RPCs `guardar_previa` y `evaluar_misiones` | hecha; verificada en local 18/10 (12/12 OK, en transacción con rollback) |
 | 4. `db push` y verificación en el SQL Editor | push hecho 18/10 (prod 0001–0055); falta pegar `tests/verificarMisiones.sql` en el SQL Editor |
 | 5. Repo `misiones.js` y fachada | hecha |
-| 6. Pantalla de previa (asignar) | pendiente |
+| 6. Pantalla de previa (asignar) | hecha (sin probar en navegador: el preview de esta sesión sirve la carpeta principal y hace falta login) |
 | 7. Pantalla de evaluación y vínculo a mano | pendiente |
 | 8. Logros en el plantel y misiones en la ficha | pendiente |
 | 9. Logros en Panorama (coordinador) | pendiente |

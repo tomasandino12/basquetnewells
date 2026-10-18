@@ -18,6 +18,7 @@ import { setAbrirJugada } from './jugadas.js';
 import { renderJugada, abrirJugada } from './jugada.js';
 import { renderJugadaEditor, iniciarJugadaEditor, confirmarSalidaEditor } from './jugadaEditor.js';
 import { renderMetas } from './metas.js';
+import { renderPrevia } from './previa.js';
 import { renderPanorama } from './coordPanorama.js';
 import { renderProfes } from './coordProfes.js';
 import { renderInventarioCoordinacion, renderInventarioLectura } from './inventario.js';
@@ -61,6 +62,7 @@ export function registrarPantallas() {
   registrarPantalla('p-jugada', { titulo: 'Jugada', render: renderJugada });
   registrarPantalla('p-jugada-editor', { titulo: 'Editor de jugada', render: renderJugadaEditor, confirmarSalida: confirmarSalidaEditor });
   registrarPantalla('p-metas', { titulo: 'Metas', render: renderMetas });
+  registrarPantalla('p-previa', { titulo: 'Misiones', render: renderPrevia });
   registrarPantalla('p-coord-panorama', { titulo: 'Panorama', render: renderPanorama });
   registrarPantalla('p-coord-profes', { titulo: 'Profes', render: renderProfes });
   registrarPantalla('p-coord-inventario', { titulo: 'Inventario', render: renderInventarioCoordinacion });
