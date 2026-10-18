@@ -23,7 +23,10 @@ async function misionesDe(tabla, columnas, previaIds) {
   return data.map(misionDesdeFila);
 }
 
-/** Las previas del plantel, la más reciente primero. */
+/**
+ * Las previas del plantel, la más reciente primero. `evaluada` es true si
+ * alguna de sus misiones ya tiene estado: el ciclo de esa previa se cerró.
+ */
 export async function obtenerPreviasDelPlantel(clubId, plantelId) {
   const supabase = obtenerCliente();
   const { data, error } = await supabase
@@ -33,7 +36,20 @@ export async function obtenerPreviasDelPlantel(clubId, plantelId) {
     .eq('plantel_id', plantelId)
     .order('fecha', { ascending: false });
   if (error) throw error;
-  return data.map(previaDesdeFila);
+  const ids = data.map((f) => f.id);
+  const evaluadas = new Set();
+  if (ids.length) {
+    for (const tabla of ['mision_jugador', 'mision_equipo']) {
+      const { data: filas, error: e } = await supabase
+        .from(tabla)
+        .select('previa_id')
+        .in('previa_id', ids)
+        .not('estado', 'is', null);
+      if (e) throw e;
+      filas.forEach((f) => evaluadas.add(f.previa_id));
+    }
+  }
+  return data.map((f) => ({ ...previaDesdeFila(f), evaluada: evaluadas.has(f.id) }));
 }
 
 /** Una previa con sus misiones; null si no existe o no se ve. */

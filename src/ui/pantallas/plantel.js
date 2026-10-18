@@ -11,6 +11,7 @@ import { textoDeError } from '../errores.js';
 import { abrirSolicitudes } from './aprobarJugador.js';
 import { logrosDelEquipo } from '../../data/misiones.js';
 import { bloqueLogros } from '../componentes/logrosDelEquipo.js';
+import { cargarBloqueMisiones } from './misionesAcceso.js';
 
 const contenedor = () => $('plantel-contenido');
 
@@ -145,6 +146,7 @@ export async function renderPlantel() {
   contenedor().innerHTML = `
     <div class="pad">
       ${avisoDeSolicitudesHtml(solicitudes)}
+      <div id="plantel-misiones"></div>
       <div class="eyebrow">${escaparHtml(plantel.categoria)} <span class="der">${jugadores.length} jugador${jugadores.length === 1 ? '' : 'es'}</span></div>
       <div class="lista-2col" id="plantel-lista">${jugadores.map((j) => filaJugador(j, porJugador.get(j.id) ?? null)).join('')}</div>
       ${logros ? bloqueLogros(logros) : ''}
@@ -152,6 +154,7 @@ export async function renderPlantel() {
     <div class="pie-fijo"><button class="btn sec" id="btn-agregar-jugador">Agregar jugador a mano</button></div>
   `;
   $('btn-agregar-jugador').addEventListener('click', () => abrirAltaManual());
+  cargarBloqueMisiones('plantel-misiones', club, plantel, { lista: true });
   ligarSolicitudes(solicitudes, jugadores, club, plantel);
   contenedor().querySelectorAll('[data-jugador]').forEach((boton) => {
     boton.addEventListener('click', () => abrirFicha(boton.dataset.jugador));

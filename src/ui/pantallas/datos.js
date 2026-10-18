@@ -18,7 +18,6 @@ import { formatearKg } from '../../data/escalones.js';
 import { $ } from '../dom.js';
 import { textoDeError } from '../errores.js';
 import { renderPruebasDelPlantel } from './datosFisico.js';
-import { renderMisionesDelPlantel } from './datosMisiones.js';
 
 const contenedor = () => $('datos-contenido');
 
@@ -151,13 +150,6 @@ export async function renderDatos() {
       <div id="datos-lista"></div>
       <div id="datos-equipo"></div>
 
-      <h2 class="h2">Misiones</h2>
-      <div class="seccion-cab">
-        <div class="eyebrow">Misiones del partido</div>
-        <button class="btn chico" id="btn-armar-misiones">Armar misiones</button>
-      </div>
-      <div id="datos-misiones"></div>
-
       <h2 class="h2">Tiro</h2>
       <div id="datos-tiro-partidos"></div>
       <div id="datos-curvas"></div>
@@ -176,7 +168,6 @@ export async function renderDatos() {
   // Tampoco dependen de los partidos.
   renderCargas(club, plantel);
   renderPruebasDelPlantel(club, plantel);
-  renderMisionesDelPlantel(club, plantel);
 
   let partidos;
   try {
