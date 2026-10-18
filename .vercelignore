@@ -14,6 +14,7 @@ supabase/
 tests/
 backups/
 scripts/
+google/
 *.md
 
 # Ni el manifiesto de npm ni sus versiones: el navegador usa public/vendor/.
