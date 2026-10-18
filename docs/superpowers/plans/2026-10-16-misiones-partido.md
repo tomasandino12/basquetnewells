@@ -15,7 +15,12 @@
 - Mobile-first, breakpoints sólo en `layout.css`, toques ≥ 44px, `hover` dentro de `@media (hover: hover)`. Estado con ícono **y** palabra, nunca sólo color. Sin jerga ("Asistencias", "Robos", no "AST", "REC").
 - La app nunca escribe ni sugiere un estado. Sin ranking ni conteo de misiones individuales.
 - No se toca `importar_partido` ni el parser. Sin dependencias nuevas.
+- Estética (pedido de Tomás, 18/10): coherente con la app y con Newell's. La fuente de verdad es `DESIGN.md` (leerlo y seguir su checklist antes de cada pantalla). Papel y tarjetas blancas; Barlow Condensed en títulos, Inter en el cuerpo, IBM Plex Mono en los números; el color del club sólo con `--primario`, nunca un literal. Referencia visual: el proyecto de Stitch "Objetivos cortos — App formativa". Ahora importa que funcione y respete DESIGN.md: no inventar componentes ni estilos. Si algo no está cubierto, reusar el componente más parecido y anotarlo acá abajo. El pulido va en una pasada aparte.
 - Antes de `npx supabase db push`: parar y preguntar si se corrió `npm run backup`.
+
+## Componentes reusados por falta de uno propio
+
+(se completa en las tasks 6 a 9)
 
 ## Estado
 
