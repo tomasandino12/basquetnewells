@@ -31,11 +31,11 @@ Spec: `docs/superpowers/specs/2026-10-18-inscripcion-google-design.md`. Una task
 
 ## Task 4 — Formularios
 - **Archivo:** `google/formularios/CAMBIOS.md`.
-- **Qué:** en Inscripción: partir Apellido/Nombre, validación del DNI, texto de privacidad (borrador `[VALIDAR CON COORDINACIÓN]`), casilla de recaudación no premarcada, campos CABB faltantes. Formularios Documentación / Pase / Aranceles: preguntas exactas, títulos de pregunta que usa el mapa de `config.gs`, límites de archivo.
+- **Qué:** en Inscripción: partir Apellido/Nombre, validación del DNI, sección "Documentación" con las 6 subidas, mail verificado, texto de privacidad (borrador `[VALIDAR CON COORDINACIÓN]`), casilla de recaudación no premarcada, campos CABB faltantes. Formularios Pase / Aranceles: preguntas exactas, títulos de pregunta que usa el mapa de `config.gs`, límites de archivo.
 - **Bloqueo:** los campos CABB esperan la lista; si alguno no se puede capturar con Forms, paro y aviso.
 - **Acepta:** cada título de pregunta de subida coincide con una clave del mapa de `config.gs` (test `tests/appsScriptTitulos.test.js` que compara `CAMBIOS.md` con la config).
 
 ## Task 5 — Guía
 - **Archivo:** `google/GUIA.md`.
-- **Qué:** (1) mover el formulario actual a la cuenta del básquet (transferir propiedad o "Hacer una copia" desde la cuenta del básquet, y re-vincular la planilla; qué se pierde en cada caso); (2) crear carpeta raíz y planilla; (3) pegar el script, completar config, correr `instalarDisparadores`, aceptar permisos (tabla de scopes y por qué); (4) **prueba manual** con un formulario de prueba y DNIs inventados: mismo DNI desde dos formularios → misma carpeta; reenvío → dos archivos con fechas distintas; tablero ✅/❌ correcto, incluida una entrega a mano; DNI con puntos rechazado; (5) guía corta para padres sin Gmail; (6) vaciado manual después del fichaje.
+- **Qué:** (1) mover el formulario actual a la cuenta del básquet (transferir propiedad o "Hacer una copia" desde la cuenta del básquet, y re-vincular la planilla; qué se pierde en cada caso); (2) crear carpeta raíz y planilla; (3) pegar el script, completar config, correr `instalarDisparadores`, aceptar permisos (tabla de scopes y por qué); (4) **prueba manual** con un formulario de prueba y DNIs inventados: mismo DNI desde dos formularios → misma carpeta; reenvío → dos archivos con fechas distintas; tablero ✅/❌ correcto, incluida una entrega a mano; DNI con puntos rechazado; (5) guía corta para padres sin cuenta de Google (crearla con su mail actual); (6) vaciado manual después del fichaje.
 - **Acepta:** cubre los cinco criterios de aceptación del prompt; `npm run test:q` verde; aviso a la coordinadora.
