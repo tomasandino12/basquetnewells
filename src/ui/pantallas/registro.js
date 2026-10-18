@@ -36,6 +36,7 @@ import { renderJugSesion } from './jugSesion.js';
 import { renderJugProgreso } from './jugProgreso.js';
 import { renderJugJugadas, iniciarJugJugadas } from './jugJugadas.js';
 import { renderFamChicos } from './famChicos.js';
+import { renderFamilias } from './coordFamilias.js';
 
 /**
  * Punto único donde se registran las pantallas. Existe para que main.js no
@@ -69,6 +70,7 @@ export function registrarPantallas() {
   registrarPantalla('p-coord-panorama', { titulo: 'Panorama', render: renderPanorama });
   registrarPantalla('p-coord-profes', { titulo: 'Profes', render: renderProfes });
   registrarPantalla('p-coord-inventario', { titulo: 'Inventario', render: renderInventarioCoordinacion });
+  registrarPantalla('p-coord-familias', { titulo: 'Familias', render: renderFamilias });
   registrarPantalla('p-coord-finanzas', { titulo: 'Finanzas', render: renderFinanzas });
   registrarPantalla('p-coord-rubros', { titulo: 'Rubros', render: renderRubros });
   registrarPantalla('p-mi-perfil', { titulo: 'Mi perfil', render: renderMiPerfil });

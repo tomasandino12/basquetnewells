@@ -46,6 +46,7 @@ export const TABS = [
 export const TABS_COORDINACION = [
   { id: 'p-coord-panorama', texto: 'Panorama', icono: ICONOS.datos },
   { id: 'p-coord-profes', texto: 'Profes', icono: ICONOS.plantel },
+  { id: 'p-coord-familias', texto: 'Familias', icono: ICONOS.persona },
   { id: 'p-coord-inventario', texto: 'Inventario', icono: ICONOS.fisico },
   { id: 'p-coord-finanzas', texto: 'Finanzas', icono: ICONOS.plata },
 ];

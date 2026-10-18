@@ -38,6 +38,7 @@ import { misionesConPrevia } from '../../data/misiones.js';
 import { avisoEstimaciones } from '../componentes/avisoEstimaciones.js';
 import { abrirProtocoloCorporal } from '../componentes/protocoloCorporal.js';
 import { html, crudo } from '../html.js';
+import { renderResponsables } from './responsablesJugador.js';
 import { $ } from '../dom.js';
 import { avisoDeError, textoDeError, mensajeAlGuardar, mostrarAviso, avisoInline } from '../errores.js';
 import { renderAccesoDeJugador } from './aprobarJugador.js';
@@ -348,6 +349,7 @@ export async function renderFicha() {
       <button class="btn sec chico" id="btn-ficha-sacar">Sacar del plantel</button>
     </div>
     <div class="pad" id="ficha-acceso"></div>
+    <div class="pad" id="ficha-familia"></div>
     <div class="pad" id="ficha-corporal"><div class="p" role="status">Cargando mediciones…</div></div>
     <div class="pad" id="ficha-actual"><div class="p" role="status">Cargando datos de la temporada…</div></div>
     <div class="pad" id="ficha-temporadas"><div class="p" role="status">Cargando historia…</div></div>
@@ -357,6 +359,7 @@ export async function renderFicha() {
   $('btn-ficha-nacimiento').addEventListener('click', () => abrirEditarNacimiento(jugador));
   $('btn-ficha-sacar').addEventListener('click', () => abrirSacarDelPlantel(club, plantel, jugador));
   renderAccesoDeJugador(jugador);
+  renderResponsables($('ficha-familia'), club, jugador);
   cargarCorporal(club.id, jugador.id);
   cargarCargas(club.id, plantel.id, jugador.id);
   cargarTemporadas(jugador.id);
