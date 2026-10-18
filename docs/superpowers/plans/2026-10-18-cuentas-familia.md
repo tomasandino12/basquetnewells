@@ -11,8 +11,8 @@ commit. Sin merge ni push: lo hace la coordinadora con el ok de Tomás.
 |---|---|---|
 | 0 | Columnas de "Para Semillero" (b0f510a + eacf568) | hecha |
 | 1 | Lógica pura `inscriptos.js` + `parserInscriptos.js` | hecha (3d20aae) |
-| 2 | Migración 0057 + contratos | pendiente |
-| 3 | Verificación y rollback SQL | pendiente |
+| 2 | Migración 0057 + contratos | hecha |
+| 3 | Verificación y rollback SQL | hecha (12/12 en local, ida y vuelta) |
 | 4 | db push (con backup) | pendiente |
 | 5 | Repo `familia.js` | pendiente |
 | 6 | Plantel → Importar inscriptos | pendiente |
