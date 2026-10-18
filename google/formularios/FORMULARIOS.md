@@ -73,7 +73,7 @@ Título: **Ficha Individual del Deportista - Temporada 2026** (es el formulario 
 | — | **Sección: Autorizaciones legales** | | |  |
 | AN | Autorización de Uso de Imagen | Casillas | no | Autorizo al club a utilizar imágenes/videos del deportista con fines exclusivos de difusión institucional, redes sociales y scouting técnico. **Opcional; no bloquea la inscripción.** |
 | AO | Consentimiento de Datos | Casillas | sí | Declaro que todos los datos vertidos en este formulario son veraces y me comprometo a informar cualquier cambio de salud o contacto de forma inmediata. **Obligatoria**: sin ella no corresponde guardar la ficha médica de un menor. |
-| AP | Avisos de recaudación | Casillas | no | [COMPLETAR CON JAVIER — texto del checklist de 00-orden-de-trabajo.md] Ej.: "Quiero recibir en mi mail los avisos de recaudación del club ([material, viajes, …])". **No premarcada.** |
+| AP | Avisos de recaudación | Casillas | no | Texto de la casilla: "Quiero enterarme de los eventos para colaborar con el básquet (cenas, rifas, campus). Lo que se recauda se usa para [material, viajes, … — ajustar con Javier a dónde va la plata]. Solo mandamos mails de estos eventos, nunca de partidos, y te podés dar de baja cuando quieras." **No premarcada.** |
 
 Cambios respecto del formulario actual (y nada más): "Apellido y Nombre del Deportista" partido en dos preguntas; "DNI / Pasaporte" pasa a "DNI del jugador (sin puntos)" con validación; pregunta **Rama** nueva; sección **Documentación** con las 6 subidas; "Email del Deportista" pasa a opcional; "Consentimiento de Datos" obligatoria; casilla de recaudación nueva.
 
