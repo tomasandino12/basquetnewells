@@ -16,6 +16,8 @@ const ICONOS = {
   datos: '<path d="M3 17l5-6 4 4 4-7 5 5"/><path d="M3 21h18"/>',
   persona: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',
   // Una pizarra: el tablero, una ficha y la flecha de una jugada.
+  // Un billete: el dibujo de la pestaña FINANZAS.
+  plata: '<rect x="3" y="6" width="18" height="12" rx="1.5"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 9.5v5M17.5 9.5v5"/>',
   pizarra: '<rect x="3" y="4" width="18" height="13" rx="1.5"/><circle cx="8" cy="10.5" r="1.8"/><path d="M11 13l5-5M16 8h-3v3"/><path d="M9 21h6"/>',
 };
 
@@ -38,13 +40,14 @@ export const TABS = [
   { id: 'p-datos', texto: 'Datos', icono: ICONOS.datos },
 ];
 
-// Coordinación: tres pestañas y ningún chip de categoría. No hay "categoría
-// activa" porque el coordinador no entra a ninguna. INVENTARIO es del club
-// entero, y es la única que escribe algo que no son accesos.
+// Coordinación: cuatro pestañas y ningún chip de categoría. No hay "categoría
+// activa" porque el coordinador no entra a ninguna. INVENTARIO y FINANZAS son
+// del club entero, y son las únicas que escriben algo que no son accesos.
 export const TABS_COORDINACION = [
   { id: 'p-coord-panorama', texto: 'Panorama', icono: ICONOS.datos },
   { id: 'p-coord-profes', texto: 'Profes', icono: ICONOS.plantel },
   { id: 'p-coord-inventario', texto: 'Inventario', icono: ICONOS.fisico },
+  { id: 'p-coord-finanzas', texto: 'Finanzas', icono: ICONOS.plata },
 ];
 
 // El jugador: tres pestañas, sólo lectura, y ningún chip de categoría ni

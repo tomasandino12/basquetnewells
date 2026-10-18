@@ -33,9 +33,11 @@ export const LIMITE = {
   notasLinea: 1000,
   detalleMaterial: 120,
   notaPaso: 300,
+  nombreRubro: 60,
+  descripcionMovimiento: 300,
 };
 
-/** 'tabla.columna' → largo máximo. Es el espejo exacto de 0028 y de los checks en línea de las tablas nuevas (0035, 0052). */
+/** 'tabla.columna' → largo máximo. Es el espejo exacto de 0028 y de los checks en línea de las tablas nuevas (0035, 0052, 0054). */
 export const LIMITES_POR_COLUMNA = {
   'jugador.nombre_clave': LIMITE.nombrePersona,
   'jugador.nombre_limpio': LIMITE.nombrePersona,
@@ -71,4 +73,7 @@ export const LIMITES_POR_COLUMNA = {
   'variacion_ejercicio.eje': LIMITE.corto,
   'variacion_ejercicio.titulo': LIMITE.titulo,
   'variacion_ejercicio.descripcion': LIMITE.descripcion,
+  'rubro.nombre': LIMITE.nombreRubro,
+  'movimiento.descripcion': LIMITE.descripcionMovimiento,
+  'movimiento.comprobante_url': LIMITE.enlace,
 };
