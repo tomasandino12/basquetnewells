@@ -43,7 +43,7 @@ Al 16/10 hay cuatro ramas abiertas además de esta:
 | 0. Decisiones, tag, rama y worktree | hecha (16/10) |
 | 1. Lógica pura: agrupar y ubicar por fecha | hecha (16/10) |
 | 2. Lógica pura: "Cómo llega" y resúmenes | hecha (16/10; fija la forma de cada fuente, ver el comentario de `historiaJugador.js`) |
-| 3. Migración 0056 y contrato | pendiente |
+| 3. Migración 0056 y contrato | hecha (18/10; se prueba contra la base en la Task 4) |
 | 4. Prueba local con temporada 2025 + repo | pendiente |
 | 5. Refactor: `ficha-historia` → `ficha-actual` | **espera merge de misiones** |
 | 6. Sección en la ficha | pendiente |
