@@ -10,7 +10,7 @@ Spec: `docs/superpowers/specs/2026-10-18-inscripcion-google-design.md`. Una task
 | 2 | Script de barrido y `appsscript.json` | hecho |
 | 3 | Tablero, Pagos, Buscar y planilla "Para Semillero" (fórmulas) | hecho |
 | 4 | Formularios: inscripción, reinscripción, aranceles, plantilla, guía para padres | hecho |
-| 5 | Guía de instalación, de formularios nuevos y de prueba | pendiente |
+| 5 | Guía de instalación, de formularios nuevos y de prueba | hecho |
 
 ## Task 1 — Funciones puras
 - **Archivos:** `google/apps-script/nombres.gs`, `tests/appsScriptNombres.test.js`.
