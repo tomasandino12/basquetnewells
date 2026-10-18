@@ -4,7 +4,7 @@ import {
   obtenerMedicionesSaltoDelPlantel, obtenerMedicionesSprintDelPlantel, obtenerMedicionesYoyoDelPlantel,
   obtenerEstadisticasDelPlantel, obtenerPartidosDelPlantel, obtenerEnviosDeJugador, obtenerMisionesDelJugador,
   obtenerMedicionesCorporalesDeJugador, crearMedicionCorporal, borrarMedicionCorporal,
-  actualizarFechaNacimiento, obtenerCargasDelPlantel, sacarDelPlantel,
+  actualizarFechaNacimiento, obtenerCargasDelPlantel, sacarDelPlantel, obtenerHistoriaDelJugador,
 } from '../../data/repositorio.js';
 import {
   serieDeTiroDelJugador, ultimaBateriaDeJugador, ultimaBateriaConDatosDeJugador, historialDePartidosDelJugador,
@@ -32,6 +32,7 @@ import { botonIcono, ICONO } from '../componentes/iconos.js';
 import { abrirGuiaSalto } from '../componentes/guiaSalto.js';
 import { seccionSprint } from '../componentes/seccionSprint.js';
 import { seccionYoyo } from '../componentes/seccionYoyo.js';
+import { seccionTemporadas } from '../componentes/historiaTemporadas.js';
 import { seccionMisiones } from '../componentes/seccionMisiones.js';
 import { misionesConPrevia } from '../../data/misiones.js';
 import { avisoEstimaciones } from '../componentes/avisoEstimaciones.js';
@@ -349,6 +350,7 @@ export async function renderFicha() {
     <div class="pad" id="ficha-acceso"></div>
     <div class="pad" id="ficha-corporal"><div class="p" role="status">Cargando mediciones…</div></div>
     <div class="pad" id="ficha-actual"><div class="p" role="status">Cargando datos de la temporada…</div></div>
+    <div class="pad" id="ficha-temporadas"><div class="p" role="status">Cargando historia…</div></div>
     <div class="pad" id="ficha-cargas"></div>
   `;
 
@@ -357,6 +359,7 @@ export async function renderFicha() {
   renderAccesoDeJugador(jugador);
   cargarCorporal(club.id, jugador.id);
   cargarCargas(club.id, plantel.id, jugador.id);
+  cargarTemporadas(jugador.id);
 
   // Todo lo de acá abajo va en su propio try/catch: los datos básicos ya
   // están pintados arriba, así que un error de red trayendo la historia no
@@ -513,6 +516,28 @@ function abrirSacarDelPlantel(club, plantel, jugador) {
  * historia: si falla, el resto de la ficha sigue. Sin pesos anotados no se
  * dibuja nada (ni siquiera el título): el profe que no usa FÍSICO no ve ruido.
  */
+/**
+ * El recorrido por todas las temporadas (0056). Va aparte de los datos de la
+ * temporada actual: es un agregado de otra consulta y, si falla, la ficha se
+ * queda con todo lo demás.
+ */
+async function cargarTemporadas(idJugador) {
+  const cont = $('ficha-temporadas');
+  if (!cont) return;
+  let datos;
+  try {
+    datos = await obtenerHistoriaDelJugador(idJugador);
+  } catch (e) {
+    if (idJugador === jugadorId && $('ficha-temporadas')) {
+      $('ficha-temporadas').innerHTML = avisoInline(textoDeError(e, 'No se pudo cargar la historia por temporada.'));
+    }
+    return;
+  }
+  // La ficha pudo cambiar de jugador mientras esto cargaba.
+  if (idJugador !== jugadorId || !$('ficha-temporadas')) return;
+  $('ficha-temporadas').innerHTML = seccionTemporadas(datos);
+}
+
 async function cargarCargas(clubId, plantelId, idJugador) {
   const cont = $('ficha-cargas');
   if (!cont) return;

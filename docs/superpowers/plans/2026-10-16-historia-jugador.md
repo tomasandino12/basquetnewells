@@ -28,6 +28,8 @@ Al 16/10 hay cuatro ramas abiertas además de esta:
 
 **Base local (18/10):** la función de 0056 está aplicada **a mano** (psql), sin fila en `supabase_migrations.schema_migrations`. Un `db reset` la borra: hay que volver a aplicarla con `docker exec -i <db> psql -U postgres < supabase/migrations/0056_historia_jugador.sql`. Ni la función ni sus pruebas leen tablas de 0054 o 0055. 0056 no crea tablas ni texto que escriba un usuario: no suma nada a `contratoLimites.test.js` (`TABLAS_NUEVAS`, `LIMITES_POR_COLUMNA`), así que no choca con misiones ahí.
 
+**Nota de la Task 6 (sin CSS nuevo):** la sección usa sólo clases que ya existen (`.tarj`, `.eyebrow` con `.der`, `.tabla-ev`/`.fila-ev.dos`, `.p`, `.mono`, `.sin`, "Ver detalles"). No se pudo probar en el navegador de la sesión: el panel no dejó abrir `localhost:5183` y `preview_start` lee `.claude/launch.json` de la carpeta principal, no del worktree. Para probar a mano: con la base local en 0053 + `0056_historia_jugador.sql` + `tests/sembrarHistoriaLocal.sql`, cambiar **temporalmente** `public/config.js` a `http://127.0.0.1:54321` y la publishable key de `npx supabase status`, servir con `npx esbuild --serve=5183 --servedir=.` (stdin abierto) y entrar con `zztest-profe17@historia.test` (contraseña en el comentario del seed). Revertir `config.js` antes de commitear (el test de CSP falla si no). Pendiente de pulido: la fila de la sección "Qué se trabajó" con bloques y ejercicios largos, y si una `.fila-ev.dos` queda angosta a 375 px.
+
 ## Restricciones globales
 
 - Sólo lectura. La migración no crea, cambia ni borra policies, y no otorga nada sobre tablas. Si hiciera falta: **parar**.
@@ -48,7 +50,7 @@ Al 16/10 hay cuatro ramas abiertas además de esta:
 | 3. Migración 0056 y contrato | hecha (18/10; se prueba contra la base en la Task 4) |
 | 4. Prueba local con temporada 2025 + repo | hecha (18/10; verificarHistoria 6/6 OK en local, 0056 aplicada a mano sin reset; el seed se probó con rollback, todavía no se cargó) |
 | 5. Refactor: `ficha-historia` → `ficha-actual` | hecha (18/10) |
-| 6. Sección en la ficha | pendiente |
+| 6. Sección en la ficha | código hecho (18/10, `test:q` verde); **falta probarla en el navegador a 375 px** (ver nota) |
 | 7. Docs y `db push` | push hecho (18/10, 0001–0056 en producción); faltan ESQUEMA.md y SEGURIDAD-LANZAMIENTO.md |
 
 ---

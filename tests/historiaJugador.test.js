@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   FUENTES, temporadaDeFecha, agruparHistoria, comoLlega, comoTermino, totalesDePartidos, resumenDeTemporada,
-  historiaDesdeJson,
+  historiaDesdeJson, bateriasDeTiro, cargasPorEjercicio,
 } from '../src/data/historiaJugador.js';
 
 // Un chico que estuvo en U15 2025 y hoy está en U17 2026.
@@ -206,7 +206,7 @@ test('el salto se separa por test y el sprint por distancia', () => {
   const llega = comoLlega(conDatos2025());
   assert.deepEqual(llega.saltos.map((s) => s.test), ['cmj', 'abalakov']);
   assert.deepEqual(llega.sprints.map((s) => [s.distanciaM, s.tiempoMs]), [[20, 3500], [30, 4800]]);
-  assert.equal(llega.sprints[0].velocidad, 5.7);
+  assert.equal(llega.sprints[0].velocidad, undefined);
 });
 
 test('cómo terminó usa sólo lo de esa temporada', () => {
@@ -262,4 +262,22 @@ test('historiaDesdeJson completa las listas que falten y no inventa claves', () 
   assert.deepEqual(h.planteles, []);
   assert.equal(h.otra, undefined);
   assert.deepEqual(historiaDesdeJson(null).saltos, []);
+});
+
+test('bateriasDeTiro: de la más reciente a la más vieja y sin ausencias completas', () => {
+  const b = bateriasDeTiro(conDatos2025().tiro);
+  assert.deepEqual(b, [{ fecha: '2025-08-01', anotados: 10, intentos: 20 }]);
+  assert.deepEqual(bateriasDeTiro([]), []);
+});
+
+test('cargasPorEjercicio da los kg de cada ejercicio con su fecha, en orden', () => {
+  assert.deepEqual(cargasPorEjercicio(conDatos2025().cargas), [
+    { nombre: 'Sentadilla', movimientos: [{ kg: 20, fecha: '2025-05-01' }, { kg: 25, fecha: '2025-09-01' }] },
+  ]);
+  assert.deepEqual(cargasPorEjercicio(null), []);
+});
+
+test('la temporada con pertenencia vigente es la actual', () => {
+  const grupos = agruparHistoria(base());
+  assert.deepEqual(grupos.map((g) => g.actual), [true, false]);
 });

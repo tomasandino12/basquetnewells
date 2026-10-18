@@ -1,5 +1,5 @@
 import { sesionesDeSalto, TESTS_SALTO } from './salto.js';
-import { sesionesDeSprint, velocidadMedia } from './sprint.js';
+import { sesionesDeSprint } from './sprint.js';
 import { vigentePorCampo } from './antropometria.js';
 import { acumuladosDePartidos, progresionDePesos } from './progresoDelJugador.js';
 
@@ -76,7 +76,7 @@ export function agruparHistoria(datos, fuentes = FUENTES) {
   const plantelPorId = new Map((datos.planteles ?? []).map((p) => [p.id, p]));
 
   const grupos = new Map();
-  const sinTemporada = { temporada: null, categorias: [], profes: [], fuentes: fuentesVacias(fuentes) };
+  const sinTemporada = { temporada: null, actual: false, categorias: [], profes: [], fuentes: fuentesVacias(fuentes) };
   const grupoDe = (temporadaId) => {
     const temporada = temporadas.find((t) => t.id === temporadaId);
     if (!temporada) return null;
@@ -108,6 +108,8 @@ export function agruparHistoria(datos, fuentes = FUENTES) {
       const suyos = [...planteles].map((id) => plantelPorId.get(id)).filter(Boolean);
       return {
         temporada,
+        // Con una pertenencia vigente: la temporada en curso, sus datos son "hasta hoy".
+        actual: pertenencias.some((p) => p.temporadaId === temporada.id && p.hasta == null),
         categorias: [...new Set(suyos.map((p) => p.categoria))].sort(porNombre),
         profes: [...new Set(suyos.flatMap((p) => p.profes ?? []))].sort(porNombre),
         fuentes: f,
@@ -146,22 +148,24 @@ function ultimas(fuentes) {
       .sort((a, b) => a - b)
       .map((d) => sprints.find((s) => s.distanciaM === d && s.mejor))
       .filter(Boolean)
-      .map((s) => ({
-        distanciaM: s.distanciaM, fecha: s.fecha, tiempoMs: s.mejor.tiempoMs,
-        velocidad: velocidadMedia(s.mejor.tiempoMs, s.distanciaM),
-      })),
+      // El tiempo es el total de ida y vuelta: no se calcula una velocidad
+      // acá, que según el intento (antes de 0050 había un solo tramo) sería otra cosa.
+      .map((s) => ({ distanciaM: s.distanciaM, fecha: s.fecha, tiempoMs: s.mejor.tiempoMs })),
     yoyo: yoyo ? { fecha: yoyo.fecha, idas: yoyo.idas } : null,
     altura: medida(corporal.alturaCm),
     peso: medida(corporal.pesoKg),
     cargas,
-    tiro: ultimaBateria(fuentes.tiro ?? []),
+    tiro: bateriasDeTiro(fuentes.tiro ?? [])[0] ?? null,
   };
   r.vacio = !r.saltos.length && !r.sprints.length && !r.yoyo && !r.altura && !r.peso && !r.cargas.length && !r.tiro;
   return r;
 }
 
-/** La última batería con algún par leído, sumando sólo esos pares. */
-function ultimaBateria(filas) {
+/**
+ * Las baterías con algún par leído, de la más reciente a la más vieja, sumando
+ * sólo esos pares (una ausencia completa no es una batería de 0 de 0).
+ */
+export function bateriasDeTiro(filas) {
   const porSesion = new Map();
   for (const f of filas) {
     if (f.anotados == null || f.intentos == null) continue;
@@ -170,7 +174,12 @@ function ultimaBateria(filas) {
     s.intentos += f.intentos;
     porSesion.set(f.sesionId, s);
   }
-  return [...porSesion.values()].sort((a, b) => b.fecha.localeCompare(a.fecha))[0] ?? null;
+  return [...porSesion.values()].sort((a, b) => b.fecha.localeCompare(a.fecha));
+}
+
+/** Cómo fue cambiando la carga de cada ejercicio, en orden: sólo los kg y sus fechas. */
+export function cargasPorEjercicio(movimientos) {
+  return progresionDePesos(movimientos ?? []).map((e) => ({ nombre: e.nombre, movimientos: e.movimientos }));
 }
 
 /**
