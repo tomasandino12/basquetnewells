@@ -16,7 +16,7 @@ Una task = un commit. Al cerrar cada una: `npm run test:q`, commit, y resumen si
 | 4. Íconos genéricos | hecha (18/10) |
 | 5. Manifest y meta de instalación | hecha (18/10) |
 | 6. Service worker | hecha (18/10) |
-| 7. Guía para la coordinación | pendiente |
+| 7. Guía para la coordinación | hecha (18/10) |
 | 8. Verificación en navegador y celular | pendiente |
 
 ## Task 1 — Configuración del portal (`feat(portal)`)

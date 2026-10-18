@@ -165,3 +165,33 @@ Esa lista de **Esperando acceso** no incluye a quien ya tiene una cuenta de
 jugador vigente. Un chico que pidió acceso y todavía no fue aprobado sí puede
 aparecer ahí: a un jugador se lo aprueba desde PLANTEL, no desde acá, y
 habilitarlo como profe le daría acceso a los datos de otros menores.
+
+## Calendario e inscripción de la página pública
+
+La landing tiene un bloque "El básquet del club" para las familias: el botón
+de inscripción y dos calendarios de Google (partidos y torneos; eventos y
+recaudación). Los enlaces viven todos en `src/data/portal.js`; lo que está en
+`null` se ve como "Próximamente".
+
+**Calendarios.** Los carga la coordinación desde el celular, en Google
+Calendar, sin tocar código. Para conectarlos (una sola vez, desde una compu):
+1. En Google Calendar → Configuración del calendario → "Permisos de acceso":
+   marcar **"Hacer disponible públicamente"**. Sin eso el embed sale vacío.
+2. En la misma pantalla, "Integrar el calendario" → copiar el **ID de
+   calendario** (termina en `@group.calendar.google.com`). También sirve pegar
+   la URL de "Código para insertar": de ahí se toma sólo el ID.
+3. Pegarlo en `id:` del calendario que corresponde en `src/data/portal.js`,
+   `npm run test:q`, commit y deploy.
+
+**Público quiere decir público**: cualquiera que tenga el link ve todos los
+eventos. **Nunca nombres de jugadores** en el título ni en la descripción de
+un evento: "U13 vs. Central, 10 h, cancha 2", no "U13: convocados …".
+
+**Inscripción.** Pegar el link del formulario de Google (el corto `forms.gle/…`
+o el largo `docs.google.com/forms/…`) en `inscripcion:`. Otro link no se
+acepta (el test lo rechaza y la tarjeta queda en "Próximamente"). El
+formulario junta datos de menores fuera de la app: el responsable es el club,
+como en `docs/legal`.
+
+**Información** (categorías, horarios, contacto): es texto fijo en
+`public/index.html`, marcado con `PENDIENTE`, hasta que el club lo pase.
