@@ -106,7 +106,7 @@ Al 16/10 hay cuatro ramas abiertas además de esta:
 
 ### Task 6: sección en la ficha
 
-**Archivos:** crear `src/ui/componentes/historiaTemporadas.js` (`BLOQUES`, `html\`...\``, `verDetallesHtml` por temporada). En `fichaJugador.js`, `<div class="pad" id="ficha-temporadas">` antes de `ficha-cargas`, con su try/catch y `avisoInline`. Estilos según `DESIGN.md` y su checklist.
+**Archivos:** crear `src/ui/componentes/historiaTemporadas.js` (`BLOQUES`, `html\`...\``, `verDetallesHtml` por temporada). En `fichaJugador.js`, `<div class="pad" id="ficha-temporadas">` antes de `ficha-cargas`, con su try/catch y `avisoInline`. Estilos según `DESIGN.md` y su checklist: es la fuente de verdad. Coherente con el resto de la app y con la identidad del club (títulos condensados en mayúscula); el color del club entra **sólo** por `--primario`. Referencia visual: el proyecto de Stitch "Objetivos cortos — App formativa". **Sin componentes nuevos**: lo que DESIGN.md no cubra se anota acá y se resuelve en la pasada de pulido, que va aparte.
 
 **Aceptación** (base local, 375 px):
 1. El profe U17 ve "Cómo llega" con los datos de 2025, y las tarjetas de 2026 arriba y 2025 abajo.
