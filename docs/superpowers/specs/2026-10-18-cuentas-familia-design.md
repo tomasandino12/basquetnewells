@@ -1,6 +1,7 @@
 # Cuentas de familia — diseño
 
-Estado: **esperando aprobación de Tomás** (v2, 18/10). Prompt 08 con dos
+Estado: **aprobada por Tomás el 18/10, con D2** (mail verificado de Google) y
+la excepción al prompt 05 (6 datos sin DNI, descarga a mano). Prompt 08 con dos
 decisiones de Tomás del 18/10: el vínculo no lo aprueba el coordinador antes,
 y **los datos que el padre carga en el formulario de Inscripción alimentan
 tanto el plantel de Semillero como el vínculo**. Tag `pre-cuentas-familia`.
