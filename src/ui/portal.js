@@ -1,15 +1,29 @@
 import { html } from './html.js';
 import { $ } from './dom.js';
+import { formulariosPublicos } from '../data/repositorio.js';
 import { PORTAL, urlEmbedCalendario, enlaceFormulario, enlaceContacto } from '../data/portal.js';
+import { resolverFormularios } from '../data/formulariosPortal.js';
+import { destinoDeAuth } from '../data/entradaAuth.js';
 
 /*
  * Portal "Básquet Newell's": la página pública que se reparte a las familias
- * (public/portal.html). Todo sale de src/data/portal.js. Esta parte no lee la
- * base de jugadores ni nada de ellos: hay datos de menores del otro lado del
- * login, en /app.
+ * (public/portal.html). Calendarios y contacto salen de src/data/portal.js. Lo
+ * único que lee de la base es la lista de formularios activos, por la función
+ * anónima formularios_publicos (0058): nada de jugadores ni de familias, que
+ * están del otro lado del login, en /app.
  */
 
 const PRONTO = html`<div class="portal-pronto">Próximamente</div>`;
+
+/** Con la lista vacía: la coordinación los ocultó a todos, o todavía no cargó ninguno. */
+export function htmlSinFormularios() {
+  return html`<div class="portal-tarjeta"><div class="d">Por ahora no hay formularios abiertos. Si necesitás algo, escribile al coordinador (más abajo en esta página).</div></div>`;
+}
+
+/** Si la base no respondió se muestra una copia: mejor eso que nada, pero que se note. */
+export function htmlAvisoRespaldo() {
+  return html`<p class="portal-pronto">No pudimos actualizar la lista de formularios; te mostramos la última que conocemos.</p>`;
+}
 
 /**
  * Una tarjeta por formulario, con su línea de para qué es y qué tener a mano.
@@ -49,8 +63,17 @@ export function htmlContacto(contacto) {
   return html`<a class="btn" href="${url}" target="_blank" rel="noopener">${etiqueta}</a>`;
 }
 
-export function iniciarPortal() {
-  $('portal-formularios').innerHTML = htmlFormularios(PORTAL.formularios);
+export async function iniciarPortal() {
   $('portal-calendarios').innerHTML = htmlCalendarios(PORTAL.calendarios);
   $('portal-contacto').innerHTML = htmlContacto(PORTAL.contacto);
+
+  // Si la URL es la vuelta de un login, portalEntrada.js ya está mandando a la
+  // persona a /app. Acá no se consulta nada: el cliente de Supabase canjearía
+  // el ?code= o el #access_token en esta página, y la sesión es de /app.
+  if (destinoDeAuth(window.location.search, window.location.hash)) return;
+
+  const { estado, formularios } = await resolverFormularios(() => formulariosPublicos(PORTAL.clubId), PORTAL.formularios);
+  $('portal-formularios').innerHTML = estado === 'vacio'
+    ? htmlSinFormularios()
+    : html`${estado === 'respaldo' && htmlAvisoRespaldo()}${htmlFormularios(formularios)}`;
 }

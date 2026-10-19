@@ -10,6 +10,10 @@
  * link ve todos los eventos. Por eso nunca nombres de jugadores en los eventos.
  */
 export const PORTAL = Object.freeze({
+  // Newell's Old Boys (semilla 0004). El id de un club no es secreto: la función
+  // pública formularios_publicos(club) sólo devuelve lo que la coordinación
+  // dejó activo en la página.
+  clubId: '20000000-0000-0000-0000-000000000001',
   calendarios: Object.freeze([
     // PENDIENTE: ID del calendario (Configuración del calendario → "ID de calendario").
     Object.freeze({ titulo: 'Partidos y torneos', id: null }),

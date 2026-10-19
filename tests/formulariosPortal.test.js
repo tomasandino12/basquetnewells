@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { LIMITE } from '../src/data/limites.js';
 import { readFileSync } from 'node:fs';
-import { validarFormulario, moverFormulario, ordenarFormularios, formularioDesdeFila, formularioPublicoDesdeFila } from '../src/data/formulariosPortal.js';
+import { validarFormulario, moverFormulario, ordenarFormularios, formularioDesdeFila, formularioPublicoDesdeFila, resolverFormularios } from '../src/data/formulariosPortal.js';
 
 /**
  * Lo que la coordinación escribe en el panel termina en una tarjeta de la
@@ -115,4 +115,20 @@ test('el repo del portal usa la función pública y sólo las columnas con grant
   assert.doesNotMatch(update, /club_id|creado_por|actualizado_por/);
   assert.doesNotMatch(repo, /\.delete\(\)/);
   assert.match(readFileSync('src/data/repositorio.js', 'utf8'), /export \* from '\.\/repos\/portal\.js';/);
+});
+
+const respaldo = [{ titulo: 'Inscripción', texto: 'x', enlace: 'https://forms.gle/a' }];
+
+test('resolverFormularios: con filas muestra las de la base, no el respaldo', async () => {
+  const filas = [{ titulo: 'Rifas', texto: 'y', enlace: 'https://forms.gle/b' }];
+  assert.deepEqual(await resolverFormularios(async () => filas, respaldo), { estado: 'base', formularios: filas });
+});
+
+test('resolverFormularios: lista vacía es vacía, no respaldo: la coordinación pudo ocultarlos a propósito', async () => {
+  assert.deepEqual(await resolverFormularios(async () => [], respaldo), { estado: 'vacio', formularios: [] });
+});
+
+test('resolverFormularios: si la base falla, cae al respaldo y no tira', async () => {
+  const r = await resolverFormularios(async () => { throw new Error('sin red'); }, respaldo);
+  assert.deepEqual(r, { estado: 'respaldo', formularios: respaldo });
 });

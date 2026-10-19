@@ -33,15 +33,28 @@
 <link rel="stylesheet" href="/public/css/layout.css">
 <link rel="stylesheet" href="/public/css/componentes.css">
 <link rel="stylesheet" href="/public/css/publico.css">
+<!-- El portal lee la lista de formularios de la base (una sola función anónima,
+     formularios_publicos). Por eso lleva el MISMO import map que la app, letra
+     por letra: así comparten el hash de la CSP de vercel.json y no hace falta
+     tocarla. tests/portalPagina.test.js y csp.test.js lo comparan. -->
+<script type="importmap">
+{
+  "imports": {
+    "xlsx": "/public/vendor/xlsx.mjs",
+    "@supabase/supabase-js": "/public/vendor/supabase-js.mjs"
+  }
+}
+</script>
+<script src="/public/config.js"></script>
 </head>
 <body>
 
 <!-- =====================================================================
      PORTAL "BÁSQUET NEWELL'S": la puerta pública para las familias.
-     Estático: no importa el repositorio, no lleva import map ni la
-     configuración de Supabase y no registra service worker (la app
-     instalable es /app). Lo que cambia (formularios, calendarios, contacto)
-     lo completa src/ui/portal.js desde src/data/portal.js.
+     Sin sesión y sin service worker (la app instalable es /app). Lo único
+     que lee de la base es la lista de formularios activos, por la función
+     anónima formularios_publicos. Calendarios y contacto salen de
+     src/data/portal.js; src/ui/portal.js completa todo.
      Textos en voseo y sin suponer que saben de computadoras.
      ===================================================================== -->
 <div class="publico" id="publico">

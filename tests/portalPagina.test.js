@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { htmlFormularios, htmlCalendarios, htmlContacto } from '../src/ui/portal.js';
+import { htmlFormularios, htmlCalendarios, htmlContacto, htmlSinFormularios, htmlAvisoRespaldo } from '../src/ui/portal.js';
 
 /**
  * portal.html es HTML escrito a mano y no hay navegador en los tests: se lee
@@ -35,25 +35,52 @@ test('el botón a Semillero lleva a /app e incluye cómo instalarla', () => {
   assert.match(sec, /Instalar/);
 });
 
-test('portal.html no tiene scripts inline ni enlaza el manifest', () => {
-  const inline = [...pagina.matchAll(/<script(?![^>]*\bsrc=)[^>]*>/g)].map((m) => m[0]);
-  assert.deepEqual(inline, []);
+const importMapDe = (html) => html.replace(/\r\n/g, '\n').match(/<script type="importmap">([\s\S]*?)<\/script>/)?.[1];
+
+test('portal.html no tiene más script inline que el import map ni enlaza el manifest', () => {
+  const inline = [...pagina.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>/g)].filter((m) => !/type="importmap"/.test(m[1]));
+  assert.deepEqual(inline.map((m) => m[0]), []);
   assert.doesNotMatch(pagina, /rel="manifest"/);
   assert.doesNotMatch(pagina, /serviceWorker/);
 });
 
-test('el portal es mobile y no carga el import map ni la configuración de Supabase', () => {
-  assert.match(pagina, /<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">/);
-  assert.doesNotMatch(pagina, /importmap|config\.js/);
+test('el import map del portal es idéntico, letra por letra, al de la app: el mismo hash de la CSP', () => {
+  const app = readFileSync('public/index.html', 'utf8');
+  assert.ok(importMapDe(pagina), 'el portal no tiene import map');
+  assert.equal(importMapDe(pagina), importMapDe(app));
+  assert.match(pagina, /<script src="\/public\/config\.js"><\/script>/);
+  assert.ok(pagina.indexOf('importmap') < pagina.indexOf('type="module"'), 'el import map tiene que ir antes de los módulos');
 });
 
-test('portal.js y su arranque no importan repos, cliente ni Supabase', () => {
-  for (const archivo of ['src/ui/portal.js', 'src/ui/portalArranque.js']) {
+test('el portal es mobile', () => {
+  assert.match(pagina, /<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">/);
+});
+
+test('portal.js sólo pide datos por el repositorio: ni repos/, ni cliente, ni Supabase, ni fetch', () => {
+  for (const archivo of ['src/ui/portal.js', 'src/ui/portalArranque.js', 'src/ui/portalEntrada.js']) {
     const codigo = readFileSync(archivo, 'utf8');
     const imports = [...codigo.matchAll(/from\s+'([^']+)'/g)].map((m) => m[1]);
-    assert.deepEqual(imports.filter((i) => /repositorio|repos\/|cliente|supabase/.test(i)), [], archivo);
+    assert.deepEqual(imports.filter((i) => /repos\/|cliente|supabase/.test(i)), [], archivo);
     assert.doesNotMatch(codigo, /\bfetch\s*\(/, archivo);
   }
+  const portal = readFileSync('src/ui/portal.js', 'utf8');
+  assert.match(portal, /from '\.\.\/data\/repositorio\.js'/);
+  assert.doesNotMatch(readFileSync('src/ui/portalEntrada.js', 'utf8'), /repositorio/);
+});
+
+test('el portal no consulta nada si la URL es la vuelta de un login: esos links van a /app', () => {
+  // El cliente de Supabase canjearía el ?code= o el #access_token en esta página.
+  const portal = readFileSync('src/ui/portal.js', 'utf8');
+  assert.match(portal, /destinoDeAuth\(window\.location\.search, window\.location\.hash\)/);
+  const guarda = portal.indexOf('destinoDeAuth(');
+  assert.ok(guarda > 0 && guarda < portal.indexOf('resolverFormularios('), 'la guarda tiene que ir antes de leer la base');
+});
+
+test('con la lista vacía el portal dice que no hay formularios abiertos; con la base caída, avisa que es una copia', () => {
+  assert.match(htmlSinFormularios().toString(), /no hay formularios abiertos/i);
+  assert.match(htmlSinFormularios().toString(), /coordinador/i);
+  assert.doesNotMatch(htmlSinFormularios().toString(), /<a /);
+  assert.match(htmlAvisoRespaldo().toString(), /no pudimos actualizar/i);
 });
 
 test('cada formulario muestra su línea de ayuda y abre en otra pestaña con rel=noopener', () => {

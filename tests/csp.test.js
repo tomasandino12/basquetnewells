@@ -107,3 +107,16 @@ test('frame-src sólo deja YouTube sin cookies y Google Calendar, sin comodines'
   assert.ok(!f.some((v) => v.includes('*') || v === 'https:'), f.join(' '));
   assert.deepEqual([...f].sort(), ['https://calendar.google.com', 'https://www.youtube-nocookie.com']);
 });
+
+// El portal (public/portal.html) también lee la base, así que lleva el mismo
+// import map. Si alguien lo toca en un solo lado, el hash cambia y el portal
+// queda sin formularios en producción (la CSP la pone Vercel, no el local).
+test('el import map del portal tiene su hash en script-src y no hay otros scripts inline', () => {
+  const portal = readFileSync(path.join(raiz, 'public', 'portal.html'), 'utf8').replace(/\r\n/g, '\n');
+  const m = portal.match(/<script type="importmap">([\s\S]*?)<\/script>/);
+  assert.ok(m, 'el portal no tiene import map');
+  const hash = `'sha256-${createHash('sha256').update(m[1], 'utf8').digest('base64')}'`;
+  assert.ok(directiva('script-src')?.includes(hash), `script-src no tiene ${hash} del portal`);
+  const inline = [...portal.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>/g)].filter((x) => !/type="importmap"/.test(x[1]));
+  assert.deepEqual(inline.map((x) => x[0]), []);
+});

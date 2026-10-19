@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { PORTAL, HOSTS_EMBEBIDOS, urlEmbedCalendario, enlaceFormulario, enlaceContacto } from '../src/data/portal.js';
 
 /**
@@ -74,4 +75,10 @@ test('enlaceContacto acepta WhatsApp y mail; rechaza el resto', () => {
 
 test('cada URL de embed sale de un host declarado en HOSTS_EMBEBIDOS', () => {
   assert.ok(HOSTS_EMBEBIDOS.includes(new URL(urlEmbedCalendario(ID)).hostname));
+});
+
+test('clubId es el de Newell\'s de la semilla 0004, y es un uuid', () => {
+  assert.match(PORTAL.clubId, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+  const semilla = readFileSync('supabase/migrations/0004_seed_piloto.sql', 'utf8');
+  assert.ok(semilla.includes(`('${PORTAL.clubId}', 'Newell''s Old Boys')`), 'el clubId no coincide con la semilla de Newell\'s');
 });

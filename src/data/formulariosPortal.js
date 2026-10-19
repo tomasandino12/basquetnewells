@@ -81,3 +81,24 @@ export function formularioDesdeFila(f) {
 export function formularioPublicoDesdeFila(f) {
   return { titulo: f.titulo, texto: f.texto, enlace: f.enlace };
 }
+
+/**
+ * Qué mostrar en el portal: lo que devuelve la base, o el respaldo de
+ * src/data/portal.js si la base no responde. Una lista VACÍA es vacía, no
+ * respaldo: la coordinación pudo ocultarlos todos a propósito (por ejemplo,
+ * cuando cierra la inscripción) y mostrarle a la familia uno que ya cerró
+ * sería peor que decir que no hay ninguno.
+ *
+ * `leer` es la función que consulta la base (la inyecta la pantalla, así esto
+ * se prueba sin red).
+ *
+ * @returns {Promise<{estado: 'base'|'vacio'|'respaldo', formularios: object[]}>}
+ */
+export async function resolverFormularios(leer, respaldo) {
+  try {
+    const formularios = await leer();
+    return { estado: formularios.length ? 'base' : 'vacio', formularios };
+  } catch {
+    return { estado: 'respaldo', formularios: respaldo };
+  }
+}
