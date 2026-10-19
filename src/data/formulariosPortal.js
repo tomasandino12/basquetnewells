@@ -11,6 +11,16 @@ import { enlaceFormulario } from './portal.js';
  * vuelve a exigir con un check), y el texto no es un campo libre sin límite.
  */
 
+/**
+ * Los dos destinos especiales de un formulario (0061). Las claves son las del
+ * check de la base: tests/contratoDestinoFormulario.test.js las compara. Un
+ * formulario sin destino es "común" y va en la lista.
+ */
+export const DESTINOS = Object.freeze([
+  Object.freeze({ clave: 'consultas', rotulo: 'Quiero jugar en Newell\'s (consultas)', chip: 'Quiero jugar' }),
+  Object.freeze({ clave: 'colaboradores', rotulo: 'Sumate como sponsor o colaborador', chip: 'Sponsors' }),
+]);
+
 export const MENSAJE_ENLACE_FORMULARIO = 'El enlace tiene que ser de Google Forms (empieza con https://docs.google.com/forms o https://forms.gle).';
 
 const recortar = (v) => (typeof v === 'string' ? v.trim() : '');
