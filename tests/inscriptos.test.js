@@ -179,3 +179,34 @@ test('filasParaImportar: existente por id, nuevo por nombre, conflicto desambigu
   assert.equal(filas[1].desambiguador, undefined);
   assert.equal(filas[2].desambiguador, '2012-04-03');
 });
+
+test('inscriptosDelPlantel: una fila sin mail entra sin vínculo y sin advertencia', () => {
+  const r = inscriptosDelPlantel([fila({ mail: '' })], 'U15M');
+  assert.equal(r.inscriptos.length, 1);
+  assert.deepEqual(r.inscriptos[0].mails, []);
+  assert.deepEqual(r.advertencias, []);
+});
+
+test('inscriptosDelPlantel: U13 mixto sin rama se ofrece marcado en U13M', () => {
+  const f = fila({ categoriaTexto: 'U13 - MIXTO (2014 Y 2013)', rama: '', fechaNacimiento: '2013-05-05' });
+  const r = inscriptosDelPlantel([f], 'U13M');
+  assert.equal(r.inscriptos.length, 1);
+  assert.equal(r.inscriptos[0].sinRama, true);
+  assert.equal(r.salteadas.length, 0);
+});
+
+test('inscriptosDelPlantel: U13 sin rama no aparece en otros planteles', () => {
+  const f = fila({ categoriaTexto: 'U13 - MIXTO (2014 Y 2013)', rama: '' });
+  const r = inscriptosDelPlantel([f], 'U15M');
+  assert.equal(r.inscriptos.length, 0);
+  assert.equal(r.salteadas.length, 1);
+});
+
+test('inscriptosDelPlantel: avisa si el año de nacimiento no es de la categoría', () => {
+  const r = inscriptosDelPlantel([fila({ fechaNacimiento: '2009-03-03' })], 'U15M', 2026);
+  assert.match(r.inscriptos[0].aviso, /U17/);
+  const ok = inscriptosDelPlantel([fila({ fechaNacimiento: '2012-03-03' })], 'U15M', 2026);
+  assert.equal(ok.inscriptos[0].aviso, null);
+  const sinAnio = inscriptosDelPlantel([fila({ fechaNacimiento: '2009-03-03' })], 'U15M');
+  assert.equal(sinAnio.inscriptos[0].aviso, null);
+});
