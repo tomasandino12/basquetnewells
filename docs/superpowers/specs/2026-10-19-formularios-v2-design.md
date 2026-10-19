@@ -69,6 +69,12 @@ Tomás quiere que, si un chico se golpea, el profe tenga a mano el teléfono del
 - **Alertas médicas obligatorias, con la opción "Ninguna":** así un casillero vacío no se confunde con "no tiene nada".
 - Regla para quien lea esto (la sesión de Semillero): **la salud vigente es la de la última respuesta que pasó por S6; si no hay, la de `Inscripción 2026`**. El contacto vigente es el de la última respuesta.
 
+## Las dos planillas para Semillero (contrato con datos conectados, `google/PRECARGA-2026.md`)
+Son planillas **aparte**, armadas con `IMPORTRANGE` desde hojas de salida del Tablero. Así cubren las respuestas nuevas **y** las de 2026 (`Inscripción 2026`), y no hace falta otra planilla para la precarga.
+- **Para Semillero:** las 6 columnas de siempre (`Apellido | Nombre | Fecha de nacimiento | Categoría | Mail del responsable | Rama`). Para un chico que sólo está en 2026, el mail queda vacío (ese formulario no lo pedía).
+- **Emergencias para Semillero:** `Apellido y nombre | Fecha de nacimiento | Teléfono del adulto | Contacto de urgencia | Afecciones | Alergias | Medicación | Indicación médica | Obra social`. Sólo filas con el consentimiento de datos tildado. Salud vigente: la de la última respuesta que pasó por S6 o, si no hay, la de 2026. Contacto: el de la última respuesta.
+- De dónde sale cada columna de Emergencias en el formulario nuevo: Teléfono del adulto = `Adulto responsable - WhatsApp`; Contacto de urgencia = nombre y vínculo + teléfono; Afecciones = `Alertas médicas`; Alergias y Medicación = la respuesta Sí/No + el detalle; Indicación médica = la indicación especial + "tiene que tener a mano"; Obra social = la obra social. Sin DNI, afiliado, grupo sanguíneo ni domicilio.
+
 ## La carpeta del chico, para la CAB
 Todo lo del chico queda en `Jugadores/APELLIDO, Nombre — DNI`: DNIs, fotos y comprobantes, sin pasar por WhatsApp. La guía explica cómo bajarla entera: en la compu, *clic derecho → Descargar* baja un .zip. En el celular, la app de Drive no baja carpetas, sólo archivos sueltos, así que conviene hacerlo en la compu.
 
