@@ -9,7 +9,8 @@ Spec: `docs/superpowers/specs/2026-10-19-formularios-v2-design.md`. Una task por
 | 1 | `FORMULARIOS.md` v2: los 5 formularios y la plantilla | pendiente |
 | 2 | `TABLERO.md` v2: Base con la pestaña única, Pagos con formulario propio, Revisar categoría/año | pendiente |
 | 3 | `GUIA.md` y `PADRES.md` v2 | pendiente |
-| 4 | `PROMPT-NAVEGADOR.md` para Claude en el navegador | pendiente |
+| 4 | Script del Tablero: importar las respuestas 2026 | pendiente |
+| 5 | `PROMPT-NAVEGADOR.md` para Claude en el navegador | pendiente |
 
 ## Task 1 — Formularios
 - **Archivos:** `google/formularios/FORMULARIOS.md`, `tests/appsScriptTitulos.test.js`.
@@ -26,7 +27,12 @@ Spec: `docs/superpowers/specs/2026-10-19-formularios-v2-design.md`. Una task por
 - **Archivos:** `google/GUIA.md`, `google/formularios/PADRES.md`.
 - **Qué:** cuenta de la Comisión y "no tocar lo viejo"; carpeta `Inscripción y documentación`; bajar la carpeta de un chico (compu y celular); pago nuevo simple vs. formulario propio; primera temporada; prueba manual actualizada. PADRES: un solo formulario de inscripción y qué contestar en la primera pregunta.
 
-## Task 4 — Prompt para el navegador
+## Task 4 — Importar 2026
+- **Archivos:** `google/apps-script-tablero/importar2026.gs`, `google/apps-script-tablero/fila2026.gs` (funciones puras), `google/apps-script-tablero/appsscript.json`, `tests/appsScriptImportar2026.test.js`.
+- **Qué:** menú "Actualizar datos 2026"; lee las respuestas del formulario 2026 por título (ID en una constante); una fila por DNI (la última); reescribe sólo la hoja `Inscripción 2026`. Saltea un DNI inválido y lo cuenta.
+- **Tests:** `normaliza el DNI con puntos`, `se queda con la última respuesta de cada DNI`, `saltea pasaportes y DNIs inválidos`, `appsscript.json pide sólo forms y spreadsheets.currentonly`, `el código no llama a métodos que modifican formularios`.
+
+## Task 5 — Prompt para el navegador
 - **Archivo:** `google/PROMPT-NAVEGADOR.md`.
 - **Qué:** un prompt autocontenido, por etapas con chequeo: carpetas → formularios → tablero → script (Tomás acepta permisos) → prueba con DNIs inventados → informe. Reglas: sólo cuenta Comisión, sólo lo pedido, no abrir respuestas viejas ni copiar datos de menores, no cambiar permisos, nunca publicar en la web, parar y preguntar ante cualquier duda.
 - **Acepta:** test `el prompt cita las reglas` (cuenta Comisión, no publicar, permisos los acepta Tomás).

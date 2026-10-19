@@ -1,6 +1,6 @@
 # Formularios v2 — diseño
 
-**Fecha:** 19/10/2026 · **Rama:** `feat/formularios-v2` · **Estado:** borrador, falta que lo apruebe Tomás.
+**Fecha:** 19/10/2026 · **Rama:** `feat/formularios-v2` · **Estado:** aprobada por Tomás el 19/10, salvo el cambio de la "Primera temporada" (datos de 2026), que falta confirmar.
 **Parte de:** `2026-10-18-inscripcion-google-design.md`, que sigue vigente salvo en lo que se cambia acá. No toca el código de la app ni el script de Apps Script.
 
 ## Qué cambió desde la v1
@@ -23,22 +23,22 @@ Sale de copiar la *estructura* de "Inscripciones Básquet NOB 2026": el original
 No tiene subidas, así que no pide login. Lo completa un adulto (lo dice el arranque). No pide DNI, domicilio ni salud. **No es la inscripción**: la confirmación lleva a la persona al link de Inscripción.
 
 ### 2. Inscripción (uno solo, con dos caminos)
-La primera pregunta es **"¿Ya hizo esta inscripción en otra temporada?"**. Forms no deja repetir una pregunta en dos caminos (quedarían dos columnas con el mismo título). Por eso todo lo común va en una sola sección y los caminos sólo cambian lo propio de cada uno:
+La primera pregunta es **"¿Ya completó la ficha del básquet la temporada pasada (2026)?"**. Forms no deja repetir una pregunta en dos caminos (quedarían dos columnas con el mismo título). Por eso todo lo común va en secciones compartidas y los caminos sólo cambian lo propio de cada uno:
 
 ```
-S1  Jugador (todos): ¿Ya hizo esta inscripción? · DNI · Apellido · Nombre ·
+S1  Jugador (todos): ¿Ya completó la ficha en 2026? · DNI · Apellido · Nombre ·
     Fecha de nacimiento (Fecha, obligatoria) · Categoría (con sus años) · Rama
       ├─ No → S2 Datos que se piden una sola vez (nacionalidad, socio, grupo
       │        sanguíneo, perfil deportivo, alturas de los padres)
-      │      → S3 Documentación (las 6 fotos) → S6
-      └─ Sí → S4 ¿Cambió el DNI?    Sí → S5 Fotos del DNI nuevo (2) → S4b
-                                    No → S4b
-             S4b ¿Cambió algo de salud?   Sí → S6   No → S7
-S6  Salud (completa)                                               → S7
+      │      → S3 Documentación (6 fotos, obligatorias) → S6
+      └─ Sí → S4 Documentación de reinscripción (6 fotos; ver abajo)
+             → S5 ¿Cambió algo de salud desde 2026?   Sí → S6   No → S7
+S6  Salud (completa)                                                  → S7
 S7  Contacto y emergencia (todos) → S8 Escuela (todos) → S9 Autorizaciones (todos)
 ```
 - Forms aplica el salto al tocar *Siguiente*. Por eso la pregunta que decide puede ir primera y compartir sección con el DNI.
-- El script no cambia: lee sólo las preguntas respondidas, y cada título aparece una sola vez. Las fotos del DNI nuevo tienen otro título (`DNI jugador nuevo - frente`) y el tablero las suma a la misma columna.
+- El script de carpetas no cambia: lee sólo las preguntas respondidas, y cada título aparece una sola vez. Las 6 fotos de S4 llevan otro título (`DNI jugador - frente (reinscripción)`), caen en la misma carpeta y el tablero las suma a la misma columna que las de S3.
+- **Fotos en la reinscripción.** Forms no puede mirar la carpeta del chico mientras la familia completa el formulario. Pero en 2026 nadie subió fotos, así que **en esta primera temporada a todos les faltan**: las 6 de S4 son **obligatorias**. Desde la temporada siguiente pasan a opcionales, con la ayuda "subilas sólo si cambió el DNI o si te lo pidió tu profe", y el tablero marca con ❌ a quien le falte alguna.
 - **Fecha de nacimiento** siempre (también en la reinscripción). Las opciones de **Categoría** llevan sus años, como hoy, sin el año de temporada en el título: coordinación las actualiza al empezar cada temporada. En `Revisar`, el tablero marca una categoría que no incluye el año de nacimiento del chico.
 - **Consentimiento de datos obligatorio**, en los dos caminos. Uso de imagen y avisos de recaudación siguen opcionales y sin premarcar.
 
@@ -66,13 +66,26 @@ Tomás quiere que, si un chico se golpea, el profe tenga a mano el teléfono del
 | Obra social y número de afiliado · Grupo sanguíneo | como hoy | sí |
 
 - Contacto y adulto están en S7 y se actualizan en **cada** inscripción. La salud se actualiza cuando es la primera vez o cuando contestan "cambió algo".
-- Regla para quien lea esto (la sesión de Semillero): **la salud vigente es la de la última respuesta que pasó por S6**; el contacto vigente es el de la última respuesta.
+- **Alertas médicas obligatorias, con la opción "Ninguna":** así un casillero vacío no se confunde con "no tiene nada".
+- Regla para quien lea esto (la sesión de Semillero): **la salud vigente es la de la última respuesta que pasó por S6; si no hay, la de `Inscripción 2026`**. El contacto vigente es el de la última respuesta.
 
 ## La carpeta del chico, para la CAB
 Todo lo del chico queda en `Jugadores/APELLIDO, Nombre — DNI`: DNIs, fotos y comprobantes, sin pasar por WhatsApp. La guía explica cómo bajarla entera: en la compu, *clic derecho → Descargar* baja un .zip. En el celular, la app de Drive no baja carpetas, sólo archivos sueltos, así que conviene hacerlo en la compu.
 
-## Primera temporada
-Las respuestas viejas no se importan. Entonces, **en la temporada de arranque nadie tiene una inscripción anterior en el sistema nuevo**, y un "Sí" dejaría al chico sin fotos ni datos fijos. Propuesta: **la primera temporada, las dos respuestas llevan a la ficha completa** (el salto del "Sí" apunta a S2), y desde la siguiente se activa el camino corto con un cambio de un clic. Lo decide Tomás.
+## Primera temporada: los datos de 2026 cuentan como inscripción anterior
+Tomás (19/10): el formulario "Base de Datos Básquet NOB 2026" ya tiene la ficha de este año (101 respuestas). Ahí sí está el DNI, aunque la planilla vinculada lo perdió. Así que el que contesta "Sí" en la primera pregunta **no repite** lo que ya dio en 2026.
+- **De dónde se lee:** de las respuestas **dentro del formulario 2026**, no de su planilla editada a mano. El formulario no se modifica: sólo se leen sus respuestas.
+- **Cómo:** un script chico, **atado a la planilla Tablero** (*Extensiones → Apps Script* desde el Tablero), con un menú "Actualizar datos 2026". Arma la hoja `Inscripción 2026` del Tablero con una fila por DNI (la última respuesta) y sólo las columnas que la reinscripción no vuelve a pedir: DNI normalizado, apellido y nombre, fecha de nacimiento, nacionalidad, socio, grupo sanguíneo, salud y obra social. Se corre a mano, sin disparador. Es otro script, separado del de carpetas: el de carpetas no gana permisos.
+- **Permisos nuevos que pide** (los acepta Tomás):
+
+| Permiso | Para qué |
+|---|---|
+| `forms` | leer las respuestas del formulario 2026. Google no ofrece un permiso "sólo leer" para formularios; el código sólo lee, y el test lo controla |
+| `spreadsheets.currentonly` | escribir **sólo en esta planilla** (el Tablero). No puede abrir ninguna otra |
+
+  No usa Drive ni mail, y los datos no salen de la cuenta de la Comisión ni van a nada público. La hoja `Inscripción 2026` tiene datos de salud, igual que el resto del Tablero: el Tablero se comparte sólo con coordinación.
+- **Emparejamiento:** el tablero cruza por DNI la reinscripción con `Inscripción 2026` y con las inscripciones nuevas. Si el DNI no está en ninguna de las dos, el chico va a `Revisar` con el aviso "le tocaba la ficha completa". Forms no puede comprobarlo en el momento. La coordinación le pide que la complete otra vez eligiendo "No".
+- **Faltan reinscribir** pasa a ser útil desde el día uno: lista quién está en 2026 y todavía no se reinscribió.
 
 ## Cómo se arma
 Lo arma **Claude en el navegador**, con un prompt que prepara esta sesión (`google/PROMPT-NAVEGADOR.md`), siguiendo `FORMULARIOS.md`, `TABLERO.md` y `GUIA.md`:
@@ -81,13 +94,14 @@ Lo arma **Claude en el navegador**, con un prompt que prepara esta sesión (`goo
 - No cambia permisos de nada existente y no publica nada en la web.
 - Los permisos del script los acepta Tomás, no Claude.
 - Termina con una prueba con DNIs inventados.
+- El formulario lo arma Tomás corriendo ese prompt: esta sesión prepara el diseño y el prompt.
 
 ## Fuera de scope
 - Cerrar la carpeta pública de fotos del desfile y despublicar los formularios viejos. El relevamiento los marca como riesgo, pero Tomás no quiere tocar lo existente todavía. Queda anotado para cuando lo decida.
 - El QR nuevo y los links en el portal (los resuelve portal).
 - Cómo llegan las emergencias a la app (otra sesión).
 
-## Para decidir (Tomás)
-1. **Primera temporada:** ¿todos por la ficha completa? (recomiendo sí)
-2. **Consultas sin login** con nombre y año de nacimiento del chico y el WhatsApp de un adulto, como hoy. ¿Ok?
-3. **Alertas médicas obligatorias, con "Ninguna" como opción.** ¿Ok, o alguna otra alerta para sumar?
+## Decisiones de Tomás (19/10)
+1. Primera temporada: los datos del formulario 2026 cuentan como inscripción anterior (sección de arriba). **Falta confirmar este ajuste.**
+2. Consultas sin login como hoy: sí.
+3. Alertas médicas obligatorias con "Ninguna": sí.
