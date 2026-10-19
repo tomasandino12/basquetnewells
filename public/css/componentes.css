@@ -705,6 +705,10 @@ svg.g{width:100%;display:block;overflow:visible}
 /* Finanzas: las filas tocables de rubros y movimientos son botones a todo el
    ancho, como las del inventario. */
 .fin-fila{width:100%;text-align:left;font:inherit;color:inherit;border:0}
+/* Formularios del portal (coordinación): el texto es un botón que ocupa la fila y las flechas van al lado. */
+.form-fila{padding-block:var(--sp-1);gap:var(--sp-2)}
+.form-fila-texto{flex:1;min-width:0;min-height:var(--tap);display:block;text-align:left;font:inherit;color:inherit;background:transparent;border:0;padding:var(--sp-2) 0}
+.form-fila-texto .det{display:block;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .fin-sub{display:block;font-weight:400}
 .fin-fecha{flex:0 0 auto;font-size:var(--fs-125);color:var(--gris)}
 .fin-monto{flex:0 0 auto;font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-145)}
