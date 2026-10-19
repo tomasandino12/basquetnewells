@@ -52,7 +52,7 @@ El script lee **sólo columnas sin DNI**, todas alineadas fila a fila con `Table
 
 ## 6. Emparejamiento sin DNI
 
-El mismo criterio que `cruzarConPadron` (importador de inscriptos): **apellido + nombre + fecha de nacimiento dentro del club**, con la clave de `clavearNombre` (mayúsculas, sin tildes, sin comas). Se empareja **al leer**, en la RPC, contra los jugadores con plantel en la temporada vigente; así un chico importado después aparece emparejado sin esperar otro envío. La normalización vive en SQL y en JS: lleva test de contrato.
+El mismo criterio que `cruzarConPadron` (importador de inscriptos): **apellido + nombre + fecha de nacimiento dentro del club**, con la clave de `clavearNombre` (mayúsculas, sin tildes, sin comas). Se empareja **al leer**, en la RPC, contra todas las fichas del club (un chico de la temporada pasada sigue siendo él; la categoría sale del plantel vigente si tiene); así un chico importado después aparece emparejado sin esperar otro envío. La normalización vive en SQL y en JS: lleva test de contrato.
 
 | Caso | Qué se ve |
 |---|---|

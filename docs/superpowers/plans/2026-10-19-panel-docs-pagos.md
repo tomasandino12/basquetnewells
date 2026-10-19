@@ -13,7 +13,7 @@
 ## Estado
 | Task | Estado |
 |---|---|
-| 1 Migración 0060 | pendiente |
+| 1 Migración 0060 | hecha (local, en transacción) |
 | 2 Módulo puro | pendiente |
 | 3 Repo | pendiente |
 | 4 Panel (lectura) | pendiente |
