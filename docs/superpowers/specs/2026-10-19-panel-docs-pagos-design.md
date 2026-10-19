@@ -1,6 +1,6 @@
 # Panel de papeles y pagos (coordinación) — diseño
 
-Fecha: 19/10/2026 · Migración: **0060** · Estado: **esperando aprobación de Tomás**
+Fecha: 19/10/2026 · Migración: **0060** · Estado: **aprobada por Tomás, opción (a)** (19/10, vía la coordinadora)
 
 ## 1. Qué se pide
 
@@ -30,11 +30,13 @@ El script lee **sólo columnas sin DNI**, todas alineadas fila a fila con `Table
 - `Tablero!G:M` y las columnas de temporada a la derecha de `Carpeta` → un mapa `{ "DNI jugador - frente": true, … }` y `completo` (columna M). Entra como documento **sólo** una columna cuyos valores son todos ✅/❌/vacío: `Carpeta` (que lleva el DNI en la URL) y cualquier otra queda afuera sola.
 - `Pagos!C:L` → `{ "Arancel octubre 2026": "verificado" | "subido" | "falta" }`. Los conceptos salen de los encabezados: **un concepto nuevo en Config aparece solo** en el panel.
 
+**Link a su fila del tablero** (pedido de Tomás, 19/10: "que pueda linkearse a su columna del sheet… para que la revisión sea rápida"). Cada fila lleva su **número de fila** (entero) y cada envío, la URL de la planilla y el `gid` de las hojas `Tablero` y `Pagos`. La app arma `…/edit#gid=<gid>&range=A<n>:Z<n>`, que abre la planilla con la fila del chico seleccionada. Elegí esto y no la hoja `Buscar` con el DNI precargado porque (1) Sheets no permite precargar una celda desde la URL, así que igual habría que tipear el DNI, y (2) para eso Semillero tendría que conocer el DNI. El número de fila no dice nada fuera de la planilla, y la fila se ve sólo con permiso de Google. Las filas del Tablero cambian de lugar si se toca `Config!B2`: como el script manda el número en cada envío, el link se corrige solo en ≤ 15 min. La fila tiene además la columna `Carpeta` del tablero, que busca por DNI: si el link por nombre (abajo) falla, ése no.
+
 **Link a la carpeta, sin mandar nada:** la app arma `drive.google.com/drive/search?q=APELLIDO Nombre` con datos que ya tiene. La carpeta se llama `APELLIDO, Nombre — DNI`, así que la búsqueda la encuentra y, si hay homónimos, el DNI del nombre los distingue (lo ve sólo quien tiene acceso al Drive). Si la carpeta quedó con el apellido mal escrito, no aparece: el panel lo avisa ("¿No aparece? Buscala por DNI en Drive").
 
 ## 4. Seguridad del camino (a)
 
-- **Token por club**: 32 bytes al azar, generado por la base (`gen_random_bytes`), mostrado **una sola vez** al coordinador para pegarlo en *Script Properties* (`SEMILLERO_TOKEN`). En la base queda sólo `sha256` en `conexion_google(club_id, token_hash, creado_en, creado_por, ultimo_envio_en)`. Nunca en el código ni en git.
+- **Token por club**: 32 bytes al azar, generado por la base (`gen_random_bytes`), mostrado **una sola vez** al coordinador para pegarlo en *Script Properties* (`SEMILLERO_TOKEN`). En la base queda sólo `sha256` en `conexion_google(club_id, token_hash, creado_en, creado_por, ultimo_envio_en, tablero_url, gid_tablero, gid_pagos)`. Nunca en el código ni en git.
 - **Rotar** = generar uno nuevo: el anterior deja de servir en el acto (un token activo por club). **Desconectar** = borrar el token **y** todo el estado del club.
 - **RPC `empujar_estado_google(p_token text, p_filas jsonb)`**, `security definer`, `search_path = ''`, ejecutable por `anon` (el script usa la clave pública, que ya está en el front). Antes de mirar nada: largo del token exacto o `TOKEN_INVALIDO`; después busca el club por hash. Sólo hace **reemplazo del estado de ese club** (upsert + borrar lo que ya no vino); no recibe `club_id`, no devuelve datos (sólo cuántas filas guardó).
 - **Límites**: ≤ 1500 filas, payload ≤ 1 MB, ≤ 25 documentos y ≤ 25 conceptos, claves ≤ 60 caracteres, nombres ≤ 80, rama ∈ {Masculino, Femenino, vacía}, pagos ∈ {falta, subido, verificado}, un envío por minuto por club (`ENVIO_MUY_SEGUIDO`). **Ningún texto puede tener 7–8 dígitos seguidos** (`PARECE_DNI`): si alguien cambia el tablero y se cuela un DNI, el envío entero se rechaza.
@@ -43,9 +45,9 @@ El script lee **sólo columnas sin DNI**, todas alineadas fila a fila con `Table
 
 ## 5. Base (0060, patrón 0026)
 
-- `estado_inscripcion`: `club_id`, `apellido`, `nombre`, `clave` (normalizada), `fecha_nacimiento` (null si no vino), `categoria_texto`, `rama`, `documentos jsonb`, `completo bool`, `pagos jsonb`, `cambio_en` (cuándo cambió **su** estado, no cada envío). Único por `(club_id, clave, fecha_nacimiento)`.
+- `estado_inscripcion`: `club_id`, `apellido`, `nombre`, `clave` (normalizada), `fecha_nacimiento` (null si no vino), `categoria_texto`, `rama`, `fila` (número de fila en el tablero), `documentos jsonb`, `completo bool`, `pagos jsonb`, `cambio_en` (cuándo cambió **su** estado, no cada envío). Único por `(club_id, clave, fecha_nacimiento)`.
 - Las dos tablas: `revoke all`, **ningún grant a `anon` ni `authenticated`** (todo pasa por RPC), RLS activa sin políticas, trigger de sellado (`club_id` y `creado_*` no cambian), `check` de largos y de forma del jsonb.
-- **Lectura**: `estado_inscripcion_del_club(p_club_id)` (`security definer`, `es_coordinador_de`) devuelve una fila por chico ya emparejada (§6), sin fecha de nacimiento. `conexion_google_del_club` devuelve sólo `conectado` y `ultimo_envio_en`.
+- **Lectura**: `estado_inscripcion_del_club(p_club_id)` (`security definer`, `es_coordinador_de`) devuelve una fila por chico ya emparejada (§6), sin fecha de nacimiento. `conexion_google_del_club` devuelve sólo `conectado`, `ultimo_envio_en`, `tablero_url` y los dos `gid`.
 - Verificación y rollback en local dentro de una transacción (`begin … rollback`). **Nada de `db reset`**: la base local es compartida.
 
 ## 6. Emparejamiento sin DNI
@@ -68,7 +70,7 @@ En **Coordinación → Familias**, con pestañas internas (`.pestanas`): **Papel
 - Arriba: "Último envío hace 12 min" (o el aviso de desconexión), botón **Abrir el tablero** (el script manda la URL de su planilla en cada envío; la RPC sólo acepta `https://docs.google.com/spreadsheets/…`) y, si no hay conexión, **Conectar con Google**.
 - **Contadores por concepto** en mono: `Arancel octubre · ✅ 41 · 📎 6 · ❌ 12`, y `Documentación completa 48/62`.
 - **Filtros**: chips de categoría, "Debe algo" (algún concepto ❌), "📎 Por verificar", "Le falta documentación". Se combinan.
-- **Fila por chico**: nombre, categoría, chips de estado (`.chip.sube` ✅, `.chip.baja` ❌, `.chip.sin` 📎) y botón **Carpeta**. Al tocarla, el detalle: cada documento y cada concepto, y "cambió el 17/10".
+- **Fila por chico**: nombre, categoría, chips de estado (`.chip.sube` ✅, `.chip.baja` ❌, `.chip.sin` 📎) y botón **Carpeta**. Al tocarla, el detalle: cada documento y cada concepto, "cambió el 17/10" y tres links de un toque: **Ver en el tablero** (su fila en `Tablero`), **Ver pagos** (su fila en `Pagos`) y **Carpeta** (Drive). Los chicos sin fila en el tablero no llevan los dos primeros.
 - Sólo lectura: **verificar un pago se sigue haciendo en el tablero** (`Pagos verificados`). Una sola fuente de verdad.
 - Estética interna clara de `DESIGN.md`; HTML con `html\`\``; filtros, contadores y emparejamiento de categoría en un módulo puro `src/data/estadoInscripcion.js` con test; acceso por `repos/coordinacion.js`.
 
