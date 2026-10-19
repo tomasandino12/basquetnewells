@@ -101,13 +101,19 @@ test('otro origen no se intercepta (Supabase, Google)', async () => {
 });
 
 test('POST y otros métodos no se interceptan', () => {
-  assert.equal(estrategia(`${ORIGEN}/`, 'POST', 'navigate'), null);
+  assert.equal(estrategia(`${ORIGEN}/app`, 'POST', 'navigate'), null);
   assert.equal(estrategia(`${ORIGEN}/public/vendor/xlsx.mjs`, 'PUT'), null);
 });
 
-test('una navegación es red-primero', () => {
-  assert.equal(estrategia(`${ORIGEN}/`, 'GET', 'navigate'), 'red-primero');
-  assert.equal(estrategia(`${ORIGEN}/?code=abc`, 'GET', 'navigate'), 'red-primero');
+test('una navegación a la app es red-primero', () => {
+  assert.equal(estrategia(`${ORIGEN}/app`, 'GET', 'navigate'), 'red-primero');
+  assert.equal(estrategia(`${ORIGEN}/app?code=abc`, 'GET', 'navigate'), 'red-primero');
+});
+
+test('el portal y las páginas legales no se interceptan: el service worker es sólo de /app', () => {
+  for (const ruta of ['/', '/?utm_source=whatsapp', '/privacidad', '/terminos', '/public/portal.html', '/public/legal/privacidad.html']) {
+    assert.equal(estrategia(`${ORIGEN}${ruta}`, 'GET', 'navigate'), null, ruta);
+  }
 });
 
 test('src, css y config.js no se interceptan', () => {
@@ -122,30 +128,30 @@ test('vendor, fuentes, íconos y escudo son cache-primero', () => {
   }
 });
 
-test('sólo se guarda / sin query: la vuelta del login con ?code= no', async () => {
+test('sólo se guarda /app sin query: la vuelta del login con ?code= no', async () => {
   const sw = cargar();
+  await sw.pedir(`${ORIGEN}/app`, { modo: 'navigate' });
+  await sw.pedir(`${ORIGEN}/app?code=abc`, { modo: 'navigate' });
   await sw.pedir(`${ORIGEN}/`, { modo: 'navigate' });
-  await sw.pedir(`${ORIGEN}/?code=abc`, { modo: 'navigate' });
-  await sw.pedir(`${ORIGEN}/public/index.html`, { modo: 'navigate' });
-  assert.deepEqual(sw.puestos, ['/']);
+  assert.deepEqual(sw.puestos, ['/app']);
 });
 
-test('sin red, la navegación cae a la copia de /', async () => {
-  const sw = cargar({ red: async () => { throw new TypeError('sin red'); }, guardado: { '/': new Response('copia') } });
-  const r = await sw.pedir(`${ORIGEN}/?code=abc`, { modo: 'navigate' });
+test('sin red, la navegación cae a la copia de /app', async () => {
+  const sw = cargar({ red: async () => { throw new TypeError('sin red'); }, guardado: { '/app': new Response('copia') } });
+  const r = await sw.pedir(`${ORIGEN}/app?code=abc`, { modo: 'navigate' });
   assert.equal(await r.text(), 'copia');
 });
 
 test('con red, la navegación siempre trae lo nuevo aunque haya copia', async () => {
-  const sw = cargar({ guardado: { '/': new Response('vieja') } });
-  const r = await sw.pedir(`${ORIGEN}/`, { modo: 'navigate' });
+  const sw = cargar({ guardado: { '/app': new Response('vieja') } });
+  const r = await sw.pedir(`${ORIGEN}/app`, { modo: 'navigate' });
   assert.equal(await r.text(), 'red');
 });
 
 test('una respuesta con error no se guarda', async () => {
   const sw = cargar({ red: async () => new Response('no', { status: 500 }) });
   await sw.pedir(`${ORIGEN}/public/vendor/xlsx.mjs`);
-  await sw.pedir(`${ORIGEN}/`, { modo: 'navigate' });
+  await sw.pedir(`${ORIGEN}/app`, { modo: 'navigate' });
   assert.deepEqual(sw.puestos, []);
 });
 
@@ -163,17 +169,17 @@ test('activate borra los cachés propios de otra versión y nada más', async ()
   assert.deepEqual(sw.borrados, ['inferiores-viejo']);
 });
 
-test('Vercel sirve sw.js sin caché y con alcance /', () => {
+test('Vercel sirve sw.js sin caché y con alcance /app', () => {
   const vercel = JSON.parse(readFileSync('vercel.json', 'utf8'));
   const h = vercel.headers.filter((x) => x.source === '/public/sw.js').flatMap((x) => x.headers);
   const valor = (k) => h.find((x) => x.key.toLowerCase() === k)?.value;
-  assert.equal(valor('service-worker-allowed'), '/');
+  assert.equal(valor('service-worker-allowed'), '/app');
   assert.match(valor('cache-control') ?? '', /no-cache/);
 });
 
-test('pwa.js registra con alcance / y no usa fetch ni el repositorio', () => {
+test('pwa.js registra con alcance /app y no usa fetch ni el repositorio', () => {
   const codigo = readFileSync('src/ui/pwa.js', 'utf8');
-  assert.match(codigo, /register\('\/public\/sw\.js', \{ scope: '\/' \}\)/);
+  assert.match(codigo, /register\('\/public\/sw\.js', \{ scope: '\/app' \}\)/);
   assert.doesNotMatch(codigo, /\bfetch\s*\(|repositorio|repos\//);
   assert.match(readFileSync('src/ui/main.js', 'utf8'), /registrarServiceWorker\(\)/);
 });

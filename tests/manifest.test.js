@@ -19,10 +19,10 @@ function medidasPng(ruta) {
   return `${b.readUInt32BE(16)}x${b.readUInt32BE(20)}`;
 }
 
-test('el manifest es JSON válido con start_url y scope en /', () => {
-  assert.equal(manifest.start_url, '/');
-  assert.equal(manifest.scope, '/');
-  assert.equal(manifest.id, '/');
+test('el manifest es JSON válido con id, start_url y scope en /app', () => {
+  assert.equal(manifest.start_url, '/app');
+  assert.equal(manifest.scope, '/app');
+  assert.equal(manifest.id, '/app');
   assert.equal(manifest.display, 'standalone');
   assert.ok(manifest.name && manifest.short_name.length <= 12, 'short_name largo se corta bajo el ícono');
 });
@@ -61,8 +61,8 @@ test('iPhone: apple-touch-icon de 180 y modo app', () => {
 });
 
 test('start_url coincide con la URL a la que vuelve el login', () => {
-  // urlDeRetorno() = origin + pathname: abierta desde el ícono, pathname es "/".
+  // urlDeRetorno() = origin + pathname: abierta desde el ícono, pathname es "/app".
   const auth = readFileSync(path.join('src', 'data', 'repos', 'auth.js'), 'utf8');
   assert.match(auth, /return window\.location\.origin \+ window\.location\.pathname;/);
-  assert.equal(new URL(manifest.start_url, 'https://x.test').pathname, '/');
+  assert.equal(new URL(manifest.start_url, 'https://x.test').pathname, '/app');
 });
