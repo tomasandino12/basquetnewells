@@ -179,32 +179,71 @@ jugador vigente. Un chico que pidió acceso y todavía no fue aprobado sí puede
 aparecer ahí: a un jugador se lo aprueba desde PLANTEL, no desde acá, y
 habilitarlo como profe le daría acceso a los datos de otros menores.
 
-## Calendario e inscripción de la página pública
+## El portal del básquet (`/`) y los formularios de las familias
 
-La landing tiene un bloque "El básquet del club" para las familias: el botón
-de inscripción y dos calendarios de Google (partidos y torneos; eventos y
-recaudación). Los enlaces viven todos en `src/data/portal.js`; lo que está en
-`null` se ve como "Próximamente".
+La página que se reparte a las familias es el **portal**, en la raíz del sitio
+(`/`). Semillero, la aplicación de profes, coordinación y jugadores, vive en
+`/app` y el portal tiene un botón que lleva ahí. El portal muestra: los pasos
+("¿Qué tengo que hacer?"), los formularios, los calendarios, la información, y
+a quién escribirle si hay dudas. No tiene sesión ni muestra datos de chicos.
 
-**Calendarios.** Los carga la coordinación desde el celular, en Google
-Calendar, sin tocar código. Para conectarlos (una sola vez, desde una compu):
+### Formularios: se cargan desde la app, sin tocar código
+
+Coordinación → pestaña **Familias** → botón **Formularios de la página del
+básquet**. Ahí la coordinación:
+
+- **Agrega** un formulario: título, una línea de "para qué es y qué tienen que
+  tener a mano" (la familia la lee antes de abrirlo) y el enlace de Google
+  Forms. Ejemplo: *"hay que pagar las rifas"* → se suma "Comprobante de
+  rifas", se escribe qué tener a mano (la foto del comprobante) y se pega el
+  enlace. La familia lo ve en el portal al toque.
+- **Edita** tocando el formulario; **sube o baja** con las flechas; **oculta**
+  cuando ya no corresponde (por ejemplo, al cerrar la inscripción). **No se
+  borra**: queda oculto y se puede volver a mostrar.
+- El enlace tiene que ser de Google Forms (`https://docs.google.com/forms/…` o
+  `https://forms.gle/…`); la app y la base rechazan cualquier otro.
+- **Esto lo ve cualquiera**, sin entrar con ninguna cuenta: no pongas nombres
+  de chicos ni datos personales en el título ni en el texto.
+- **Primera vez, después de aplicar la migración 0058:** la lista arranca
+  vacía y el portal dice que no hay formularios abiertos. Entrá a esa pantalla
+  y tocá **"Agregar el de Inscripción"** (viene precargado) y **Guardar**.
+- Para ver cómo lo ven las familias, el enlace "Ver cómo lo ven las familias"
+  abre el portal en otra pestaña.
+
+Los formularios y lo que suben las familias (DNI, fotos, datos de salud, 
+comprobantes) viven en Google y **nunca pasan por Semillero ni por la base**.
+Quién los recibe y cómo se organizan en Drive: ver la guía de inscripción en
+Google (rama `claude/inscripcion-google-41cf4e`).
+
+### Calendarios, información y contacto: archivo `src/data/portal.js`
+
+Estos tres sí son cambios de código (se hacen una vez y casi no cambian):
+
+**Calendarios** (dos Google Calendar: partidos y torneos; eventos y
+recaudación). Para conectarlos, una sola vez, desde una compu:
 1. En Google Calendar → Configuración del calendario → "Permisos de acceso":
    marcar **"Hacer disponible públicamente"**. Sin eso el embed sale vacío.
 2. En la misma pantalla, "Integrar el calendario" → copiar el **ID de
    calendario** (termina en `@group.calendar.google.com`). También sirve pegar
    la URL de "Código para insertar": de ahí se toma sólo el ID.
 3. Pegarlo en `id:` del calendario que corresponde en `src/data/portal.js`,
-   `npm run test:q`, commit y deploy.
+   `npm run test:q`, commit y deploy. Mientras sea `null`, se ve "Próximamente".
 
 **Público quiere decir público**: cualquiera que tenga el link ve todos los
 eventos. **Nunca nombres de jugadores** en el título ni en la descripción de
 un evento: "U13 vs. Central, 10 h, cancha 2", no "U13: convocados …".
 
-**Inscripción.** Pegar el link del formulario de Google (el corto `forms.gle/…`
-o el largo `docs.google.com/forms/…`) en `inscripcion:`. Otro link no se
-acepta (el test lo rechaza y la tarjeta queda en "Próximamente"). El
-formulario junta datos de menores fuera de la app: el responsable es el club,
-como en `docs/legal`.
+**Contacto** ("¿Dudas? Escribile al coordinador"): en `contacto:` va un link de
+WhatsApp (`https://wa.me/549341…`, con el código de país y de área, sin `+` ni
+espacios) o un mail (`mailto:coordinacion@…`). Otro formato no se acepta.
 
-**Información** (categorías, horarios, contacto): es texto fijo en
-`public/index.html`, marcado con `PENDIENTE`, hasta que el club lo pase.
+**Información** (categorías, entrenamientos, dónde se entrena): es texto fijo en
+`public/portal.html`, marcado con `PENDIENTE`, hasta que el club lo pase.
+
+### Login de Semillero: la URL de retorno
+
+El login vuelve a `https://app-semillero.vercel.app/app`. Lo cubre el comodín
+`https://app-semillero.vercel.app/**` de Supabase → Authentication → URL
+Configuration (ver `docs/CONFIGURAR-AUTH.md`); alcanza con confirmar que esa
+entrada existe. Los mails viejos que apuntan a `/` los reenvía el portal a
+`/app`.
