@@ -37,6 +37,9 @@ export const LIMITE = {
   notaPaso: 300,
   nombreRubro: 60,
   descripcionMovimiento: 300,
+  // Línea de ayuda de un formulario del portal: para qué es y qué tener a mano.
+  // Va entera en la tarjeta que ve cualquiera, así que no es texto libre largo.
+  textoFormulario: 500,
 };
 
 /** 'tabla.columna' → largo máximo. Es el espejo exacto de 0028 y de los checks en línea de las tablas nuevas (0035, 0052, 0054, 0055). */
