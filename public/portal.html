@@ -18,7 +18,7 @@
 <meta property="og:locale" content="es_AR">
 <meta property="og:url" content="https://app-semillero.vercel.app/">
 <meta property="og:title" content="Básquet · Newell's Old Boys">
-<meta property="og:description" content="Inscripción, formularios, calendario e información para las familias del básquet formativo.">
+<meta property="og:description" content="Básquet formativo de Newell's Old Boys: inscripción, formularios, calendario de partidos y eventos, e información para las familias.">
 <meta property="og:image" content="https://app-semillero.vercel.app/public/escudo.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="512">
@@ -108,6 +108,9 @@
   </main>
 </div>
 
+<!-- Primero el reenvío: los mails de Supabase ya enviados apuntan a "/" y tienen
+     que llegar a /app con sus parámetros. -->
+<script type="module" src="/src/ui/portalEntrada.js"></script>
 <script type="module" src="/src/ui/portalArranque.js"></script>
 </body>
 </html>
