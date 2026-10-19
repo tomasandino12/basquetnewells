@@ -229,9 +229,51 @@ recaudación). Para conectarlos, una sola vez, desde una compu:
 3. Pegarlo en `id:` del calendario que corresponde en `src/data/portal.js`,
    `npm run test:q`, commit y deploy. Mientras sea `null`, se ve "Próximamente".
 
-**Público quiere decir público**: cualquiera que tenga el link ve todos los
-eventos. **Nunca nombres de jugadores** en el título ni en la descripción de
-un evento: "U13 vs. Central, 10 h, cancha 2", no "U13: convocados …".
+> ## ⚠️ El calendario es público: NUNCA nombres de chicos
+>
+> Cualquiera que abra la página ve **todos** los eventos, con su título y su
+> descripción. **No escribas nombres de jugadores** ni datos personales en
+> ningún evento. Sí: *"U13 vs. Central, 10 h, cancha 2"*. No: *"U13: convocados
+> Pérez, Gómez…"*. Si una persona carga eventos, avisale esto antes de darle
+> el permiso.
+
+**Que varias personas carguen eventos.** No hace falta que lo cargue todo una
+sola persona. Ejemplo: alguien de la subcomisión va a hacer una pollada y la
+carga él mismo en el calendario. Cómo se le da permiso (lo hace **el dueño del
+calendario**, o sea la cuenta de Google de la subcomisión que lo creó):
+1. Abrir **Google Calendar** desde una compu, con la cuenta dueña del calendario.
+2. En la lista de la izquierda ("Mis calendarios"), pasar el mouse por el
+   calendario, tocar los **tres puntitos** → **Configuración y uso compartido**.
+3. Bajar hasta **"Compartir con personas o grupos específicos"** → **Agregar
+   personas y grupos** → escribir el mail de la persona.
+4. En "Permisos", elegir **"Hacer cambios en los eventos"** → **Enviar**.
+5. Esa persona acepta la invitación (le llega por mail) y, desde la **aplicación
+   de Google Calendar de su celular**, elige ese calendario al crear un evento.
+   El evento aparece **solo** en el portal, sin tocar nada más (a veces tarda unos
+   minutos).
+
+**Para sacarle el acceso**, el dueño vuelve a esa misma lista ("Compartir con
+personas o grupos específicos") y toca la **X** al lado del mail. Los eventos que
+ya cargó quedan; si hay que sacarlos, se borran desde Google Calendar.
+
+**Tres consejos para que no se cuele nada personal.** Lo personal de cada persona
+(su turno médico, su cumpleaños) **no aparece en la página**: sólo aparece lo que
+se guarda en el calendario del básquet. El riesgo es guardar un evento personal
+ahí por error. Para evitarlo:
+1. **Ponerle a cada calendario un nombre que avise que es público**, por ejemplo
+   *"Básquet NOB · Eventos (PÚBLICO)"*. Se cambia en Configuración y uso
+   compartido → Nombre.
+2. **Darle un color propio**, distinto del personal, así se nota de un vistazo
+   en cuál se está cargando (tres puntitos del calendario → elegir color).
+3. **Antes de guardar un evento, mirar en qué calendario queda.** El que viene
+   elegido de entrada es el personal de cada uno; hay que cambiarlo al del
+   básquet. Si algo personal se cuela igual, cualquiera con permiso para hacer
+   cambios en los eventos lo puede borrar.
+
+Esto **no es lo mismo** que "Hacer disponible públicamente" del paso 1 de arriba:
+eso es sólo para que el portal pueda **mostrar** el calendario; los permisos de
+las personas de acá arriba son los que dejan **cargar** eventos. Dale el permiso
+a cada persona por separado y sólo a quien lo necesita.
 
 **Contacto** ("¿Dudas? Escribile al coordinador"): en `contacto:` va un link de
 WhatsApp (`https://wa.me/549341…`, con el código de país y de área, sin `+` ni
