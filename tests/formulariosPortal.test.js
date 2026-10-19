@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { LIMITE } from '../src/data/limites.js';
-import { validarFormulario, moverFormulario, ordenarFormularios } from '../src/data/formulariosPortal.js';
+import { readFileSync } from 'node:fs';
+import { validarFormulario, moverFormulario, ordenarFormularios, formularioDesdeFila, formularioPublicoDesdeFila } from '../src/data/formulariosPortal.js';
 
 /**
  * Lo que la coordinación escribe en el panel termina en una tarjeta de la
@@ -88,4 +89,30 @@ test('con huecos o repetidos en orden, igual deja 1..n y cuenta el arreglo como 
 test('un id que no existe no cambia nada', () => {
   const r = moverFormulario(lista(), 'nope', 'subir');
   assert.deepEqual(r.cambios, []);
+});
+
+test('formularioDesdeFila pasa de la fila de la base al objeto de dominio, sin columnas de más', () => {
+  const fila = {
+    id: 'f1', club_id: 'c1', titulo: 'Inscripción', texto: 'Tené a mano el DNI.', enlace: 'https://forms.gle/AbC', orden: 2, activo: false,
+    creado_por: 'u1', creado_en: '2026-10-18T10:00:00Z', actualizado_por: 'u2', actualizado_en: '2026-10-19T10:00:00Z',
+  };
+  assert.deepEqual(formularioDesdeFila(fila), {
+    id: 'f1', titulo: 'Inscripción', texto: 'Tené a mano el DNI.', enlace: 'https://forms.gle/AbC', orden: 2, activo: false,
+    actualizadoPor: 'u2', actualizadoEn: '2026-10-19T10:00:00Z',
+  });
+});
+
+test('formularioPublicoDesdeFila sólo trae título, texto y enlace', () => {
+  assert.deepEqual(formularioPublicoDesdeFila({ titulo: 'T', texto: 'x', enlace: 'https://forms.gle/a', orden: 3, id: 'z' }),
+    { titulo: 'T', texto: 'x', enlace: 'https://forms.gle/a' });
+});
+
+test('el repo del portal usa la función pública y sólo las columnas con grant de update', () => {
+  const repo = readFileSync('src/data/repos/portal.js', 'utf8');
+  assert.match(repo, /rpc\('formularios_publicos', \{ p_club: clubId \}\)/);
+  const update = repo.match(/\.update\(\{([^}]*)\}\)/)?.[1] ?? '';
+  assert.match(update, /titulo/);
+  assert.doesNotMatch(update, /club_id|creado_por|actualizado_por/);
+  assert.doesNotMatch(repo, /\.delete\(\)/);
+  assert.match(readFileSync('src/data/repositorio.js', 'utf8'), /export \* from '\.\/repos\/portal\.js';/);
 });

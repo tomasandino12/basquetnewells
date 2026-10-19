@@ -62,3 +62,22 @@ export function moverFormulario(lista, id, direccion) {
   const cambios = antes.filter((f) => f.orden !== ordenNuevo.get(f.id)).map((f) => ({ id: f.id, orden: ordenNuevo.get(f.id) }));
   return { lista: resultado, cambios };
 }
+
+/** Fila de formulario_portal → objeto de dominio, para el panel de coordinación. */
+export function formularioDesdeFila(f) {
+  return {
+    id: f.id,
+    titulo: f.titulo,
+    texto: f.texto,
+    enlace: f.enlace,
+    orden: f.orden,
+    activo: f.activo,
+    actualizadoPor: f.actualizado_por,
+    actualizadoEn: f.actualizado_en,
+  };
+}
+
+/** Lo único que devuelve formularios_publicos(): lo que ve cualquiera. */
+export function formularioPublicoDesdeFila(f) {
+  return { titulo: f.titulo, texto: f.texto, enlace: f.enlace };
+}
