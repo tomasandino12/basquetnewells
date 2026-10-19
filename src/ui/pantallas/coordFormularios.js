@@ -1,8 +1,8 @@
 import {
-  listarFormularios, crearFormulario, actualizarFormulario, reordenarFormularios,
+  listarFormularios, crearFormulario, actualizarFormulario, reordenarFormularios, asignarDestinoFormulario,
 } from '../../data/repositorio.js';
 import {
-  validarFormulario, moverFormulario, ordenarFormularios, MENSAJE_ENLACE_FORMULARIO,
+  validarFormulario, moverFormulario, ordenarFormularios, quienTieneElDestino, DESTINOS, MENSAJE_ENLACE_FORMULARIO,
 } from '../../data/formulariosPortal.js';
 import { PORTAL } from '../../data/portal.js';
 import { LIMITE } from '../../data/limites.js';
@@ -35,6 +35,8 @@ const mensajeDeError = (e) => mensajeAlGuardar(e, {
   permiso: /NO_SE_PUDO|row-level security|permission denied/i,
 });
 
+const rotuloDeDestino = (clave) => DESTINOS.find((d) => d.clave === clave)?.chip ?? '';
+
 function filaHtml(f, i, total) {
   return html`
     <div class="jug-fila form-fila">
@@ -42,6 +44,7 @@ function filaHtml(f, i, total) {
         <span class="nom">${f.titulo}</span>
         <span class="det">${f.texto}</span>
       </button>
+      ${f.destino && html`<span class="chip">${rotuloDeDestino(f.destino)}</span>`}
       ${!f.activo && html`<span class="chip sin">Oculto</span>`}
       ${botonIcono({ icono: ICONO.flechaArriba, etiqueta: `Subir ${f.titulo}`, disabled: i === 0, extraClase: 'form-sube' })}
       ${botonIcono({ icono: ICONO.flechaAbajo, etiqueta: `Bajar ${f.titulo}`, disabled: i === total - 1, extraClase: 'form-baja' })}
@@ -126,7 +129,7 @@ async function guardarCon(boton, accion) {
 
 /** Alta (formulario nulo, con datos iniciales opcionales) o edición. */
 function abrirFormulario(formulario, inicial = null) {
-  const v = formulario ?? inicial ?? { titulo: '', texto: '', enlace: '' };
+  const v = formulario ?? inicial ?? { titulo: '', texto: '', enlace: '', destino: null };
   abrirHoja({
     titulo: formulario ? formulario.titulo : 'Agregar formulario',
     cuerpo: html`
@@ -145,6 +148,15 @@ function abrirFormulario(formulario, inicial = null) {
       <div class="p det">Pegá el enlace de Google Forms (empieza con https://docs.google.com/forms o https://forms.gle).${formulario ? (formulario.activo
         ? ' Si lo ocultás, las familias dejan de verlo; podés volver a mostrarlo cuando quieras.'
         : ' Está oculto: las familias no lo ven.') : ''}</div>
+      <div class="campo">
+        <label for="form-destino">Cómo se muestra en la página</label>
+        <span class="env"><select id="form-destino">
+          <option value="">Común (en la lista de formularios)</option>
+          ${DESTINOS.map((d) => html`<option value="${d.clave}"${v.destino === d.clave && html` selected`}>${d.rotulo}</option>`)}
+        </select></span>
+      </div>
+      <div class="p det">Los dos lugares especiales son únicos: "Quiero jugar en Newell's" va destacado arriba de la página y es al que lleva el QR impreso; "Sumate como sponsor o colaborador" va en su propia sección.${formulario?.destino && !formulario.activo ? ' Mientras esté oculto no se muestra, aunque tenga este lugar.' : ''}</div>
+      <div id="form-destino-nota" class="p det" role="status"></div>
       <div id="form-aviso"></div>
       <div class="acciones-hoja">
         <button type="button" class="btn sec" id="form-cancelar">Cancelar</button>
@@ -160,21 +172,40 @@ function abrirFormulario(formulario, inicial = null) {
       titulo: formulario.titulo, texto: formulario.texto, enlace: formulario.enlace, activo: !formulario.activo,
     }));
   });
+  // Hay un solo formulario por destino: si otro ya lo tiene, se avisa antes de guardar.
+  const avisarDelDestino = () => {
+    const otro = quienTieneElDestino(formularios, $('form-destino').value, formulario?.id);
+    $('form-destino-nota').textContent = otro ? `Hoy lo tiene «${otro.titulo}»: al guardar, ese formulario pasa a ser común.` : '';
+  };
+  $('form-destino').addEventListener('change', avisarDelDestino);
+  avisarDelDestino();
+
   $('form-guardar').addEventListener('click', () => {
     const r = validarFormulario({
-      titulo: $('form-titulo').value, texto: $('form-texto').value, enlace: $('form-enlace').value,
+      titulo: $('form-titulo').value, texto: $('form-texto').value, enlace: $('form-enlace').value, destino: $('form-destino').value,
     });
     if (r.error) {
-      const campo = /título/i.test(r.error) ? 'form-titulo' : /enlace/i.test(r.error) ? 'form-enlace' : 'form-texto';
+      const campo = /título/i.test(r.error) ? 'form-titulo' : /enlace/i.test(r.error) ? 'form-enlace' : /cómo se muestra/i.test(r.error) ? 'form-destino' : 'form-texto';
       mostrarAviso($('form-aviso'), r.error, { campo: $(campo) });
       return;
     }
-    if (formulario) {
-      guardarCon($('form-guardar'), () => actualizarFormulario(formulario.id, { ...r.formulario, activo: formulario.activo }));
-      return;
-    }
+    const { destino } = r.formulario;
+    const poseedor = quienTieneElDestino(formularios, destino, formulario?.id);
     const club = obtenerClubActual();
     const orden = Math.min(1000, (formularios.at(-1)?.orden ?? 0) + 1);
-    guardarCon($('form-guardar'), () => crearFormulario({ clubId: club.id, ...r.formulario, orden }));
+    guardarCon($('form-guardar'), async () => {
+      // El índice único de la base no deja dos con el mismo destino: primero se
+      // lo sacamos al que lo tiene, después se guarda.
+      if (poseedor) await asignarDestinoFormulario(poseedor.id, null);
+      try {
+        await (formulario
+          ? actualizarFormulario(formulario.id, { ...r.formulario, activo: formulario.activo })
+          : crearFormulario({ clubId: club.id, ...r.formulario, orden }));
+      } catch (e) {
+        // Si no se pudo guardar, el que lo tenía no se queda sin su lugar.
+        if (poseedor) await asignarDestinoFormulario(poseedor.id, destino).catch(() => {});
+        throw e;
+      }
+    });
   });
 }

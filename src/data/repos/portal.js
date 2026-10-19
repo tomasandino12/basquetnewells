@@ -3,7 +3,7 @@
 import { obtenerCliente } from '../cliente.js';
 import { formularioDesdeFila, formularioPublicoDesdeFila } from '../formulariosPortal.js';
 
-const COLUMNAS = 'id, titulo, texto, enlace, orden, activo, actualizado_por, actualizado_en';
+const COLUMNAS = 'id, titulo, texto, enlace, orden, activo, destino, actualizado_por, actualizado_en';
 
 /**
  * Lo que ve el portal sin sesión: título, texto y enlace de los formularios
@@ -30,11 +30,11 @@ export async function listarFormularios(clubId) {
 }
 
 /** Alta al final de la lista: `orden` lo calcula quien llama, a partir de lo que ya muestra. */
-export async function crearFormulario({ clubId, titulo, texto, enlace, orden }) {
+export async function crearFormulario({ clubId, titulo, texto, enlace, orden, destino = null }) {
   const supabase = obtenerCliente();
   const { data, error } = await supabase
     .from('formulario_portal')
-    .insert({ club_id: clubId, titulo, texto, enlace, orden, activo: true })
+    .insert({ club_id: clubId, titulo, texto, enlace, orden, activo: true, destino })
     .select(COLUMNAS)
     .single();
   if (error) throw error;
@@ -45,11 +45,15 @@ export async function crearFormulario({ clubId, titulo, texto, enlace, orden }) 
  * Sólo las columnas con grant de update. Se pide la fila de vuelta porque un
  * update que la RLS no deja pasar no da error: afecta cero filas.
  */
-export async function actualizarFormulario(id, { titulo, texto, enlace, activo }) {
+export async function actualizarFormulario(id, { titulo, texto, enlace, activo, destino }) {
   const supabase = obtenerCliente();
+  // `destino` sólo se escribe si se pasa (null lo saca): una pantalla que edita
+  // otra cosa, como ocultar, no tiene que borrárselo sin querer.
+  const cambios = { titulo, texto, enlace, activo };
+  if (destino !== undefined) cambios.destino = destino;
   const { data, error } = await supabase
     .from('formulario_portal')
-    .update({ titulo, texto, enlace, activo })
+    .update(cambios)
     .eq('id', id)
     .select(COLUMNAS);
   if (error) throw error;
@@ -69,4 +73,17 @@ export async function reordenarFormularios(cambios) {
     if (error) throw error;
     if (!data.length) throw new Error('NO_SE_PUDO_EDITAR');
   }
+}
+
+/**
+ * Cambia sólo el destino de un formulario (o se lo saca con null). Hay a lo
+ * sumo un formulario por destino y club (índice único de 0061): para pasárselo
+ * a otro, primero se le saca al que lo tiene (esta función con null) y después
+ * se lo pone al nuevo, en ese orden.
+ */
+export async function asignarDestinoFormulario(id, destino) {
+  const supabase = obtenerCliente();
+  const { data, error } = await supabase.from('formulario_portal').update({ destino }).eq('id', id).select('id');
+  if (error) throw error;
+  if (!data.length) throw new Error('NO_SE_PUDO_EDITAR');
 }

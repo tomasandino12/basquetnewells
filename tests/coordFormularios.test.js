@@ -75,3 +75,38 @@ test('los íconos nuevos son SVG de 24x24', async () => {
     assert.ok(ICONO[n].startsWith('<svg ') && ICONO[n].includes('viewBox="0 0 24 24"') && ICONO[n].endsWith('</svg>'), n);
   }
 });
+
+// ---- Destino: "Cómo se muestra en la página" (0061) ----
+
+test('la hoja tiene el selector Cómo se muestra, con común y los destinos de la app', () => {
+  assert.match(pantalla, /<label for="form-destino">Cómo se muestra en la página<\/label>/);
+  assert.match(pantalla, /<select id="form-destino">/);
+  assert.match(pantalla, /Común \(en la lista de formularios\)/);
+  assert.match(pantalla, /DESTINOS\.map\(/);
+  assert.match(pantalla, /destino: \$\('form-destino'\)\.value/);
+});
+
+test('si otro formulario ya tiene ese lugar, avisa y se lo saca ANTES de guardar (hay uno solo por destino)', () => {
+  assert.match(pantalla, /quienTieneElDestino\(formularios, /);
+  const guardar = pantalla.slice(pantalla.indexOf("$('form-guardar').addEventListener"));
+  const libera = guardar.indexOf('asignarDestinoFormulario(');
+  const graba = guardar.search(/actualizarFormulario\(|crearFormulario\(/);
+  assert.ok(libera > 0 && graba > libera, 'primero se libera el destino y después se guarda');
+  assert.match(pantalla, /id="form-destino-nota"/);
+  assert.match(pantalla, /pasa a ser común/);
+});
+
+test('si falla el guardado después de liberar, intenta devolverle el destino al que lo tenía', () => {
+  assert.match(pantalla, /asignarDestinoFormulario\(poseedor\.id, destino\)\.catch\(/);
+});
+
+test('ocultar o mostrar no toca el destino: no se lo pasa a actualizarFormulario', () => {
+  const activo = pantalla.match(/\$\('form-activo'\)\?\.addEventListener\('click', \(\) => \{([\s\S]*?)\n  \}\);/)?.[1] ?? '';
+  assert.match(activo, /actualizarFormulario\(formulario\.id,/);
+  assert.doesNotMatch(activo, /destino/);
+});
+
+test('cada fila con destino lo muestra con una etiqueta, y un oculto con destino avisa que no se ve', () => {
+  assert.match(pantalla, /<span class="chip">\$\{rotuloDeDestino\(f\.destino\)\}<\/span>/);
+  assert.match(pantalla, /Mientras esté oculto no se muestra, aunque tenga este lugar/);
+});

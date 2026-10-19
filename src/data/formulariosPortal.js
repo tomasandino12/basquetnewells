@@ -30,7 +30,7 @@ const recortar = (v) => (typeof v === 'string' ? v.trim() : '');
  * error. El texto es obligatorio a propósito: es la línea que le dice a la
  * familia para qué es y qué tiene que tener a mano antes de abrirlo.
  */
-export function validarFormulario({ titulo, texto, enlace } = {}) {
+export function validarFormulario({ titulo, texto, enlace, destino } = {}) {
   const t = recortar(titulo);
   if (!t) return { error: 'Escribí el título del formulario.', formulario: null };
   if (t.length > LIMITE.titulo) return { error: `El título es muy largo: hasta ${LIMITE.titulo} letras.`, formulario: null };
@@ -44,7 +44,39 @@ export function validarFormulario({ titulo, texto, enlace } = {}) {
   const e = recortar(enlace);
   if (e.length > LIMITE.enlace || !enlaceFormulario(e)) return { error: MENSAJE_ENLACE_FORMULARIO, formulario: null };
 
-  return { error: null, formulario: { titulo: t, texto: x, enlace: e } };
+  // Vacío o ausente = común. Cualquier otra cosa tiene que ser un destino de la app:
+  // la base también lo exige (check de 0061), pero acá se dice en claro.
+  const d = destino ?? '';
+  if (d !== '' && !DESTINOS.some((x) => x.clave === d)) return { error: 'Elegí cómo se muestra el formulario.', formulario: null };
+
+  return { error: null, formulario: { titulo: t, texto: x, enlace: e, destino: d === '' ? null : d } };
+}
+
+/**
+ * Aparta de la lista los dos formularios con destino y deja el resto, en el
+ * mismo orden, como comunes. La base garantiza uno por destino; si alguna vez
+ * llegaran dos, gana el primero y el otro pasa a la lista en vez de perderse.
+ */
+export function separarFormularios(lista) {
+  const r = { consultas: null, colaboradores: null, comunes: [] };
+  for (const f of lista) {
+    const destino = DESTINOS.some((d) => d.clave === f.destino) ? f.destino : null;
+    if (destino && !r[destino]) r[destino] = f;
+    else r.comunes.push(f);
+  }
+  return r;
+}
+
+/** El formulario que ya usa ese destino (salvo el que se está editando), o null. Sirve para avisar que se lo vamos a sacar. */
+export function quienTieneElDestino(lista, destino, exceptoId = null) {
+  if (!destino) return null;
+  return lista.find((f) => f.destino === destino && f.id !== exceptoId) ?? null;
+}
+
+/** El enlace de Google Forms del formulario de consultas, o null si no hay uno vigente y válido (lo usa /consultas). */
+export function enlaceDeConsultas(lista) {
+  const f = lista.find((x) => x.destino === 'consultas');
+  return f ? enlaceFormulario(f.enlace) : null;
 }
 
 /** Una copia ordenada por `orden`; a igual orden, por título, así el resultado no depende de cómo llegó la lista. */
@@ -82,6 +114,7 @@ export function formularioDesdeFila(f) {
     enlace: f.enlace,
     orden: f.orden,
     activo: f.activo,
+    destino: f.destino ?? null,
     actualizadoPor: f.actualizado_por,
     actualizadoEn: f.actualizado_en,
   };
@@ -89,7 +122,7 @@ export function formularioDesdeFila(f) {
 
 /** Lo único que devuelve formularios_publicos(): lo que ve cualquiera. */
 export function formularioPublicoDesdeFila(f) {
-  return { titulo: f.titulo, texto: f.texto, enlace: f.enlace };
+  return { titulo: f.titulo, texto: f.texto, enlace: f.enlace, destino: f.destino ?? null };
 }
 
 /**
