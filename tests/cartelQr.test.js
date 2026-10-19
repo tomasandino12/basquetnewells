@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { crearQr } from '../scripts/qr.mjs';
 import {
-  URL_POR_DEFECTO, FRASE, INSTRUCCION, pngDelQr, leerPngRgba, pdfDelCartel, contenidoDelCartel, generarCartel,
+  URL_POR_DEFECTO, FRASE, INSTRUCCION, AVISO_BORRADOR, pngDelQr, leerPngRgba, pdfDelCartel, contenidoDelCartel, generarCartel, leerArgumentos,
 } from '../scripts/cartel-qr.mjs';
 
 /**
@@ -133,4 +133,26 @@ test('generarCartel escribe los dos archivos y rechaza direcciones que no son ht
   for (const mala of ['http://example.test/x', 'example.test/x', 'javascript:alert(1)', 'https://a b.test']) {
     assert.throws(() => generarCartel(mala, carpeta, raiz), /https/, mala);
   }
+});
+
+test('por defecto el cartel es un BORRADOR con franja roja; con final, no', () => {
+  assert.ok(contenidoDelCartel(qr, URL_POR_DEFECTO).includes(`(${AVISO_BORRADOR})`));
+  assert.ok(contenidoDelCartel(qr, URL_POR_DEFECTO, { borrador: true }).includes('0 818 595 24 re f'));
+  assert.ok(!contenidoDelCartel(qr, URL_POR_DEFECTO, { borrador: false }).includes(AVISO_BORRADOR));
+  assert.match(AVISO_BORRADOR, /NO IMPRIMIR/);
+});
+
+test('el PDF guardado en docs/cartel-qr sigue siendo borrador hasta que se defina el dominio', () => {
+  const guardado = readFileSync(path.join(raiz, 'docs', 'cartel-qr', 'cartel-consultas-A4.pdf')).toString('latin1');
+  assert.ok(guardado.includes(`(${AVISO_BORRADOR})`), 'cuando el dominio sea el definitivo: npm run cartel-qr -- --final y actualizar este test');
+});
+
+test('leerArgumentos: sin --final es borrador; url y carpeta son opcionales', () => {
+  const r = leerArgumentos([], raiz);
+  assert.equal(r.url, URL_POR_DEFECTO);
+  assert.equal(r.borrador, true);
+  assert.equal(r.carpeta, path.join(raiz, 'docs', 'cartel-qr'));
+  assert.equal(leerArgumentos(['--final'], raiz).borrador, false);
+  const otro = leerArgumentos(['https://otro.test/consultas', 'salida', '--final'], raiz);
+  assert.deepEqual([otro.url, otro.carpeta, otro.borrador], ['https://otro.test/consultas', path.resolve('salida'), false]);
 });

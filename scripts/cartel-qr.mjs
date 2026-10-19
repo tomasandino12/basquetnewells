@@ -2,6 +2,11 @@
 //
 //   npm run cartel-qr                    → la dirección fija /consultas del portal
 //   npm run cartel-qr -- <url> <salida>  → otra dirección u otra carpeta
+//   npm run cartel-qr -- --final         → sin la franja de BORRADOR
+//
+// Por defecto el cartel sale como BORRADOR (franja roja arriba: "no imprimir
+// hasta definir el dominio"). Con --final se la saca; sólo se usa cuando el
+// dominio del portal ya es el definitivo.
 //
 // Sin dependencias: el QR sale de scripts/qr.mjs y el PDF se escribe a mano
 // (vectorial, con la fuente Helvetica que todo lector de PDF trae). No es parte
@@ -19,6 +24,7 @@ import { crearQr } from './qr.mjs';
 export const URL_POR_DEFECTO = 'https://app-semillero.vercel.app/consultas';
 export const FRASE = ['Escaneá y venite', 'a jugar al básquet'];
 export const INSTRUCCION = 'Apuntá la cámara del celular al código';
+export const AVISO_BORRADOR = 'BORRADOR · NO IMPRIMIR HASTA DEFINIR EL DOMINIO';
 const PIE = 'Inferiores · Newell\'s Old Boys';
 const MODULO_PNG = 24; // píxeles por módulo en el PNG
 const MARGEN = 4; // módulos de zona de silencio, el mínimo que pide la norma
@@ -129,15 +135,20 @@ function lineaCentrada(texto, { fuente, y, tamano, color, maximo = 520 }) {
 }
 
 /** El contenido de la página: franja oscura con el escudo, la frase, el QR vectorial y la dirección. */
-export function contenidoDelCartel(qr, url) {
+export function contenidoDelCartel(qr, url, { borrador = true } = {}) {
   const lado = 330;
   const modulo = lado / (qr.tamano + 2 * MARGEN);
   const x0 = (A4[0] - lado) / 2; const y0 = 118;
   let c = '';
   // Franja superior y filete rojo.
   c += `${NEGRO_CLUB} rg 0 592 ${A4[0]} 250 re f\n${ROJO_CLUB} rg 0 584 ${A4[0]} 8 re f\n`;
-  c += `q 128 0 0 128 ${num((A4[0] - 128) / 2)} 690 cm /Escudo Do Q\n`;
+  c += `q 120 0 0 120 ${num((A4[0] - 120) / 2)} 692 cm /Escudo Do Q\n`;
   c += lineaCentrada('BÁSQUET · NEWELL\'S OLD BOYS', { fuente: 'F1', y: 650, tamano: 14, color: GRIS_SOBRE_OSCURO });
+  // Franja de borrador: se ve al toque en una prueba impresa y en la pantalla.
+  if (borrador) {
+    c += `${ROJO_CLUB} rg 0 818 ${A4[0]} 24 re f\n`;
+    c += lineaCentrada(AVISO_BORRADOR, { fuente: 'F1', y: 826, tamano: 12, color: '1 1 1' });
+  }
   // La frase.
   c += lineaCentrada(FRASE[0], { fuente: 'F1', y: 520, tamano: 46, color: NEGRO_CLUB });
   c += lineaCentrada(FRASE[1], { fuente: 'F1', y: 468, tamano: 46, color: ROJO_CLUB });
@@ -156,13 +167,13 @@ export function contenidoDelCartel(qr, url) {
 }
 
 /** Arma el PDF: catálogo, página, contenido, dos fuentes estándar y el escudo con su transparencia. */
-export function pdfDelCartel(qr, url, escudo) {
+export function pdfDelCartel(qr, url, escudo, opciones = {}) {
   const objetos = [];
   const agregar = (cuerpo) => { objetos.push(cuerpo); return objetos.length; };
   const flujo = (diccionario, datos) => Buffer.concat([
     Buffer.from(`<< ${diccionario} /Length ${datos.length} >>\nstream\n`, 'latin1'), datos, Buffer.from('\nendstream', 'latin1')]);
 
-  const contenido = Buffer.from(contenidoDelCartel(qr, url), 'latin1');
+  const contenido = Buffer.from(contenidoDelCartel(qr, url, opciones), 'latin1');
   agregar(Buffer.from('<< /Type /Catalog /Pages 2 0 R >>', 'latin1'));
   agregar(Buffer.from('<< /Type /Pages /Kids [3 0 R] /Count 1 >>', 'latin1'));
   agregar(Buffer.from(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${A4[0]} ${A4[1]}] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> /XObject << /Escudo 7 0 R >> >> >>`, 'latin1'));
@@ -190,20 +201,31 @@ export function pdfDelCartel(qr, url, escudo) {
 
 /* ---------- Programa ---------- */
 
-export function generarCartel(url, carpeta, raiz) {
+export function generarCartel(url, carpeta, raiz, opciones = {}) {
   if (!/^https:\/\/[^\s"<>]+$/.test(url)) throw new Error(`La dirección tiene que empezar con https:// y no llevar espacios: ${url}`);
   const qr = crearQr(url);
   const escudo = leerPngRgba(readFileSync(path.join(raiz, 'public', 'escudo.png')));
   mkdirSync(carpeta, { recursive: true });
   writeFileSync(path.join(carpeta, 'qr-consultas.png'), pngDelQr(qr));
-  writeFileSync(path.join(carpeta, 'cartel-consultas-A4.pdf'), pdfDelCartel(qr, url, escudo));
+  writeFileSync(path.join(carpeta, 'cartel-consultas-A4.pdf'), pdfDelCartel(qr, url, escudo, opciones));
   return { qr, carpeta };
+}
+
+/** Argumentos de la línea de comandos: [url] [carpeta] [--final]. Sin --final, el cartel es un borrador. */
+export function leerArgumentos(argv, raiz) {
+  const posicionales = argv.filter((a) => !a.startsWith('--'));
+  return {
+    url: posicionales[0] ?? URL_POR_DEFECTO,
+    carpeta: path.resolve(posicionales[1] ?? path.join(raiz, 'docs', 'cartel-qr')),
+    borrador: !argv.includes('--final'),
+  };
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const raiz = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-  const url = process.argv[2] ?? URL_POR_DEFECTO;
-  const carpeta = path.resolve(process.argv[3] ?? path.join(raiz, 'docs', 'cartel-qr'));
-  const { qr } = generarCartel(url, carpeta, raiz);
-  console.log(`QR de ${url}: versión ${qr.version} (${qr.tamano}x${qr.tamano} módulos).\nEscribí qr-consultas.png y cartel-consultas-A4.pdf en ${carpeta}`);
+  const { url, carpeta, borrador } = leerArgumentos(process.argv.slice(2), raiz);
+  const { qr } = generarCartel(url, carpeta, raiz, { borrador });
+  console.log(`QR de ${url}: versión ${qr.version} (${qr.tamano}x${qr.tamano} módulos).`);
+  console.log(`Escribí qr-consultas.png y cartel-consultas-A4.pdf en ${carpeta}`);
+  if (borrador) console.log('El cartel salió como BORRADOR (no imprimir hasta definir el dominio); con --final se saca la franja.');
 }
