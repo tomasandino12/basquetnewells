@@ -2,6 +2,7 @@
 // Se importa a través de src/data/repositorio.js (fachada).
 import { obtenerCliente, TAMANIO_PAGINA } from '../cliente.js';
 import { hoyLocal } from '../antropometria.js';
+import { historiaDesdeJson } from '../historiaJugador.js';
 
 /**
  * Todos los jugadores del club, para el dedup del import y el del alta manual.
@@ -193,4 +194,16 @@ export async function jugadorTieneCuenta(jugadorId) {
     .maybeSingle();
   if (error) throw error;
   return data != null;
+}
+
+/**
+ * Su recorrido por todas las temporadas (0056). La base decide si quien
+ * pregunta lo puede ver: el profe de un plantel actual del chico. Si no,
+ * falla con 42501, también si el jugador no existe.
+ */
+export async function obtenerHistoriaDelJugador(jugadorId) {
+  const supabase = obtenerCliente();
+  const { data, error } = await supabase.rpc('historia_del_jugador', { p_jugador_id: jugadorId });
+  if (error) throw error;
+  return historiaDesdeJson(data);
 }

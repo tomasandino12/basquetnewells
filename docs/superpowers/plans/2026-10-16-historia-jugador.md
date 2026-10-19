@@ -2,109 +2,126 @@
 
 > Ejecutar en la sesión, de a una task, sin subagentes (CLAUDE.md). Una task = un commit. Antes de cada commit: `npm run test:q`. Después: `graphify update .`. Al cerrar cada task: resumen en lenguaje simple y qué probar en el navegador. **No hacer merge**: lo hace Tomás después de probar.
 
-**Objetivo:** en la ficha del jugador, una sección "Historia por temporada" con su recorrido, visible para el profe que lo tiene hoy en su plantel.
+**Objetivo:** en la ficha del jugador, una sección "Historia por temporada" que muestre qué se trabajó con el chico y cómo llega, visible para el profe que lo tiene hoy en su plantel.
 
-**Spec:** `docs/superpowers/specs/2026-10-16-historia-jugador-design.md`. **Antes de la Task 1 hay que confirmar D1–D4** (tabla de choques de la spec). El plan asume las recomendaciones; si alguna cambia, se ajusta este plan primero.
+**Spec:** `docs/superpowers/specs/2026-10-16-historia-jugador-design.md` (D1–D4 confirmadas el 16/10).
 
-**Rama:** `feat/historia-jugador`. **Tag de respaldo:** `pre-historia`.
+**Rama:** `feat/historia-jugador`, en el worktree `.claude/worktrees/historia` (el checkout principal lo usa la sesión de misiones). **Tag:** `pre-historia` (= `6fe9971`, en `main`). En el worktree, correr `npm ci` antes de la primera prueba.
+
+## Trabajo en paralelo: orden y dependencias
+
+Al 16/10 hay cuatro ramas abiertas además de esta:
+
+| Rama | Migración | Toca lo mismo que historia |
+|---|---|---|
+| `feat/backup` | — | nada; pero hace falta para cualquier `db push` (`npm run backup`) |
+| `feat/finanzas` | **0054 ya escrita** | `ESQUEMA.md`, `layout.css`, `main.js` |
+| `feat/misiones-partido` | **0054 en el plan** (choca con finanzas) | `fichaJugador.js` (Task 8), `ESQUEMA.md`, `layout.css` |
+| `feat/portal-pwa` | — | `layout.css`, `main.js` |
+
+**Choques reales:**
+1. **Número de migración.** Finanzas y misiones van las dos por 0054, y esta rama necesita uno más. Una migración no aplicada se puede renumerar sin problema, pero los tests de contrato que leen la migración por nombre se renumeran con ella. Regla: **el número se fija recién al `db push`, según el orden de merge.** Mientras tanto, esta rama escribe `0056_historia_jugador.sql`.
+2. **`fichaJugador.js`.** Lo tocan misiones (sección de misiones) y esta rama (refactor de id y sección nueva). Hay que mergear una antes de que la otra toque la ficha.
+3. `ESQUEMA.md` y `layout.css`: conflictos chicos de texto, se resuelven al mergear.
+
+**Orden recomendado:** backup → finanzas (0054) → misiones (0055) → historia (0056). Las tasks 1 a 4 de esta rama sólo crean archivos nuevos (más una función en `repos/jugadores.js`), así que **pueden avanzar ya**, en paralelo. Desde la task 5 (la ficha), esperar a que misiones esté mergeada en `main` y traerla con `sync_with_base_branch`. El bloque de misiones dentro de la historia queda para después, como el primer uso de la extensión (spec §4).
+
+**Base local (18/10):** la función de 0056 está aplicada **a mano** (psql), sin fila en `supabase_migrations.schema_migrations`. Un `db reset` la borra: hay que volver a aplicarla con `docker exec -i <db> psql -U postgres < supabase/migrations/0056_historia_jugador.sql`. Ni la función ni sus pruebas leen tablas de 0054 o 0055. 0056 no crea tablas ni texto que escriba un usuario: no suma nada a `contratoLimites.test.js` (`TABLAS_NUEVAS`, `LIMITES_POR_COLUMNA`), así que no choca con misiones ahí.
+
+**Nota de la Task 6 (sin CSS nuevo):** la sección usa sólo clases que ya existen (`.tarj`, `.eyebrow` con `.der`, `.tabla-ev`/`.fila-ev.dos`, `.p`, `.mono`, `.sin`, "Ver detalles"). No se pudo probar en el navegador de la sesión: el panel no dejó abrir `localhost:5183` y `preview_start` lee `.claude/launch.json` de la carpeta principal, no del worktree. Para probar a mano: con la base local en 0053 + `0056_historia_jugador.sql` + `tests/sembrarHistoriaLocal.sql`, cambiar **temporalmente** `public/config.js` a `http://127.0.0.1:54321` y la publishable key de `npx supabase status`, servir con `npx esbuild --serve=5183 --servedir=.` (stdin abierto) y entrar con `zztest-profe17@historia.test` (contraseña en el comentario del seed). Revertir `config.js` antes de commitear (el test de CSP falla si no). Pendiente de pulido: la fila de la sección "Qué se trabajó" con bloques y ejercicios largos, y si una `.fila-ev.dos` queda angosta a 375 px.
 
 ## Restricciones globales
 
-- Sólo lectura: ninguna escritura nueva, ni en SQL ni en el cliente.
-- La migración no crea, cambia ni borra policies, y no otorga nada sobre tablas. Si en algún momento hace falta, **parar** (stop condition del prompt).
-- Datos de prueba de temporadas anteriores, **sólo en la base local**. Nunca en producción.
+- Sólo lectura. La migración no crea, cambia ni borra policies, y no otorga nada sobre tablas. Si hiciera falta: **parar**.
+- Datos de una temporada anterior, **sólo en la base local**. Nunca en producción.
 - Antes de cada `npx supabase db push`: parar y preguntar si se corrió `npm run backup`.
-- Sin dependencias nuevas. Capas: la pantalla pide por `repositorio.js`; la lógica de agrupar va en `src/data/historiaJugador.js` (pura).
-- `NULL` no es 0: un total de puros nulos es "sin dato" y un bloque vacío dice "Sin datos".
-- Sin comparar con otros, sin normas, sin tendencias, sin "mejoró".
-- CSS base de celular, breakpoints sólo en `layout.css`, áreas táctiles de 44 px, `hover` dentro de `@media (hover: hover)`.
+- Sin dependencias nuevas. Capas: la pantalla pide por `repositorio.js`; agrupar y calcular va en `src/data/historiaJugador.js` (puro).
+- `NULL` no es 0: "sin dato", "Sin datos", "sin medición".
+- Sin comparar con otros jugadores, sin normas, sin tendencias, sin "mejoró". Sin jerga ("Asistencias", no "AST").
+- CSS base de celular, breakpoints sólo en `layout.css`, toques de 44 px, `hover` dentro de `@media (hover: hover)`, nada sólo por color.
 
 ## Estado
 
 | Task | Estado |
 |---|---|
-| 0. Preparación y decisiones | pendiente |
-| 1. Lógica pura de agrupación | pendiente |
-| 2. Migración 0054 y contrato | pendiente |
-| 3. Prueba local con temporada 2025 | pendiente |
-| 4. Repo y fachada | pendiente |
-| 5. Refactor: `ficha-historia` → `ficha-actual` | pendiente |
-| 6. Sección en la ficha | pendiente |
-| 7. Docs y `db push` | pendiente |
+| 0. Decisiones, tag, rama y worktree | hecha (16/10) |
+| 1. Lógica pura: agrupar y ubicar por fecha | hecha (16/10) |
+| 2. Lógica pura: "Cómo llega" y resúmenes | hecha (16/10; fija la forma de cada fuente, ver el comentario de `historiaJugador.js`) |
+| 3. Migración 0056 y contrato | hecha (18/10; se prueba contra la base en la Task 4) |
+| 4. Prueba local con temporada 2025 + repo | hecha (18/10; verificarHistoria 6/6 OK en local, 0056 aplicada a mano sin reset; el seed se probó con rollback, todavía no se cargó) |
+| 5. Refactor: `ficha-historia` → `ficha-actual` | hecha (18/10) |
+| 6. Sección en la ficha | código hecho (18/10, `test:q` verde); **falta probarla en el navegador a 375 px** (ver nota) |
+| 7. Docs y `db push` | hecha (18/10): 0056 en producción, `ESQUEMA.md` y `SEGURIDAD-LANZAMIENTO.md` al día |
 
 ---
 
-### Task 0: preparación y decisiones
-
-- Confirmar D1–D4 con Tomás.
-- `git status` tiene que estar limpio. Hoy hay archivos sin seguir (`docs/arquitectura-capas*`, `docs/prompt-revision-ux.md`, `.claude/skills/ui-ux-pro-max/`, un plan de jugadas): Tomás decide si se commitean, se ignoran o se mueven.
-- `git tag pre-historia` y `git switch -c feat/historia-jugador`.
-
-**Aceptación:** tag y rama creados, decisiones escritas en la tabla de la spec. Sin commit de código.
-
-### Task 1: lógica pura de agrupación
+### Task 1: lógica pura, agrupar y ubicar por fecha
 
 **Archivos:** crear `src/data/historiaJugador.js` y `tests/historiaJugador.test.js`.
 
+**Qué produce:** `FUENTES` (spec §4) con `planFisico`, `cargas`, `recursos`, `saltos`, `sprints`, `yoyos`, `corporales`, `tiro`, `partidos`. `temporadaDeFecha(fecha, pertenencias, temporadas)` y `agruparHistoria(datos)`, que devuelve `[{ temporada, categorias, profes, fuentes }]`, de la más reciente a la más vieja, con el grupo `sinTemporada` si hace falta.
+
+**Tests:** `ordena de la temporada más reciente a la más vieja`, `un partido y un plan físico caen en la temporada de su plantel`, `una carga y un material caen por fecha en el rango de la pertenencia`, `una fecha fuera de todo rango va a sin temporada`, `citado en dos categorías: una temporada con las dos`, `una fuente vacía queda como lista vacía`, `agregar una clave a FUENTES no cambia las demás`.
+
+**Aceptación:** el test y `arquitectura.test.js` en verde.
+
+### Task 2: lógica pura, "Cómo llega" y resúmenes
+
+**Archivos:** `src/data/historiaJugador.js` y su test.
+
 **Qué produce:**
-- `FUENTES`: `[{ clave, ubicar: 'plantel' | 'fecha' }]` para `partidos`, `tiro`, `saltos`, `sprints`, `yoyos`, `corporales`, `escalones`.
-- `temporadaDeFecha(fecha, pertenencias, temporadas)`: id de temporada o `null` (spec §5).
-- `agruparHistoria(datos)`: `[{ temporada, categorias, profes, fuentes: { clave: items[] } }]`, de la temporada más reciente a la más vieja, más un grupo `sinTemporada` si hace falta. Una temporada sin pertenencias pero con datos (un partido de citado) también aparece.
-- `totalesDePartidos(items)`: `{ jugados, minSegundos, pts, dos, tres, libres }`, donde cada total es `null` si todos sus valores lo son.
-- `resumenDeTemporada(grupo)`: el texto de la línea de resumen ("8 partidos · sin mediciones físicas").
+- `comoLlega(datos)`: el último dato de cada tipo anterior a la temporada actual (spec §5), con fecha; `null` si no hay. Salto por test, sprint por distancia, cargas por ejercicio.
+- `comoTermino(grupo)`: lo mismo, dentro de una temporada.
+- `totalesDePartidos(items)`: cada total es `null` si todos sus valores lo son.
+- `resumenDeTemporada(grupo)`: la línea de la tarjeta.
+- La altura del salto y la velocidad del sprint salen de `salto.js` y `sprint.js`, que ya existen; no se duplican fórmulas.
 
-**Tests (`historiaJugador.test.js`):** `ordena de la temporada más reciente a la más vieja`, `un partido cae en la temporada de su plantel`, `una medición corporal cae por fecha en el rango de la pertenencia`, `una fecha fuera de todo rango va a sin temporada`, `citado en dos categorías: una sola temporada con las dos`, `un total de puros nulos es null, no 0`, `un bloque vacío queda como lista vacía, no se inventan ceros`, `agregar una clave a FUENTES no cambia el resultado de las demás`.
+**Tests:** `cómo llega toma lo anterior a la temporada actual`, `cómo llega sin mediciones da null, no 0`, `el salto se separa por test y el sprint por distancia`, `un total de puros nulos es null`, `el resumen nombra el plan físico antes que los partidos`.
 
-**Aceptación:** `node --test tests/historiaJugador.test.js` verde; `arquitectura.test.js` verde (módulo puro).
+### Task 3: migración 0056 y contrato
 
-### Task 2: migración 0054 y contrato
+**Archivos:** crear `supabase/migrations/0056_historia_jugador.sql`, `tests/contratoHistoria.test.js` y `tests/verificarHistoria.sql`. Modelo Opus.
 
-**Archivos:** crear `supabase/migrations/0054_historia_jugador.sql`, `tests/contratoHistoria.test.js` y `tests/verificarHistoria.sql`. Modelo Opus (RLS/RPC).
+**Qué produce:** `historia_del_jugador(p_jugador_id uuid)`, con la regla de la spec §1 y la forma de la spec §2. Los corporales van **sin** la ventana de 0039 (D2), y el comentario de la migración explica por qué. Los profes salen de todas las `asignacion_plantel` del plantel, sin repetir. Con `revoke` a `public` y `anon` y `grant execute` a `authenticated`.
 
-**Qué produce:** `historia_del_jugador(p_jugador_id uuid) returns jsonb`, `stable security definer set search_path = ''`, con la regla de acceso de la spec §1 al principio y la forma de la spec §2. Corporales con la misma ventana de 0039 (`creado_en` desde que existe la pertenencia que da acceso). Profes: todas las `asignacion_plantel` del plantel, nombre desde `auth.users.raw_user_meta_data->>'nombre'`. `revoke ... from public, anon`, `grant execute ... to authenticated`. Comentario arriba con el porqué (prompt 02, D1–D4).
+**Tests de contrato:** `no crea, cambia ni borra policies`, `no otorga nada sobre tablas`, `es security definer con search_path vacío`, `el grant es sólo a authenticated`, `la regla usa puede_ver_plantel, pertenencia vigente y es_entrenador`, `cada clave del jsonb está en FUENTES`. Verificar además que `contratoAccesoJugador.test.js` no salte.
 
-**Tests (`contratoHistoria.test.js`):** `0054 no crea, cambia ni borra policies`, `0054 no otorga nada sobre tablas`, `la función es security definer con search_path vacío`, `el grant execute es sólo a authenticated`, `la regla de acceso usa puede_ver_plantel y pertenencia vigente`, `cada clave del jsonb está en FUENTES`. Si `contratoAccesoJugador.test.js` también escanea migraciones nuevas, confirmar que no salta.
+**`verificarHistoria.sql`:** el profe U17 ve 2025 del chico que viene de U15; el mismo profe recibe 42501 con un chico de U15 que no está en su plantel; el coordinador puro, el jugador y un profe dado de baja reciben 42501.
 
-**`verificarHistoria.sql`** (para el SQL Editor local, con usuarios sintéticos y `set local role`/`request.jwt.claims`): profe U17 ve al chico que viene de U15 con su temporada 2025; profe U17 recibe 42501 con un chico de U15 que no está en su plantel; coordinador puro recibe 42501 (D1); jugador recibe 42501; un profe dado de baja recibe 42501.
+**Aceptación:** `test:q` en verde. Sin `db push`.
 
-**Aceptación:** `npm run test:q` verde. Todavía **sin** `db push`.
+### Task 4: prueba local con temporada 2025 y repo
 
-### Task 3: prueba local con temporada 2025
+**Archivos:** crear `tests/sembrarHistoriaLocal.sql` (no es una migración). En `src/data/repos/jugadores.js`, `obtenerHistoriaDelJugador(jugadorId)`: `rpc` más un mapper a camelCase. Si el mapper pasa de ~10 líneas, va a `historiaJugador.js` con su test.
 
-**Archivos:** crear `tests/sembrarHistoriaLocal.sql` (no es migración; se corre a mano contra la base local).
+**Seed:** temporada 2025 con U15M y U17M; un profe con asignación cerrada a U15M 2025; un chico con pertenencia cerrada en U15M 2025 y vigente en U17M 2026. En 2025, un plan físico con sesiones, cargas, un material, un salto, un sprint, un Yo-Yo, una batería y un partido. Además, otro chico sólo en U15M 2026. Arranca con un guard que aborta si la base no es la local.
 
-**Qué produce:** temporada 2025 del club de prueba con planteles U15M y U17M 2025, un profe con asignación **cerrada** a U15M 2025, un chico con pertenencia cerrada en U15M 2025 y vigente en U17M 2026, un partido y una batería en 2025, y otro chico sólo en U15M 2026. Arranca con un guard que aborta si la base no es la local (por ejemplo, si existe el club de Newell's real).
+**Pasos:** `npx supabase start` (Docker), migraciones, seed y `verificarHistoria.sql`.
 
-**Pasos:** `npx supabase start` (Docker), aplicar migraciones, sembrar, correr `verificarHistoria.sql`.
-
-**Aceptación:** los cinco casos de `verificarHistoria.sql` dan lo esperado. Commit del seed y de los ajustes que hayan salido.
-
-### Task 4: repo y fachada
-
-**Archivos:** `src/data/repos/jugadores.js` (`obtenerHistoriaDelJugador(jugadorId)`: `rpc` y mapper `historiaDesdeJson` a camelCase). Si el mapper pasa de ~10 líneas, va a `historiaJugador.js` con su test. La fachada ya exporta todo `jugadores.js`: no cambia.
-
-**Tests:** si el mapper es puro, `historiaDesdeJson pasa a camelCase y conserva los null` en `historiaJugador.test.js`.
-
-**Aceptación:** `test:q` verde; `arquitectura.test.js` verde.
+**Aceptación:** los cinco casos dan lo esperado y `test:q` está en verde.
 
 ### Task 5: refactor, `ficha-historia` → `ficha-actual`
 
-**Archivos:** `src/ui/pantallas/fichaJugador.js` y el CSS que use ese id, si hay. Sólo el renombre, sin cambio de comportamiento (refactor y feature no van en el mismo commit).
+**Antes:** misiones mergeada en `main` y traída con `sync_with_base_branch`. Sólo el renombre, en un commit propio.
 
-**Aceptación:** `grep -rn "ficha-historia" src public` vacío; `test:q` verde.
+**Aceptación:** `grep -rn "ficha-historia" src public` vacío y `test:q` en verde.
 
 ### Task 6: sección en la ficha
 
-**Archivos:** crear `src/ui/componentes/historiaTemporadas.js` (lista `BLOQUES`, `html\`...\``, `verDetallesHtml` por temporada). En `fichaJugador.js`, un `<div class="pad" id="ficha-temporadas">` antes de `ficha-cargas`, con su propio try/catch y `avisoInline` si falla, como los demás bloques. Estilos en el CSS de componentes que corresponda, consultando `DESIGN.md` y su checklist.
+**Archivos:** crear `src/ui/componentes/historiaTemporadas.js` (`BLOQUES`, `html\`...\``, `verDetallesHtml` por temporada). En `fichaJugador.js`, `<div class="pad" id="ficha-temporadas">` antes de `ficha-cargas`, con su try/catch y `avisoInline`. Estilos según `DESIGN.md` y su checklist: es la fuente de verdad. Coherente con el resto de la app y con la identidad del club (títulos condensados en mayúscula); el color del club entra **sólo** por `--primario`. Referencia visual: el proyecto de Stitch "Objetivos cortos — App formativa". **Sin componentes nuevos**: lo que DESIGN.md no cubra se anota acá y se resuelve en la pasada de pulido, que va aparte.
 
-**Qué se ve:** por temporada, una tarjeta con nombre, categorías, profes, la línea de resumen y "Ver detalles". En la hoja, los bloques Partidos, Tiro, Velocidad y Físico. Cada bloque vacío dice "Sin datos" o "Sin mediciones". Puntos con el mismo peso que el resto. Ningún dato sólo por color.
-
-**Aceptación:** con la base local sembrada, en el navegador a 375 px: (1) profe U17 ve 2026 arriba y 2025 abajo, con el partido y la batería de 2025; (2) en la ficha del chico de U15 no llega (no está en su plantel) y la consulta directa a la RPC devuelve error; (3) un bloque sin datos dice "Sin datos"; (4) se usa con una mano, botones de 44 px. `grep` de capas limpio: `grep -rn "supabase\|repos/\|cliente.js" src/ui` sin resultados nuevos.
+**Aceptación** (base local, 375 px):
+1. El profe U17 ve "Cómo llega" con los datos de 2025, y las tarjetas de 2026 arriba y 2025 abajo.
+2. En la hoja de 2025 aparecen, en orden, Qué se trabajó, Cómo terminó, Tiro y Partidos.
+3. Al chico de U15 no llega, y la RPC directa da error.
+4. Un bloque vacío dice "Sin datos".
+5. Se usa con una mano.
+6. `grep -rn "supabase\|repos/\|cliente.js" src/ui` no muestra nada nuevo.
 
 ### Task 7: docs y `db push`
 
-**Archivos:** `supabase/ESQUEMA.md` (sección "Historia del jugador (0054)", fila en la tabla de funciones y en la de RLS) y la memoria del proyecto.
+**Archivos:** `supabase/ESQUEMA.md` (sección de la función, D2 escrita y filas en las tablas de funciones y RLS), `docs/SEGURIDAD-LANZAMIENTO.md` (D2) y la memoria.
 
-**Pasos:** parar y preguntar si se corrió `npm run backup` → `npx supabase db push` → probar en producción con la cuenta de un profe que el único caso real es 2026 (una sola temporada, sin datos sembrados).
+**Pasos:** confirmar el número de migración según lo ya aplicado y renumerar si hace falta. Parar y preguntar por `npm run backup`. Después, `npx supabase db push`. Probar en producción con un profe; ahí sólo existe 2026.
 
-**Aceptación:** `test:q` verde, 0054 aplicada, Estado de este plan al día. Sin merge.
+**Aceptación:** `test:q` en verde, la migración aplicada y el Estado al día. Sin merge.

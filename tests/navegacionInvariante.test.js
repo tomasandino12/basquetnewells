@@ -118,12 +118,13 @@ test('sin escalón definido no hay + ni −, pero el peso se anota igual', () =>
   assert.match(src, /paso: null/);
 });
 
-test('coordinación tiene INVENTARIO después de Profes y FINANZAS al final, y cada pestaña tiene su sección', async () => {
+test('coordinación tiene INVENTARIO después de Profes y Familias, FINANZAS al final, y cada pestaña tiene su sección', async () => {
   const { TABS_COORDINACION } = await import('../src/ui/chrome.js');
   assert.deepEqual(TABS_COORDINACION.map((t) => t.id),
-    ['p-coord-panorama', 'p-coord-profes', 'p-coord-inventario', 'p-coord-finanzas']);
-  assert.equal(TABS_COORDINACION[2].texto, 'Inventario');
-  assert.equal(TABS_COORDINACION[3].texto, 'Finanzas');
+    ['p-coord-panorama', 'p-coord-profes', 'p-coord-familias', 'p-coord-inventario', 'p-coord-finanzas']);
+  assert.equal(TABS_COORDINACION[3].texto, 'Inventario');
+  assert.equal(TABS_COORDINACION[4].texto, 'Finanzas');
+  assert.match(fuente('src/ui/pantallas/registro.js'), /'p-coord-familias'/);
   const html = fuente('public/index.html');
   for (const t of TABS_COORDINACION) assert.match(html, new RegExp(`<section class="pant" id="${t.id}">`), t.id);
   assert.match(html, /id="coord-inventario-contenido"/);

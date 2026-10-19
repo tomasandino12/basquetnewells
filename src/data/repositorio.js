@@ -17,3 +17,5 @@ export * from './repos/jugadas.js';
 export * from './repos/miCuenta.js';
 export * from './repos/errores.js';
 export * from './repos/finanzas.js';
+export * from './repos/misiones.js';
+export * from './repos/familia.js';

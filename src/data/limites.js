@@ -17,6 +17,8 @@ export const LIMITE = {
   desambiguador: 60,
   archivo: 255,
   rival: 120,
+  textoMision: 150,
+  comentarioMision: 300,
   numeroCamiseta: 20,
   titulo: 150,
   tema: 100,
@@ -26,6 +28,8 @@ export const LIMITE = {
   listaCorta: 200,
   nota: 2000,
   bloque: 100,
+  // RFC 5321: un mail no pasa de 254 caracteres.
+  mail: 254,
   corto: 100,
   nombreLinea: 200,
   notasLinea: 1000,
@@ -35,7 +39,7 @@ export const LIMITE = {
   descripcionMovimiento: 300,
 };
 
-/** 'tabla.columna' → largo máximo. Es el espejo exacto de 0028 y de los checks en línea de las tablas nuevas (0035, 0052, 0054). */
+/** 'tabla.columna' → largo máximo. Es el espejo exacto de 0028 y de los checks en línea de las tablas nuevas (0035, 0052, 0054, 0055). */
 export const LIMITES_POR_COLUMNA = {
   'jugador.nombre_clave': LIMITE.nombrePersona,
   'jugador.nombre_limpio': LIMITE.nombrePersona,
@@ -74,4 +78,10 @@ export const LIMITES_POR_COLUMNA = {
   'rubro.nombre': LIMITE.nombreRubro,
   'movimiento.descripcion': LIMITE.descripcionMovimiento,
   'movimiento.comprobante_url': LIMITE.enlace,
+  'previa_partido.rival': LIMITE.rival,
+  'mision_jugador.texto': LIMITE.textoMision,
+  'mision_jugador.comentario': LIMITE.comentarioMision,
+  'mision_equipo.texto': LIMITE.textoMision,
+  'mision_equipo.comentario': LIMITE.comentarioMision,
+  'responsable_jugador.email': LIMITE.mail,
 };

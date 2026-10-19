@@ -533,6 +533,10 @@ svg.g{width:100%;display:block;overflow:visible}
 .pestanas{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:0;border-bottom:1px solid var(--linea)}
 .pest{min-height:48px;border:0;background:none;color:var(--gris-cl);font-family:var(--ff-titulo);font-size:var(--fs-160);letter-spacing:.06em;text-transform:uppercase;border-bottom:2px solid transparent}
 .pest.on{color:var(--tinta);border-bottom-color:var(--primario)}
+/* En la ficha del jugador las pestañas quedan pegadas arriba al bajar: se
+   cambia de pestaña sin volver al principio. El fondo tapa lo que pasa por
+   debajo. */
+.pestanas.fija{position:sticky;top:0;z-index:1;background:var(--papel)}
 
 /* Etapa 5 — lista de ejercicios */
 .chips-tema{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
@@ -1060,3 +1064,27 @@ svg.pz.pz-icono{width:2.75rem;height:1.375rem;display:inline-block;vertical-alig
 .al.pista .tx{flex:1 1 12rem}
 .al.pista .btn.chico{margin-left:auto}
 .jed > .al.pista{margin-bottom:0}
+
+/* ---- misiones del partido: una línea por misión, con su botón de quitar ---- */
+.mision-fila{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);padding:var(--sp-1) 0;border-bottom:1px solid var(--linea);font-size:var(--fs-145)}
+.mision-tx{flex:1}
+.mision-fila + .btn{margin-top:var(--sp-3)}
+.tarj .p + .btn{margin-top:var(--sp-2)}
+
+/* Pasos numerados (importar inscriptos, textos para familias): una lista que se
+   lee de arriba abajo, con el número a la vista. Sin imágenes ni movimiento. */
+.pasos{counter-reset:paso;display:flex;flex-direction:column;gap:var(--sp-2);margin:var(--sp-2) 0 var(--sp-4)}
+/* El número va posicionado y el texto en flujo normal: un <b> o un enlace dentro
+   del paso no lo parte en columnas. */
+.pasos li{counter-increment:paso;position:relative;padding-left:calc(var(--sp-6) + var(--sp-3));min-height:var(--sp-6);color:inherit;text-align:left}
+.pasos li::before{
+  content:counter(paso);position:absolute;left:0;top:0;width:var(--sp-6);height:var(--sp-6);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--primario);color:var(--sobre-club);font-family:var(--ff-mono);font-size:var(--fs-125);
+}
+.fam-ayuda{margin-top:var(--sp-5)}
+
+/* display:flex de .btn le gana al [hidden] del user-agent: los botones que la app
+   esconde con el atributo (p. ej. "Fue un error, pedir acceso de nuevo" en la
+   pantalla sin club) se veían siempre. */
+.btn[hidden]{display:none}

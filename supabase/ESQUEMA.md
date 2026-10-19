@@ -244,6 +244,17 @@ El dibujo del ejercicio (filas, varias pelotas, rebote, rotación). Columna `jso
 - La forma la valida `src/data/pizarraEjercicio.js`. La base sólo impone que sea un objeto, que no pase de 65536 bytes (el `TOPES.bytes` de la jugada) y que ninguna nota de paso pase de 300 caracteres (reusa `jugada_notas_validas`). `tests/contratoPizarraEjercicio.test.js` compara los números con el JS.
 - Va en el ejercicio y no en `jugada`: un ejercicio no es una jugada de partido. La escribe **sólo quien creó el ejercicio** (la policy de update de 0015/0027); el `grant update (pizarra)` no abre el insert.
 
+### Misiones del partido: `previa_partido`, `mision_jugador`, `mision_equipo` (0055)
+Lo que el profe le pide a cada chico y al equipo antes de un partido, y cómo salió (spec `docs/superpowers/specs/2026-10-16-misiones-partido-design.md`). Hay datos de menores en las individuales.
+
+- `previa_partido`: plantel + `fecha` + `rival` opcional. **Existe antes que el `partido`**, que nace con el import: `partido_id` queda nulo hasta que el profe evalúa o lo elige a mano (trigger: el partido tiene que ser del mismo plantel; índice único parcial, un partido tiene a lo sumo una previa). El emparejamiento por fecha y rival lo calcula `vincularPrevias` (`src/data/misiones.js`) y nunca se escribe solo. `importar_partido` no cambió.
+- `mision_jugador` (hasta 2 por chico y previa) y `mision_equipo` (hasta 3 por previa): o `metrica` + `valor`, o `texto`, nunca las dos (check). **Lista cerrada de métricas, sin puntos ni tiro**: `reb_of`, `reb_def`, `reb_tot`, `ast`, `rec`, `tap`, `per`, `fal`, y `puntos_rival` sólo en equipo. El sentido (al menos / como máximo) lo fija la métrica en `misiones.js`, no la base. `tests/contratoMisiones.test.js` compara listas, estados, topes y largos con el JS.
+- `estado` (`logrado` | `en_proceso` | `no_logrado`, nulo = sin evaluar) y `comentario` los pone el profe; **ningún trigger ni función los calcula**. Una misión evaluada no cambia de consigna ni se borra (`MISION_EVALUADA`); sólo su estado o comentario. `evaluado_por/en` los sella el trigger.
+- RLS: escribe `puede_escribir_plantel`; lee `puede_ver_plantel`. **El coordinador puro lee la previa y `mision_equipo`** (para los logros en Panorama) y **cero filas de `mision_jugador`**, como en 0018. La cuenta de jugador no tiene acceso. Insert de `mision_jugador` exige pertenencia vigente al plantel.
+- Escrituras de varias filas por RPC `security invoker`, todo o nada: `guardar_previa(payload)` (crea o reemplaza la previa y todas sus misiones; los ids los genera el cliente, así el reintento no duplica) y `evaluar_misiones(payload)` (fija el partido y escribe los estados). Las dos fallan con `SIN_PERMISO` si quien llama no escribe en el plantel (el coordinador ve la previa), y además `PREVIA_AJENA`, `PREVIA_NO_ENCONTRADA`, `MISION_EVALUADA`, `MISION_NO_ENCONTRADA`, `PARTIDO_DE_OTRO_PLANTEL`, `PARTIDO_YA_VINCULADO`.
+- Un logro de equipo es una `mision_equipo` en `logrado`; el contador es de la temporada porque el plantel ya lo es. No hay conteo ni orden de misiones individuales en ninguna pantalla.
+- Verificación contra la base: `tests/verificarMisiones.sql` (12 casos); deshacer en local: `tests/rollback0055.sql`.
+
 ### Salto: `medicion_salto` y pierna en `medicion_corporal` (0043)
 CMJ y Abalakov medidos con video en cámara lenta (spec `docs/superpowers/specs/2026-09-23-evaluacion-salto-design.md`). El video nunca llega a la base.
 
@@ -285,6 +296,15 @@ Ingresos y egresos del básquet, carga interna del coordinador. Spec: `docs/supe
 - RLS: las tres, sólo `es_coordinador_de(club_id)` (con o sin rol de entrenador). Un profe sin rol de coordinador y un jugador: cero filas. Verificación: `tests/verificarFinanzas.sql`. Rollback: `tests/rollback0054.sql`.
 - En JS todo va en centavos enteros (`src/data/finanzas.js`); `tests/contratoFinanzas.test.js` compara tipos y tope con la migración.
 
+### Historia del jugador: `historia_del_jugador` (0056)
+Su recorrido temporada por temporada (spec `docs/superpowers/specs/2026-10-16-historia-jugador-design.md`). Una sola función `security definer` (`stable`, `search_path = ''`), sólo lectura, que devuelve un jsonb de **ese** jugador: sin promedios ni filas de otros chicos. No crea ni cambia ninguna policy y no otorga nada sobre tablas; `tests/contratoHistoria.test.js` lo verifica.
+
+- **Regla:** entrenador del club del jugador y una `pertenencia` del chico con `hasta is null` en un plantel con `puede_ver_plantel`. Si no, `42501`, con el mismo error para un jugador que no existe. **El coordinador queda afuera** (sigue con `panorama_del_club`, 0018); quien tiene los dos roles entra por el de entrenador. Un profe dado de baja, una cuenta de jugador o una cuenta sin club tampoco.
+- **Por qué función y no policies de lectura:** las policies se suman con OR y cambiarían lo que devuelve cada consulta existente (por ejemplo, las categorías de la cabecera de la ficha); además habría que repetirlas en una docena de tablas. La función concentra el permiso nuevo en un archivo y se revoca con un `revoke execute`.
+- **Decisión de producto (D2, Tomás, 16/10):** el profe que suma a su plantel a un chico de otra categoría ve **toda** su historia, peso y altura incluidos. La ventana de 0039 (que esconde las medidas corporales cargadas antes de la pertenencia) **no se aplica en esta función**; sigue rigiendo para leer, editar y borrar en `medicion_corporal`. Consecuencia asumida: a un profe le alcanza con sumar a un chico de su club a su plantel para ver su recorrido.
+- **Qué devuelve:** `temporadas`, `planteles` (con los `profes` que los tuvieron a cargo, vigentes y cerrados, por el nombre de Auth), `pertenencias`, `planFisico` (el plan de la **categoría**: no hay asistencia, así que no dice a cuántas sesiones fue), `cargas`, `recursos`, `saltos`, `sprints`, `yoyos`, `corporales`, `tiro` y `partidos`. Las claves que no son del marco (`planteles`, `temporadas`, `pertenencias`) son las `FUENTES` de `src/data/historiaJugador.js`: sumar misiones o asistencia es `create or replace` de la función con una clave más, una línea en `FUENTES` y un bloque en `historiaTemporadas.js`.
+- **Verificación:** `tests/verificarHistoria.sql` (6 casos: el profe de U17 ve 2025; no ve a un chico de U15 ajeno; ni coordinador, ni jugador, ni baja, ni un jugador inexistente). Para probar en el navegador, `tests/sembrarHistoriaLocal.sql` carga una temporada 2025 de mentira **sólo en la base local**.
+
 ## Políticas RLS
 
 Hasta 0015 la autorización era sólo por club: quien tenía una fila en `miembro_club` veía **todos los planteles**. Desde 0016 pasa por la asignación, y **lectura y escritura son ejes separados**. Desde 0018 el coordinador no lee datos individuales.
@@ -292,7 +312,8 @@ Hasta 0015 la autorización era sólo por club: quien tenía una fila en `miembr
 | | Entrenador | Coordinador (sólo) | Los dos roles |
 |---|---|---|---|
 | `plantel` (nombre de la categoría) | sus asignadas vigentes | todos los de su club | la unión |
-| `jugador`, `pertenencia`, `partido`, `estadistica_*`, `sesion_medicion`, `medicion_*`, `medicion_corporal`, `envio_recurso`, `meta_zona` | sus asignadas vigentes | **nada** | sus asignadas vigentes |
+| `jugador`, `pertenencia`, `partido`, `estadistica_*`, `sesion_medicion`, `medicion_*`, `medicion_corporal`, `envio_recurso`, `meta_zona`, `mision_jugador` (0055) | sus asignadas vigentes | **nada** | sus asignadas vigentes |
+| `previa_partido`, `mision_equipo` (0055) | sus asignadas vigentes | **lee** (sólo lectura), para los logros en Panorama | sus asignadas vigentes |
 | `jugadores_del_club_para_dedup` | sí | **rechaza** | sí |
 | `ejercicio`, `nota_ejercicio`, `recurso`, `perfil_entrenador` | todo el club | todo el club (la UI de coordinación no lo muestra) | todo el club |
 | `variacion_ejercicio` (0052), `jugada` (0035) | todo el club | **nada** (`es_entrenador_de`) | todo el club |
@@ -320,6 +341,7 @@ Las funciones, todas `security definer` con `set search_path = ''`:
 | `crear_solicitud_jugador(club, plantel)`, `mi_solicitud_jugador()` | quien no es staff ni tiene cuenta, con mail confirmado y una sola pendiente; el plantel debe ser de la temporada vigente (0029) |
 | `solicitudes_del_plantel(plantel)` | el entrenador de ese plantel; el nombre que escribió el chico sale de los metadatos de Auth (0029) |
 | `panorama_del_club(club)` | por plantel: jugadores, partidos, última medición; tiro de batería sumado por (sesión, posición); y desde 0022, tiro en partidos sumado por partido (triples y libres, anotados e intentados de a pares, con el rival). Sin porcentajes: los calcula `estadisticas.js` |
+| `historia_del_jugador(jugador)` (0056) | el recorrido completo de un chico para el entrenador que lo tiene hoy en un plantel que puede ver; sin coordinador (ver abajo) |
 
 **Límite conocido:** `usuarios_pendientes()` muestra a cualquier coordinador todas las cuentas sin club de la plataforma. Con un solo club (hoy) es exacto. Desde 0029 no lista a quien ya tiene una cuenta de jugador vigente: sin ese filtro, un chico figuraría entre los "pendientes de habilitar", a un toque de quedar como entrenador con acceso a datos de otros menores. `clubes_para_solicitar()` tiene el límite equivalente. Ver `docs/COORDINACION.md`.
 
@@ -331,9 +353,10 @@ Son `security definer` por obligación, no por comodidad: se llaman desde las po
 
 | Camino | Tablas |
 |---|---|
-| `plantel_id` directo | `plantel`, `pertenencia`, `partido`, `sesion_medicion`, `meta_zona` |
+| `plantel_id` directo | `plantel`, `pertenencia`, `partido`, `sesion_medicion`, `meta_zona`, `previa_partido` |
 | vía `partido_id` | `estadistica_jugador_partido` |
 | vía `sesion_id` | `medicion_tiro`, `medicion_salto`, `medicion_sprint`, `medicion_yoyo` |
+| vía `previa_id` | `mision_jugador`, `mision_equipo` |
 | vía `pertenencia` del jugador | `jugador`, `medicion_corporal`, `envio_recurso` |
 
 Un chico citado en dos categorías tiene dos pertenencias vigentes: con que **alguna** dé acceso alcanza.
@@ -418,6 +441,30 @@ app no deja entrar a quien no aceptó la versión vigente (`VERSION_LEGAL` en
 trigger sella `usuario` y `aceptado_en`. No hay update ni delete; si se borra
 la cuenta, sus filas se borran en cascada. Verificación:
 `tests/verificarAceptacionLegal.sql`.
+
+## Cuentas de familia (0057)
+
+Spec: `docs/superpowers/specs/2026-10-18-cuentas-familia-design.md`.
+
+- `responsable_jugador (id, club_id, jugador_id, email, cargado_por, cargado_en)`:
+  el mail verificado del adulto que inscribió al chico, en minúsculas
+  (`check`), único por `(jugador_id, email)`. Lo lee, carga y quita el
+  entrenador de un plantel donde el chico está vigente; coordinación no lo
+  lee. Sin update.
+- `vinculo_familia (id, user_id, club_id, jugador_id, via, desde, hasta,
+  cerrado_por)`: qué cuenta de familia ve a qué chico. **Sin policies ni
+  grants**: sólo se toca por funciones. Se cierra, no se borra; el trigger
+  sella `hasta` y `cerrado_por`; un vínculo cerrado no se reabre solo.
+  `via` vale `'mail'`; existe para que un módulo con contenido sensible
+  (asistencia, aranceles) pueda exigir otra vía.
+- La familia **no tiene `select` sobre ninguna tabla**: `vincular_por_mail()`
+  (crea los vínculos del mail de quien llama, sólo con el mail confirmado y
+  sin ser staff ni jugador) y `mis_chicos()` (nombre y categoría). Para el
+  entrenador, `importar_inscriptos(payload)` (`security invoker`, una
+  transacción); para el coordinador, `vinculos_familia_del_club(club)` y
+  `cerrar_vinculo_familia(id)`. Contrato de grants:
+  `tests/contratoAccesoFamilia.test.js`. Verificación:
+  `tests/verificarCuentasFamilia.sql` (12 casos); deshacer: `tests/rollback0057.sql`.
 
 ## Orden de persistencia de una importación
 

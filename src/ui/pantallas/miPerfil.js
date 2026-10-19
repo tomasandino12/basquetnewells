@@ -5,7 +5,7 @@ import {
 import { normalizarNombre, inicialesDeNombre, rolesLegibles } from '../../data/cuenta.js';
 import { temporadaMasReciente } from '../../data/coordinacion.js';
 import {
-  obtenerCuenta, obtenerClubActual, obtenerRoles, obtenerFichaJugador, setNombreDeCuenta, obtenerModo,
+  obtenerCuenta, obtenerClubActual, obtenerRoles, obtenerFichaJugador, obtenerChicos, setNombreDeCuenta, obtenerModo,
 } from '../sesion.js';
 import { escaparHtml, esErrorDeRed, toast } from '../nav.js';
 import { abrirHoja, cerrarHoja } from '../componentes/hoja.js';
@@ -28,6 +28,11 @@ function nombreHtml(nombre) {
 
 /** Las categorías vigentes propias, en orden de catálogo; con año si no son de la temporada actual. */
 async function categoriasHtml(club, roles) {
+  if (roles.esFamilia) {
+    const chicos = obtenerChicos();
+    if (!chicos.length) return '<span class="sin">Todavía no hay chicos vinculados.</span>';
+    return `<div class="perfil-cats">${chicos.map((c) => `<span class="chip">${escaparHtml(c.nombre)}</span>`).join('')}</div>`;
+  }
   if (roles.esJugador) {
     // Sale de su ficha (mi_ficha): el jugador no lee ni plantel ni asignaciones.
     const propias = obtenerFichaJugador()?.planteles ?? [];
@@ -145,7 +150,7 @@ export async function renderMiPerfil() {
         </div>
         <div class="perfil-fila">
           <div>
-            <div class="k">${roles.esJugador ? 'Tu categoría' : 'Categorías a cargo'}</div>
+            <div class="k">${roles.esFamilia ? 'Tus chicos' : roles.esJugador ? 'Tu categoría' : 'Categorías a cargo'}</div>
             <div class="v" id="perfil-categorias"><span class="sin" role="status">Cargando…</span></div>
           </div>
         </div>

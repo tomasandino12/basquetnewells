@@ -154,6 +154,10 @@ left join auth.users uc on uc.id = a.cerrado_por
 order by t.nombre desc, p.categoria, a.desde;
 ```
 
+## Familias (0057)
+
+Las familias no son un rol de `miembro_club`: son cuentas sin club que se vinculan solas con el mail con el que inscribieron a su hijo (el profe importa la planilla en Plantel → Importar inscriptos). Coordinación las ve en **Familias**, con quién y cuándo, y puede dar de baja cualquier vínculo; la baja no se deshace sola si la familia vuelve a entrar. Un profe que además es padre no se vincula: queda pendiente si hace falta.
+
 ## Límite conocido: un solo club
 
 La lista de **Esperando acceso** muestra todas las cuentas confirmadas sin club

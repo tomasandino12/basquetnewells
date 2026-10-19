@@ -18,6 +18,8 @@ import { setAbrirJugada } from './jugadas.js';
 import { renderJugada, abrirJugada } from './jugada.js';
 import { renderJugadaEditor, iniciarJugadaEditor, confirmarSalidaEditor } from './jugadaEditor.js';
 import { renderMetas } from './metas.js';
+import { renderPrevia } from './previa.js';
+import { renderMisionesPartido } from './misionesPartido.js';
 import { renderPanorama } from './coordPanorama.js';
 import { renderProfes } from './coordProfes.js';
 import { renderInventarioCoordinacion, renderInventarioLectura } from './inventario.js';
@@ -33,6 +35,8 @@ import { renderJugFisico } from './jugFisico.js';
 import { renderJugSesion } from './jugSesion.js';
 import { renderJugProgreso } from './jugProgreso.js';
 import { renderJugJugadas, iniciarJugJugadas } from './jugJugadas.js';
+import { renderFamChicos } from './famChicos.js';
+import { renderFamilias } from './coordFamilias.js';
 
 /**
  * Punto único donde se registran las pantallas. Existe para que main.js no
@@ -61,9 +65,12 @@ export function registrarPantallas() {
   registrarPantalla('p-jugada', { titulo: 'Jugada', render: renderJugada });
   registrarPantalla('p-jugada-editor', { titulo: 'Editor de jugada', render: renderJugadaEditor, confirmarSalida: confirmarSalidaEditor });
   registrarPantalla('p-metas', { titulo: 'Metas', render: renderMetas });
+  registrarPantalla('p-previa', { titulo: 'Misiones', render: renderPrevia });
+  registrarPantalla('p-misiones-partido', { titulo: 'Evaluar misiones', render: renderMisionesPartido });
   registrarPantalla('p-coord-panorama', { titulo: 'Panorama', render: renderPanorama });
   registrarPantalla('p-coord-profes', { titulo: 'Profes', render: renderProfes });
   registrarPantalla('p-coord-inventario', { titulo: 'Inventario', render: renderInventarioCoordinacion });
+  registrarPantalla('p-coord-familias', { titulo: 'Familias', render: renderFamilias });
   registrarPantalla('p-coord-finanzas', { titulo: 'Finanzas', render: renderFinanzas });
   registrarPantalla('p-coord-rubros', { titulo: 'Rubros', render: renderRubros });
   registrarPantalla('p-mi-perfil', { titulo: 'Mi perfil', render: renderMiPerfil });
@@ -73,6 +80,8 @@ export function registrarPantallas() {
   registrarPantalla('p-jug-sesion', { titulo: 'Sesión', render: renderJugSesion });
   registrarPantalla('p-jug-progreso', { titulo: 'Mi progreso', render: renderJugProgreso });
   registrarPantalla('p-jug-jugadas', { titulo: 'Jugadas', render: renderJugJugadas });
+  // Modo familia (0057): sus chicos y nada más.
+  registrarPantalla('p-fam-chicos', { titulo: 'Mis chicos', render: renderFamChicos });
   setAbrirFicha(abrirFicha);
   setAbrirEjercicio(abrirEjercicio);
   setAbrirJugada(abrirJugada);

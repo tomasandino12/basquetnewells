@@ -2,9 +2,9 @@ import {
   obtenerJugadoresDelPlantel, obtenerPertenenciasDeJugador,
   obtenerSesionesDeMedicion, obtenerMedicionesTiroDelPlantel,
   obtenerMedicionesSaltoDelPlantel, obtenerMedicionesSprintDelPlantel, obtenerMedicionesYoyoDelPlantel,
-  obtenerEstadisticasDelPlantel, obtenerPartidosDelPlantel, obtenerEnviosDeJugador,
+  obtenerEstadisticasDelPlantel, obtenerPartidosDelPlantel, obtenerEnviosDeJugador, obtenerMisionesDelJugador,
   obtenerMedicionesCorporalesDeJugador, crearMedicionCorporal, borrarMedicionCorporal,
-  actualizarFechaNacimiento, obtenerCargasDelPlantel, sacarDelPlantel,
+  actualizarFechaNacimiento, obtenerCargasDelPlantel, sacarDelPlantel, obtenerHistoriaDelJugador,
 } from '../../data/repositorio.js';
 import {
   serieDeTiroDelJugador, ultimaBateriaDeJugador, ultimaBateriaConDatosDeJugador, historialDePartidosDelJugador,
@@ -32,16 +32,29 @@ import { botonIcono, ICONO } from '../componentes/iconos.js';
 import { abrirGuiaSalto } from '../componentes/guiaSalto.js';
 import { seccionSprint } from '../componentes/seccionSprint.js';
 import { seccionYoyo } from '../componentes/seccionYoyo.js';
+import { seccionTemporadas } from '../componentes/historiaTemporadas.js';
+import { seccionMisiones } from '../componentes/seccionMisiones.js';
+import { misionesConPrevia } from '../../data/misiones.js';
 import { avisoEstimaciones } from '../componentes/avisoEstimaciones.js';
 import { abrirProtocoloCorporal } from '../componentes/protocoloCorporal.js';
 import { html, crudo } from '../html.js';
+import { renderResponsables } from './responsablesJugador.js';
 import { $ } from '../dom.js';
 import { avisoDeError, textoDeError, mensajeAlGuardar, mostrarAviso, avisoInline } from '../errores.js';
 import { renderAccesoDeJugador } from './aprobarJugador.js';
+import {
+  PESTANAS_FICHA, SECCIONES_FICHA, pestanaAlEntrar, pestanaVecina,
+} from '../../data/pestanasFicha.js';
 
 const contenedor = () => $('ficha-contenido');
 
 let jugadorId = null;
+// La última pestaña usada, mientras dure la sesión: revisar el salto de un
+// chico tras otro no obliga a volver a elegirla.
+let ultimaPestana = null;
+
+/** El contenedor de una sección de la ficha (ver SECCIONES_FICHA). */
+const sec = (nombre) => $(`ficha-s-${nombre}`);
 
 export function abrirFicha(id) {
   jugadorId = id;
@@ -305,6 +318,71 @@ function seccionRecursos(envios) {
   `;
 }
 
+/* ---------- Pestañas ---------- */
+
+const CARGANDO = {
+  corporal: 'Cargando mediciones…', salto: 'Cargando…', bateria: 'Cargando…',
+  partidos: 'Cargando…', temporadas: 'Cargando historia…', recursos: 'Cargando…',
+};
+
+/**
+ * Las secciones de cada pestaña, en el orden de SECCIONES_FICHA. Todas se
+ * dibujan al entrar (los datos se piden una sola vez) y la pestaña sólo
+ * muestra u oculta su panel: los gráficos tienen viewBox fijo, así que
+ * dibujarlos en un panel oculto no los deja en cero.
+ */
+function pestanasHtml(activa) {
+  return html`
+    <div class="pestanas fija" role="tablist" aria-label="Secciones de la ficha" id="ficha-pestanas">
+      ${PESTANAS_FICHA.map((p) => html`
+        <button type="button" class="pest ${p.id === activa ? 'on' : ''}" role="tab" id="ficha-tab-${p.id}"
+          data-pestana="${p.id}" aria-controls="ficha-pan-${p.id}" aria-selected="${p.id === activa}"
+          tabindex="${p.id === activa ? '0' : '-1'}">${p.titulo}</button>`)}
+    </div>
+    ${PESTANAS_FICHA.map((p) => html`
+      <div class="pad" role="tabpanel" id="ficha-pan-${p.id}" aria-labelledby="ficha-tab-${p.id}" ${p.id === activa ? '' : crudo('hidden')}>
+        ${Object.entries(SECCIONES_FICHA).filter(([, pest]) => pest === p.id).map(([nombre]) => html`
+          <div id="ficha-s-${nombre}" data-seccion="${nombre}">${CARGANDO[nombre] ? html`<div class="p" role="status">${CARGANDO[nombre]}</div>` : ''}</div>`)}
+      </div>`)}
+  `;
+}
+
+function elegirPestana(id, { foco = false } = {}) {
+  const barra = $('ficha-pestanas');
+  if (!barra) return;
+  ultimaPestana = id;
+  for (const p of PESTANAS_FICHA) {
+    const on = p.id === id;
+    const tab = $(`ficha-tab-${p.id}`);
+    tab.classList.toggle('on', on);
+    tab.setAttribute('aria-selected', String(on));
+    tab.tabIndex = on ? 0 : -1;
+    $(`ficha-pan-${p.id}`).hidden = !on;
+  }
+  if (foco) $(`ficha-tab-${id}`).focus();
+  // Si las pestañas quedaron pegadas arriba (se había bajado), el principio
+  // del panel nuevo está tapado: se sube hasta que se vea.
+  if ($(`ficha-pan-${id}`).getBoundingClientRect().top < barra.getBoundingClientRect().bottom) {
+    barra.scrollIntoView({ block: 'start' });
+  }
+}
+
+function iniciarPestanas() {
+  const barra = $('ficha-pestanas');
+  ultimaPestana = pestanaAlEntrar(ultimaPestana);
+  barra.addEventListener('click', (e) => {
+    const tab = e.target.closest('[data-pestana]');
+    if (tab) elegirPestana(tab.dataset.pestana);
+  });
+  // Flechas entre pestañas, como pide el patrón de tabs accesibles.
+  barra.addEventListener('keydown', (e) => {
+    const paso = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+    if (!paso) return;
+    e.preventDefault();
+    elegirPestana(pestanaVecina(ultimaPestana, paso), { foco: true });
+  });
+}
+
 export async function renderFicha() {
   const club = obtenerClubActual();
   const plantel = obtenerPlantelActivo();
@@ -345,22 +423,24 @@ export async function renderFicha() {
       <button class="btn sec chico" id="btn-ficha-sacar">Sacar del plantel</button>
     </div>
     <div class="pad" id="ficha-acceso"></div>
-    <div class="pad" id="ficha-corporal"><div class="p" role="status">Cargando mediciones…</div></div>
-    <div class="pad" id="ficha-historia"><div class="p" role="status">Cargando historia del jugador…</div></div>
-    <div class="pad" id="ficha-cargas"></div>
+    <div class="pad" id="ficha-familia"></div>
+    ${pestanasHtml(pestanaAlEntrar(ultimaPestana))}
   `;
+  iniciarPestanas();
 
   $('btn-ficha-nacimiento').addEventListener('click', () => abrirEditarNacimiento(jugador));
   $('btn-ficha-sacar').addEventListener('click', () => abrirSacarDelPlantel(club, plantel, jugador));
   renderAccesoDeJugador(jugador);
+  renderResponsables($('ficha-familia'), club, jugador);
   cargarCorporal(club.id, jugador.id);
   cargarCargas(club.id, plantel.id, jugador.id);
+  cargarTemporadas(jugador.id);
 
   // Todo lo de acá abajo va en su propio try/catch: los datos básicos ya
   // están pintados arriba, así que un error de red trayendo la historia no
   // puede dejar la ficha entera en blanco.
   try {
-    const [sesiones, medicionesTiro, saltos, sprints, yoyos, corporales, partidos, estadisticas, envios] = await Promise.all([
+    const [sesiones, medicionesTiro, saltos, sprints, yoyos, corporales, partidos, estadisticas, envios, misiones] = await Promise.all([
       obtenerSesionesDeMedicion(club.id, plantel.id),
       obtenerMedicionesTiroDelPlantel(club.id, plantel.id),
       obtenerMedicionesSaltoDelPlantel(club.id, plantel.id),
@@ -370,6 +450,8 @@ export async function renderFicha() {
       obtenerPartidosDelPlantel(club.id, plantel.id),
       obtenerEstadisticasDelPlantel(club.id, plantel.id),
       obtenerEnviosDeJugador(club.id, jugadorId),
+      // Un agregado: si falla, la ficha se dibuja sin la sección.
+      obtenerMisionesDelJugador(jugadorId).catch(() => null),
     ]);
 
     const bateria = ultimaBateriaDeJugador(sesiones, medicionesTiro, jugadorId);
@@ -384,17 +466,18 @@ export async function renderFicha() {
     const historial = historialDePartidosDelJugador(partidos, estadisticas, jugadorId);
     const sesionesDeSaltoDelJugador = sesionesDeSalto(saltos.filter((x) => x.jugadorId === jugadorId), corporales);
 
-    $('ficha-historia').innerHTML = `
-      ${seccionCancha(bateria, bateriaConDatos)}
-      ${bloqueDeSerie('ficha-triples', 'Tiro de tres', series.triples, 'Todavía no hay datos de triples, ni de práctica ni de partido.')}
-      ${bloqueDeSerie('ficha-libres', 'Tiro libre', series.libres, 'Todavía no hay datos de libres, ni de práctica ni de partido.')}
-      ${seccionPartidos(historial)}
-      ${seccionSalto(sesionesDeSaltoDelJugador)}
-      ${seccionSprint(sesionesDeSprint(sprints.filter((x) => x.jugadorId === jugadorId)))}
-      ${seccionYoyo(sesionesDeYoyo(yoyos.filter((x) => x.jugadorId === jugadorId)))}
-      ${avisoEstimaciones()}
-      ${seccionRecursos(envios)}
-    `;
+    // La ficha pudo cambiar de jugador mientras esto cargaba.
+    if (!sec('bateria')) return;
+    sec('bateria').innerHTML = seccionCancha(bateria, bateriaConDatos);
+    sec('triples').innerHTML = bloqueDeSerie('ficha-triples', 'Tiro de tres', series.triples, 'Todavía no hay datos de triples, ni de práctica ni de partido.');
+    sec('libres').innerHTML = bloqueDeSerie('ficha-libres', 'Tiro libre', series.libres, 'Todavía no hay datos de libres, ni de práctica ni de partido.');
+    sec('partidos').innerHTML = seccionPartidos(historial);
+    sec('salto').innerHTML = seccionSalto(sesionesDeSaltoDelJugador);
+    sec('sprint').innerHTML = seccionSprint(sesionesDeSprint(sprints.filter((x) => x.jugadorId === jugadorId)));
+    sec('yoyo').innerHTML = seccionYoyo(sesionesDeYoyo(yoyos.filter((x) => x.jugadorId === jugadorId)));
+    sec('misiones').innerHTML = misiones ? seccionMisiones(misionesConPrevia(misiones.misiones, misiones.previas)) : '';
+    sec('estimaciones').innerHTML = avisoEstimaciones();
+    sec('recursos').innerHTML = seccionRecursos(envios);
 
     // Los SVG se dibujan después de meter el HTML en el DOM: recién ahí
     // existen los elementos. cancha() sólo se llama si seccionCancha() dibujó
@@ -403,9 +486,13 @@ export async function renderFicha() {
     dibujarSerie('ficha-triples', series.triples);
     dibujarSerie('ficha-libres', series.libres);
     $('btn-guia-salto')?.addEventListener('click', () => abrirGuiaSalto(club));
-    $('ficha-historia').querySelectorAll('[data-como-medir]').forEach((b) => b.addEventListener('click', () => abrirProtocoloCorporal(club)));
+    contenedor().querySelectorAll('[data-como-medir]').forEach((b) => b.addEventListener('click', () => abrirProtocoloCorporal(club)));
   } catch (e) {
-    $('ficha-historia').innerHTML = avisoInline(textoDeError(e, 'No se pudo cargar la historia del jugador.'));
+    // Un aviso en la primera sección de cada pestaña que esperaba estos
+    // datos; el resto queda vacío en vez de repetir el mismo error.
+    const aviso = avisoInline(textoDeError(e, 'No se pudieron cargar los datos de la temporada.'));
+    for (const nombre of ['salto', 'bateria', 'partidos', 'recursos']) if (sec(nombre)) sec(nombre).innerHTML = aviso;
+    for (const nombre of ['sprint', 'yoyo', 'estimaciones', 'triples', 'libres', 'misiones']) if (sec(nombre)) sec(nombre).innerHTML = '';
   }
 }
 
@@ -508,8 +595,30 @@ function abrirSacarDelPlantel(club, plantel, jugador) {
  * historia: si falla, el resto de la ficha sigue. Sin pesos anotados no se
  * dibuja nada (ni siquiera el título): el profe que no usa FÍSICO no ve ruido.
  */
+/**
+ * El recorrido por todas las temporadas (0056). Va aparte de los datos de la
+ * temporada actual: es un agregado de otra consulta y, si falla, la ficha se
+ * queda con todo lo demás.
+ */
+async function cargarTemporadas(idJugador) {
+  const cont = sec('temporadas');
+  if (!cont) return;
+  let datos;
+  try {
+    datos = await obtenerHistoriaDelJugador(idJugador);
+  } catch (e) {
+    if (idJugador === jugadorId && sec('temporadas')) {
+      sec('temporadas').innerHTML = avisoInline(textoDeError(e, 'No se pudo cargar la historia por temporada.'));
+    }
+    return;
+  }
+  // La ficha pudo cambiar de jugador mientras esto cargaba.
+  if (idJugador !== jugadorId || !sec('temporadas')) return;
+  sec('temporadas').innerHTML = seccionTemporadas(datos);
+}
+
 async function cargarCargas(clubId, plantelId, idJugador) {
-  const cont = $('ficha-cargas');
+  const cont = sec('cargas');
   if (!cont) return;
   let grupos;
   let bloques;
@@ -524,7 +633,7 @@ async function cargarCargas(clubId, plantelId, idJugador) {
     return;
   }
   // La ficha pudo cambiar de jugador mientras esto cargaba.
-  if (idJugador !== jugadorId || !$('ficha-cargas')) return;
+  if (idJugador !== jugadorId || !sec('cargas')) return;
   if (!grupos.length) return;
   cont.innerHTML = html`<div class="eyebrow">Cargas</div>${tarjetasDePesosHtml(grupos, 'ficha-pesos')}`;
   dibujarCurvasDePesos(grupos, 'ficha-pesos');
@@ -533,7 +642,7 @@ async function cargarCargas(clubId, plantelId, idJugador) {
 /* ---------- Mediciones corporales: histórico y alta ---------- */
 
 async function cargarCorporal(clubId, idJugador) {
-  const cont = $('ficha-corporal');
+  const cont = sec('corporal');
   if (!cont) return;
   let mediciones;
   try {
@@ -584,7 +693,7 @@ function vigentesHtml(ordenadas) {
 }
 
 function renderCorporal(clubId, idJugador, mediciones) {
-  const cont = $('ficha-corporal');
+  const cont = sec('corporal');
   if (!cont) return;
   const ordenadas = ordenarMediciones(mediciones);
 

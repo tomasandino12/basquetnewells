@@ -2,7 +2,7 @@
  * Guía de primer uso: los pasos de la intro de cada modo y las pistas de una
  * vez. Ver docs/superpowers/specs/2026-10-10-guia-primer-uso-design.md.
  *
- * Las claves son los modos de sesion.js ('entrenar', 'coordinar', 'jugar'),
+ * Las claves son los modos de sesion.js ('entrenar', 'coordinar', 'jugar', 'familia'),
  * así la UI no traduce nada. Cada paso apunta a la pestaña de la que habla
  * por su id: ICONOS es privado de chrome.js y la UI saca el ícono de TABS.
  *
@@ -65,6 +65,21 @@ export const GUIAS = {
         pestana: 'p-jug-progreso',
         titulo: 'Físico y Mi progreso',
         texto: 'Tu plan de físico con la sesión de hoy, y cómo vienen tus mediciones. Sólo vos ves lo tuyo.',
+      },
+    ],
+  },
+  familia: {
+    version: 1,
+    pasos: [
+      {
+        pestana: 'p-fam-chicos',
+        titulo: 'Qué es esto',
+        texto: 'Acá ves a tus hijos que están anotados en el club. Por ahora es solo eso: más adelante se van a sumar otras cosas, como avisos del club.',
+      },
+      {
+        pestana: 'p-fam-chicos',
+        titulo: 'Si no ves a tu hijo',
+        texto: 'Lo anotás en el formulario de inscripción de la página del básquet, con este mismo mail. El club lo carga en unos días. Si pasó tiempo y no aparece, avisale al coordinador.',
       },
     ],
   },

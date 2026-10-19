@@ -4,84 +4,92 @@
 
 ## Problema
 
-El profe sólo ve los planteles que tiene asignados (`puede_ver_plantel`, 0018). Si recibe en U17 a un chico que viene de U15, no ve nada de lo que se trabajó con él antes. La app existe para la memoria institucional y hoy esa historia no aparece en ningún lado.
+El profe sólo ve los planteles que tiene asignados (`puede_ver_plantel`, 0018). Si recibe en U17 a un chico que viene de U15, no ve nada de lo que se trabajó con él antes. La app existe para la memoria institucional, y hoy esa historia no aparece en ningún lado.
+
+**Lo que importa (Tomás, 16/10):** qué se fue trabajando con el chico y cómo llega a la categoría. Eso pesa más que los puntos. Esta primera versión arma la historia desde ese lado, y después se pule.
 
 ## Qué hay en el modelo (verificado)
 
-- **Alcanza para armar la historia; no se dispara el stop.** `pertenencia` tiene `plantel_id`, `temporada_id`, `desde`/`hasta` y se cierra sin borrarse (0040). `asignacion_plantel` tiene historia completa desde 0017 (`desde`/`hasta`, no se borra): se pueden listar los profes de cualquier plantel pasado. Sus nombres salen de los metadatos de Auth, como en `nombres_del_club`.
-- Partidos, baterías de tiro, salto, sprint y Yo-Yo cuelgan de un plantel (`partido.plantel_id`, `sesion_medicion.plantel_id`), así que caen solos en su temporada.
-- `medicion_corporal` y `movimiento_escalon` no tienen plantel, sólo fecha. Y `temporada` no tiene fechas, sólo `nombre`. Se ubican por fecha contra los rangos `desde`/`hasta` de las pertenencias del chico (ver §5).
-- No hay temporada anterior en producción: hoy todo es 2026. La prueba de aceptación se hace con una temporada 2025 sembrada **sólo en la base local**.
+- **Alcanza; no se dispara el stop.** `pertenencia` tiene `plantel_id`, `temporada_id` y `desde`/`hasta`, y se cierra sin borrarse (0040). `asignacion_plantel` guarda historia completa desde 0017: se pueden listar los profes de cualquier plantel pasado, con el nombre de los metadatos de Auth.
+- Del plantel cuelgan el plan físico (`plan_fisico` → `sesion_fisico` (fecha) → `ejercicio_asignado` (bloque, nombre)), los partidos y las sesiones de medición (tiro, salto, sprint, Yo-Yo). Caen solos en su temporada.
+- `medicion_corporal`, `movimiento_escalon` (cargas de fuerza) y `envio_recurso` (material que recibió) no tienen plantel, sólo fecha. Como `temporada` no tiene fechas, se ubican contra los rangos de las pertenencias (§5).
+- `jugada_plantel` no tiene fecha y dice lo asignado **hoy**, así que no entra en la historia.
+- No hay temporada anterior en producción. La prueba de aceptación usa una 2025 sembrada **sólo en la base local**.
 
-## Choques con el prompt (decisiones a confirmar antes de ejecutar)
+## Decisiones (confirmadas por Tomás el 16/10)
 
-| # | Dice el prompt | Dice el código | Recomendación |
-|---|---|---|---|
-| D1 | "El coordinador ve la historia de todos, como ya lee todo el club" | Desde **0018** el coordinador **no lee ningún dato individual**: cero filas en `jugador`, partidos, mediciones. Su UI tampoco tiene ficha de jugador. | **Coordinador sin historia**, igual que hoy. Darle acceso revierte 0018 para los datos de menores y exige una pantalla nueva para llegar a la ficha. Si se quiere igual: función con rama de coordinador sin físico, pantalla de entrada desde Panorama y actualizar `docs/legal` y `docs/COORDINACION.md`. |
-| D2 | El profe ve la historia **completa** de los chicos con pertenencia vigente en su plantel | **0039 (auditoría #8)** cerró justo eso: cualquier profe puede sumar a su plantel a un chico de otra categoría (el flujo del citado), y con eso leía toda su historia de peso y altura. Hoy una pertenencia sólo abre las medidas corporales **cargadas desde que existe**. La regla del prompt deja que el profe se dé el acceso a sí mismo: le alcanza con sumar al chico. | **Respetar la ventana de 0039 para lo corporal** (peso, altura, piernas): la historia muestra sólo lo que ya ve en la ficha. El resto (partidos, tiro, salto, sprint, Yo-Yo, cargas) se muestra completo, aceptando que sumar a un chico de otra categoría también lo abre. Si eso no alcanza: guardar cada lectura de historia en una tabla de auditoría que lea coordinación (no está en el plan). |
-| D3 | Reutilizar `detalleColapsableHtml` | **Ya no existe**: lo reemplazó `verDetallesHtml` (`src/ui/componentes/verDetalles.js`), que abre una hoja, porque el `<details>` estiraba la pantalla. | Cada temporada es una tarjeta corta con su resumen siempre visible y **"Ver detalles"** (`verDetallesHtml`) para sus bloques. Es el colapsable actual del proyecto. |
-| D4 | "Velocidad como lista con fecha" | La medición de velocidad se borró en **0045**. Hoy hay sprint (20/30 m, 0048) y Yo-Yo (0049). | "Velocidad" = **sprint**, lista con fecha. El Yo-Yo y el salto van en el bloque físico. |
+| # | Decisión | Consecuencia |
+|---|---|---|
+| D1 | **El coordinador no ve la historia.** Sigue viendo sólo datos generales y agregados (Panorama). | Se respeta 0018. La función rechaza al coordinador puro; quien tiene los dos roles entra por su lado de entrenador. |
+| D2 | **El profe que suma a un chico de otra categoría ve su historia completa**, peso y altura incluidos. | Para **lectura** se deja a propósito sin efecto la ventana de 0039 (auditoría #8), sólo dentro de esta función. La sección corporal editable de la ficha sigue con su ventana: editar y borrar no cambian. Va escrito en el comentario de la migración y en `ESQUEMA.md`. |
+| D3 | Forma: **qué se trabajó y cómo llega**, por encima de los números de partido. | §3. Es una primera versión para pulir después. |
+| D4 | Velocidad = **sprint**. Resistencia = **Yo-Yo**. | `medicion_velocidad` se borró en 0045. |
+| — | `detalleColapsableHtml` ya no existe. | Se usa `verDetallesHtml` (hoja), el colapsable actual del proyecto. |
 
-El resto del documento asume las recomendaciones.
+## 1. Acceso: función `security definer`
 
-## 1. Acceso: función `security definer` (opción a)
+**`historia_del_jugador(p_jugador_id uuid) returns jsonb`**, `stable security definer set search_path = ''`, con el patrón de `jugadores_del_club_para_dedup` y `mi_progreso`. Primero va la regla:
 
-**Una función nueva, `historia_del_jugador(p_jugador_id uuid) returns jsonb`**, `stable security definer set search_path = ''`, con el mismo patrón que `jugadores_del_club_para_dedup` y `mi_progreso`. Adentro, primero la regla:
+> quien llama es entrenador (`es_entrenador`) del club del jugador y hay una `pertenencia` del jugador con `hasta is null` en un plantel con `puede_ver_plantel` verdadero. Si no, `raise ... errcode '42501'`.
 
-> quien llama es entrenador del club del jugador y existe una `pertenencia` del jugador con `hasta is null` en un plantel para el que `puede_ver_plantel` da verdadero. Si no, `raise ... errcode '42501'`.
+Lleva `revoke` a `public` y `anon` y `grant execute` sólo a `authenticated`. No crea, cambia ni borra ninguna policy.
 
-Después arma todo y devuelve un solo jsonb. `revoke` a `public` y `anon`, `grant execute` sólo a `authenticated`.
+**Por qué no policies extra (opción b):** habría que sumarlas en una docena de tablas, y como las policies se suman con OR, cambiaría lo que devuelve cada consulta existente. Por ejemplo, `obtenerPertenenciasDeJugador` pasaría a mostrar categorías ajenas en la cabecera de la ficha. Con la función, el permiso nuevo vive en un solo archivo y se revoca con un `revoke execute`.
 
-**Por qué no la opción b (policies de lectura extra en las tablas):** habría que sumarlas en unas once tablas (`pertenencia`, `plantel`, `temporada`, `partido`, `estadistica_jugador_partido`, `sesion_medicion`, `medicion_tiro/salto/sprint/yoyo`, `movimiento_escalon`). Las policies se suman con OR, así que **cambia lo que devuelve cualquier consulta existente**: `obtenerPertenenciasDeJugador` mostraría categorías ajenas en la cabecera de la ficha, y así con cada pantalla que filtra por jugador. Es lo que la decisión 2 quiere evitar, y además desparrama el permiso en once lugares. Con la función, el permiso nuevo vive en un archivo, no toca ninguna policy existente y se revoca con un `revoke execute`.
-
-**Cómo se audita:** `tests/contratoHistoria.test.js` lee la migración y falla si crea, cambia o borra una policy, si otorga algo sobre una tabla, si la función no es `security definer` con `search_path = ''`, o si el `grant execute` no es sólo a `authenticated`. `tests/verificarHistoria.sql` prueba la regla con usuarios sintéticos (profe U17, profe U15, coordinador, jugador).
+**Auditable:** `tests/contratoHistoria.test.js` lee la migración y falla si toca policies, si otorga algo sobre tablas, si la función no es `security definer` con `search_path = ''` o si el grant no es sólo a `authenticated`. `tests/verificarHistoria.sql` prueba la regla con usuarios sintéticos.
 
 ## 2. Qué devuelve
 
+Sólo de **ese** jugador: ningún dato de otro chico ni promedios.
+
 ```
-{ temporadas:   [{ id, nombre }],
-  planteles:    [{ id, temporadaId, categoria, profes: [nombre] }],
-  pertenencias: [{ plantelId, temporadaId, desde, hasta }],
-  partidos:     [{ plantelId, fecha, rival, minSegundos, pts, dos*/tres*/libres* anotados e intentados }],
-  tiro:         [{ plantelId, sesionId, fecha, anotados, intentos }],
-  saltos | sprints | yoyos: misma forma que mi_progreso, más plantelId,
-  corporales:   [{ fecha, peso, altura, ... }]   -- con la ventana de 0039 (D2),
-  escalones:    [{ fecha, ejercicio, kg }] }
+temporadas    [{ id, nombre }]
+planteles     [{ id, temporadaId, categoria, profes: [nombre] }]   -- asignaciones vigentes y cerradas
+pertenencias  [{ plantelId, temporadaId, desde, hasta }]
+planFisico    [{ plantelId, sesiones, primera, ultima, bloques: [{ bloque, ejercicios: [nombre] }] }]
+cargas        [{ fecha, ejercicio, kg }]                           -- movimiento_escalon
+recursos      [{ fecha, titulo }]                                  -- envio_recurso + recurso
+saltos | sprints | yoyos   como mi_progreso, más plantelId
+corporales    [{ fecha, peso, altura, ... }]                       -- sin ventana (D2)
+tiro          [{ plantelId, fecha, anotados, intentos }]           -- por batería
+partidos      [{ plantelId, fecha, minSegundos, pts, dos/tres/libres anotados e intentados }]
 ```
 
-Sólo de **ese** jugador. Ningún dato de otro chico, ningún promedio. Los profes de un plantel son todas las asignaciones que tuvo, vigentes y cerradas, sin repetir.
+## 3. Cómo se ve
 
-## 3. Contenido por temporada
+**Arriba, "Cómo llega":** el último dato de cada cosa **antes de que empezara su temporada actual**, con su fecha: salto por test, sprint por distancia, Yo-Yo, peso y altura, la última carga de cada ejercicio de fuerza y la última batería. Si algo no tiene dato: "sin medición". No hay flechas ni comparaciones.
 
-Orden: temporada de `nombre` más alto arriba (mismo criterio que `clubes_para_solicitar`). Por temporada:
+**Debajo, una tarjeta por temporada,** la más reciente arriba (por `nombre`, como `clubes_para_solicitar`). Se ve siempre:
+- Temporada, categorías (más de una si estuvo citado) y profes.
+- Una línea de resumen, por ejemplo: "Plan físico: 24 sesiones · 3 materiales · 8 partidos".
 
-- **Cabecera** (siempre visible): nombre, categorías (más de una si estuvo citado) y profes. Una línea de resumen: "8 partidos · 3 baterías · sin mediciones físicas".
-- **Partidos**: cuántos jugó y los totales de lo que ya muestra la ficha: minutos, puntos, 2P, 3P y libres como "anotados de intentados". Los puntos con el mismo peso visual que lo demás.
-- **Tiro**: baterías como serie, una fila por fecha con "anotados de intentados". Sin gráfico de tendencia.
-- **Velocidad**: sprints con fecha, distancia y tiempo.
-- **Físico**: salto (altura por test y fecha), Yo-Yo (idas con fecha), medidas corporales y cargas de fuerza. Sin comparación con normas ni flechas.
+En **"Ver detalles"** (la hoja), en este orden:
+1. **Qué se trabajó.** Primero el plan físico de la categoría: sesiones, desde/hasta y bloques con sus ejercicios. Se rotula "Plan de la categoría" porque todavía no hay asistencia y no se sabe si fue a cada sesión. Después sus cargas de fuerza, ejercicio por ejercicio, con fechas y kg en orden. Al final, el material que recibió.
+2. **Cómo terminó la temporada.** El último dato de la temporada para salto, velocidad (sprint), resistencia (Yo-Yo), peso y altura, y la lista con fechas de cada una.
+3. **Tiro.** Las baterías por fecha, "anotados de intentados".
+4. **Partidos.** Cuántos jugó y los totales de minutos, puntos, 2P, 3P y libres en "anotados de intentados", todos con el mismo peso visual.
 
-Cada bloque sin datos dice **"Sin datos"** (o "Sin mediciones"), nunca 0. Un total se calcula sólo con valores no nulos; si todos son nulos, "sin dato".
+Un bloque vacío dice **"Sin datos"** o **"Sin mediciones"**, nunca 0. Un total se calcula con los valores no nulos; si todos son nulos, "sin dato".
 
 ## 4. Extensible
 
-Del lado de los datos, `src/data/historiaJugador.js` tiene una tabla `FUENTES`: `{ clave, ubicar: 'plantel' | 'fecha' }`. La agrupación recorre `FUENTES` y no sabe qué hay adentro de cada fuente. Del lado de la UI, el componente tiene una lista `BLOQUES`: `{ clave, titulo, html(items) }`.
+`src/data/historiaJugador.js` define `FUENTES`, una lista de `{ clave, ubicar: 'plantel' | 'fecha' }`. La agrupación recorre esa lista sin saber qué hay en cada fuente. El componente de UI tiene `BLOQUES`, con `{ clave, seccion, titulo, html(items) }`.
 
-Sumar misiones o asistencia es: (1) una migración nueva que hace `create or replace` de la función con una clave más; (2) una línea en `FUENTES`; (3) una entrada en `BLOQUES`. No se toca ningún bloque existente. `contratoHistoria.test.js` verifica que cada clave del jsonb de la migración más nueva esté en `FUENTES`.
+Para sumar misiones o asistencia hace falta: (1) una migración nueva que haga `create or replace` de la función con una clave más; (2) una línea en `FUENTES`; (3) una entrada en `BLOQUES`. Ningún bloque existente se toca. El contrato verifica que cada clave del jsonb esté en `FUENTES`. Cuando haya asistencia, "Plan de la categoría" puede pasar a decir a cuántas sesiones fue.
 
 ## 5. Ubicar por fecha
 
-Una medición sin plantel va a la temporada de la pertenencia cuyo rango `[desde, hasta]` contiene su fecha (`hasta` nulo = hoy). Si cae en más de una (citado), es la misma temporada o la de nombre más alto. Si no cae en ninguna, va a un grupo final **"Sin temporada"**. Lógica pura con test.
+Un dato sin plantel va a la temporada de la pertenencia cuyo rango `[desde, hasta]` contiene su fecha (`hasta` nulo = hoy); si cae en dos (citado), las dos son de la misma temporada o se elige la de nombre más alto. Si no cae en ninguna, va a un grupo final, **"Sin temporada"**. "Cómo llega" toma lo de fecha anterior al `desde` más viejo de sus pertenencias vigentes. Es lógica pura, con test.
 
 ## 6. Pantalla
 
-Sección **"Historia por temporada"** en la ficha, después de lo de la temporada actual y antes de Cargas. El bloque que hoy tiene id `ficha-historia` (los datos del plantel actual) se renombra a `ficha-actual` en un commit de refactor aparte, para que no haya dos "historias". Base de celular a 375 px, botones de 44 px como mínimo, ningún dato sólo por color, `html\`...\``.
+Sección **"Historia por temporada"** en la ficha, entre los datos de la temporada actual y Cargas. El bloque que hoy tiene id `ficha-historia` pasa a llamarse `ficha-actual` en un commit de refactor aparte. Base de celular a 375 px, botones de 44 px como mínimo, ningún dato sólo por color, todo con `html\`...\``.
 
 ## Fuera de alcance
 
-Exportar, vista para jugadores o familias, pase automático de categoría, editar el pasado desde la historia, comparaciones entre jugadores. Se lee nada más.
+Exportar, vista para jugadores o familias, pase automático de categoría, editar el pasado, comparaciones entre jugadores y las jugadas (no tienen historia). Es sólo lectura.
 
 ## Riesgos conocidos
 
-- Las pertenencias y asignaciones de una temporada no se cierran solas al empezar la siguiente. Si quedan abiertas, el profe de U15 2025 sigue viendo a sus chicos de entonces. Pasa lo mismo hoy y lo resuelve el pase de categoría, que está fuera de alcance.
-- La potencia del salto necesita peso. Con la ventana de 0039 puede faltar en temporadas viejas: se muestra la altura y se dice qué falta, como hoy.
+- Las pertenencias y asignaciones no se cierran solas con la temporada. Si quedan abiertas, el profe de U15 2025 sigue viendo a sus chicos. Ya pasa hoy y lo resuelve el pase de categoría, que queda fuera de alcance.
+- D2 reabre para lectura lo que cerró la auditoría #8: le alcanza con sumar a un chico de su club a su plantel para ver toda su historia. Es una decisión de producto, y queda escrita en `ESQUEMA.md` y en `docs/SEGURIDAD-LANZAMIENTO.md`.
