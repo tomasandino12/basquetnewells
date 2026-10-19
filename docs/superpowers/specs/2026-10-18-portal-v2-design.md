@@ -1,6 +1,6 @@
 # Portal del básquet y Semillero separados — diseño (v2)
 
-Estado: **borrador para aprobar por Tomás**. Fecha: 18/10/2026. Rama `feat/portal-pwa` (se rehace encima; nada mergeado). Reemplaza `2026-10-16-portal-pwa-design.md`: el bloque dentro de la landing no le sirvió.
+Estado: **aprobada por Tomás el 18/10** (incluida la lectura anónima de formularios por función). Plan: `docs/superpowers/plans/2026-10-18-portal-v2.md`. Fecha: 18/10/2026. Rama `feat/portal-pwa` (se rehace encima; nada mergeado). Reemplaza `2026-10-16-portal-pwa-design.md`: el bloque dentro de la landing no le sirvió.
 
 ## 1. Qué cambia
 
