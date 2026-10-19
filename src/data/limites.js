@@ -87,4 +87,7 @@ export const LIMITES_POR_COLUMNA = {
   'mision_equipo.texto': LIMITE.textoMision,
   'mision_equipo.comentario': LIMITE.comentarioMision,
   'responsable_jugador.email': LIMITE.mail,
+  'formulario_portal.titulo': LIMITE.titulo,
+  'formulario_portal.texto': LIMITE.textoFormulario,
+  'formulario_portal.enlace': LIMITE.enlace,
 };

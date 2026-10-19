@@ -72,19 +72,25 @@ export function urlEmbedCalendario(valor) {
   return `${EMBED}?${q}`;
 }
 
+/**
+ * Un Google Form por https, sin usuario ni puerto, y sin espacios, comillas ni
+ * < > que rompan el atributo. Es el MISMO texto que el check
+ * `formulario_portal_enlace_google` de 0058: tests/contratoFormularioPortal
+ * compara los dos, así la página no muestra lo que la base rechazaría ni al
+ * revés.
+ */
+export const PATRON_ENLACE_FORMULARIO = '^https://(docs\\.google\\.com/forms/|forms\\.gle/)[^\\s"<>]+$';
+const ENLACE_FORMULARIO = new RegExp(PATRON_ENLACE_FORMULARIO);
+
 /** El link al formulario si es un Google Form por https; si no, null. */
 export function enlaceFormulario(valor) {
-  if (typeof valor !== 'string') return null;
-  let u;
+  if (typeof valor !== 'string' || !ENLACE_FORMULARIO.test(valor)) return null;
   try {
-    u = new URL(valor);
+    new URL(valor);
   } catch {
     return null;
   }
-  if (u.protocol !== 'https:') return null;
-  const esForm = u.hostname === 'forms.gle'
-    || (u.hostname === 'docs.google.com' && u.pathname.startsWith('/forms/'));
-  return esForm ? valor : null;
+  return valor;
 }
 
 /**

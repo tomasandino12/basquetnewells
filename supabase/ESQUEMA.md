@@ -305,6 +305,14 @@ Su recorrido temporada por temporada (spec `docs/superpowers/specs/2026-10-16-hi
 - **Qué devuelve:** `temporadas`, `planteles` (con los `profes` que los tuvieron a cargo, vigentes y cerrados, por el nombre de Auth), `pertenencias`, `planFisico` (el plan de la **categoría**: no hay asistencia, así que no dice a cuántas sesiones fue), `cargas`, `recursos`, `saltos`, `sprints`, `yoyos`, `corporales`, `tiro` y `partidos`. Las claves que no son del marco (`planteles`, `temporadas`, `pertenencias`) son las `FUENTES` de `src/data/historiaJugador.js`: sumar misiones o asistencia es `create or replace` de la función con una clave más, una línea en `FUENTES` y un bloque en `historiaTemporadas.js`.
 - **Verificación:** `tests/verificarHistoria.sql` (6 casos: el profe de U17 ve 2025; no ve a un chico de U15 ajeno; ni coordinador, ni jugador, ni baja, ni un jugador inexistente). Para probar en el navegador, `tests/sembrarHistoriaLocal.sql` carga una temporada 2025 de mentira **sólo en la base local**.
 
+### Formularios del portal: `formulario_portal` y `formularios_publicos` (0058)
+Los formularios de Google que el portal público (`/`) le muestra a las familias: título, una línea de ayuda (`texto`: para qué es y qué tener a mano), `enlace`, `orden` y `activo` (spec `docs/superpowers/specs/2026-10-18-portal-v2-design.md` §3). **Sin ningún dato de personas**: los formularios y lo que suben las familias viven en Google.
+
+- **Única excepción a 0027 ("anon no tiene nada"), aprobada por Tomás el 18/10.** anon **no** recibe nada sobre la tabla: sólo `execute` de `formularios_publicos(club)`, `security definer`, que devuelve título, texto y enlace de las filas **activas** de ese club, en orden y con un tope de 50.
+- **Escribe sólo la coordinación del club** (`es_coordinador_de`): insert y update por columna; **sin delete** (se oculta con `activo = false`). La tabla completa, con las ocultas y la autoría, la lee sólo la coordinación. El club de una fila y la autoría no los toca el cliente; `sellar_formulario_portal` pone `actualizado_por/en`.
+- **El enlace sólo puede ser un Google Form** (`https://docs.google.com/forms/…` o `https://forms.gle/…`, sin usuario, espacios ni comillas): el mismo patrón que `PATRON_ENLACE_FORMULARIO` de `src/data/portal.js`. Largos en `limites.js`.
+- **Verificación:** `tests/verificarFormularioPortal.sql` (8 casos: la coordinación escribe y queda sellada; entrenador, coordinación de otro club y anon no leen ni escriben la tabla; la función devuelve sólo lo activo del club pedido; enlaces y textos inválidos rechazados; nadie borra). Contrato: `tests/contratoFormularioPortal.test.js`. Deshacer en local: `tests/rollback0058.sql`.
+
 ## Políticas RLS
 
 Hasta 0015 la autorización era sólo por club: quien tenía una fila en `miembro_club` veía **todos los planteles**. Desde 0016 pasa por la asignación, y **lectura y escritura son ejes separados**. Desde 0018 el coordinador no lee datos individuales.
