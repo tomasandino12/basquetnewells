@@ -1,0 +1,99 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { htmlFormularios, htmlCalendarios, htmlContacto } from '../src/ui/portal.js';
+
+/**
+ * portal.html es HTML escrito a mano y no hay navegador en los tests: se lee
+ * como texto, como en landing.test.js. Se atan las promesas de la spec v2 que
+ * se rompen sin que nada avise.
+ */
+const pagina = readFileSync('public/portal.html', 'utf8');
+const ids = [...pagina.matchAll(/\bid="([\w-]+)"/g)].map((m) => m[1]);
+
+test('el portal trae las secciones en orden', () => {
+  const orden = ['que-hacer', 'formularios', 'calendario', 'informacion', 'semillero', 'dudas'];
+  const posiciones = orden.map((id) => pagina.indexOf(`<section class="portal-sec" id="${id}"`));
+  assert.ok(posiciones.every((p) => p > 0), `faltan secciones: ${posiciones}`);
+  assert.deepEqual([...posiciones].sort((a, b) => a - b), posiciones, 'las secciones están desordenadas');
+});
+
+test('los 4 pasos de "¿Qué tengo que hacer?" enlazan a anclas que existen', () => {
+  const pasos = pagina.match(/<ol class="portal-pasos">([\s\S]*?)<\/ol>/)?.[1] ?? '';
+  const items = [...pasos.matchAll(/<li>([\s\S]*?)<\/li>/g)].map((m) => m[1]);
+  assert.equal(items.length, 4);
+  for (const item of items) {
+    const ancla = item.match(/href="#([\w-]+)"/)?.[1];
+    assert.ok(ancla && ids.includes(ancla), `paso sin ancla válida: ${item.slice(0, 60)}`);
+  }
+});
+
+test('el botón a Semillero lleva a /app e incluye cómo instalarla', () => {
+  const sec = pagina.match(/<section class="portal-sec" id="semillero"[\s\S]*?<\/section>/)?.[0] ?? '';
+  assert.match(sec, /<a class="btn" href="\/app">/);
+  assert.match(sec, /Agregar a inicio/);
+  assert.match(sec, /Instalar/);
+});
+
+test('portal.html no tiene scripts inline ni enlaza el manifest', () => {
+  const inline = [...pagina.matchAll(/<script(?![^>]*\bsrc=)[^>]*>/g)].map((m) => m[0]);
+  assert.deepEqual(inline, []);
+  assert.doesNotMatch(pagina, /rel="manifest"/);
+  assert.doesNotMatch(pagina, /serviceWorker/);
+});
+
+test('el portal es mobile y no carga el import map ni la configuración de Supabase', () => {
+  assert.match(pagina, /<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">/);
+  assert.doesNotMatch(pagina, /importmap|config\.js/);
+});
+
+test('portal.js y su arranque no importan repos, cliente ni Supabase', () => {
+  for (const archivo of ['src/ui/portal.js', 'src/ui/portalArranque.js']) {
+    const codigo = readFileSync(archivo, 'utf8');
+    const imports = [...codigo.matchAll(/from\s+'([^']+)'/g)].map((m) => m[1]);
+    assert.deepEqual(imports.filter((i) => /repositorio|repos\/|cliente|supabase/.test(i)), [], archivo);
+    assert.doesNotMatch(codigo, /\bfetch\s*\(/, archivo);
+  }
+});
+
+test('cada formulario muestra su línea de ayuda y abre en otra pestaña con rel=noopener', () => {
+  const out = htmlFormularios([
+    { titulo: 'Rifa <b>', texto: 'Subí el comprobante <i>acá</i>', enlace: 'https://forms.gle/AbC123' },
+  ]).toString();
+  assert.match(out, /Subí el comprobante &lt;i&gt;acá&lt;\/i&gt;/);
+  assert.match(out, /<a [^>]*href="https:\/\/forms\.gle\/AbC123"/);
+  assert.match(out, /target="_blank"/);
+  assert.match(out, /rel="noopener"/);
+  assert.doesNotMatch(out, /<b>|<i>/);
+});
+
+test('un formulario con enlace inválido o sin lista dice Próximamente y no tiene <a>', () => {
+  const malo = htmlFormularios([{ titulo: 'X', texto: 'y', enlace: 'https://evil.com/forms/x' }]).toString();
+  assert.match(malo, /Próximamente/);
+  assert.doesNotMatch(malo, /<a /);
+  assert.match(htmlFormularios([]).toString(), /Próximamente/);
+});
+
+test('sin ID cada calendario dice Próximamente y no hay iframe', () => {
+  const out = htmlCalendarios([{ titulo: 'Partidos', id: null }, { titulo: 'Eventos', id: 'roto' }]).toString();
+  assert.equal(out.match(/Próximamente/g)?.length, 2);
+  assert.doesNotMatch(out, /<iframe/);
+});
+
+test('con ID el calendario es un iframe perezoso, con título y en sandbox sin navegar la página', () => {
+  const out = htmlCalendarios([{ titulo: 'Partidos <b>', id: 'abc@group.calendar.google.com' }]).toString();
+  const iframe = out.match(/<iframe[^>]*>/)?.[0] ?? '';
+  assert.match(iframe, /src="https:\/\/calendar\.google\.com\/calendar\/embed\?/);
+  assert.match(iframe, /loading="lazy"/);
+  assert.match(iframe, /title="Calendario: Partidos &lt;b&gt;"/);
+  assert.match(iframe, /sandbox="[^"]*allow-scripts/);
+  assert.doesNotMatch(iframe, /allow-top-navigation/);
+  assert.doesNotMatch(out, /<b>/);
+});
+
+test('el contacto sin configurar dice Próximamente; con WhatsApp o mail es un enlace', () => {
+  assert.match(htmlContacto(null).toString(), /Próximamente/);
+  assert.match(htmlContacto('javascript:alert(1)').toString(), /Próximamente/);
+  assert.match(htmlContacto('https://wa.me/5493410000000').toString(), /<a [^>]*href="https:\/\/wa\.me\/5493410000000"/);
+  assert.match(htmlContacto('mailto:coord@club.com').toString(), /<a [^>]*href="mailto:coord@club\.com"/);
+});

@@ -194,32 +194,52 @@
   border-top:1px solid var(--pub-borde);padding-top:var(--sp-5);margin-top:var(--sp-2);
 }
 
-/* ---- El básquet del club (para las familias) ----
-   Mismo lenguaje que el bento pero sin animaciones de entrada: este bloque
-   queda arriba de todo y un texto suyo puede ser el LCP. */
-.basquet{padding:0 var(--sp-4)}
-.titulo-landing{
-  font-size:var(--fs-200);letter-spacing:.06em;text-align:center;
-  margin:var(--sp-2) 0 var(--sp-4);
+/* ---- Portal "Básquet Newell's" (public/portal.html) ----
+   Misma familia visual que la landing de la app (negro, rojo del club, títulos
+   condensados) pero sin animaciones de entrada: un texto de acá arriba puede
+   ser el LCP. Una columna en el celular; las dos columnas viven en layout.css. */
+.portal{max-width:64rem;margin-inline:auto;width:100%;padding-bottom:var(--sp-4)}
+.portal-sec{padding:var(--sp-5) var(--sp-4) var(--sp-2);scroll-margin-top:var(--sp-4)}
+.portal-sec h2{font-size:var(--fs-220);letter-spacing:.06em;margin-bottom:var(--sp-2)}
+.portal-sec .intro{color:var(--gris-osc);font-size:var(--fs-145);line-height:1.5;margin-bottom:var(--sp-4)}
+.portal-sec .portal-nota{color:var(--gris-osc);font-size:var(--fs-135);line-height:1.55;margin-top:var(--sp-4)}
+.portal-sec .portal-nota b{color:var(--sobre-oscuro);font-weight:600}
+.portal-sec > .btn{text-decoration:none}
+.portal .pie-legal{margin-top:var(--sp-6)}
+
+/* Los pasos: una tarjeta tocable entera por paso, con el número en el color del club. */
+.portal-pasos{list-style:none;margin:0;padding:0;display:grid;gap:var(--sp-3);counter-reset:portal-paso}
+.portal-pasos li{counter-increment:portal-paso}
+.portal-pasos a{
+  position:relative;display:block;min-height:var(--tap);text-decoration:none;color:inherit;
+  background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);
+  padding:var(--sp-4) var(--sp-4) var(--sp-4) 3.5rem;
+  transition:transform var(--dur-1) var(--ease-salida);
 }
-.basquet > .titulo-landing:last-child{margin:var(--sp-8) 0 var(--sp-4)}
-.bq-grilla{display:grid;gap:var(--sp-3)}
-.bq{background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);padding:var(--sp-4);min-width:0}
-.bq .t{font-family:var(--ff-titulo);font-size:var(--fs-170);font-weight:600;text-transform:uppercase;letter-spacing:.04em;line-height:1.15}
-.bq .d{color:var(--gris-osc);font-size:var(--fs-135);line-height:1.5;margin-top:var(--sp-2)}
-.bq-accion{margin-top:var(--sp-4)}
-.bq-accion a.btn{text-decoration:none}
+.portal-pasos a::before{
+  content:counter(portal-paso);position:absolute;left:var(--sp-4);top:var(--sp-4);
+  font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-250);line-height:1;color:var(--primario);
+}
+.portal-pasos a:active{transform:scale(.98)}
+.portal-pasos b{display:block;font-family:var(--ff-titulo);font-size:var(--fs-170);font-weight:600;letter-spacing:.04em;text-transform:uppercase;line-height:1.15}
+.portal-pasos span{display:block;color:var(--gris-osc);font-size:var(--fs-135);line-height:1.5;margin-top:var(--sp-1)}
+
+.portal-lista,.portal-calendarios{display:grid;gap:var(--sp-3)}
+.portal-tarjeta{background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);padding:var(--sp-4);min-width:0}
+.portal-tarjeta .t{font-family:var(--ff-titulo);font-size:var(--fs-170);font-weight:600;text-transform:uppercase;letter-spacing:.04em;line-height:1.15}
+.portal-tarjeta .d{color:var(--gris-osc);font-size:var(--fs-135);line-height:1.55;margin:var(--sp-2) 0 var(--sp-4)}
+.portal-tarjeta .btn{text-decoration:none}
 /* Lo que el club todavía no pasó: se dice que falta, en gris, nunca vacío. */
-.bq-pronto{color:var(--gris-osc);font-style:italic;font-size:var(--fs-135)}
-.bq-accion .bq-pronto{min-height:var(--tap);display:flex;align-items:center}
-.bq-datos{margin-top:var(--sp-3);display:grid;gap:var(--sp-3)}
-.bq-datos dt{font-family:var(--ff-titulo);font-size:var(--fs-125);font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gris-osc)}
-.bq-datos dd{margin:var(--sp-1) 0 0;font-size:var(--fs-145);line-height:1.45}
-.bq-calendarios{display:grid;gap:var(--sp-4);margin-top:var(--sp-4)}
-.bq-cal-t{font-family:var(--ff-titulo);font-size:var(--fs-145);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:var(--sp-2)}
+.portal-pronto{color:var(--gris-osc);font-style:italic;font-size:var(--fs-135)}
+.portal-tarjeta .portal-pronto{min-height:var(--tap);display:flex;align-items:center}
+.portal-datos{display:grid;gap:var(--sp-3);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);padding:var(--sp-4)}
+.portal-datos dt{font-family:var(--ff-titulo);font-size:var(--fs-125);font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gris-osc)}
+.portal-datos dd{margin:var(--sp-1) 0 0;font-size:var(--fs-145);line-height:1.45}
+.portal-cal{background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);padding:var(--sp-4);min-width:0}
+.portal-cal-t{font-family:var(--ff-titulo);font-size:var(--fs-145);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:var(--sp-2)}
 /* El embed de Google es blanco y no se puede teñir: se le da el alto de una
    agenda de unas semanas y el ancho de la tarjeta, nunca más. */
-.bq-cal iframe{display:block;width:100%;height:26rem;border:0;border-radius:var(--r-m);background:var(--sup-1)}
+.portal-cal iframe{display:block;width:100%;height:26rem;border:0;border-radius:var(--r-m);background:var(--sup-1)}
 
 /* ---- caja de autenticación ---- */
 .caja{max-width:23rem;margin-inline:auto;width:100%;padding:var(--sp-5) var(--sp-4) var(--sp-8)}

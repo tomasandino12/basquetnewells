@@ -16,9 +16,20 @@ export const PORTAL = Object.freeze({
     // PENDIENTE: ID del calendario de eventos y recaudación.
     Object.freeze({ titulo: 'Eventos y recaudación', id: null }),
   ]),
-  // Formulario de inscripción. Respaldo: la spec v2 (§3) pasa la lista de
-  // formularios a una tabla que carga la coordinación desde su panel.
-  inscripcion: 'https://docs.google.com/forms/d/e/1FAIpQLSfXI11Sruothw4K67u6deMbRgfK0uZO00sfE-DBgsqam3peBQ/viewform',
+  // PENDIENTE: link de WhatsApp (https://wa.me/549341…) o mail (mailto:…) del
+  // coordinador, para el "¿Dudas?" del portal. El club no tiene mail propio.
+  contacto: null,
+  // Respaldo de los formularios: es lo que se muestra si la base no responde.
+  // La lista de verdad la carga la coordinación desde su panel (spec v2 §3).
+  // Cada uno lleva una línea de para qué es y qué tener a mano: las familias
+  // no tienen por qué saber qué se necesita antes de abrirlo.
+  formularios: Object.freeze([
+    Object.freeze({
+      titulo: 'Inscripción',
+      texto: 'Para anotar al chico o a la chica en el club. Tené a mano el DNI del chico y el tuyo (para sacarles una foto de frente y otra de dorso), la credencial de la obra social y un celular con cámara. Después, la coordinación revisa todo y, si falta algo, te avisa tu profe.',
+      enlace: 'https://docs.google.com/forms/d/e/1FAIpQLSfXI11Sruothw4K67u6deMbRgfK0uZO00sfE-DBgsqam3peBQ/viewform',
+    }),
+  ]),
 });
 
 /** Hosts que la página pública mete en un iframe. La CSP (frame-src) tiene que permitirlos. */
@@ -62,7 +73,7 @@ export function urlEmbedCalendario(valor) {
 }
 
 /** El link al formulario si es un Google Form por https; si no, null. */
-export function enlaceInscripcion(valor) {
+export function enlaceFormulario(valor) {
   if (typeof valor !== 'string') return null;
   let u;
   try {
@@ -74,4 +85,21 @@ export function enlaceInscripcion(valor) {
   const esForm = u.hostname === 'forms.gle'
     || (u.hostname === 'docs.google.com' && u.pathname.startsWith('/forms/'));
   return esForm ? valor : null;
+}
+
+/**
+ * El enlace de contacto si es WhatsApp (https://wa.me/…) o un mail
+ * (mailto:algo@dominio); si no, null. Termina en un <a href>, así que no
+ * pasa cualquier esquema.
+ */
+export function enlaceContacto(valor) {
+  if (typeof valor !== 'string') return null;
+  if (/^mailto:[^\s@/?#]+@[^\s@/?#]+\.[^\s@/?#]+$/.test(valor)) return valor;
+  let u;
+  try {
+    u = new URL(valor);
+  } catch {
+    return null;
+  }
+  return u.protocol === 'https:' && u.hostname === 'wa.me' && u.pathname.length > 1 ? valor : null;
 }

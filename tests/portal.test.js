@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { PORTAL, HOSTS_EMBEBIDOS, urlEmbedCalendario, enlaceInscripcion } from '../src/data/portal.js';
+import { PORTAL, HOSTS_EMBEBIDOS, urlEmbedCalendario, enlaceFormulario, enlaceContacto } from '../src/data/portal.js';
 
 /**
  * Lo que sale de acá termina en un <iframe src> o en un <a href> de la página
@@ -34,16 +34,16 @@ test('urlEmbedCalendario sin ID o con un ID raro devuelve null', () => {
   }
 });
 
-test('enlaceInscripcion acepta forms.gle y docs.google.com/forms', () => {
-  assert.equal(enlaceInscripcion('https://forms.gle/AbC123'), 'https://forms.gle/AbC123');
+test('enlaceFormulario acepta forms.gle y docs.google.com/forms', () => {
+  assert.equal(enlaceFormulario('https://forms.gle/AbC123'), 'https://forms.gle/AbC123');
   const largo = 'https://docs.google.com/forms/d/e/1FAIpQ/viewform';
-  assert.equal(enlaceInscripcion(largo), largo);
+  assert.equal(enlaceFormulario(largo), largo);
 });
 
-test('enlaceInscripcion rechaza http, javascript y hosts no permitidos', () => {
+test('enlaceFormulario rechaza http, javascript y hosts no permitidos', () => {
   for (const malo of [null, '', 'http://forms.gle/AbC123', 'javascript:alert(1)', 'https://forms.gle.evil.com/x',
     'https://docs.google.com/document/d/1', 'https://evil.com/forms/x', '//forms.gle/x']) {
-    assert.equal(enlaceInscripcion(malo), null, String(malo));
+    assert.equal(enlaceFormulario(malo), null, String(malo));
   }
 });
 
@@ -53,7 +53,23 @@ test('la configuración tiene los dos calendarios y lo que falta va en null', ()
     assert.ok(c.titulo);
     assert.ok(c.id === null || urlEmbedCalendario(c.id), `ID inválido en "${c.titulo}"`);
   }
-  assert.ok(PORTAL.inscripcion === null || enlaceInscripcion(PORTAL.inscripcion), 'URL de inscripción inválida');
+  assert.ok(PORTAL.contacto === null || enlaceContacto(PORTAL.contacto), 'contacto inválido');
+});
+
+test('cada formulario de respaldo trae título, línea de ayuda y un enlace válido', () => {
+  assert.ok(PORTAL.formularios.length >= 1);
+  for (const f of PORTAL.formularios) {
+    assert.ok(f.titulo && f.texto, 'falta título o línea de ayuda');
+    assert.ok(enlaceFormulario(f.enlace), `enlace inválido en "${f.titulo}"`);
+  }
+});
+
+test('enlaceContacto acepta WhatsApp y mail; rechaza el resto', () => {
+  assert.equal(enlaceContacto('https://wa.me/5493410000000'), 'https://wa.me/5493410000000');
+  assert.equal(enlaceContacto('mailto:coordinacion@club.com'), 'mailto:coordinacion@club.com');
+  for (const malo of [null, '', 'http://wa.me/5493410000000', 'javascript:alert(1)', 'https://evil.com/wa.me/1', 'mailto:', 'mailto:a b@club.com', 'mailto:ab@clubXcom', 'mailto:a@b.com?cc=otro@x.com', 'tel:+5493410000000']) {
+    assert.equal(enlaceContacto(malo), null, String(malo));
+  }
 });
 
 test('cada URL de embed sale de un host declarado en HOSTS_EMBEBIDOS', () => {

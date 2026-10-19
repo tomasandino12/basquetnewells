@@ -381,10 +381,9 @@
   .publico .beneficios{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4);padding-inline:var(--sp-6);max-width:64rem;margin-inline:auto}
   .publico .acciones-landing{flex-direction:row;justify-content:center;max-width:30rem}
   .publico .futuro{padding-inline:var(--sp-6)}
-  .publico .basquet{padding-inline:var(--sp-6);max-width:64rem;margin-inline:auto;width:100%}
-  .publico .bq-grilla{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4)}
-  .publico .bq-ancha{grid-column:1 / -1}
-  .publico .bq-calendarios{grid-template-columns:repeat(2,minmax(0,1fr))}
+  /* Portal: formularios y calendarios en dos columnas; los pasos en 2x2. */
+  .publico .portal-sec{padding-inline:var(--sp-6)}
+  .publico .portal-pasos,.publico .portal-lista,.publico .portal-calendarios{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4)}
   /* Bento en 2 columnas: las anchas y las altas ocupan el ancho completo; las dos últimas van lado a lado. */
   .publico .ben.ancha,.publico .ben.alta{grid-column:1 / -1}
 }
