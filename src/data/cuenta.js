@@ -48,9 +48,9 @@ export function inicialesDeNombre(nombre) {
   return (primera + ultima).toLocaleUpperCase('es');
 }
 
-/** ['Entrenador', 'Coordinación', 'Jugador'], en ese orden, sólo los que tiene. */
-export function rolesLegibles({ esEntrenador, esCoordinador, esJugador } = {}) {
-  return [esEntrenador && 'Entrenador', esCoordinador && 'Coordinación', esJugador && 'Jugador'].filter(Boolean);
+/** ['Entrenador', 'Coordinación', 'Jugador', 'Familia'], en ese orden, sólo los que tiene. */
+export function rolesLegibles({ esEntrenador, esCoordinador, esJugador, esFamilia } = {}) {
+  return [esEntrenador && 'Entrenador', esCoordinador && 'Coordinación', esJugador && 'Jugador', esFamilia && 'Familia'].filter(Boolean);
 }
 
 /**

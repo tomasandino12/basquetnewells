@@ -1,0 +1,212 @@
+# Cuentas de familia — diseño
+
+Estado: **aprobada por Tomás el 18/10, con D2** (mail verificado de Google) y
+la excepción al prompt 05 (6 datos sin DNI, descarga a mano). Prompt 08 con dos
+decisiones de Tomás del 18/10: el vínculo no lo aprueba el coordinador antes,
+y **los datos que el padre carga en el formulario de Inscripción alimentan
+tanto el plantel de Semillero como el vínculo**. Tag `pre-cuentas-familia`.
+Migración `0057_cuentas_familia.sql` (reservada por la coordinadora).
+
+## 1. Qué entra
+
+- El padre llena una sola vez el formulario de Inscripción (Google; con o
+  sin login, ver §2), que ya pide su mail.
+- El profe de la categoría importa los inscriptos a su plantel en Semillero,
+  sin cargarlos a mano. Así cada chico queda con el mail de su adulto
+  responsable.
+- El padre entra a Semillero con ese mail desde el botón de padres del portal
+  (Google o mail confirmado) y **queda vinculado solo**, sin tipear nada.
+- Ve **"Mis chicos"**: nombre y categoría de cada hijo vinculado. Nada más.
+- Varios familiares por chico (un mail por fila) y varios chicos por
+  familiar.
+- El coordinador ve todos los vínculos (quién, qué chico, cuándo, por qué
+  vía) y puede dar de baja cualquiera.
+
+Fuera: que la familia edite datos de la app, mensajería, estadísticas,
+mediciones, misiones, cuentas de jugador, aranceles, asistencia y calendario.
+El vínculo es con el **jugador**, no con la categoría: cuando el chico cambia
+de categoría el vínculo sigue, y un módulo de calendario futuro va a poder
+mostrar los partidos de su categoría actual.
+
+## 2. Con qué dato engancha la app al padre
+
+| Opción | Seguridad | Costo |
+|---|---|---|
+| A. DNI + nacimiento contra un hash | Falsa: ~10⁸ DNIs casi correlativos, el hash se revierte en segundos. Es guardar el DNI con otro nombre (choca con el prompt 05). | Alto. |
+| B. Código por chico que reparte el club | Fuerte. | El club reparte ~120 códigos; choca con "el padre carga y queda linkeado". |
+| C. Categoría + nombre + fecha, tipeados en la app | Débil: nombre y categoría salen de la CABB y la fecha se adivina en ~365 intentos. | Bajo, pero el padre carga dos veces. |
+| **D1. Mail tipeado en el formulario** (Inscripción sin login) | Buena del lado de la app: para vincularse hay que entrar con ese mail, verificado por Google o Supabase. Débil del lado del formulario: cualquiera tipea cualquier mail. | Un import por plantel, que igual hacía falta para no cargar chicos a mano. |
+| **D2. Mail verificado de la cuenta de Google del formulario** (Inscripción con login obligatorio, según la spec actual de inscripción) | La mejor: ese mail lo pone Google, no lo escribe el padre. Se vincula sólo quien llenó el formulario. Dos hijos son dos respuestas con el mismo mail. | El mismo import que D1. A las familias sin cuenta de Google les suma un paso: crearla con su mail de siempre (la guía de inscripción lo explica). |
+
+**Recomendación: D, sin C, y D2 si la Inscripción queda con login de
+Google.** Elige Tomás entre D1 y D2: en la app es el mismo código, sólo cambia
+de qué columna sale el mail. El padre no tipea nada en la app. Si entró con
+otro mail, el profe del plantel corrige el mail en la ficha del chico, y no queda
+ninguna puerta para adivinar. B queda como escalón por si el resguardo 3 lo
+pide.
+
+**Riesgo que queda** (aceptado por Tomás con su razón: nadie llena el
+formulario entero de un chico que no es suyo). Alguien podría inscribir al
+chico de otro. Con D1 lo haría con cualquier mail. Con D2 sólo con su propia
+cuenta de Google, que queda registrada. Lo frenan tres cosas:
+- El import marca cuando un chico ya existente llega con un mail nuevo.
+- El profe confirma cada fila.
+- La lista del coordinador muestra todos los vínculos.
+
+No hace falta service role key, función de servidor ni conexión
+Apps Script → Supabase: el puente es un archivo que baja el profe y la base
+nunca recibe un DNI.
+
+## 3. El puente: planilla "Para Semillero"
+
+**Punto a aprobar por Tomás: es una excepción a la decisión 1 del prompt 05**,
+que decía que nada del formulario pasa a Semillero. Pasan 6 datos (los 5 de siempre más la rama), sin DNI ni
+datos médicos, y el profe los descarga a mano. No es una conexión automática.
+
+Formato, fijado por inscripción (su commit b0f510a). Es una planilla aparte
+armada con `IMPORTRANGE`, no una pestaña del tablero, porque el `.xlsx` de
+Sheets baja todas las pestañas y se llevaría DNIs.
+- Fila 1, en este orden: `Apellido | Nombre | Fecha de nacimiento | Categoría
+  | Mail del responsable | Rama`. Una fila por chico, y un adulto con dos chicos
+  aparece en dos filas.
+- La fecha va como celda de fecha (dd/mm/aaaa). El mail es el verificado por
+  Google, en minúsculas.
+- Lo lee el `xlsx` vendorizado, con un test de contrato contra un fixture
+  sintético.
+
+**Categoría y rama.** Llegan el texto exacto del desplegable y una sexta
+columna `Rama` ("Masculino" o "Femenino"), definidas por inscripción en
+eacf568. Si la categoría ya dice MASCULINO o FEMENINO, la rama sale de ahí, y
+si la columna la contradice manda la categoría. En las MIXTO, la rama sale de
+la columna. Un mapeo fijo en JS, con un test que cubre las 11 opciones:
+
+| Formulario | Rama | Semillero |
+|---|---|---|
+| U13 - MIXTO (2014 y 2013) | Masculino | `U13M` |
+| U15 - MASCULINO (2012 y 2011) | — | `U15M` |
+| U17 - MASCULINO (2010 y 2009) | — | `U17M` |
+| U21 - MASCULINO (2008, 2007, 2006 y 2005) | — | `U21M` |
+| MAYORES FEMENINO | — | `MAY_F` |
+| ESCUELITA - MIXTO, U9 - MIXTO, U11 - MIXTO | cualquiera | se saltea |
+| U13 - MIXTO | Femenino | se saltea |
+| U15, U17 y U21 - FEMENINO | — | se saltea |
+| U13 - MIXTO sin rama, o texto desconocido | — | se saltea |
+
+**Se saltean con aviso** las categorías que Semillero no tiene: Escuelita,
+U9, U11 y las femeninas menores, incluida una chica de U13 (no existe
+`U13F`). El import dice cuántas filas quedaron afuera y por qué, y no guarda
+nada de ellas. `MAY_M` nunca llega por este formulario. Cuando Semillero sume
+una categoría, se agrega una fila al mapeo.
+
+**Quién es quién.** No hay clave estable: el jugador se reconoce por apellido
++ nombre + fecha de nacimiento, dentro del club.
+- Con fecha igual y nombre que coincide, es el mismo jugador.
+- Ficha sin fecha (vino de la CABB) y nombre que coincide: es una sugerencia
+  que el profe confirma. El dedup del import CABB (`jugadores_del_club_para_dedup`)
+  se reusa sólo para leer candidatos; la lógica de `parserCabb.js` no se toca.
+- Homónimos con distinta fecha son dos jugadores. Si dos fichas coinciden, el
+  profe elige.
+- **Cambio de categoría de un año a otro:** el chico ya existe en el club
+  (es único por club, no por categoría). El import le suma la pertenencia al
+  plantel nuevo y el vínculo con la familia sigue igual, porque es con el
+  jugador.
+
+En Semillero, el plantel suma **"Importar inscriptos"** (entrenador asignado,
+como el import CABB):
+- Toma sólo las filas que mapean a la categoría de ese plantel.
+- Vista previa por fila: "es este jugador", "ficha nueva" o "no es de acá".
+- El profe confirma y una RPC `security invoker` hace todo en una
+  transacción, con verificación de rollback: crea la ficha y la pertenencia
+  si hace falta, completa `fecha_nacimiento` si estaba vacía y anota el mail.
+- Así se cumple el resguardo 4: el padre no crea jugadores, el profe sí. Y
+  como el plantel fija el club, nadie se vincula con un chico de otro club.
+- Chico que no está en el padrón: no hay vínculo hasta que el profe lo
+  importe. Al entrar, el padre ve *"Todavía no encontramos a tu hijo. El club
+  lo suma cuando procesa la inscripción: volvé en unos días."*
+- Es el tercer formato de planilla. Antes de escribirlo se decide con Tomás si
+  se arma el registro de parsers de CLAUDE.md.
+
+## 4. Datos y frontera
+
+`miembro_club` no se toca. Igual que la cuenta de jugador (spec 2026-09-20 §3),
+**la familia no recibe `select` sobre ninguna tabla de dominio**, sólo
+`execute` sobre sus funciones. Así la exclusión de estadísticas, mediciones y
+misiones no depende de acordarse de cada tabla. Un test de contrato falla si
+aparece un grant fuera de la lista declarada. Ninguna policy existente se
+modifica: el import escribe `jugador` y `pertenencia` con los permisos que el
+entrenador ya tiene.
+
+- **`responsable_jugador`** `(id, club_id, jugador_id, email, cargado_por,
+  cargado_en)`: el mail en minúsculas, único por `(jugador_id, email)`. Lo
+  escribe y lo lee el staff del plantel (RLS por `puede_escribir_plantel`) y
+  lo corrige el mismo profe desde la ficha (el coordinador no lo lee: ve los
+  vínculos ya hechos). Es dato del adulto, no del chico.
+- **`vinculo_familia`** `(id, user_id, club_id, jugador_id, via, desde,
+  hasta, cerrado_por)`, con `via` = `'mail'` hoy. Único parcial
+  `(user_id, jugador_id) where hasta is null`. Sin insert ni delete del
+  cliente. La baja es un cierre sellado por trigger, no un borrado: tiene que
+  poder saberse quién estuvo vinculado a qué chico. Un vínculo cerrado por el
+  coordinador no se vuelve a abrir solo.
+- Patrón 0026: `revoke all`, grant por columna, RLS, trigger de sellado.
+
+| Función | Quién | Qué hace |
+|---|---|---|
+| `importar_inscriptos(payload)` | entrenador del plantel | §3. `security invoker`. |
+| `vincular_por_mail()` | autenticado, mail confirmado, sin staff ni cuenta de jugador | crea los vínculos que falten para su mail. `security definer`. |
+| `mis_chicos()` | familia | nombre limpio, categoría vigente y club de cada vínculo abierto. |
+| `vinculos_familia_del_club(club)` | coordinador | todos, con chico, categoría, fecha, vía, nombre de Auth y mail enmascarado. |
+| `cerrar_vinculo_familia(id)` | coordinador del club | baja. |
+
+Un profe que además es padre queda para después: anotado como límite.
+
+## 5. Pantallas
+
+- **"Todavía no tenés club"** (la puerta de entrada desde el portal): antes de
+  mostrarse llama a `vincular_por_mail()`. Si hay vínculos, entra al shell
+  familia; si no, suma el aviso de §3. Para el staff no agrega llamadas.
+- Shell `modo = 'familia'` con una pantalla, **Mis chicos**.
+- **Plantel → Importar inscriptos** (§3).
+- **Coordinación → Familias**: la lista de vínculos y "Dar de baja".
+- **Ficha del chico**: el staff ve y corrige los mails de responsables.
+- Estética interna clara, mobile-first, áreas táctiles ≥44px.
+
+**Textos para familias** (pedido de Tomás: sin suponer que saben de
+computadoras). En el alta y en Mis chicos, textos cortos, en voseo y con pasos
+numerados que digan: qué es Semillero, qué pueden hacer acá (ver a sus hijos
+vinculados y nada más), dónde se carga cada cosa (los formularios y los
+documentos van por la página del básquet, no por WhatsApp) y qué hacer si no
+ven a su hijo: *"Avisale al coordinador"*. Mostrar con qué mail entraron, para
+que se note si es otro del que usaron en el formulario.
+
+Capas: repo nuevo `src/data/repos/familia.js` + línea en la fachada. Lógica
+pura en `src/data/inscriptos.js`: leer la pestaña, filtrar por categoría,
+normalizar mail, armar el payload. Largos en `limites.js` con su `check`.
+
+## 6. Resguardos
+
+1. La familia ve sólo lo no sensible de sus hijos vinculados, más lo público.
+   Estadísticas, mediciones y misiones quedan fuera por construcción (§4).
+2. Control posterior: el coordinador ve y da de baja.
+3. **Cuando un módulo futuro sume contenido sensible para la familia
+   (asistencia, prompt 04; aranceles, prompt 09), su spec revisa si el
+   vínculo necesita aprobación del coordinador, o el código B, antes de
+   mostrarlo.** La columna `via` existe para eso.
+4. El padre no crea jugadores ni se vincula fuera de su club (§3).
+
+## 7. Verificación
+
+- Tests puros: `tests/inscriptos.test.js` (columnas, filtro por categoría,
+  mail inválido o vacío, filas repetidas).
+- Contratos: `tests/contratoAccesoFamilia.test.js` (grants exactos) y
+  `tests/contratoLimites.test.js` (largos).
+- `tests/verificarCuentasFamilia.sql`, con usuarios sintéticos y rollback:
+  - la familia A no ve los chicos de B;
+  - ninguna familia lee `jugador`, `estadistica_jugador_partido`, mediciones,
+    misiones ni `responsable_jugador` por PostgREST;
+  - sin vínculos o con el vínculo cerrado no ve nada;
+  - un mail sin confirmar no vincula y un vínculo cerrado no se reabre;
+  - el import de un profe en un plantel ajeno falla;
+  - profe y coordinador ven lo mismo que antes.
+- Más `tests/rollback0057.sql`.
+- `grep` de `service_role` en el repo y en `public/` + `src/`: cero.
+- `npm run test:q` en verde antes de cada commit.

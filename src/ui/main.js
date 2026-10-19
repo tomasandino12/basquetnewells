@@ -1,7 +1,7 @@
 import {
   obtenerSesionActual, obtenerClubesDelEntrenador, obtenerPlantelesDelClub, cerrarSesion,
   obtenerMisRoles, obtenerMisPlantelesAsignados, obtenerMiUsuario, obtenerMiFicha,
-  guardarErrorDeCliente, yaAceptoLegal,
+  guardarErrorDeCliente, yaAceptoLegal, vincularPorMail, obtenerMisChicos,
 } from '../data/repositorio.js';
 import { necesitaNombre, nombreSugerido, nombreDeUsuario, quiereSerJugador } from '../data/cuenta.js';
 import { VERSION_LEGAL } from '../data/legal.js';
@@ -18,7 +18,7 @@ import {
 import { crearHistorial } from './historial.js';
 import {
   setClubActual, obtenerClubActual, setPlanteles, limpiarSesion, setRoles, obtenerModo, setModo,
-  setCuenta, setFichaJugador, setPlantelActivoId, obtenerRoles, obtenerCuenta,
+  setCuenta, setFichaJugador, setPlantelActivoId, obtenerRoles, obtenerCuenta, setChicos,
 } from './sesion.js';
 import { GUIAS, guiaParaAbrir } from '../data/guias.js';
 import { claveGuia, yaVista } from './guiaVista.js';
@@ -260,6 +260,32 @@ async function fichaDelJugador() {
   }
 }
 
+/**
+ * Los chicos de una cuenta de familia, o []. Primero crea los vínculos que
+ * falten para su mail (0057); a quien no es familia (un profe dado de baja,
+ * una cuenta sin nada) la base le contesta 42501 o vacío, y sigue viendo
+ * "todavía no tenés club" como siempre. Un error nunca es un fallo de arranque.
+ */
+async function chicosDeLaFamilia() {
+  try {
+    await vincularPorMail();
+    return await obtenerMisChicos();
+  } catch {
+    return [];
+  }
+}
+
+/** Shell de la familia: una pestaña, sin categorías ni cambio de modo. */
+async function entrarComoFamilia(chicos) {
+  setClubActual({ id: null, nombre: chicos[0].clubNombre });
+  setChicos(chicos);
+  setRoles({ esFamilia: true });
+  setPlanteles([]);
+  mostrarApp();
+  await ir(pantallaInicialDelModo());
+  abrirGuiaSiFalta();
+}
+
 /** Shell del jugador: sin categorías ni cambio de modo, sólo sus tres pestañas. */
 async function entrarComoJugador(ficha) {
   setClubActual({ id: ficha.clubId, nombre: ficha.clubNombre });
@@ -348,6 +374,11 @@ async function entrarConSesion() {
     const ficha = await fichaDelJugador();
     if (ficha) {
       await entrarComoJugador(ficha);
+      return;
+    }
+    const chicos = await chicosDeLaFamilia();
+    if (chicos.length) {
+      await entrarComoFamilia(chicos);
       return;
     }
     const sesion = await sesionSilenciosa();

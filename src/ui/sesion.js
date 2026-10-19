@@ -3,10 +3,11 @@
 let clubActual = null;
 let planteles = [];
 let plantelActivoId = null;
-let roles = { esEntrenador: false, esCoordinador: false, esJugador: false };
+let roles = { esEntrenador: false, esCoordinador: false, esJugador: false, esFamilia: false };
 let modo = 'entrenar';
 let cuenta = null;
 let fichaJugador = null;
+let chicos = [];
 
 /** { id, email, nombre } de quien usa la app. nombre puede ser null (cuentas anteriores a 0019). */
 export function setCuenta(nueva) {
@@ -58,12 +59,14 @@ export function setRoles(nuevos) {
     esEntrenador: nuevos.esEntrenador === true,
     esCoordinador: nuevos.esCoordinador === true,
     esJugador: nuevos.esJugador === true,
+    esFamilia: nuevos.esFamilia === true,
   };
   if (roles.esEntrenador) modo = 'entrenar';
   else if (roles.esCoordinador) modo = 'coordinar';
   // Sin ningún rol, entrenar y no coordinar: sin planteles queda vacío, en
   // vez de mostrarle a alguien sin acceso la interfaz de coordinación.
-  else modo = roles.esJugador ? 'jugar' : 'entrenar';
+  else if (roles.esJugador) modo = 'jugar';
+  else modo = roles.esFamilia ? 'familia' : 'entrenar';
 }
 
 export function obtenerRoles() {
@@ -79,6 +82,7 @@ export function setModo(nuevo) {
   if (nuevo === 'coordinar' && roles.esCoordinador) modo = 'coordinar';
   if (nuevo === 'entrenar' && roles.esEntrenador) modo = 'entrenar';
   if (nuevo === 'jugar' && roles.esJugador) modo = 'jugar';
+  if (nuevo === 'familia' && roles.esFamilia) modo = 'familia';
 }
 
 /** La ficha propia de un jugador con cuenta ({ jugadorId, clubId, planteles… }); null si no lo es. */
@@ -90,12 +94,22 @@ export function obtenerFichaJugador() {
   return fichaJugador;
 }
 
+/** Los chicos vinculados a una cuenta de familia ([{ vinculoId, nombre, categorias }]). */
+export function setChicos(lista) {
+  chicos = [...lista];
+}
+
+export function obtenerChicos() {
+  return chicos;
+}
+
 export function limpiarSesion() {
   clubActual = null;
   planteles = [];
   plantelActivoId = null;
-  roles = { esEntrenador: false, esCoordinador: false, esJugador: false };
+  roles = { esEntrenador: false, esCoordinador: false, esJugador: false, esFamilia: false };
   modo = 'entrenar';
   cuenta = null;
   fichaJugador = null;
+  chicos = [];
 }

@@ -28,6 +28,8 @@ export const LIMITE = {
   listaCorta: 200,
   nota: 2000,
   bloque: 100,
+  // RFC 5321: un mail no pasa de 254 caracteres.
+  mail: 254,
   corto: 100,
   nombreLinea: 200,
   notasLinea: 1000,
@@ -81,4 +83,5 @@ export const LIMITES_POR_COLUMNA = {
   'mision_jugador.comentario': LIMITE.comentarioMision,
   'mision_equipo.texto': LIMITE.textoMision,
   'mision_equipo.comentario': LIMITE.comentarioMision,
+  'responsable_jugador.email': LIMITE.mail,
 };

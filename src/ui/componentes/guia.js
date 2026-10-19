@@ -1,7 +1,7 @@
 import { html, crudo } from '../html.js';
 import { $ } from '../dom.js';
 import { abrirHoja, cerrarHoja, hojaAbierta } from './hoja.js';
-import { TABS, TABS_COORDINACION, TABS_JUGADOR } from '../chrome.js';
+import { TABS, TABS_COORDINACION, TABS_JUGADOR, TABS_FAMILIA } from '../chrome.js';
 import { GUIAS, pasosDeGuia, estadoDePaso } from '../../data/guias.js';
 import { claveGuia, marcarVista } from '../guiaVista.js';
 
@@ -16,7 +16,7 @@ import { claveGuia, marcarVista } from '../guiaVista.js';
  * no se la volvemos a mostrar.
  */
 
-const PESTANAS = [...TABS, ...TABS_COORDINACION, ...TABS_JUGADOR];
+const PESTANAS = [...TABS, ...TABS_COORDINACION, ...TABS_JUGADOR, ...TABS_FAMILIA];
 
 const iconoDe = (pestana) => PESTANAS.find((t) => t.id === pestana)?.icono ?? '';
 

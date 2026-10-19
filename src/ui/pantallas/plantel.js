@@ -9,6 +9,7 @@ import { ir } from '../main.js';
 import { $ } from '../dom.js';
 import { textoDeError } from '../errores.js';
 import { abrirSolicitudes } from './aprobarJugador.js';
+import { abrirImportarInscriptos } from './importarInscriptos.js';
 import { logrosDelEquipo } from '../../data/misiones.js';
 import { bloqueLogros } from '../componentes/logrosDelEquipo.js';
 import { cargarBloqueMisiones } from './misionesAcceso.js';
@@ -69,6 +70,7 @@ function estadoVacioHtml(categoria) {
       <div class="acciones">
         <button class="btn" id="btn-vacio-importar">Cargar un partido de la CABB</button>
         <button class="btn sec" id="btn-vacio-manual">Agregar jugador a mano</button>
+        <button class="btn sec" id="btn-vacio-inscriptos">Importar inscriptos</button>
       </div>
     </div>
   `;
@@ -139,6 +141,7 @@ export async function renderPlantel() {
     ligarSolicitudes(solicitudes, jugadores, club, plantel);
     $('btn-vacio-importar').addEventListener('click', () => ir('p-datos'));
     $('btn-vacio-manual').addEventListener('click', () => abrirAltaManual());
+    $('btn-vacio-inscriptos').addEventListener('click', () => abrirInscriptos(club, plantel, jugadores));
     return;
   }
 
@@ -151,12 +154,17 @@ export async function renderPlantel() {
       <div class="lista-2col" id="plantel-lista">${jugadores.map((j) => filaJugador(j, porJugador.get(j.id) ?? null)).join('')}</div>
       ${logros ? bloqueLogros(logros) : ''}
     </div>
-    <div class="pie-fijo"><button class="btn sec" id="btn-agregar-jugador">Agregar jugador a mano</button></div>
+    <div class="pie-fijo"><button class="btn sec" id="btn-agregar-jugador">Agregar jugador a mano</button><button class="btn sec" id="btn-importar-inscriptos">Importar inscriptos</button></div>
   `;
   $('btn-agregar-jugador').addEventListener('click', () => abrirAltaManual());
+  $('btn-importar-inscriptos').addEventListener('click', () => abrirInscriptos(club, plantel, jugadores));
   cargarBloqueMisiones('plantel-misiones', club, plantel, { lista: true });
   ligarSolicitudes(solicitudes, jugadores, club, plantel);
   contenedor().querySelectorAll('[data-jugador]').forEach((boton) => {
     boton.addEventListener('click', () => abrirFicha(boton.dataset.jugador));
   });
+}
+
+function abrirInscriptos(club, plantel, jugadores) {
+  abrirImportarInscriptos({ club, plantel, jugadores, alCambiar: () => renderPlantel() });
 }

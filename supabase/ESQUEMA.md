@@ -442,6 +442,30 @@ trigger sella `usuario` y `aceptado_en`. No hay update ni delete; si se borra
 la cuenta, sus filas se borran en cascada. Verificación:
 `tests/verificarAceptacionLegal.sql`.
 
+## Cuentas de familia (0057)
+
+Spec: `docs/superpowers/specs/2026-10-18-cuentas-familia-design.md`.
+
+- `responsable_jugador (id, club_id, jugador_id, email, cargado_por, cargado_en)`:
+  el mail verificado del adulto que inscribió al chico, en minúsculas
+  (`check`), único por `(jugador_id, email)`. Lo lee, carga y quita el
+  entrenador de un plantel donde el chico está vigente; coordinación no lo
+  lee. Sin update.
+- `vinculo_familia (id, user_id, club_id, jugador_id, via, desde, hasta,
+  cerrado_por)`: qué cuenta de familia ve a qué chico. **Sin policies ni
+  grants**: sólo se toca por funciones. Se cierra, no se borra; el trigger
+  sella `hasta` y `cerrado_por`; un vínculo cerrado no se reabre solo.
+  `via` vale `'mail'`; existe para que un módulo con contenido sensible
+  (asistencia, aranceles) pueda exigir otra vía.
+- La familia **no tiene `select` sobre ninguna tabla**: `vincular_por_mail()`
+  (crea los vínculos del mail de quien llama, sólo con el mail confirmado y
+  sin ser staff ni jugador) y `mis_chicos()` (nombre y categoría). Para el
+  entrenador, `importar_inscriptos(payload)` (`security invoker`, una
+  transacción); para el coordinador, `vinculos_familia_del_club(club)` y
+  `cerrar_vinculo_familia(id)`. Contrato de grants:
+  `tests/contratoAccesoFamilia.test.js`. Verificación:
+  `tests/verificarCuentasFamilia.sql` (12 casos); deshacer: `tests/rollback0057.sql`.
+
 ## Orden de persistencia de una importación
 
 `src/data/repositorio.js` expone una función por operación de base de datos, sin transacción que las envuelva. Persistir un partido importado requiere, en este orden:
