@@ -17,7 +17,7 @@
   <p class="version">Versión vigente desde el <time data-version="2026-10-18" datetime="2026-10-18">18 de octubre de 2026</time></p>
 
   <div class="resumen">
-    <p><strong>En pocas palabras:</strong> la app guarda lo necesario para seguir la formación de los jugadores del club. Los datos son del club, sólo los ve quien trabaja con ese jugador, no se venden, no se usan para publicidad y Semillero no usa analíticas ni cookies de seguimiento (el calendario de la página pública del básquet lo muestra Google, con sus propias cookies). Para ver, corregir o borrar tus datos, pedíselo al club.</p>
+    <p><strong>En pocas palabras:</strong> la app guarda lo necesario para seguir la formación de los jugadores del club. Los datos son del club, sólo los ve quien trabaja con ese jugador (su familia ve únicamente su nombre y su categoría), no se venden, no se usan para publicidad y Semillero no usa analíticas ni cookies de seguimiento (el calendario de la página pública del básquet lo muestra Google, con sus propias cookies). Para ver, corregir o borrar tus datos, pedíselo al club.</p>
   </div>
 
   <h2>1. Quién es responsable de tus datos</h2>
@@ -32,7 +32,8 @@
     <li>Mediciones de entrenamiento: tiro, altura, peso, salto, velocidad, sprint y resistencia.</li>
     <li>Plan físico, sesiones de entrenamiento y los ejercicios o recursos que les asigna su entrenador.</li>
   </ul>
-  <p><strong>De quienes tienen cuenta</strong> (entrenadores, coordinación y jugadores): nombre, mail y, si entrás con Google, el nombre y el mail de esa cuenta. La contraseña la guarda el proveedor de autenticación cifrada: nadie puede leerla, ni el club ni el desarrollador. Los jugadores que piden acceso cargan también su fecha de nacimiento, para que el entrenador los reconozca.</p>
+  <p><strong>De quienes tienen cuenta</strong> (entrenadores, coordinación, jugadores y familias): nombre, mail y, si entrás con Google, el nombre y el mail de esa cuenta. La contraseña la guarda el proveedor de autenticación cifrada: nadie puede leerla, ni el club ni el desarrollador. Los jugadores que piden acceso cargan también su fecha de nacimiento, para que el entrenador los reconozca.</p>
+  <p><strong>De las familias (madre, padre o tutor):</strong> el <strong>mail del responsable</strong> de cada jugador, que el profe de la categoría carga en la app desde la planilla de inscripciones, junto con el nombre, la fecha de nacimiento y la categoría del jugador. Normalmente es el mail de la cuenta de Google con la que se completó el formulario de inscripción (el profe puede corregirlo en la ficha del jugador), y se guarda con quién lo cargó y cuándo. Sirve sólo para vincular la cuenta de la familia con su hijo o hija. De quien crea su cuenta de familia se guarda lo mismo que de cualquier cuenta (nombre y mail) y con qué jugadores quedó vinculada, desde cuándo y, si se da de baja, quién y cuándo.</p>
   <p><strong>Datos técnicos:</strong> cuando la app falla, se guarda un registro del error (en qué pantalla pasó y el tipo de navegador) para poder arreglarlo. Se depura para que no incluya datos de jugadores.</p>
   <p><strong>Lo que la app no guarda:</strong> DNI, domicilio, teléfono, fotos, ubicación ni diagnósticos médicos. Los videos que se usan para medir el salto se procesan en el teléfono y no se suben a ningún lado.</p>
   <p><strong>Formularios de las familias:</strong> la inscripción, la documentación (por ejemplo el DNI y las fotos), los datos de salud y los comprobantes de pago se completan en <strong>formularios de Google</strong> que ofrece la página pública del básquet. Esos datos los recibe y los administra <strong>el club</strong>, que es su responsable, y se guardan en el Google Drive del club: <strong>no se guardan en la app ni en su base de datos</strong>. Sobre ellos valen los mismos derechos de la sección 9, que se ejercen ante el club.</p>
@@ -43,16 +44,17 @@
 
   <h2>4. Quién puede verlos</h2>
   <ul>
-    <li><strong>Entrenadores:</strong> sólo los jugadores de las categorías que tienen asignadas.</li>
-    <li><strong>Coordinación del club:</strong> la información del club para organizar el trabajo.</li>
+    <li><strong>Entrenadores:</strong> sólo los jugadores de las categorías que tienen asignadas, y los mails de los responsables de esos jugadores.</li>
+    <li><strong>Coordinación del club:</strong> la información del club para organizar el trabajo. También ve qué cuentas de familia están vinculadas con qué jugadores (con el mail parcialmente oculto) y puede darlas de baja.</li>
     <li><strong>Cada jugador con cuenta:</strong> sólo lo suyo.</li>
+    <li><strong>Cada familia con cuenta:</strong> sólo el nombre, el club y la categoría de los jugadores a los que está vinculada. Nunca estadísticas, mediciones ni misiones.</li>
     <li><strong>El desarrollador:</strong> sólo cuando hace falta para el mantenimiento técnico.</li>
   </ul>
   <p>Nadie de otro club puede ver los datos de este. Estos permisos los hace cumplir la propia base de datos, no sólo la pantalla.</p>
   <p>La altura, el peso y el rendimiento físico se tratan con el mismo cuidado que los datos de salud: sólo los ve quien trabaja con ese jugador.</p>
 
   <h2>5. Chicos y chicas menores de edad</h2>
-  <p>La mayoría de los jugadores son menores. Sus datos los carga el club, con el consentimiento que las familias dan en la inscripción. Un jugador menor de 18 que crea su propia cuenta necesita que un adulto responsable haya leído esta política y los Términos y lo haya autorizado.</p>
+  <p>La mayoría de los jugadores son menores. Sus datos los carga el club, con el consentimiento que las familias dan en la inscripción. Una cuenta de familia se vincula sola con el jugador cuando entra con el mismo mail con el que se inscribió (verificado por Google o por la confirmación del mail): no se compara por nombre ni se pide ningún dato extra. Si el vínculo no corresponde, el club lo da de baja; la baja lo cierra y no se reabre sola. Un jugador menor de 18 que crea su propia cuenta necesita que un adulto responsable haya leído esta política y los Términos y lo haya autorizado.</p>
 
   <h2>6. Dónde se guardan y quién más interviene</h2>
   <p>Los datos se guardan en servidores de <strong>Supabase</strong> ubicados en <strong>São Paulo, Brasil</strong>. Brasil no figura en la lista de países que la autoridad argentina considera con protección adecuada: al aceptar esta política prestás tu consentimiento para esa transferencia. Supabase sólo guarda los datos por cuenta del club y no los usa para otra cosa.</p>
