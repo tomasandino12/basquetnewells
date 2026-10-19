@@ -45,7 +45,7 @@ Ojo: importar exige profe con el plantel asignado; el coordinador no puede. Tom�
 
 ## 3. Datos de emergencia para el profe
 
-**Qué se guarda** (tabla `emergencia_jugador`, 1 a 1 con `jugador`): teléfono del adulto (30), contacto de urgencia nombre y teléfono (80), alertas como lista cerrada (`desmayos, taquicardia, convulsiones, epilepsia, meningitis, diabetes, perdida_conocimiento, asma`; `{}` = "ninguna marcada en la inscripción"), alergias (300), medicación (300), obra social (60), `actualizado_en/por` sellados. NULL = no se sabe. Afuera a propósito: grupo sanguíneo (en la guardia lo testean), número de afiliado (lo trae la familia), cirugías.
+**Qué se guarda** (tabla `emergencia_jugador`, 1 a 1 con `jugador`): teléfono del adulto (30), contacto de urgencia nombre y teléfono (80), alertas como lista cerrada (`desmayos, taquicardia, convulsiones, epilepsia, meningitis, diabetes, perdida_conocimiento, asma`; `{}` = "ninguna marcada en la inscripción"), alergias (300), medicación (300), indicación médica especial (300), obra social (60), `actualizado_en/por` sellados. NULL = no se sabe. Afuera a propósito: grupo sanguíneo (en la guardia lo testean), número de afiliado (lo trae la familia), cirugías.
 
 **Quién lo ve (RLS)**: el profe con asignación vigente a un plantel donde el chico tiene pertenencia vigente, y el coordinador de su club. Ni el jugador, ni la familia (ninguna función de 0029/0057 lo devuelve), ni un profe de otro plantel. Escribe sólo la importación (`importar_emergencias`, `security invoker`, `puede_escribir_plantel`), que pisa lo anterior. **Se borra solo**: un trigger borra la fila cuando el chico se queda sin ninguna pertenencia vigente (por eso `confirmar_pases` inserta antes de cerrar).
 
@@ -53,13 +53,13 @@ Ojo: importar exige profe con el plantel asignado; el coordinador no puede. Tom�
 
 **Sin señal (recomendación)**: se queda **en memoria**: si el profe la abre antes de arrancar, sigue en pantalla aunque se corte la señal, mientras no recargue. No se guarda nada en el celular. Por qué: el service worker de portal-pwa no guarda `/src` a propósito, así que sin red la app ni arranca en frío; una copia en el celular sólo serviría con otro trabajo de offline y dejaría salud de menores en un aparato que se pierde. Alternativa, si Tomás la prefiere: "Llevar a la cancha", copia del plantel en el celular por 12 h, borrada al salir de la cuenta o al vencer; necesita además que el SW guarde la app.
 
-**Cómo llega**: la inscripción suma una pestaña "Emergencias para Semillero" (Apellido y nombre | Fecha de nacimiento | Teléfono del adulto | Urgencia | Afecciones | Alergias | Medicación | Obra social), sólo con las filas con el consentimiento de datos tildado. Plantel → "Importar emergencias": cruza por nombre **sin importar el orden** de las palabras + fecha contra los chicos del plantel; no crea jugadores. Texto más largo que el límite: se recorta y avisa "revisalo en la planilla". Para 2026 el mismo prompt del punto 2 arma esa pestaña desde las respuestas.
+**Cómo llega**: la inscripción suma una pestaña "Emergencias para Semillero" (Apellido y nombre | Fecha de nacimiento | Teléfono del adulto | Urgencia | Afecciones | Alergias | Medicación | Indicación médica | Obra social), sólo con las filas con el consentimiento de datos tildado. Plantel → "Importar emergencias": cruza por nombre **sin importar el orden** de las palabras + fecha contra los chicos del plantel; no crea jugadores. Texto más largo que el límite: se recorta y avisa "revisalo en la planilla". Para 2026 el mismo prompt del punto 2 arma esa pestaña desde las respuestas.
 
 **Alternativa: no guardarlo y abrir la planilla de Google.** A favor: Semillero no toca salud ni cambia la política. En contra: cada profe necesitaría acceso a toda la planilla (DNI, domicilio y ficha médica de **todas** las categorías), la búsqueda en Sheets en el celular es lenta justo cuando apura, y no caduca cuando el profe deja el plantel. **Recomiendo guardar el mínimo en Semillero**: expone menos datos, a menos gente y por menos tiempo.
 
 **Legal (bloqueante para publicar)**: `privacidad.html` hoy dice que la app **no guarda teléfono ni diagnósticos médicos**. Hay que cambiarlo (salud = dato sensible, Ley 25.326 art. 7: consentimiento expreso, finalidad, quién accede, cuándo se borra) y el formulario tiene que nombrar a Semillero en el consentimiento. Lo coordina la sesión coordinadora junto con los cambios legales del portal; esta rama no toca `public/legal/`, y la pantalla de emergencias no se publica antes que la política.
 
-## Decisiones para Tomás
-1. Sin señal: ¿en memoria (recomendado) o "Llevar a la cancha" por 12 h?
-2. ¿Sumamos "Indicación médica especial" (texto corto) a la emergencia? El formulario la pide aparte.
-3. ¿El coordinador ve la emergencia de todo el club? Es una excepción a 0018 (hoy no ve filas de chicos).
+## Decisiones de Tomás (19/10)
+1. Sin señal: **en memoria** ("no creo que no haya señal"). Nada se guarda en el celular.
+2. **Se suma "Indicación médica especial"** (300), de "¿Es propenso a alguna enfermedad o tiene indicación médica especial?". Y para quien tenga acceso en Google, la ficha y la vista de emergencia llevan **"Ver ficha completa en Google"**: un link de búsqueda en Drive armado con el nombre (`linkCarpetaEnDrive`, `src/data/enlacesGoogle.js`, compartido con el panel de papeles y pagos de 0060). No trae ningún dato más: Google decide quién lo abre.
+3. **El coordinador ve las emergencias** de todo su club.

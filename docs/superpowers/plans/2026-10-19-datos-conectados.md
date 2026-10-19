@@ -36,7 +36,7 @@ Spec: `docs/superpowers/specs/2026-10-19-datos-conectados-design.md`. Migración
 
 ## Task 4 — Migración 0059 (Opus)
 - Archivos: `supabase/migrations/0059_temporada_y_emergencia.sql`, `src/data/limites.js`, `src/data/emergencias.js` (sólo la lista `AFECCIONES`), `tests/contratoTemporada.test.js`, `tests/contratoEmergencia.test.js`, `tests/contratoLimites.test.js` (si hace falta registrar columnas).
-- Contenido: `abrir_temporada`, `pases_de_temporada`, `confirmar_pases` (definer, `es_coordinador_de`, `search_path = ''`); tabla `emergencia_jugador` patrón 0026 (revoke all, grant select + insert/update por columna, RLS: ver = profe con plantel vigente del chico o coordinador del club; escribir = `puede_escribir_plantel`), checks de largo, `alertas <@ array[...]`, trigger de sellado de `actualizado_*`, trigger en `pertenencia` que borra la emergencia si no queda ninguna vigente; `importar_emergencias(payload)` invoker; revoke/grant de execute.
+- Contenido: `abrir_temporada`, `pases_de_temporada`, `confirmar_pases` (definer, `es_coordinador_de`, `search_path = ''`); tabla `emergencia_jugador` patrón 0026 (revoke all, grant select + insert/update por columna, RLS: ver = profe con plantel vigente del chico o coordinador del club; escribir = `puede_escribir_plantel`), checks de largo, `alertas <@ array[...]`, columna `indicacion` (300), trigger de sellado de `actualizado_*`, trigger en `pertenencia` que borra la emergencia si no queda ninguna vigente; `importar_emergencias(payload)` invoker; revoke/grant de execute.
 - Acepta: probado en local dentro de `begin … rollback` (sin `db reset`): coordinador abre 2027 y pasa chicos; profe de otro plantel y familia leen 0 filas de emergencia; jugador sin pertenencia vigente pierde la fila; `confirmar_pases` no la borra. Script de rollback de 0059 probado igual.
 - Tests: `afecciones iguales en SQL y JS`, `limites de emergencia iguales`, `confirmar_pases inserta antes de cerrar`, `funciones nuevas sin execute para anon`, `emergencia sin grant de delete`.
 - **No** `db push`: avisar a la coordinadora (backup).
@@ -54,12 +54,12 @@ Spec: `docs/superpowers/specs/2026-10-19-datos-conectados-design.md`. Migración
 
 ## Task 7 — Emergencias: parser y lógica
 - Archivos: `src/parser/parserEmergencias.js`, `src/data/emergencias.js`, `tests/parserEmergencias.test.js`, `tests/emergencias.test.js`, fixture sintético en `tests/fixtures/sintetico/`.
-- Parser: 8 encabezados de la spec; reusa `leerFecha` de `parserInscriptos.js`. Lógica: `leerAfecciones(texto)` (lo que escribe Forms, separado por comas; desconocidas → aviso), `recortar(texto, limite)` con aviso, `cruzarEmergencias(filas, jugadores)` por palabras sin orden + fecha.
+- Parser: 9 encabezados de la spec (con "Indicación médica"); reusa `leerFecha` de `parserInscriptos.js`. Lógica: `leerAfecciones(texto)` (lo que escribe Forms, separado por comas; desconocidas → aviso), `recortar(texto, limite)` con aviso, `cruzarEmergencias(filas, jugadores)` por palabras sin orden + fecha.
 - Tests: `afecciones de Forms a la lista cerrada`, `afeccion desconocida avisa`, `cruza aunque el nombre venga invertido`, `misma persona con otra fecha no cruza`, `texto largo se recorta con aviso`, `fila sin fecha se saltea`.
 
 ## Task 8 — Emergencias: pantallas
 - Archivos: `src/data/repos/jugadores.js` (o `repos/emergencias.js` + fachada), `src/ui/pantallas/importarEmergencias.js`, `emergencias.js` (lista del plantel), botón en la cabecera de `fichaJugador.js`, entrada en `plantel.js` y en Coordinación.
-- Se pide al abrir, nada en `localStorage`; `tel:` en teléfonos; alertas arriba. Variante "Llevar a la cancha" sólo si Tomás la elige.
+- Se pide al abrir, nada en `localStorage` (Tomás eligió en memoria); `tel:` en teléfonos; alertas arriba. "Ver ficha completa en Google" en la ficha y en la vista de emergencia con `linkCarpetaEnDrive` (`src/data/enlacesGoogle.js` + `tests/enlacesGoogle.test.js`, compartido con 0060).
 - Acepta: verificado en el navegador como profe asignado, profe de otro plantel (no ve nada) y coordinador; `grep localStorage` no toca emergencias.
 
 ## Task 9 — Docs y aviso legal
