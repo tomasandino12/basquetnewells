@@ -77,3 +77,10 @@ Se queda: `portal.js`, CSP de Calendar, íconos, manifest, service worker y test
 ## 10. Aceptación
 
 `/` abre el portal negro sin scroll horizontal a 380 px, con un único pedido a Supabase (la función anónima); `/app` abre la landing de Semillero y el login con email y Google vuelve a `/app`; los links viejos de mail siguen andando; Manifest sin errores en `/app` y ninguno en `/`; Cache Storage sin `supabase.co`; un anónimo no puede leer ni escribir `formulario_portal` fuera de la función; un coordinador de otro club no ve ni edita los formularios de este; `npm run test:q` verde; las ramas en vuelo mergean sin conflictos.
+
+## 11. Ampliación del 19/10: consultas, QR y sponsors
+
+Pedidos de Tomás, aprobados por la coordinadora:
+- **Acceso destacado "Quiero jugar en Newell's"** arriba del portal, y **sección "Sumate como sponsor o colaborador"**: son formularios de la lista de la coordinación con un **destino** (migración **0061**: columna `destino`, un formulario por destino y club). Marcar por orden no alcanzaba: el portal tiene que saber cuál es cuál aunque se reordene o se cambie el título.
+- **QR impreso** a una dirección fija, **`/consultas`**, que redirige al formulario de consultas vigente (una ruta y no un ancla, porque el hash lo usa la vuelta del login). Cartel A4 y PNG generados sin dependencias (`npm run cartel-qr`), **como borrador hasta definir el dominio**.
+- **Logos de sponsors**: franja lista pero oculta; se cargan por un arreglo en `src/data/portal.js` con archivos en `public/sponsors/`. Una pantalla de carga con Storage queda propuesta, no construida.

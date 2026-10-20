@@ -215,6 +215,47 @@ comprobantes) viven en Google y **nunca pasan por Semillero ni por la base**.
 Quién los recibe y cómo se organizan en Drive: ver la guía de inscripción en
 Google (rama `claude/inscripcion-google-41cf4e`).
 
+### Dos lugares especiales: "Quiero jugar" y "Sumate como sponsor"
+
+Al agregar o editar un formulario, el selector **"Cómo se muestra en la página"**
+tiene tres opciones:
+
+- **Común**: va en la lista de formularios (inscripción, pase, rifas…).
+- **Quiero jugar en Newell's (consultas)**: se muestra **destacado, arriba de todo**
+  en el portal, con la ayuda paso a paso, y es el formulario al que lleva el QR
+  impreso (ver abajo).
+- **Sumate como sponsor o colaborador**: va en su propia sección del portal.
+
+Cada lugar especial es **único**: si marcás un formulario y otro ya lo tenía, la
+app te avisa ("Hoy lo tiene «X»: al guardar, ese formulario pasa a ser común") y
+se lo saca. Un formulario **oculto** no se muestra aunque conserve su lugar: el
+portal dice "Próximamente" (sponsors) o no muestra el acceso (consultas).
+
+### QR para imprimir: `/consultas`
+
+El cartel y el código QR (carpeta `docs/cartel-qr/`, guía en su `LEEME.md`) apuntan
+a una **dirección fija**, `/consultas`. Esa dirección **lleva sola al formulario de
+consultas que esté vigente**: si cambiás el formulario (editándolo o marcando otro
+como "Quiero jugar"), el QR ya impreso sigue funcionando. Si no hay ninguno
+abierto, la persona ve un mensaje claro con el enlace al portal.
+
+**El cartel está como BORRADOR ("no imprimir hasta definir el dominio")**: el QR
+lleva escrito el dominio, y si el portal cambia de dominio los carteles impresos
+quedan apuntando al viejo. Antes de imprimir, escaneá el cartel con un celular.
+
+### Logos de sponsors
+
+La franja de logos del portal está preparada y **oculta mientras no haya ninguno**.
+Para sumar uno hoy (es un cambio de código chico, con deploy): poner el archivo
+(png, jpg, webp o svg, sin espacios en el nombre) en `public/sponsors/` y agregarlo
+a `sponsors` en `src/data/portal.js`:
+`{ nombre: 'Ferretería Sur', logo: '/public/sponsors/ferreteria-sur.png', enlace: 'https://…' }`
+(el `enlace` es opcional y tiene que ser https). Un logo con otra ruta, sin nombre o
+cuyo archivo no está, no se muestra. Si más adelante son muchos o cambian seguido,
+la idea es una pantalla "Sponsors" como la de Formularios, con los logos en
+Supabase Storage (habría que sumar ese host a `img-src` de la política de
+seguridad); no está construida.
+
 ### Calendarios, información y contacto: archivo `src/data/portal.js`
 
 Estos tres sí son cambios de código (se hacen una vez y casi no cambian):
