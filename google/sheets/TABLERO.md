@@ -8,7 +8,7 @@ Spec: `docs/superpowers/specs/2026-10-18-inscripcion-google-design.md`. Todo son
 
 1. Crear la planilla **"Tablero <temporada>"** en la cuenta del básquet (no en la tuya personal).
 2. *Archivo → Configuración*: **configuración regional = Argentina**. Con eso las fórmulas de acá andan tal cual están escritas: argumentos separados por `;` y, dentro de `{ }`, columnas separadas por `\` y filas por `;`. (Si la planilla queda en otra región, no funcionan.)
-3. Vincular cada formulario con esta planilla (*Respuestas → Vincular con Hojas → Seleccionar hoja de cálculo existente*). Forms crea una pestaña por formulario y le pone "Respuestas de formulario 1". **Renombrarlas** exactamente así (con tilde): `Inscripción`, `Reinscripción`, `Aranceles`. Renombrar no rompe el vínculo.
+3. Vincular cada formulario con esta planilla (*Respuestas → Vincular con Hojas → Seleccionar hoja de cálculo existente*). Forms crea una pestaña por formulario y le pone "Respuestas de formulario 1". **Renombrarlas** exactamente así (con tilde): `Inscripción` y `Comprobantes`. Renombrar no rompe el vínculo.
 4. **No escribir nunca sobre esas pestañas**: Forms las reescribe cuando se cambian preguntas. Lo que se anota a mano va en `Entregas a mano` y `Pagos verificados`.
 5. Las fórmulas leen las pestañas por **letra de columna**, así que el orden de las preguntas de los formularios importa. El orden está en `google/formularios/FORMULARIOS.md` y tiene que coincidir con este mapa (un test lo comprueba):
 
@@ -18,28 +18,43 @@ En toda pestaña de respuestas: **A** = Marca temporal y **B** = Dirección de c
 
 | Pestaña | Columna | Título de la pregunta |
 |---|---|---|
-| Inscripción | C | DNI del jugador (sin puntos) |
-| Inscripción | D | Apellido del jugador |
-| Inscripción | E | Nombre del jugador |
+| Inscripción | C | ¿Ya completó la ficha del básquet la temporada pasada (2026)? |
+| Inscripción | D | DNI del jugador (sin puntos) |
+| Inscripción | E | Apellido del jugador |
+| Inscripción | F | Nombre del jugador |
 | Inscripción | G | Fecha de Nacimiento |
-| Inscripción | I | Categoría 2026 |
-| Inscripción | J | Rama |
-| Inscripción | AH | DNI jugador - frente |
-| Inscripción | AI | DNI jugador - dorso |
-| Inscripción | AJ | DNI adulto - frente |
-| Inscripción | AK | DNI adulto - dorso |
-| Inscripción | AL | Foto del jugador |
-| Inscripción | AM | Foto del adulto |
-| Reinscripción | C | DNI del jugador (sin puntos) |
-| Reinscripción | D | Apellido del jugador |
-| Reinscripción | E | Nombre del jugador |
-| Reinscripción | F | Categoría 2026 |
-| Reinscripción | G | Rama |
-| Reinscripción | AA | DNI jugador - frente |
-| Reinscripción | AB | DNI jugador - dorso |
-| Aranceles | C | DNI del jugador (sin puntos) |
-| Aranceles | F | Concepto |
-| Aranceles | G | Comprobante de pago |
+| Inscripción | H | Categoría |
+| Inscripción | I | Rama |
+| Inscripción | S | DNI jugador - frente |
+| Inscripción | T | DNI jugador - dorso |
+| Inscripción | U | DNI adulto - frente |
+| Inscripción | V | DNI adulto - dorso |
+| Inscripción | W | Foto del jugador |
+| Inscripción | X | Foto del adulto |
+| Inscripción | Y | DNI jugador - frente (reinscripción) |
+| Inscripción | Z | DNI jugador - dorso (reinscripción) |
+| Inscripción | AA | DNI adulto - frente (reinscripción) |
+| Inscripción | AB | DNI adulto - dorso (reinscripción) |
+| Inscripción | AC | Foto del jugador (reinscripción) |
+| Inscripción | AD | Foto del adulto (reinscripción) |
+| Inscripción | AE | ¿Cambió algo de salud desde 2026? |
+| Inscripción | AF | Obra Social / Prepaga / Seguro Médico |
+| Inscripción | AH | Alertas médicas |
+| Inscripción | AI | ¿Tiene alguna alergia? |
+| Inscripción | AJ | Alergia: a qué y qué hacer |
+| Inscripción | AK | ¿Toma medicación habitual? |
+| Inscripción | AL | Medicación: cuál y dosis |
+| Inscripción | AM | ¿Tiene que tener algo a mano? |
+| Inscripción | AO | ¿Es propenso a alguna enfermedad o tiene una indicación médica especial? |
+| Inscripción | AP | Adulto responsable - nombre y apellido |
+| Inscripción | AQ | Adulto responsable - WhatsApp |
+| Inscripción | AR | Contacto de urgencia - nombre y vínculo |
+| Inscripción | AS | Contacto de urgencia - teléfono |
+| Inscripción | BA | Consentimiento de Datos |
+| Inscripción | BB | Emergencias en Semillero |
+| Comprobantes | C | DNI del jugador (sin puntos) |
+| Comprobantes | F | Concepto |
+| Comprobantes | G | Comprobante de pago |
 
 ## 1. Hojas
 

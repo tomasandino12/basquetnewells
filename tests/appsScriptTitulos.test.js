@@ -28,23 +28,29 @@ function letraDe(n) { // 1 -> A
   return s;
 }
 
-const FORMS = ['Inscripción', 'Reinscripción', 'Comprobante de aranceles', 'Plantilla'];
+// Con login: A = marca temporal, B = mail verificado, la primera pregunta es la C. Sin login: la primera es la B.
+const CON_LOGIN = ['Inscripción', 'Comprobante de pago', 'Plantilla'];
+const SIN_LOGIN = ["Quiero jugar en Newell's", 'Quiero colaborar'];
+const FORMS = [...CON_LOGIN, ...SIN_LOGIN];
+const primeraLetra = (f) => (CON_LOGIN.includes(f) ? 3 : 2);
 
-test('todos los formularios arrancan con las 3 preguntas estándar de config.gs', () => {
+test('los formularios con login traen las 3 preguntas estándar de config.gs (en la Inscripción, justo después de "¿Ya completó…?")', () => {
   const estandar = [tituloDe('TITULO_DNI'), tituloDe('TITULO_APELLIDO'), tituloDe('TITULO_NOMBRE')];
-  for (const f of FORMS) {
-    assert.deepEqual(formulario(f).slice(0, 3).map((x) => x[1]), estandar, f);
+  for (const f of CON_LOGIN) {
+    const desde = f === 'Inscripción' ? 1 : 0;
+    assert.deepEqual(formulario(f).slice(desde, desde + 3).map((x) => x[1]), estandar, f);
   }
+  assert.match(formulario('Inscripción')[0][1], /^¿Ya completó la ficha del básquet la temporada pasada \(2026\)\?$/);
 });
 
 test('la letra de cada pregunta es su posición real en la pestaña de respuestas', () => {
   for (const f of FORMS) {
-    formulario(f).forEach((fila, i) => assert.equal(fila[0], letraDe(i + 3), `${f}: "${fila[1]}"`));
+    formulario(f).forEach((fila, i) => assert.equal(fila[0], letraDe(i + primeraLetra(f)), `${f}: "${fila[1]}"`));
   }
 });
 
 test('el mapa de columnas del tablero coincide con los formularios', () => {
-  const pestana = { 'Inscripción': 'Inscripción', 'Reinscripción': 'Reinscripción', 'Aranceles': 'Comprobante de aranceles' };
+  const pestana = { 'Inscripción': 'Inscripción', 'Comprobantes': 'Comprobante de pago' };
   const desde = tablero.indexOf('### Mapa de columnas');
   const mapa = filasDe(tablero.slice(desde, tablero.indexOf('## 1.'))).filter((f) => /^[A-Z]{1,2}$/.test(f[1]));
   assert.ok(mapa.length >= 20);
@@ -56,7 +62,7 @@ test('el mapa de columnas del tablero coincide con los formularios', () => {
 });
 
 test('el formulario de aranceles tiene la pregunta Concepto de config.gs', () => {
-  assert.ok(formulario('Comprobante de aranceles').some((f) => f[1] === tituloDe('TITULO_CONCEPTO')));
+  assert.ok(formulario('Comprobante de pago').some((f) => f[1] === tituloDe('TITULO_CONCEPTO')));
 });
 
 test('cada pregunta de subir archivo tiene una ayuda', () => {
@@ -70,4 +76,41 @@ test('cada pregunta de subir archivo tiene una ayuda', () => {
 test('la casilla de recaudación no viene premarcada y el texto de privacidad está por validar', () => {
   assert.match(formularios, /\*\*No premarcada\.\*\*/);
   assert.match(formularios, /\[VALIDAR CON COORDINACIÓN\]/);
+});
+
+test('cada título aparece una sola vez en Inscripción', () => {
+  const titulos = formulario('Inscripción').map((f) => f[1].toLowerCase());
+  assert.equal(new Set(titulos).size, titulos.length);
+});
+
+test('consentimiento y alertas médicas son obligatorias, y las alertas traen "Ninguna"', () => {
+  const insc = formulario('Inscripción');
+  const consentimiento = insc.find((f) => f[1] === 'Consentimiento de Datos');
+  const alertas = insc.find((f) => f[1] === 'Alertas médicas');
+  assert.equal(consentimiento[3], 'sí');
+  assert.equal(alertas[3], 'sí');
+  assert.match(alertas[4], /\*\*Ninguna\*\*/);
+});
+
+test('la casilla de Emergencias en Semillero es opcional y no viene premarcada', () => {
+  const fila = formulario('Inscripción').find((f) => f[1] === 'Emergencias en Semillero');
+  assert.equal(fila[3], 'no');
+  assert.match(fila[4], /No premarcada/);
+});
+
+test('las fotos de la reinscripción llevan otro título que las de la primera vez', () => {
+  const insc = formulario('Inscripción').map((f) => f[1]);
+  for (const base of ['DNI jugador - frente', 'DNI jugador - dorso', 'DNI adulto - frente', 'DNI adulto - dorso', 'Foto del jugador', 'Foto del adulto']) {
+    assert.ok(insc.includes(base), base);
+    assert.ok(insc.includes(base + ' (reinscripción)'), base + ' (reinscripción)');
+  }
+});
+
+test('Quiero jugar y Quiero colaborar no tienen subidas ni DNI', () => {
+  for (const f of SIN_LOGIN) {
+    for (const fila of formulario(f)) {
+      assert.ok(!fila[2].startsWith('Subir archivo'), `${f}: "${fila[1]}" sube archivos`);
+      assert.ok(!/dni|domicilio|salud/i.test(fila[1]), `${f}: "${fila[1]}" pide un dato que no corresponde`);
+    }
+  }
 });
