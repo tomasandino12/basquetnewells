@@ -52,9 +52,9 @@
 <!-- =====================================================================
      PORTAL "BÁSQUET NEWELL'S": la puerta pública para las familias.
      Sin sesión y sin service worker (la app instalable es /app). Arriba de
-     todo, lo que busca un padre: inscribir y mandar el comprobante. Cada
-     sección arranca oculta y src/ui/portal.js la muestra sólo si tiene datos:
-     nunca una fila de carteles vacíos. De la base lee sólo la lista de
+     todo, UNA acción principal (inscribir o "Quiero jugar"); lo secundario va
+     en una lista compacta. Las secciones que dependen de datos arrancan
+     ocultas y src/ui/portal.js las muestra sólo si los tienen. De la base lee sólo la lista de
      formularios activos (formularios_publicos); los eventos, de Google
      Calendar; el resto, de src/data/portal.js.
      Textos en voseo y sin suponer que saben de computadoras.
@@ -63,30 +63,19 @@
   <header class="portal-barra">
     <img src="/public/escudo.png" alt="" width="36" height="36">
     <div><div class="t">Newell&#39;s <span>Básquet</span></div><div class="s">Formativas · Familias</div></div>
-    <a class="portal-ayuda-btn" id="portal-ayuda" href="#dudas" target="_blank" rel="noopener" hidden><i aria-hidden="true"></i>Ayuda</a>
+    <a class="portal-ayuda-btn" id="portal-ayuda" href="#mas" target="_blank" rel="noopener" hidden><i aria-hidden="true"></i>Ayuda</a>
   </header>
 
   <main class="portal">
-    <div class="portal-hero">
-      <span class="portal-ey">Portal de familias</span>
-      <h1>Todo lo del básquet, <span class="r">en un solo lugar</span></h1>
-      <p class="bajada">Inscripción, pagos y calendario. Tocá el botón de lo que necesitás.</p>
-    </div>
-
-    <!-- Las dos tarjetas que más se buscan. Siempre visibles: con el formulario
-         activo (destinos inscripcion y comprobante, 0062) son un botón; sin él,
-         dicen que abren con la temporada. -->
-    <section class="portal-acciones" id="acciones" aria-label="Inscripción y pagos">
-      <article class="portal-acc portal-acc-ins" id="portal-inscripcion"><h3>Inscribir a mi hijo o hija</h3><p>Cargando…</p></article>
-      <article class="portal-acc portal-acc-com" id="portal-comprobante"><h3>Enviar comprobante</h3><p>Cargando…</p></article>
+    <!-- La única acción principal: inscribir si está abierta y, si no, "Quiero
+         jugar" (src/ui/portal.js, htmlHeroe). La banda roja y negra es la
+         camiseta. Arranca con el texto de la inscripción cerrada para que la
+         página nunca se vea vacía mientras carga la base. -->
+    <section class="portal-heroe" id="heroe" aria-label="Inscripción">
+      <div id="portal-heroe"><div class="portal-heroe-ey">Básquet formativo</div><h1>¿Querés jugar en Newell&#39;s?</h1><p>Cargando…</p></div>
     </section>
 
     <nav class="portal-atajos" id="portal-atajos" aria-label="Atajos"></nav>
-
-    <!-- "Quiero jugar en Newell's": el formulario de consultas (destino consultas, 0061). -->
-    <section class="portal-sec portal-jugar" id="jugar" aria-label="Quiero jugar en Newell's" hidden>
-      <div id="portal-jugar"></div>
-    </section>
 
     <section class="portal-sec" id="calendario" aria-labelledby="t-calendario" hidden>
       <div class="portal-st">Agenda del club</div>
@@ -95,12 +84,19 @@
       <div id="portal-calendario"></div>
     </section>
 
-    <!-- Aviso de los eventos de recaudación (pizzas, rifas, comidas): destino recaudacion, 0063. -->
-    <section class="portal-sec portal-recaudacion" id="recaudacion" aria-label="Eventos de recaudación del club" hidden>
-      <div id="portal-recaudacion"></div>
+    <!-- Banda roja a todo el ancho: aviso de los eventos de recaudación (destino recaudacion, 0063). -->
+    <section class="portal-banda" id="recaudacion" aria-labelledby="t-recaudacion">
+      <div id="portal-recaudacion"><h2 id="t-recaudacion">Pizzas, rifas, comidas</h2></div>
     </section>
 
-    <section class="portal-sec" id="categorias"aria-labelledby="t-categorias" hidden>
+    <!-- Lo secundario, compacto: comprobante (con el alias), sponsors y el coordinador. -->
+    <section class="portal-sec" id="mas" aria-labelledby="t-mas">
+      <div class="portal-st" id="t-mas">También podés</div>
+      <div class="portal-filas" id="portal-mas"></div>
+      <div id="portal-alias"></div>
+    </section>
+
+    <section class="portal-sec" id="categorias" aria-labelledby="t-categorias" hidden>
       <div class="portal-st">¿En qué categoría juega?</div>
       <h2 id="t-categorias">Categorías<span id="t-categorias-temp"></span></h2>
       <p class="intro">Va por año de nacimiento, como lo arma la CABB.</p>
@@ -119,18 +115,11 @@
       <div id="portal-foto"></div>
     </section>
 
+    <!-- Los logos de sponsors y colaboradores (PORTAL.sponsors). Sin ninguno, oculta. -->
     <section class="portal-sec" id="sponsors" aria-labelledby="t-sponsors" hidden>
-      <div class="portal-st">Colaborá con el club</div>
-      <h2 id="t-sponsors">Sumate como sponsor o colaborador</h2>
-      <p class="intro">Si tenés un comercio, una empresa o querés dar una mano: el básquet formativo se sostiene con el aporte de muchos.</p>
-      <div id="portal-colaboradores"></div>
+      <div class="portal-st">Gracias</div>
+      <h2 id="t-sponsors">Nos acompañan</h2>
       <div class="portal-logos" id="portal-logos"></div>
-    </section>
-
-    <section class="portal-sec" id="dudas" aria-labelledby="t-dudas" hidden>
-      <h2 id="t-dudas">¿Dudas? Escribile al coordinador</h2>
-      <p class="intro">Si algo no se entiende o no te funciona, no te quedes con la duda: escribile y te ayuda a completarlo.</p>
-      <div id="portal-contacto"></div>
     </section>
 
     <section class="portal-sec portal-semillero" id="semillero" aria-labelledby="t-semillero">
