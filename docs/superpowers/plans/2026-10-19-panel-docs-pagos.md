@@ -15,7 +15,7 @@
 |---|---|
 | 1 Migración 0060 | hecha (local, en transacción) |
 | 2 Módulo puro | hecha |
-| 3 Repo | pendiente |
+| 3 Repo | hecha (mapper en el módulo puro, como misiones) |
 | 4 Panel (lectura) | pendiente |
 | 5 Conexión con Google (token) | pendiente |
 | 6 Script del club | bloqueada: esperar a inscripción |

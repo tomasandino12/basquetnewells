@@ -321,7 +321,8 @@ $fn$;
 -- - 'sin_tablero': tiene plantel esta temporada y no está en el tablero.
 -- Se cruza contra TODAS las fichas del club (un chico de la temporada pasada
 -- sigue siendo él); la categoría sale del plantel vigente si tiene.
--- Nunca devuelve la fecha de nacimiento.
+-- Nunca devuelve la fecha de nacimiento. Ordena por nombre e id para que el
+-- cliente pueda paginar sin saltear ni repetir (max-rows de PostgREST).
 create function estado_inscripcion_del_club(p_club_id uuid)
 returns table (
   id uuid, nombre text, nombre_google text, categoria_codigo text,
@@ -388,7 +389,7 @@ begin
       and exists (select 1 from public.conexion_google g
                   where g.club_id = p_club_id and g.ultimo_envio_en is not null)
       and not exists (select 1 from cruce c where c.jugador_id = f.id)
-    order by 2;
+    order by 2, 1;
 end;
 $fn$;
 

@@ -1,6 +1,7 @@
 // Panel de coordinación: quién tiene acceso a qué (0017).
 // Se importa a través de src/data/repositorio.js (fachada).
-import { obtenerCliente } from '../cliente.js';
+import { obtenerCliente, TAMANIO_PAGINA } from '../cliente.js';
+import { chicoDesdeFila, conexionDesdeFila } from '../estadoInscripcion.js';
 
 /**
  * Cuentas con mail confirmado y sin club, menos las rechazadas. Incluye a los
@@ -138,4 +139,51 @@ export async function cerrarAsignacion(asignacionId) {
     .select('id');
   if (error) throw error;
   if (!data.length) throw new Error('NO_SE_PUDO_CERRAR');
+}
+
+/**
+ * Estado de papeles y pagos de todos los chicos (0060), ya emparejado con las
+ * fichas por la base. Se pagina: el max-rows de PostgREST también corta las
+ * funciones que devuelven conjuntos, y la función ordena por nombre e id.
+ */
+export async function obtenerEstadoInscripcion(clubId) {
+  const supabase = obtenerCliente();
+  const filas = [];
+  let desde = 0;
+  for (;;) {
+    const { data, error } = await supabase
+      .rpc('estado_inscripcion_del_club', { p_club_id: clubId })
+      .range(desde, desde + TAMANIO_PAGINA - 1);
+    if (error) throw error;
+    filas.push(...data);
+    if (data.length < TAMANIO_PAGINA) break;
+    desde += TAMANIO_PAGINA;
+  }
+  return filas.map(chicoDesdeFila);
+}
+
+/** Si el script de Google está conectado, cuándo mandó por última vez y a qué tablero. */
+export async function obtenerConexionGoogle(clubId) {
+  const supabase = obtenerCliente();
+  const { data, error } = await supabase.rpc('conexion_google_del_club', { p_club_id: clubId });
+  if (error) throw error;
+  return conexionDesdeFila(data[0]);
+}
+
+/**
+ * Genera el token del script (o cambia el que había: el anterior deja de
+ * servir en el acto). Es la única vez que se ve: en la base queda su hash.
+ */
+export async function rotarConexionGoogle(clubId) {
+  const supabase = obtenerCliente();
+  const { data, error } = await supabase.rpc('rotar_conexion_google', { p_club_id: clubId });
+  if (error) throw error;
+  return data;
+}
+
+/** Borra el token y todo el estado que mandó el script. */
+export async function desconectarGoogle(clubId) {
+  const supabase = obtenerCliente();
+  const { error } = await supabase.rpc('desconectar_google', { p_club_id: clubId });
+  if (error) throw error;
 }
