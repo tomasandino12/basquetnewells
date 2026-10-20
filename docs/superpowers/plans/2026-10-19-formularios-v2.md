@@ -10,7 +10,7 @@ Spec: `docs/superpowers/specs/2026-10-19-formularios-v2-design.md`. Una task por
 | 2 | `TABLERO.md` v2: Base con la pestaña única, Pagos con formulario propio, Revisar categoría/año | hecho |
 | 3 | `GUIA.md` y `PADRES.md` v2 | hecho |
 | 4 | Script del Tablero: importar las respuestas 2026 (se hace primero) | hecho |
-| 5 | `PROMPT-NAVEGADOR.md` para Claude en el navegador | pendiente |
+| 5 | `PROMPT-NAVEGADOR.md` para Claude en el navegador | hecho |
 
 ## Task 1 — Formularios
 - **Archivos:** `google/formularios/FORMULARIOS.md`, `tests/appsScriptTitulos.test.js`.
