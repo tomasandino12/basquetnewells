@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   htmlFormularios, htmlContacto, htmlAvisoRespaldo, htmlJugar, htmlColaboradores, htmlLogos, htmlInscripcion,
-  htmlComprobante, htmlVentas, htmlAtajos, htmlCalendario, htmlCategorias, htmlSede, htmlFoto, diaInicial, htmlSuscripcion,
+  htmlComprobante, htmlRecaudacion, htmlAtajos, htmlCalendario, htmlCategorias, htmlSede, htmlFoto, diaInicial, htmlSuscripcion,
 } from '../src/ui/portal.js';
 import { eventoDesdeGoogle, eventosPorDia } from '../src/data/agenda.js';
 
@@ -248,7 +248,6 @@ test('htmlJugar sin formulario (o con un enlace que no es de Google Forms): la t
 });
 
 test('el portal aparta de la lista los formularios con lugar propio: no aparecen dos veces', () => {
-  assert.match(portal, /const \{ inscripcion, comprobante, consultas, colaboradores, comunes \} = separarFormularios\(formularios\);/);
   assert.match(portal, /htmlInscripcion\(inscripcion,/);
   assert.match(portal, /htmlComprobante\(comprobante,/);
   assert.match(portal, /htmlJugar\(consultas\)/);
@@ -275,17 +274,22 @@ test('htmlColaboradores sin formulario: igual dice que dejen su mail y el botón
   }
 });
 
-test('htmlVentas: tarjeta chica al mismo formulario de colaboradores; sin él, el botón se ve apagado', () => {
-  const abierta = htmlVentas({ texto: 'x', enlace: 'https://forms.gle/Col1' }).toString();
-  assert.match(abierta, /Enterate de las ventas del club/);
-  assert.match(abierta, /Pizzas, rifas, comidas: dejanos tu mail y te avisamos cuando haya una venta para colaborar/);
-  assert.match(abierta, /<a class="btn" href="https:\/\/forms\.gle\/Col1" target="_blank" rel="noopener">Quiero que me avisen<\/a>/);
+test('htmlRecaudacion: tarjeta chica con su propio formulario; sin él, el botón se ve apagado', () => {
+  const abierta = htmlRecaudacion({ texto: 'x', enlace: 'https://forms.gle/Rec1' }).toString();
+  assert.match(abierta, /Enterate de los eventos de recaudación del club/);
+  assert.match(abierta, /Pizzas, rifas, comidas: dejanos tu mail y te avisamos cuando haya uno\./);
+  assert.match(abierta, /<a class="btn" href="https:\/\/forms\.gle\/Rec1" target="_blank" rel="noopener">Quiero que me avisen<\/a>/);
   for (const f of [null, { texto: 'x', enlace: 'https://evil.com/forms/x' }]) {
-    const cerrada = htmlVentas(f).toString();
+    const cerrada = htmlRecaudacion(f).toString();
     assert.match(cerrada, /<button type="button" class="btn" disabled aria-disabled="true">Se habilita cuando abra el formulario<\/button>/);
     assert.doesNotMatch(cerrada, /<a |evil/);
   }
-  assert.match(portal, /mostrar\('ventas', htmlVentas\(colaboradores\)\);/);
+});
+
+test('el portal le da a recaudación su propio destino: no usa el formulario de sponsors', () => {
+  assert.match(portal, /const \{ inscripcion, comprobante, consultas, colaboradores, recaudacion, comunes \} = separarFormularios\(formularios\);/);
+  assert.match(portal, /mostrar\('recaudacion', htmlRecaudacion\(recaudacion\)\);/);
+  assert.doesNotMatch(portal, /htmlRecaudacion\(colaboradores\)/);
 });
 
 test('el portal muestra "Quiero jugar" y "Colaborar" aunque no haya formulario', () => {

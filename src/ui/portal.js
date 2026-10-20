@@ -141,7 +141,7 @@ export function htmlColaboradores(formulario) {
   const titulo = html`<div class="t">Dejanos tu mail y te avisamos de los eventos</div>`;
   if (!url) {
     return html`<div class="portal-tarjeta">${titulo}
-      <div class="d">Ventas (pizzas, rifas, comidas) y eventos donde podés dar una mano. Vas a poder dejar tu mail y cómo querés colaborar.</div>
+      <div class="d">Eventos donde podés dar una mano. Vas a poder dejar tu mail y cómo querés colaborar.</div>
       ${botonCerrado('Se habilita cuando abra el formulario')}
     </div>`;
   }
@@ -150,22 +150,23 @@ export function htmlColaboradores(formulario) {
     <ol class="portal-ayuda">
       <li>Tocá el botón de abajo.</li>
       <li>Se abre un formulario de Google: contanos quién sos, dejá tu mail y cómo querés colaborar.</li>
-      <li>Mandalo: te escribimos cuando haya una venta o un evento para colaborar.</li>
+      <li>Mandalo: te escribimos cuando haya un evento donde podés dar una mano.</li>
     </ol>
     <a class="btn" href="${url}" target="_blank" rel="noopener">Quiero colaborar</a>
   </div>`;
 }
 
 /**
- * La tarjeta chica de abajo del calendario: el aviso por mail de las ventas del
- * club (pizzas, rifas, comidas). Usa el MISMO formulario que la de colaboradores
- * (destino colaboradores): una sola planilla de respuestas, en Google. Los
- * partidos y charlas no van por mail: para eso está el "Seguilo" del calendario.
+ * La tarjeta chica de abajo del calendario: el aviso por mail de los eventos de
+ * recaudación del club (pizzas, rifas, comidas). Es el formulario con destino
+ * recaudacion (0063), aparte del de sponsors: quien quiere comprar una pizza no
+ * es una empresa que quiere ayudar. Su planilla de respuestas vive en Google.
+ * Los partidos y charlas no van por mail: para eso está el "Seguilo" del calendario.
  */
-export function htmlVentas(formulario) {
+export function htmlRecaudacion(formulario) {
   const url = formulario ? enlaceFormulario(formulario.enlace) : null;
-  return html`<div class="portal-tarjeta"><div class="t">Enterate de las ventas del club</div>
-    <div class="d">Pizzas, rifas, comidas: dejanos tu mail y te avisamos cuando haya una venta para colaborar.</div>
+  return html`<div class="portal-tarjeta"><div class="t">Enterate de los eventos de recaudación del club</div>
+    <div class="d">Pizzas, rifas, comidas: dejanos tu mail y te avisamos cuando haya uno.</div>
     ${url
       ? html`<a class="btn" href="${url}" target="_blank" rel="noopener">Quiero que me avisen</a>`
       : botonCerrado('Se habilita cuando abra el formulario')}
@@ -430,7 +431,7 @@ export async function iniciarPortal() {
   const { estado, formularios } = await resolverFormularios(() => formulariosPublicos(PORTAL.clubId), PORTAL.formularios);
 
   // Los que tienen lugar propio (las dos tarjetas, consultas, colaboradores) no se repiten en la lista.
-  const { inscripcion, comprobante, consultas, colaboradores, comunes } = separarFormularios(formularios);
+  const { inscripcion, comprobante, consultas, colaboradores, recaudacion, comunes } = separarFormularios(formularios);
   // "Quiero jugar" y "Quiero colaborar" se ven siempre: sin formulario activo
   // llevan el botón deshabilitado. Sólo el link "primera vez" de la inscripción
   // necesita saber si el de consultas está de verdad abierto.
@@ -439,7 +440,7 @@ export async function iniciarPortal() {
   $('portal-inscripcion').innerHTML = htmlInscripcion(inscripcion, { temporada: PORTAL.temporada, hayConsultas: consultasAbierto, contacto: PORTAL.contacto });
   $('portal-comprobante').innerHTML = htmlComprobante(comprobante, PORTAL.alias);
 
-  mostrar('ventas', htmlVentas(colaboradores));
+  mostrar('recaudacion', htmlRecaudacion(recaudacion));
   $('portal-colaboradores').innerHTML = htmlColaboradores(colaboradores);
   $('portal-logos').innerHTML = htmlLogos(PORTAL.sponsors);
   $('sponsors').hidden = false;

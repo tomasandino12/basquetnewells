@@ -234,7 +234,7 @@ comprobantes) viven en Google y **nunca pasan por Semillero ni por la base**.
 Quién los recibe y cómo se organizan en Drive: ver la guía de inscripción en
 Google (rama `claude/inscripcion-google-41cf4e`).
 
-### Lugares especiales: Inscripción, Comprobante, "Quiero jugar" y sponsors
+### Lugares especiales: Inscripción, Comprobante, "Quiero jugar", sponsors y recaudación
 
 Al agregar o editar un formulario, el selector **"Cómo se muestra en la página"**
 tiene estas opciones:
@@ -252,16 +252,18 @@ tiene estas opciones:
   impreso (ver abajo).
 - **Sumate como sponsor o colaborador**: va en su propia sección del portal
   (siempre visible; sin formulario activo, con el botón apagado).
+- **Eventos de recaudación (aviso debajo del calendario)** (desde 0063): es otro
+  formulario que el de sponsors, para quien quiere comprar y colaborar (pizzas,
+  rifas, comidas) y deja su mail. Aparece como la tarjeta chica "Enterate de los
+  eventos de recaudación del club", debajo del calendario.
 
 Cada lugar especial es **único**: si marcás un formulario y otro ya lo tenía, la
 app te avisa ("Hoy lo tiene «X»: al guardar, ese formulario pasa a ser común") y
 se lo saca. Un formulario **oculto** no se muestra aunque conserve su lugar: la
 tarjeta queda cerrada, con el botón apagado y visible (inscripción,
-comprobante, "Quiero jugar" y "Quiero colaborar"). La tarjeta de colaborar dice
-"Dejanos tu mail y te avisamos de los eventos" y, debajo del calendario,
-hay una tarjeta chica "Enterate de las ventas del club" que apunta al mismo
-formulario. El mail lo pide el formulario y queda en su planilla de Google, no
-en Semillero.
+comprobante, "Quiero jugar", "Quiero colaborar" y recaudación). El mail que dejan
+colaboradores y compradores lo piden esos formularios y queda en sus planillas
+de Google, no en Semillero.
 
 ### QR para imprimir: `/consultas`
 
