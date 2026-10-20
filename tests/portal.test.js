@@ -64,6 +64,11 @@ test("Newell's no tiene Escuelita ni femeninos de inferiores: la única femenina
   assert.ok(!PORTAL.categorias.some((c) => c.grupo === 'ESCUELITA'));
 });
 
+test('hay Primera masculino y Primera femenino', () => {
+  const primeras = PORTAL.categorias.filter((c) => c.grupo === 'MAYORES').map((c) => `${c.nombre} ${c.rama}`);
+  assert.deepEqual(primeras, ['Primera Masculino', 'Primera Femenino']);
+});
+
 test('cada categoría configurada es un grupo que existe', () => {
   assert.equal(categoriasDelPortal(PORTAL.categorias, PORTAL.temporada).length, PORTAL.categorias.length);
 });

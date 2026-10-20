@@ -49,7 +49,8 @@ export const PORTAL = Object.freeze({
   // opcional (para que MAYORES diga "Primera"). `horario` opcional: días y hora.
   // Horarios: descripción del formulario "Quiero jugar en Newell's" (temporada
   // 2026). Newell's no tiene Escuelita ni femeninos de inferiores: la única
-  // femenina es Primera, que no figura en ningún formulario y va sin horario.
+  // femenina es Primera. Las dos Primeras no figuran en ningún formulario y van
+  // sin horario hasta que el club lo pase.
   categorias: Object.freeze([
     Object.freeze({ grupo: 'U9', rama: 'Mixto', horario: 'Mar 18 a 19 h (Estadio Cubierto) · Jue 18 a 19 h (Playón Deportivo)' }),
     Object.freeze({ grupo: 'U11', rama: 'Mixto', horario: 'Mar 19 a 20 h (Estadio Cubierto) · Jue 19 a 20 h (Playón Deportivo)' }),
@@ -57,6 +58,7 @@ export const PORTAL = Object.freeze({
     Object.freeze({ grupo: 'U15', rama: 'Masculino', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)' }),
     Object.freeze({ grupo: 'U17', rama: 'Masculino', horario: 'Lun y Vie 19 a 20 h (Estadio Cubierto) · Mié 19 a 20 h (Microestadio)' }),
     Object.freeze({ grupo: 'U21', rama: 'Masculino', horario: 'Lun y Vie 20 a 21 h (Estadio Cubierto) · Mié 20 a 21 h (Microestadio)' }),
+    Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Masculino', horario: null }),
     Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Femenino', horario: null }),
   ]),
 
