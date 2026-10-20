@@ -103,18 +103,13 @@ test('las fuentes se sirven desde el propio dominio, sin Google Fonts', () => {
   for (const ruta of archivos) assert.ok(existsSync(path.join(raiz, ruta)), `falta ${ruta}`);
 });
 
-// La página pública embebe los calendarios de Google que arma portal.js. Si
-// el host no está en frame-src, el iframe queda en blanco sólo en producción.
-test('frame-src permite cada host de calendario que arma portal.js', async () => {
-  const { HOSTS_EMBEBIDOS } = await import('../src/data/portal.js');
-  for (const host of HOSTS_EMBEBIDOS) assert.ok(directiva('frame-src')?.includes(`https://${host}`), `frame-src sin https://${host}`);
-});
-
-test('frame-src sólo deja YouTube sin cookies y Google Calendar, sin comodines', () => {
+// El calendario del portal ya no es un iframe de Google: lo arma la página con
+// los eventos que pide a la API (connect-src). frame-src queda sólo para YouTube.
+test('frame-src sólo deja YouTube sin cookies, sin comodines', () => {
   const f = directiva('frame-src');
   assert.ok(f, 'falta frame-src');
   assert.ok(!f.some((v) => v.includes('*') || v === 'https:'), f.join(' '));
-  assert.deepEqual([...f].sort(), ['https://calendar.google.com', 'https://www.youtube-nocookie.com']);
+  assert.deepEqual([...f].sort(), ['https://www.youtube-nocookie.com']);
 });
 
 // El portal (public/portal.html) también lee la base, así que lleva el mismo

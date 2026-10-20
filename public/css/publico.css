@@ -195,42 +195,104 @@
 }
 
 /* ---- Portal "Básquet Newell's" (public/portal.html) ----
-   Misma familia visual que la landing de la app (negro, rojo del club, títulos
-   condensados) pero sin animaciones de entrada: un texto de acá arriba puede
-   ser el LCP. Una columna en el celular; las dos columnas viven en layout.css. */
+   Diseño "D" (20/10): lo primero que se ve son las dos tarjetas que busca un
+   padre, Inscribir y Enviar comprobante; después atajos, calendario del mes y
+   categorías. Sin animaciones de entrada: un texto de acá arriba puede ser el
+   LCP. Una columna en el celular; lo de compu vive en layout.css. Cada sección
+   sin datos queda con [hidden] (lo pone src/ui/portal.js). */
+.portal-d::before{height:22rem;background:radial-gradient(ellipse 90% 90% at 85% 0,var(--club),transparent);opacity:.38}
 .portal{max-width:64rem;margin-inline:auto;width:100%;padding-bottom:var(--sp-4)}
-.portal-sec{padding:var(--sp-5) var(--sp-4) var(--sp-2);scroll-margin-top:var(--sp-4)}
-.portal-sec h2{font-size:var(--fs-220);letter-spacing:.06em;margin-bottom:var(--sp-2)}
-.portal-sec h1{font-size:var(--fs-250);letter-spacing:.04em;margin-bottom:var(--sp-3)}
+.portal [hidden]{display:none}
+
+.portal-barra{display:flex;align-items:center;gap:var(--sp-2);max-width:64rem;margin-inline:auto;width:100%;padding:var(--sp-3) var(--sp-4)}
+.portal-barra img{width:2.25rem;height:2.25rem;flex:0 0 auto}
+.portal-barra .t{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:var(--fs-200);line-height:1}
+.portal-barra .t span{color:var(--primario)}
+.portal-barra .s{font-size:var(--fs-100);letter-spacing:.14em;text-transform:uppercase;color:var(--gris-osc);margin-top:.125rem}
+.portal-ayuda-btn{
+  margin-left:auto;display:inline-flex;align-items:center;gap:var(--sp-2);min-height:var(--tap);
+  font-size:var(--fs-135);font-weight:600;color:var(--sobre-oscuro);text-decoration:none;
+  background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r-full);padding:0 var(--sp-4);
+}
+.portal-ayuda-btn[hidden]{display:none}
+.portal-ayuda-btn i{width:.5rem;height:.5rem;border-radius:50%;background:var(--sube-osc)}
+
+.portal-hero{padding:var(--sp-2) var(--sp-4) var(--sp-4)}
+.portal-ey{
+  display:inline-flex;align-items:center;gap:var(--sp-2);font-family:var(--ff-titulo);font-weight:600;
+  letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-115);
+  border:1px solid var(--primario);border-radius:var(--r-full);padding:var(--sp-1) var(--sp-3);
+}
+.portal-ey::before{content:"";width:.375rem;height:.375rem;background:var(--primario);border-radius:50%}
+.portal-hero h1{font-size:clamp(2.125rem,1.6rem + 2.4vw,3.25rem);line-height:.98;margin:var(--sp-3) 0 var(--sp-2)}
+.portal-hero h1 .r{color:var(--primario)}
+.portal-hero .bajada{color:var(--gris-osc);font-size:var(--fs-145);line-height:1.5;margin:0}
+
+/* Las dos tarjetas de arriba. La de inscripción lleva el borde y un
+   resplandor del club (en un ::before, con opacity: ver DESIGN.md). */
+.portal-acciones{display:grid;gap:var(--sp-3);padding:0 var(--sp-4)}
+.portal-acc{position:relative;isolation:isolate;overflow:hidden;border-radius:var(--r);padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);min-width:0}
+.portal-acc-ins{border-color:var(--primario);background:var(--pub-fondo)}
+.portal-acc-ins::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 80% 70% at 0 0,var(--club),transparent);opacity:.22}
+.portal-acc-cab{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-2)}
+.portal-tag{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:var(--fs-100);padding:.125rem var(--sp-2);border-radius:var(--r-btn);background:var(--primario);color:var(--sobre-club)}
+.portal-tag.claro{background:var(--sobre-oscuro);color:var(--pub-fondo)}
+.portal-estado{display:inline-flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-115);color:var(--gris-osc)}
+.portal-estado::before{content:"";width:.4375rem;height:.4375rem;border-radius:50%;border:1px solid currentColor}
+.portal-estado.abierto{color:var(--sube-osc)}
+.portal-estado.abierto::before{background:currentColor}
+.portal-acc h3{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-300);line-height:1;letter-spacing:.01em;margin:0}
+.portal-acc p{color:var(--gris-osc);font-size:var(--fs-135);line-height:1.5;margin:var(--sp-2) 0 var(--sp-4)}
+.portal-acc p:last-child{margin-bottom:0}
+.portal-acc .btn{text-decoration:none;min-height:3rem}
+.portal-acc .btn + .portal-mini{margin-top:var(--sp-2)}
+.portal .portal-btn-claro{background:var(--sobre-oscuro);color:var(--pub-fondo)}
+.portal .portal-btn-claro:active{background:var(--gris-osc)}
+.portal-mini{display:block;text-align:center;font-size:var(--fs-115);color:var(--gris-osc)}
+.portal-alias{
+  display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);
+  border:1px dashed var(--pub-borde);border-radius:var(--r-s);padding:var(--sp-2) var(--sp-3);margin-bottom:var(--sp-3);
+}
+.portal-alias small{display:block;font-size:var(--fs-100);color:var(--gris-osc);text-transform:uppercase;letter-spacing:.1em}
+.portal-alias b{display:block;font-family:var(--ff-mono);font-size:var(--fs-145);font-weight:600;word-break:break-all}
+.portal-alias span{display:block;font-size:var(--fs-115);color:var(--gris-osc)}
+.portal-copiar{
+  flex:0 0 auto;min-height:var(--tap);padding:0 var(--sp-3);font:inherit;font-size:var(--fs-125);font-weight:600;
+  color:var(--sobre-oscuro);background:transparent;border:1px solid var(--pub-borde);border-radius:var(--r-s);cursor:pointer;
+  transition:transform var(--dur-1) var(--ease-salida);
+}
+.portal-copiar:active{transform:scale(.96)}
+
+/* Atajos: sólo a lo que existe en la página (src/ui/portal.js). */
+.portal-atajos{display:grid;grid-template-columns:repeat(auto-fit,minmax(4.5rem,1fr));gap:var(--sp-2);padding:var(--sp-5) var(--sp-4) 0}
+.portal-atajos:empty{display:none}
+.portal-atajos a{
+  display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);min-height:var(--tap);
+  background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);
+  padding:var(--sp-3) var(--sp-1);text-align:center;text-decoration:none;color:var(--sobre-oscuro);
+  font-size:var(--fs-115);font-weight:600;line-height:1.2;
+  transition:transform var(--dur-1) var(--ease-salida);
+}
+.portal-atajos a:active{transform:scale(.96)}
+.portal-atajos i{display:grid;place-items:center;width:2.25rem;height:2.25rem;flex:0 0 auto;border-radius:50%;background:var(--pub-fondo);color:var(--primario)}
+.portal-atajos svg{width:1.125rem;height:1.125rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.portal-sec{padding:var(--sp-8) var(--sp-4) 0;scroll-margin-top:var(--sp-4)}
+.portal-st{font-family:var(--ff-titulo);font-weight:600;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-115);color:var(--primario);margin-bottom:var(--sp-1)}
+.portal-sec h2{font-size:var(--fs-260);line-height:1.05;letter-spacing:.02em;margin-bottom:var(--sp-2)}
 .portal-sec .intro{color:var(--gris-osc);font-size:var(--fs-145);line-height:1.5;margin-bottom:var(--sp-4)}
 .portal-sec .portal-nota{color:var(--gris-osc);font-size:var(--fs-135);line-height:1.55;margin-top:var(--sp-4)}
 .portal-sec .portal-nota b{color:var(--sobre-oscuro);font-weight:600}
 .portal-sec > .btn{text-decoration:none}
 .portal .pie-legal{margin-top:var(--sp-6)}
+.portal-aviso{color:var(--gris-osc);font-style:italic;font-size:var(--fs-135);margin:0 0 var(--sp-3)}
 
-/* Los pasos: una tarjeta tocable entera por paso, con el número en el color del club. */
-.portal-pasos{list-style:none;margin:0;padding:0;display:grid;gap:var(--sp-3);counter-reset:portal-paso}
-.portal-pasos li{counter-increment:portal-paso}
-.portal-pasos a{
-  position:relative;display:block;min-height:var(--tap);text-decoration:none;color:inherit;
-  background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);
-  padding:var(--sp-4) var(--sp-4) var(--sp-4) 3.5rem;
-  transition:transform var(--dur-1) var(--ease-salida);
-}
-.portal-pasos a::before{
-  content:counter(portal-paso);position:absolute;left:var(--sp-4);top:var(--sp-4);
-  font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-250);line-height:1;color:var(--primario);
-}
-.portal-pasos a:active{transform:scale(.98)}
-.portal-pasos b{display:block;font-family:var(--ff-titulo);font-size:var(--fs-170);font-weight:600;letter-spacing:.04em;text-transform:uppercase;line-height:1.15}
-.portal-pasos span{display:block;color:var(--gris-osc);font-size:var(--fs-135);line-height:1.5;margin-top:var(--sp-1)}
-
-.portal-lista,.portal-calendarios{display:grid;gap:var(--sp-3)}
+.portal-lista{display:grid;gap:var(--sp-3)}
 .portal-tarjeta{background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);padding:var(--sp-4);min-width:0}
 .portal-tarjeta .t{font-family:var(--ff-titulo);font-size:var(--fs-170);font-weight:600;text-transform:uppercase;letter-spacing:.04em;line-height:1.15}
 .portal-tarjeta .d{color:var(--gris-osc);font-size:var(--fs-135);line-height:1.55;margin:var(--sp-2) 0 var(--sp-4)}
 .portal-tarjeta .btn{text-decoration:none}
-/* El acceso destacado de arriba ("Quiero jugar"): la misma tarjeta, con el borde en el color del club. */
+/* "Quiero jugar": la misma tarjeta, con el borde en el color del club. */
 .portal-destacado{background:var(--pub-tarjeta);border:1px solid var(--primario);border-radius:var(--r);padding:var(--sp-5) var(--sp-4)}
 .portal-destacado .t{font-family:var(--ff-titulo);font-size:var(--fs-230);font-weight:700;text-transform:uppercase;letter-spacing:.04em;line-height:1.1}
 .portal-destacado .d{color:var(--gris-osc);font-size:var(--fs-145);line-height:1.55;margin:var(--sp-2) 0 var(--sp-4)}
@@ -238,23 +300,77 @@
 .portal-ayuda{list-style:none;margin:0 0 var(--sp-4);padding:0;display:grid;gap:var(--sp-2);counter-reset:portal-ayuda}
 .portal-ayuda li{counter-increment:portal-ayuda;position:relative;padding-left:var(--sp-6);color:var(--sobre-oscuro);font-size:var(--fs-135);line-height:1.45}
 .portal-ayuda li::before{content:counter(portal-ayuda);position:absolute;left:0;top:0;font-family:var(--ff-titulo);font-weight:700;color:var(--primario)}
-/* Franja de logos de sponsors: oculta mientras no haya ninguno (el atributo hidden manda). */
-.portal-logos:not([hidden]){margin-top:var(--sp-5)}
+.portal-logos:not(:empty){margin-top:var(--sp-5)}
 .portal-logos-lista{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3)}
 .portal-logos-lista li{display:flex;align-items:center;justify-content:center;min-height:var(--tap);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);padding:var(--sp-3)}
 .portal-logos-lista a{display:flex;align-items:center;justify-content:center;min-height:var(--tap);width:100%}
 .portal-logos-lista img{display:block;max-width:100%;max-height:4rem;width:auto;height:auto;object-fit:contain}
-/* Lo que el club todavía no pasó: se dice que falta, en gris, nunca vacío. */
-.portal-pronto{color:var(--gris-osc);font-style:italic;font-size:var(--fs-135)}
-.portal-tarjeta .portal-pronto{min-height:var(--tap);display:flex;align-items:center}
-.portal-datos{display:grid;gap:var(--sp-3);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);padding:var(--sp-4)}
-.portal-datos dt{font-family:var(--ff-titulo);font-size:var(--fs-125);font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gris-osc)}
-.portal-datos dd{margin:var(--sp-1) 0 0;font-size:var(--fs-145);line-height:1.45}
-.portal-cal{background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);padding:var(--sp-4);min-width:0}
-.portal-cal-t{font-family:var(--ff-titulo);font-size:var(--fs-145);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:var(--sp-2)}
-/* El embed de Google es blanco y no se puede teñir: se le da el alto de una
-   agenda de unas semanas y el ancho de la tarjeta, nunca más. */
-.portal-cal iframe{display:block;width:100%;height:26rem;border:0;border-radius:var(--r-m);background:var(--sup-1)}
+
+/* ---- calendario del mes ---- */
+/* El color de cada tipo pinta el puntito del día, el cuadradito de la leyenda y el filete del evento. */
+.portal-puntos i.tipo-partido,.portal-ley li.tipo-partido::before,.portal-ev.tipo-partido::before{background:var(--agenda-partido)}
+.portal-puntos i.tipo-evento,.portal-ley li.tipo-evento::before,.portal-ev.tipo-evento::before{background:var(--agenda-evento)}
+.portal-puntos i.tipo-charla,.portal-ley li.tipo-charla::before,.portal-ev.tipo-charla::before{background:var(--agenda-charla)}
+.portal-puntos i.tipo-entrenamiento,.portal-ley li.tipo-entrenamiento::before,.portal-ev.tipo-entrenamiento::before{background:var(--agenda-entrenamiento)}
+.portal-cal{background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden;min-width:0}
+.portal-cal.cargando .portal-grilla{opacity:.55}
+.portal-cal-cab{display:flex;justify-content:space-between;align-items:center;padding:var(--sp-3) var(--sp-4);border-bottom:1px solid var(--pub-borde)}
+.portal-cal-cab b{font-family:var(--ff-titulo);font-size:var(--fs-220);text-transform:uppercase;letter-spacing:.04em}
+.portal-cal-cab span{display:flex;gap:var(--sp-2)}
+.portal-cal-nav{
+  width:var(--tap);height:var(--tap);display:grid;place-items:center;font:inherit;font-size:var(--fs-200);
+  color:var(--sobre-oscuro);background:transparent;border:1px solid var(--pub-borde);border-radius:var(--r-s);cursor:pointer;
+  transition:transform var(--dur-1) var(--ease-salida);
+}
+.portal-cal-nav:active{transform:scale(.94)}
+.portal-ley{list-style:none;margin:0;display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-3);padding:var(--sp-3) var(--sp-4) 0;font-size:var(--fs-115);color:var(--gris-osc)}
+.portal-ley li{display:flex;align-items:center;gap:var(--sp-1)}
+.portal-ley li::before{content:"";width:.5rem;height:.5rem;border-radius:2px}
+.portal-grilla{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;padding:var(--sp-2) var(--sp-2) var(--sp-3);transition:opacity var(--dur-2) var(--ease-salida)}
+.portal-dn{font-size:var(--fs-100);font-weight:600;color:var(--gris-osc);text-align:center;padding:var(--sp-2) 0}
+.portal-dia{
+  position:relative;min-height:var(--tap);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:.1875rem;
+  padding:var(--sp-1) 0 0;font-family:var(--ff-mono);font-size:var(--fs-135);color:var(--sobre-oscuro);
+  background:transparent;border:1px solid transparent;border-radius:var(--r-s);cursor:pointer;
+  transition:transform var(--dur-1) var(--ease-salida);
+}
+.portal-dia:active{transform:scale(.92)}
+.portal-dia.fuera{color:var(--gris-osc);opacity:.5}
+.portal-dia.hoy{border-color:var(--sobre-oscuro)}
+.portal-dia.elegido{background:var(--primario);border-color:var(--primario);color:var(--sobre-club)}
+.portal-puntos{display:flex;gap:2px}
+.portal-puntos i{width:.375rem;height:.375rem;border-radius:50%}
+/* Sobre el rojo del día elegido, un punto rojo de partido no se ve: se le pone aro. */
+.portal-dia.elegido .portal-puntos i{box-shadow:0 0 0 1px var(--sobre-club)}
+.portal-cal-dia{border-top:1px solid var(--pub-borde);padding:var(--sp-3) var(--sp-4) var(--sp-4)}
+.portal-cal-t{font-family:var(--ff-titulo);font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:var(--fs-125);color:var(--gris-osc);margin:var(--sp-1) 0 var(--sp-2)}
+.portal-cal-nada{color:var(--gris-osc);font-size:var(--fs-135);margin:0 0 var(--sp-3)}
+.portal-evs{list-style:none;margin:0 0 var(--sp-3);padding:0;display:grid;gap:var(--sp-3)}
+.portal-ev{position:relative;padding-left:var(--sp-4)}
+.portal-ev::before{content:"";position:absolute;left:0;top:.125rem;bottom:.125rem;width:4px;border-radius:2px}
+.portal-ev small{display:block;font-size:var(--fs-115);font-weight:600;color:var(--gris-osc);letter-spacing:.04em}
+.portal-ev b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-190);letter-spacing:.02em;line-height:1.1;margin:.125rem 0}
+.portal-ev span{display:block;font-size:var(--fs-125);color:var(--gris-osc)}
+
+/* ---- categorías y sede ---- */
+.portal-cats{list-style:none;margin:0;padding:0;background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r)}
+.portal-cats li{display:grid;grid-template-columns:1fr auto;gap:0 var(--sp-3);align-items:baseline;padding:var(--sp-3) var(--sp-4)}
+.portal-cats li + li{border-top:1px solid var(--pub-borde)}
+.portal-cats b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-190);letter-spacing:.03em}
+.portal-cats li > div:first-child span{margin-left:var(--sp-2);font-size:var(--fs-115);color:var(--gris-osc);text-transform:uppercase;letter-spacing:.08em}
+.portal-cats-anios{font-family:var(--ff-mono);font-size:var(--fs-135);color:var(--sobre-oscuro);text-align:right}
+.portal-cats-hora{grid-column:1 / -1;font-size:var(--fs-125);color:var(--gris-osc);margin-top:var(--sp-1)}
+.portal-sede{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-top:var(--sp-3);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);padding:var(--sp-4)}
+.portal-sede small{display:block;font-size:var(--fs-100);color:var(--gris-osc);text-transform:uppercase;letter-spacing:.1em}
+.portal-sede b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-190)}
+.portal-sede span{display:block;font-size:var(--fs-135);color:var(--gris-osc)}
+.portal-sede .btn{width:auto;min-height:var(--tap);padding:0 var(--sp-4);font-size:var(--fs-145);text-decoration:none}
+
+.portal-foto{margin:0;border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden;background:var(--pub-tarjeta)}
+.portal-foto img{display:block;width:100%;height:auto;aspect-ratio:3 / 2;object-fit:cover}
+.portal-foto figcaption{padding:var(--sp-3) var(--sp-4);font-size:var(--fs-135);color:var(--gris-osc)}
+
+.portal-semillero h2{font-size:var(--fs-220)}
 
 /* ---- caja de autenticación ---- */
 .caja{max-width:23rem;margin-inline:auto;width:100%;padding:var(--sp-5) var(--sp-4) var(--sp-8)}

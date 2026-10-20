@@ -1,37 +1,95 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
-import { PORTAL, HOSTS_EMBEBIDOS, urlEmbedCalendario, enlaceFormulario, enlaceContacto, sponsorsValidos } from '../src/data/portal.js';
+import {
+  PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal,
+  sedeValida, aliasValido, fotoValida,
+} from '../src/data/portal.js';
+import { TIPOS_AGENDA, idCalendario } from '../src/data/agenda.js';
 
 /**
- * Lo que sale de acá termina en un <iframe src> o en un <a href> de la página
- * pública. Si una URL pegada a mano en la configuración está mal, la tarjeta
- * tiene que caer a "Próximamente", nunca a un iframe o un link a cualquier lado.
+ * Lo que sale de acá termina en un <a href>, un <img src> o un pedido a Google
+ * desde la página pública. Si algo pegado a mano en la configuración está mal,
+ * esa parte de la página no se muestra: nunca un link a cualquier lado.
  */
 
 const ID = 'abc123def@group.calendar.google.com';
+const CLAVE = `AIza${'x'.repeat(35)}`;
 
-test('urlEmbedCalendario arma la URL de agenda con el ID codificado', () => {
-  const u = new URL(urlEmbedCalendario(ID));
-  assert.equal(u.origin, 'https://calendar.google.com');
-  assert.equal(u.pathname, '/calendar/embed');
-  assert.equal(u.searchParams.get('src'), ID);
-  assert.equal(u.searchParams.get('mode'), 'AGENDA');
-  assert.equal(u.searchParams.get('ctz'), 'America/Argentina/Buenos_Aires');
-  assert.ok(urlEmbedCalendario(ID).includes('%40'), 'la @ del ID tiene que ir codificada');
+test('calendariosActivos: sin clave, ninguno; con clave, sólo los de tipo conocido e ID válido', () => {
+  const calendarios = [
+    { tipo: 'partido', titulo: 'Partidos', id: ID },
+    { tipo: 'evento', titulo: 'Eventos', id: null },
+    { tipo: 'fiesta', titulo: 'Raro', id: ID },
+    { tipo: 'charla', titulo: '', id: `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(ID)}` },
+  ];
+  assert.deepEqual(calendariosActivos({ clave: null, calendarios }), []);
+  assert.deepEqual(calendariosActivos({ clave: CLAVE, calendarios }), [
+    { tipo: 'partido', titulo: 'Partidos', id: ID },
+    { tipo: 'charla', titulo: 'charla', id: ID },
+  ]);
+  assert.deepEqual(calendariosActivos(undefined), []);
 });
 
-test('urlEmbedCalendario también acepta la URL de embed que copia Google', () => {
-  const pegada = `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(ID)}&ctz=Europe%2FMadrid`;
-  const u = new URL(urlEmbedCalendario(pegada));
-  assert.equal(u.searchParams.get('src'), ID);
-  assert.equal(u.searchParams.get('ctz'), 'America/Argentina/Buenos_Aires');
+test('la configuración de la agenda: tipos conocidos, IDs válidos o null', () => {
+  for (const c of PORTAL.agenda.calendarios) {
+    assert.ok(TIPOS_AGENDA.includes(c.tipo), `tipo desconocido: ${c.tipo}`);
+    assert.ok(c.titulo);
+    assert.ok(c.id === null || idCalendario(c.id), `ID inválido en "${c.titulo}"`);
+  }
+  assert.ok(PORTAL.contacto === null || enlaceContacto(PORTAL.contacto), 'contacto inválido');
 });
 
-test('urlEmbedCalendario sin ID o con un ID raro devuelve null', () => {
-  for (const malo of [null, undefined, '', '   ', 42, 'sin-arroba', 'a@b"><script>', 'javascript:alert(1)',
-    'https://evil.com/calendar/embed?src=' + encodeURIComponent(ID)]) {
-    assert.equal(urlEmbedCalendario(malo), null, String(malo));
+test('categorías del portal: años de la temporada, nombre propio opcional, horario opcional', () => {
+  const r = categoriasDelPortal([
+    { grupo: 'ESCUELITA', rama: 'Mixto' },
+    { grupo: 'U9', rama: 'Mixto', horario: ' Lun y Mié 18 h ' },
+    { grupo: 'MAYORES', nombre: 'Primera', rama: 'Femenino' },
+    { grupo: 'U10', rama: 'Mixto' },
+    null,
+  ], 2026);
+  assert.deepEqual(r, [
+    { nombre: 'Escuelita', rama: 'Mixto', anios: '2019 en adelante', horario: null },
+    { nombre: 'U9', rama: 'Mixto', anios: '2017 y 2018', horario: 'Lun y Mié 18 h' },
+    { nombre: 'Primera', rama: 'Femenino', anios: '2004 y antes', horario: null },
+  ]);
+  assert.deepEqual(categoriasDelPortal(PORTAL.categorias, 'no es año'), []);
+});
+
+test('cada categoría configurada es un grupo que existe', () => {
+  assert.equal(categoriasDelPortal(PORTAL.categorias, PORTAL.temporada).length, PORTAL.categorias.length);
+});
+
+test('sede: con nombre; el mapa sólo si es de Google Maps', () => {
+  assert.equal(sedeValida(null), null);
+  assert.equal(sedeValida({ nombre: '  ' }), null);
+  assert.deepEqual(sedeValida({ nombre: 'Microestadio', direccion: 'Parque', mapa: 'https://maps.app.goo.gl/abc' }),
+    { nombre: 'Microestadio', direccion: 'Parque', mapa: 'https://maps.app.goo.gl/abc' });
+  assert.equal(sedeValida({ nombre: 'X', mapa: 'https://evil.com/maps' }).mapa, null);
+  assert.equal(sedeValida({ nombre: 'X', mapa: 'javascript:alert(1)' }).mapa, null);
+});
+
+test('alias: de 6 a 20 letras, números, puntos o guiones', () => {
+  assert.deepEqual(aliasValido({ alias: ' NOB.BASQUET ', titular: 'Club' }), { alias: 'NOB.BASQUET', titular: 'Club' });
+  for (const malo of [null, {}, { alias: 'corto' }, { alias: 'a'.repeat(21) }, { alias: 'con espacio' }, { alias: 'x<y>zzzz' }]) {
+    assert.equal(aliasValido(malo), null, JSON.stringify(malo));
+  }
+});
+
+test('foto: sólo un archivo propio de public/portal y con texto alternativo', () => {
+  assert.deepEqual(fotoValida({ src: '/public/portal/club.jpg', alt: 'El microestadio' }), { src: '/public/portal/club.jpg', alt: 'El microestadio', epigrafe: null });
+  for (const mala of [null, { src: '/public/portal/club.jpg' }, { src: 'https://cdn.x/club.jpg', alt: 'x' },
+    { src: '/public/portal/../escudo.png', alt: 'x' }, { src: '/public/portal/club.png', alt: 'x' }]) {
+    assert.equal(fotoValida(mala), null, JSON.stringify(mala));
+  }
+  assert.ok(PORTAL.foto === null || (fotoValida(PORTAL.foto) && existsSync(PORTAL.foto.src.slice(1))), 'foto inválida o que no existe');
+});
+
+test('el respaldo de formularios no manda al formulario viejo de 2026', () => {
+  for (const f of PORTAL.formularios) {
+    assert.ok(f.titulo && f.texto, 'falta título o línea de ayuda');
+    assert.ok(enlaceFormulario(f.enlace), `enlace inválido en "${f.titulo}"`);
+    assert.doesNotMatch(f.enlace, /1FAIpQLSfXI11Sruothw4K67u6deMbRgfK0uZO00sfE-DBgsqam3peBQ/);
   }
 });
 
@@ -48,33 +106,12 @@ test('enlaceFormulario rechaza http, javascript y hosts no permitidos', () => {
   }
 });
 
-test('la configuración tiene los dos calendarios y lo que falta va en null', () => {
-  assert.equal(PORTAL.calendarios.length, 2);
-  for (const c of PORTAL.calendarios) {
-    assert.ok(c.titulo);
-    assert.ok(c.id === null || urlEmbedCalendario(c.id), `ID inválido en "${c.titulo}"`);
-  }
-  assert.ok(PORTAL.contacto === null || enlaceContacto(PORTAL.contacto), 'contacto inválido');
-});
-
-test('cada formulario de respaldo trae título, línea de ayuda y un enlace válido', () => {
-  assert.ok(PORTAL.formularios.length >= 1);
-  for (const f of PORTAL.formularios) {
-    assert.ok(f.titulo && f.texto, 'falta título o línea de ayuda');
-    assert.ok(enlaceFormulario(f.enlace), `enlace inválido en "${f.titulo}"`);
-  }
-});
-
 test('enlaceContacto acepta WhatsApp y mail; rechaza el resto', () => {
   assert.equal(enlaceContacto('https://wa.me/5493410000000'), 'https://wa.me/5493410000000');
   assert.equal(enlaceContacto('mailto:coordinacion@club.com'), 'mailto:coordinacion@club.com');
   for (const malo of [null, '', 'http://wa.me/5493410000000', 'javascript:alert(1)', 'https://evil.com/wa.me/1', 'mailto:', 'mailto:a b@club.com', 'mailto:ab@clubXcom', 'mailto:a@b.com?cc=otro@x.com', 'tel:+5493410000000']) {
     assert.equal(enlaceContacto(malo), null, String(malo));
   }
-});
-
-test('cada URL de embed sale de un host declarado en HOSTS_EMBEBIDOS', () => {
-  assert.ok(HOSTS_EMBEBIDOS.includes(new URL(urlEmbedCalendario(ID)).hostname));
 });
 
 test('clubId es el de Newell\'s de la semilla 0004, y es un uuid', () => {
