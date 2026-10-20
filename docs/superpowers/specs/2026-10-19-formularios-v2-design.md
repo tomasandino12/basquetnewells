@@ -74,7 +74,7 @@ Tomás quiere que, si un chico se golpea, el profe tenga a mano el teléfono del
 ## Las dos planillas para Semillero (contrato con datos conectados, `google/PRECARGA-2026.md`)
 Son planillas **aparte**, armadas con `IMPORTRANGE` desde hojas de salida del Tablero. Así cubren las respuestas nuevas **y** las de 2026 (`Inscripción 2026`), y no hace falta otra planilla para la precarga.
 - **Para Semillero:** las 6 columnas de siempre (`Apellido | Nombre | Fecha de nacimiento | Categoría | Mail del responsable | Rama`). Para un chico que sólo está en 2026, el mail queda vacío (ese formulario no lo pedía).
-- **Emergencias para Semillero:** `Apellido y nombre | Fecha de nacimiento | Teléfono del adulto | Contacto de urgencia | Afecciones | Alergias | Medicación | Indicación médica | Obra social`. Sólo pasan las filas cuya **última inscripción** tiene tildada la casilla "Emergencias en Semillero". Los chicos que sólo están en 2026 no tienen esa casilla (su consentimiento viejo no nombra a Semillero): **quedan afuera hasta que se reinscriban**, salvo que Tomás decida otra cosa (lo está viendo la coordinadora). Salud vigente: la de la última respuesta que pasó por S6 o, si no hay, la de 2026. Contacto: el de la última respuesta.
+- **Emergencias para Semillero:** `Apellido y nombre | Fecha de nacimiento | Teléfono del adulto | Contacto de urgencia | Afecciones | Alergias | Medicación | Indicación médica | Obra social`. Sólo pasan las filas cuya **última inscripción** tiene tildada la casilla "Emergencias en Semillero". Los chicos que sólo están en 2026 no tienen esa casilla (su consentimiento viejo no nombra a Semillero): **los de 2026 pasan si tienen tildado el "Consentimiento de Datos" de ese formulario** (Tomás, 19/10); la casilla nueva rige para las inscripciones nuevas. Salud vigente: la de la última respuesta que pasó por S6 o, si no hay, la de 2026. Contacto: el de la última respuesta.
 - De dónde sale cada columna de Emergencias en el formulario nuevo: Teléfono del adulto = `Adulto responsable - WhatsApp`; Contacto de urgencia = nombre y vínculo + teléfono; Afecciones = `Alertas médicas`; Alergias y Medicación = la respuesta Sí/No + el detalle; Indicación médica = la indicación especial + "tiene que tener a mano"; Obra social = la obra social. Sin DNI, afiliado, grupo sanguíneo ni domicilio.
 
 ## La carpeta del chico, para la CAB
@@ -83,7 +83,7 @@ Todo lo del chico queda en `Jugadores/APELLIDO, Nombre — DNI`: DNIs, fotos y c
 ## Primera temporada: los datos de 2026 cuentan como inscripción anterior
 Tomás (19/10): el formulario "Base de Datos Básquet NOB 2026" ya tiene la ficha de este año (101 respuestas). Ahí sí está el DNI, aunque la planilla vinculada lo perdió. Así que el que contesta "Sí" en la primera pregunta **no repite** lo que ya dio en 2026.
 - **De dónde se lee:** de las respuestas **dentro del formulario 2026**, no de su planilla editada a mano. El formulario no se modifica: sólo se leen sus respuestas.
-- **Cómo:** un script chico, **atado a la planilla Tablero** (*Extensiones → Apps Script* desde el Tablero), con un menú "Actualizar datos 2026". Arma la hoja `Inscripción 2026` del Tablero con una fila por DNI (la última respuesta) y sólo las columnas que la reinscripción no vuelve a pedir: DNI normalizado, apellido y nombre, fecha de nacimiento, nacionalidad, socio, grupo sanguíneo, salud y obra social. Se corre a mano, sin disparador. Es otro script, separado del de carpetas: el de carpetas no gana permisos.
+- **Cómo:** un script chico, **atado a la planilla Tablero** (*Extensiones → Apps Script* desde el Tablero), con una función `actualizar2026` que se corre a mano desde el editor (sin menú: un menú pediría un permiso más). Arma la hoja `Inscripción 2026` del Tablero con una fila por DNI (la última respuesta) y sólo las columnas que la reinscripción no vuelve a pedir: DNI normalizado, apellido y nombre, fecha de nacimiento, nacionalidad, socio, grupo sanguíneo, salud y obra social. Se corre a mano, sin disparador. Es otro script, separado del de carpetas: el de carpetas no gana permisos.
 - **Permisos nuevos que pide** (los acepta Tomás):
 
 | Permiso | Para qué |
@@ -110,6 +110,6 @@ Lo arma **Claude en el navegador**, con un prompt que prepara esta sesión (`goo
 - Cómo llegan las emergencias a la app (otra sesión).
 
 ## Decisiones de Tomás (19/10)
-1. Primera temporada: los datos del formulario 2026 cuentan como inscripción anterior (sección de arriba). **Falta confirmar este ajuste.**
+1. Primera temporada: los datos del formulario 2026 cuentan como inscripción anterior (sección de arriba). Confirmado el 19/10 ("los datos de este año cuentan como inscripción"). Para las emergencias de 2026 alcanza el "Consentimiento de Datos" que dieron en ese formulario: pasan sólo las filas que lo tienen tildado.
 2. Consultas sin login como hoy: sí.
 3. Alertas médicas obligatorias con "Ninguna": sí.
