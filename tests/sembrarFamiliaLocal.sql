@@ -51,9 +51,9 @@ begin
   -- de prueba y no hay nadie que los acepte. Sin esto la app frena en esa pantalla.
   -- `usuario` lo sella un trigger con auth.uid(): se impersona a cada cuenta.
   perform set_config('request.jwt.claims', json_build_object('sub', coord, 'role', 'authenticated')::text, true);
-  insert into public.aceptacion_legal (version) values ('2026-09-26');
+  insert into public.aceptacion_legal (version) values ('2026-10-19');
   perform set_config('request.jwt.claims', json_build_object('sub', papa, 'role', 'authenticated')::text, true);
-  insert into public.aceptacion_legal (version) values ('2026-09-26');
+  insert into public.aceptacion_legal (version) values ('2026-10-19');
 
   perform set_config('request.jwt.claims', json_build_object('sub', coord, 'role', 'authenticated')::text, true);
   insert into public.miembro_club (user_id, club_id, es_entrenador, es_coordinador) values (coord, c, false, true);

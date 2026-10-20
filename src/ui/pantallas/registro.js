@@ -24,6 +24,7 @@ import { renderPanorama } from './coordPanorama.js';
 import { renderProfes } from './coordProfes.js';
 import { renderInventarioCoordinacion, renderInventarioLectura } from './inventario.js';
 import { renderRubros } from './coordRubros.js';
+import { renderFormularios } from './coordFormularios.js';
 import { renderFinanzas } from './coordFinanzas.js';
 import { renderMiPerfil } from './miPerfil.js';
 import { refrescarPlanFisico } from './planFisico.js';
@@ -37,6 +38,7 @@ import { renderJugProgreso } from './jugProgreso.js';
 import { renderJugJugadas, iniciarJugJugadas } from './jugJugadas.js';
 import { renderFamChicos } from './famChicos.js';
 import { renderFamilias } from './coordFamilias.js';
+import { renderTemporada } from './coordTemporada.js';
 
 /**
  * Punto único donde se registran las pantallas. Existe para que main.js no
@@ -71,8 +73,10 @@ export function registrarPantallas() {
   registrarPantalla('p-coord-profes', { titulo: 'Profes', render: renderProfes });
   registrarPantalla('p-coord-inventario', { titulo: 'Inventario', render: renderInventarioCoordinacion });
   registrarPantalla('p-coord-familias', { titulo: 'Familias', render: renderFamilias });
+  registrarPantalla('p-coord-temporada', { titulo: 'Cambio de temporada', render: renderTemporada });
   registrarPantalla('p-coord-finanzas', { titulo: 'Finanzas', render: renderFinanzas });
   registrarPantalla('p-coord-rubros', { titulo: 'Rubros', render: renderRubros });
+  registrarPantalla('p-coord-formularios', { titulo: 'Formularios', render: renderFormularios });
   registrarPantalla('p-mi-perfil', { titulo: 'Mi perfil', render: renderMiPerfil });
   // Modo jugador (0030): sólo lectura, sólo lo suyo.
   registrarPantalla('p-jug-recursos', { titulo: 'Recursos', render: renderJugRecursos });

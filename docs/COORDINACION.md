@@ -21,6 +21,20 @@ guarda cómo estaba antes (`movimiento_cambio`). Verificación de permisos:
 `tests/verificarFinanzas.sql` en el SQL Editor (todo `OK`). No se publica a las
 familias: eso es otro módulo (ver la spec de finanzas).
 
+**Cambio de temporada (0059).** En Profes → *Cambio de temporada*: el
+coordinador abre la temporada nueva (se copian los planteles), asigna profes a
+los planteles nuevos y recién después pasa a los chicos, que el asistente
+propone según su año de nacimiento (Escuelita 2019+, U9 2017–18, U11 2015–16,
+U13 2013–14, U15 2011–12, U17 2009–10, U21 2005–08, Mayores antes; corre un año
+por temporada). Los que dejan el club pierden sus datos de emergencia; su
+historia queda. Los pases se pueden confirmar de a tandas.
+
+**Datos de emergencia (0059).** Teléfono, contacto de urgencia, alertas médicas,
+alergias, medicación, obra social. Los carga el profe (Plantel → *Importar
+emergencias*) desde la planilla "Emergencias para Semillero"; los ven el profe
+de la categoría (ficha y Plantel) y el coordinador (Profes → *Datos de
+emergencia*, sólo lectura). No se guardan en el celular.
+
 Lo que **no** se hace desde la app, a propósito:
 - Crear un coordinador.
 - Darle el rol de entrenador a alguien que ya es coordinador (ni a uno mismo).
@@ -178,3 +192,155 @@ Esa lista de **Esperando acceso** no incluye a quien ya tiene una cuenta de
 jugador vigente. Un chico que pidió acceso y todavía no fue aprobado sí puede
 aparecer ahí: a un jugador se lo aprueba desde PLANTEL, no desde acá, y
 habilitarlo como profe le daría acceso a los datos de otros menores.
+
+## El portal del básquet (`/`) y los formularios de las familias
+
+La página que se reparte a las familias es el **portal**, en la raíz del sitio
+(`/`). Semillero, la aplicación de profes, coordinación y jugadores, vive en
+`/app` y el portal tiene un botón que lleva ahí. El portal muestra: los pasos
+("¿Qué tengo que hacer?"), los formularios, los calendarios, la información, y
+a quién escribirle si hay dudas. No tiene sesión ni muestra datos de chicos.
+
+### Formularios: se cargan desde la app, sin tocar código
+
+Coordinación → pestaña **Familias** → botón **Formularios de la página del
+básquet**. Ahí la coordinación:
+
+- **Agrega** un formulario: título, una línea de "para qué es y qué tienen que
+  tener a mano" (la familia la lee antes de abrirlo) y el enlace de Google
+  Forms. Ejemplo: *"hay que pagar las rifas"* → se suma "Comprobante de
+  rifas", se escribe qué tener a mano (la foto del comprobante) y se pega el
+  enlace. La familia lo ve en el portal al toque.
+- **Edita** tocando el formulario; **sube o baja** con las flechas; **oculta**
+  cuando ya no corresponde (por ejemplo, al cerrar la inscripción). **No se
+  borra**: queda oculto y se puede volver a mostrar.
+- El enlace tiene que ser de Google Forms (`https://docs.google.com/forms/…` o
+  `https://forms.gle/…`); la app y la base rechazan cualquier otro.
+- **Esto lo ve cualquiera**, sin entrar con ninguna cuenta: no pongas nombres
+  de chicos ni datos personales en el título ni en el texto.
+- **Primera vez, después de aplicar la migración 0058:** la lista arranca
+  vacía y el portal dice que no hay formularios abiertos. Entrá a esa pantalla
+  y tocá **"Agregar el de Inscripción"** (viene precargado) y **Guardar**.
+- Para ver cómo lo ven las familias, el enlace "Ver cómo lo ven las familias"
+  abre el portal en otra pestaña.
+
+Los formularios y lo que suben las familias (DNI, fotos, datos de salud, 
+comprobantes) viven en Google y **nunca pasan por Semillero ni por la base**.
+Quién los recibe y cómo se organizan en Drive: ver la guía de inscripción en
+Google (rama `claude/inscripcion-google-41cf4e`).
+
+### Dos lugares especiales: "Quiero jugar" y "Sumate como sponsor"
+
+Al agregar o editar un formulario, el selector **"Cómo se muestra en la página"**
+tiene tres opciones:
+
+- **Común**: va en la lista de formularios (inscripción, pase, rifas…).
+- **Quiero jugar en Newell's (consultas)**: se muestra **destacado, arriba de todo**
+  en el portal, con la ayuda paso a paso, y es el formulario al que lleva el QR
+  impreso (ver abajo).
+- **Sumate como sponsor o colaborador**: va en su propia sección del portal.
+
+Cada lugar especial es **único**: si marcás un formulario y otro ya lo tenía, la
+app te avisa ("Hoy lo tiene «X»: al guardar, ese formulario pasa a ser común") y
+se lo saca. Un formulario **oculto** no se muestra aunque conserve su lugar: el
+portal dice "Próximamente" (sponsors) o no muestra el acceso (consultas).
+
+### QR para imprimir: `/consultas`
+
+El cartel y el código QR (carpeta `docs/cartel-qr/`, guía en su `LEEME.md`) apuntan
+a una **dirección fija**, `/consultas`. Esa dirección **lleva sola al formulario de
+consultas que esté vigente**: si cambiás el formulario (editándolo o marcando otro
+como "Quiero jugar"), el QR ya impreso sigue funcionando. Si no hay ninguno
+abierto, la persona ve un mensaje claro con el enlace al portal.
+
+**El cartel está como BORRADOR ("no imprimir hasta definir el dominio")**: el QR
+lleva escrito el dominio, y si el portal cambia de dominio los carteles impresos
+quedan apuntando al viejo. Antes de imprimir, escaneá el cartel con un celular.
+
+### Logos de sponsors
+
+La franja de logos del portal está preparada y **oculta mientras no haya ninguno**.
+Para sumar uno hoy (es un cambio de código chico, con deploy): poner el archivo
+(png, jpg, webp o svg, sin espacios en el nombre) en `public/sponsors/` y agregarlo
+a `sponsors` en `src/data/portal.js`:
+`{ nombre: 'Ferretería Sur', logo: '/public/sponsors/ferreteria-sur.png', enlace: 'https://…' }`
+(el `enlace` es opcional y tiene que ser https). Un logo con otra ruta, sin nombre o
+cuyo archivo no está, no se muestra. Si más adelante son muchos o cambian seguido,
+la idea es una pantalla "Sponsors" como la de Formularios, con los logos en
+Supabase Storage (habría que sumar ese host a `img-src` de la política de
+seguridad); no está construida.
+
+### Calendarios, información y contacto: archivo `src/data/portal.js`
+
+Estos tres sí son cambios de código (se hacen una vez y casi no cambian):
+
+**Calendarios** (dos Google Calendar: partidos y torneos; eventos y
+recaudación). Para conectarlos, una sola vez, desde una compu:
+1. En Google Calendar → Configuración del calendario → "Permisos de acceso":
+   marcar **"Hacer disponible públicamente"**. Sin eso el embed sale vacío.
+2. En la misma pantalla, "Integrar el calendario" → copiar el **ID de
+   calendario** (termina en `@group.calendar.google.com`). También sirve pegar
+   la URL de "Código para insertar": de ahí se toma sólo el ID.
+3. Pegarlo en `id:` del calendario que corresponde en `src/data/portal.js`,
+   `npm run test:q`, commit y deploy. Mientras sea `null`, se ve "Próximamente".
+
+> ## ⚠️ El calendario es público: NUNCA nombres de chicos
+>
+> Cualquiera que abra la página ve **todos** los eventos, con su título y su
+> descripción. **No escribas nombres de jugadores** ni datos personales en
+> ningún evento. Sí: *"U13 vs. Central, 10 h, cancha 2"*. No: *"U13: convocados
+> Pérez, Gómez…"*. Si una persona carga eventos, avisale esto antes de darle
+> el permiso.
+
+**Que varias personas carguen eventos.** No hace falta que lo cargue todo una
+sola persona. Ejemplo: alguien de la subcomisión va a hacer una pollada y la
+carga él mismo en el calendario. Cómo se le da permiso (lo hace **el dueño del
+calendario**, o sea la cuenta de Google de la subcomisión que lo creó):
+1. Abrir **Google Calendar** desde una compu, con la cuenta dueña del calendario.
+2. En la lista de la izquierda ("Mis calendarios"), pasar el mouse por el
+   calendario, tocar los **tres puntitos** → **Configuración y uso compartido**.
+3. Bajar hasta **"Compartir con personas o grupos específicos"** → **Agregar
+   personas y grupos** → escribir el mail de la persona.
+4. En "Permisos", elegir **"Hacer cambios en los eventos"** → **Enviar**.
+5. Esa persona acepta la invitación (le llega por mail) y, desde la **aplicación
+   de Google Calendar de su celular**, elige ese calendario al crear un evento.
+   El evento aparece **solo** en el portal, sin tocar nada más (a veces tarda unos
+   minutos).
+
+**Para sacarle el acceso**, el dueño vuelve a esa misma lista ("Compartir con
+personas o grupos específicos") y toca la **X** al lado del mail. Los eventos que
+ya cargó quedan; si hay que sacarlos, se borran desde Google Calendar.
+
+**Tres consejos para que no se cuele nada personal.** Lo personal de cada persona
+(su turno médico, su cumpleaños) **no aparece en la página**: sólo aparece lo que
+se guarda en el calendario del básquet. El riesgo es guardar un evento personal
+ahí por error. Para evitarlo:
+1. **Ponerle a cada calendario un nombre que avise que es público**, por ejemplo
+   *"Básquet NOB · Eventos (PÚBLICO)"*. Se cambia en Configuración y uso
+   compartido → Nombre.
+2. **Darle un color propio**, distinto del personal, así se nota de un vistazo
+   en cuál se está cargando (tres puntitos del calendario → elegir color).
+3. **Antes de guardar un evento, mirar en qué calendario queda.** El que viene
+   elegido de entrada es el personal de cada uno; hay que cambiarlo al del
+   básquet. Si algo personal se cuela igual, cualquiera con permiso para hacer
+   cambios en los eventos lo puede borrar.
+
+Esto **no es lo mismo** que "Hacer disponible públicamente" del paso 1 de arriba:
+eso es sólo para que el portal pueda **mostrar** el calendario; los permisos de
+las personas de acá arriba son los que dejan **cargar** eventos. Dale el permiso
+a cada persona por separado y sólo a quien lo necesita.
+
+**Contacto** ("¿Dudas? Escribile al coordinador"): en `contacto:` va un link de
+WhatsApp (`https://wa.me/549341…`, con el código de país y de área, sin `+` ni
+espacios) o un mail (`mailto:coordinacion@…`). Otro formato no se acepta.
+
+**Información** (categorías, entrenamientos, dónde se entrena): es texto fijo en
+`public/portal.html`, marcado con `PENDIENTE`, hasta que el club lo pase.
+
+### Login de Semillero: la URL de retorno
+
+El login vuelve a `https://app-semillero.vercel.app/app`. Lo cubre el comodín
+`https://app-semillero.vercel.app/**` de Supabase → Authentication → URL
+Configuration (ver `docs/CONFIGURAR-AUTH.md`); alcanza con confirmar que esa
+entrada existe. Los mails viejos que apuntan a `/` los reenvía el portal a
+`/app`.

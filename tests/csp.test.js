@@ -93,3 +93,41 @@ test('las fuentes se sirven desde el propio dominio, sin Google Fonts', () => {
   assert.equal(archivos.length, 10);
   for (const ruta of archivos) assert.ok(existsSync(path.join(raiz, ruta)), `falta ${ruta}`);
 });
+
+// La página pública embebe los calendarios de Google que arma portal.js. Si
+// el host no está en frame-src, el iframe queda en blanco sólo en producción.
+test('frame-src permite cada host de calendario que arma portal.js', async () => {
+  const { HOSTS_EMBEBIDOS } = await import('../src/data/portal.js');
+  for (const host of HOSTS_EMBEBIDOS) assert.ok(directiva('frame-src')?.includes(`https://${host}`), `frame-src sin https://${host}`);
+});
+
+test('frame-src sólo deja YouTube sin cookies y Google Calendar, sin comodines', () => {
+  const f = directiva('frame-src');
+  assert.ok(f, 'falta frame-src');
+  assert.ok(!f.some((v) => v.includes('*') || v === 'https:'), f.join(' '));
+  assert.deepEqual([...f].sort(), ['https://calendar.google.com', 'https://www.youtube-nocookie.com']);
+});
+
+// El portal (public/portal.html) también lee la base, así que lleva el mismo
+// import map. Si alguien lo toca en un solo lado, el hash cambia y el portal
+// queda sin formularios en producción (la CSP la pone Vercel, no el local).
+test('el import map del portal tiene su hash en script-src y no hay otros scripts inline', () => {
+  const portal = readFileSync(path.join(raiz, 'public', 'portal.html'), 'utf8').replace(/\r\n/g, '\n');
+  const m = portal.match(/<script type="importmap">([\s\S]*?)<\/script>/);
+  assert.ok(m, 'el portal no tiene import map');
+  const hash = `'sha256-${createHash('sha256').update(m[1], 'utf8').digest('base64')}'`;
+  assert.ok(directiva('script-src')?.includes(hash), `script-src no tiene ${hash} del portal`);
+  const inline = [...portal.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>/g)].filter((x) => !/type="importmap"/.test(x[1]));
+  assert.deepEqual(inline.map((x) => x[0]), []);
+});
+
+// Lo mismo para /consultas: lee la lista de formularios, así que lleva el mismo import map.
+test('el import map de /consultas tiene su hash en script-src y no hay otros scripts inline', () => {
+  const pagina = readFileSync(path.join(raiz, 'public', 'consultas.html'), 'utf8').replace(/\r\n/g, '\n');
+  const m = pagina.match(/<script type="importmap">([\s\S]*?)<\/script>/);
+  assert.ok(m, 'consultas.html no tiene import map');
+  const hash = `'sha256-${createHash('sha256').update(m[1], 'utf8').digest('base64')}'`;
+  assert.ok(directiva('script-src')?.includes(hash), `script-src no tiene ${hash} de consultas.html`);
+  const inline = [...pagina.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>/g)].filter((x) => !/type="importmap"/.test(x[1]));
+  assert.deepEqual(inline.map((x) => x[0]), []);
+});

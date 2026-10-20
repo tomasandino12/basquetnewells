@@ -609,6 +609,14 @@ svg.g{width:100%;display:block;overflow:visible}
 .profe .det{font-size:var(--fs-115);color:var(--gris)}
 .profe-cat{display:flex;align-items:center;gap:var(--sp-3);border-top:1px solid var(--linea);padding-top:var(--sp-2)}
 .profe .btn.chico{align-self:flex-start}
+/* Panel de papeles y pagos de coordinación: una fila por chico que se abre con el detalle. */
+.papel-cab{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-2);width:100%;min-height:var(--tap);padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.papel-chips{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.papel-linea{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-2) 0;font-size:var(--fs-135);border-bottom:1px solid var(--linea)}
+.papel-linea.apilada{flex-direction:column;align-items:flex-start;gap:var(--sp-1)}
+.papel-detalle:not([hidden]){display:flex;flex-direction:column;gap:var(--sp-2);border-top:1px solid var(--linea);padding-top:var(--sp-2)}
+.papel-links{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.papel-links .btn.chico{text-decoration:none}
 .casilla{width:100%;text-align:left;cursor:pointer}
 
 /* ---- mi perfil ---- */
@@ -705,6 +713,10 @@ svg.g{width:100%;display:block;overflow:visible}
 /* Finanzas: las filas tocables de rubros y movimientos son botones a todo el
    ancho, como las del inventario. */
 .fin-fila{width:100%;text-align:left;font:inherit;color:inherit;border:0}
+/* Formularios del portal (coordinación): el texto es un botón que ocupa la fila y las flechas van al lado. */
+.form-fila{padding-block:var(--sp-1);gap:var(--sp-2)}
+.form-fila-texto{flex:1;min-width:0;min-height:var(--tap);display:block;text-align:left;font:inherit;color:inherit;background:transparent;border:0;padding:var(--sp-2) 0}
+.form-fila-texto .det{display:block;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .fin-sub{display:block;font-weight:400}
 .fin-fecha{flex:0 0 auto;font-size:var(--fs-125);color:var(--gris)}
 .fin-monto{flex:0 0 auto;font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-145)}

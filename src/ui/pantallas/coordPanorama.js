@@ -13,6 +13,9 @@ import { variacionHtml } from '../componentes/variacion.js';
 import { verDetallesHtml } from '../componentes/verDetalles.js';
 import { $ } from '../dom.js';
 import { textoDeError } from '../errores.js';
+import { ir } from '../main.js';
+import { resumenDePapeles } from './coordPapeles.js';
+import { abrirPapelesYPagos } from './coordFamilias.js';
 
 const contenedor = () => $('coord-panorama-contenido');
 
@@ -223,9 +226,12 @@ export async function renderPanorama() {
     <div class="pad">
       <div class="eyebrow">Temporada ${escaparHtml(vista.temporada.nombre)}</div>
       <div class="p">Cada categoría contra sí misma a lo largo de la temporada. No se comparan entre sí: son chicos distintos en momentos distintos.</div>
+      <div id="panorama-papeles"></div>
       <div class="panorama">${vista.tarjetas.map((t) => tarjetaHtml(t, logrosPorPlantel ? (logrosPorPlantel.get(t.plantelId) ?? []) : null)).join('')}</div>
     </div>
   `;
+
+  pintarTarjetaPapeles(club.id);
 
   for (const t of vista.tarjetas) {
     for (const tipo of TIPOS) {
@@ -243,4 +249,32 @@ export async function renderPanorama() {
       }, { alto: 140, min: 0, max: 100 });
     }
   }
+}
+
+/**
+ * Una línea que lleva al panel de papeles y pagos. Se pide aparte y sin
+ * esperarla: si no hay conexión con Google o algo falla, no aparece y el
+ * panorama no se entera.
+ */
+async function pintarTarjetaPapeles(clubId) {
+  const resumen = await resumenDePapeles(clubId);
+  const hueco = $('panorama-papeles');
+  if (!resumen || !hueco) return;
+  hueco.innerHTML = `
+    <div class="tarj tocable" role="button" tabindex="0" id="panorama-papeles-tarj">
+      <div class="eyebrow">Papeles y pagos</div>
+      <div class="p"><span class="mono">${resumen.debenAlgo}</span> deben algo · <span class="mono">${resumen.sinPapeles}</span> sin los papeles completos${resumen.viejo ? ' · <strong>sin novedades de Google hace horas</strong>' : ''}</div>
+    </div>`;
+  const abrir = () => {
+    abrirPapelesYPagos();
+    ir('p-coord-familias', { push: true });
+  };
+  const tarjeta = $('panorama-papeles-tarj');
+  tarjeta.addEventListener('click', abrir);
+  tarjeta.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      abrir();
+    }
+  });
 }

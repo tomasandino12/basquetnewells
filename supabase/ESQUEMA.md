@@ -305,6 +305,15 @@ Su recorrido temporada por temporada (spec `docs/superpowers/specs/2026-10-16-hi
 - **Qué devuelve:** `temporadas`, `planteles` (con los `profes` que los tuvieron a cargo, vigentes y cerrados, por el nombre de Auth), `pertenencias`, `planFisico` (el plan de la **categoría**: no hay asistencia, así que no dice a cuántas sesiones fue), `cargas`, `recursos`, `saltos`, `sprints`, `yoyos`, `corporales`, `tiro` y `partidos`. Las claves que no son del marco (`planteles`, `temporadas`, `pertenencias`) son las `FUENTES` de `src/data/historiaJugador.js`: sumar misiones o asistencia es `create or replace` de la función con una clave más, una línea en `FUENTES` y un bloque en `historiaTemporadas.js`.
 - **Verificación:** `tests/verificarHistoria.sql` (6 casos: el profe de U17 ve 2025; no ve a un chico de U15 ajeno; ni coordinador, ni jugador, ni baja, ni un jugador inexistente). Para probar en el navegador, `tests/sembrarHistoriaLocal.sql` carga una temporada 2025 de mentira **sólo en la base local**.
 
+### Formularios del portal: `formulario_portal` y `formularios_publicos` (0058)
+Los formularios de Google que el portal público (`/`) le muestra a las familias: título, una línea de ayuda (`texto`: para qué es y qué tener a mano), `enlace`, `orden` y `activo` (spec `docs/superpowers/specs/2026-10-18-portal-v2-design.md` §3). **Sin ningún dato de personas**: los formularios y lo que suben las familias viven en Google.
+
+- **Única excepción a 0027 ("anon no tiene nada"), aprobada por Tomás el 18/10.** anon **no** recibe nada sobre la tabla: sólo `execute` de `formularios_publicos(club)`, `security definer`, que devuelve título, texto y enlace de las filas **activas** de ese club, en orden y con un tope de 50.
+- **Escribe sólo la coordinación del club** (`es_coordinador_de`): insert y update por columna; **sin delete** (se oculta con `activo = false`). La tabla completa, con las ocultas y la autoría, la lee sólo la coordinación. El club de una fila y la autoría no los toca el cliente; `sellar_formulario_portal` pone `actualizado_por/en`.
+- **El enlace sólo puede ser un Google Form** (`https://docs.google.com/forms/…` o `https://forms.gle/…`, sin usuario, espacios ni comillas): el mismo patrón que `PATRON_ENLACE_FORMULARIO` de `src/data/portal.js`. Largos en `limites.js`.
+- **Destino (0061):** columna `destino` (nula = común; `consultas` = "Quiero jugar en Newell's", destacado y destino de la dirección fija `/consultas` del QR; `colaboradores` = sección de sponsors), con un check y un **índice único parcial por (club, destino)**: a lo sumo un formulario por destino. `formularios_publicos` se rehizo (drop + create) y devuelve también `destino`; `anon` sigue ejecutando sólo esa función y no tiene permisos sobre la columna. Verificación: `tests/verificarDestinoFormulario.sql` (8 casos); contrato: `tests/contratoDestinoFormulario.test.js`; deshacer en local: `tests/rollback0061.sql`. **Aplicar 0061 antes de publicar el código que la usa** (el panel nuevo pide la columna).
+- **Verificación:** `tests/verificarFormularioPortal.sql` (8 casos: la coordinación escribe y queda sellada; entrenador, coordinación de otro club y anon no leen ni escriben la tabla; la función devuelve sólo lo activo del club pedido; enlaces y textos inválidos rechazados; nadie borra). Contrato: `tests/contratoFormularioPortal.test.js`. Deshacer en local: `tests/rollback0058.sql`.
+
 ## Políticas RLS
 
 Hasta 0015 la autorización era sólo por club: quien tenía una fila en `miembro_club` veía **todos los planteles**. Desde 0016 pasa por la asignación, y **lectura y escritura son ejes separados**. Desde 0018 el coordinador no lee datos individuales.
@@ -465,6 +474,61 @@ Spec: `docs/superpowers/specs/2026-10-18-cuentas-familia-design.md`.
   `cerrar_vinculo_familia(id)`. Contrato de grants:
   `tests/contratoAccesoFamilia.test.js`. Verificación:
   `tests/verificarCuentasFamilia.sql` (12 casos); deshacer: `tests/rollback0057.sql`.
+
+## Papeles y pagos desde Google (0060)
+
+Spec: `docs/superpowers/specs/2026-10-19-panel-docs-pagos-design.md`. **Lo
+primero de afuera que escribe en la base**: el Apps Script del club, con la
+clave anon y un token del club.
+
+- `conexion_google (club_id pk, token_hash, rotado_por, rotado_en,
+  ultimo_envio_en, tablero_url, gid_tablero, gid_pagos, documentos_orden,
+  conceptos_orden)`: un token por club, guardado como sha256. Lo genera
+  `rotar_conexion_google(club)` (coordinación; devuelve el token una sola vez y
+  deja sin efecto el anterior); `desconectar_google(club)` borra el token y
+  todo el estado. El trigger sella `club_id` y quién rotó.
+- `estado_inscripcion (id, club_id, apellido, nombre, clave, fecha_nacimiento,
+  categoria_texto, rama, fila, documentos jsonb, completo, pagos jsonb,
+  creado_en, cambio_en)`: una fila por chico del tablero, única por
+  `(club_id, clave, fecha_nacimiento)` con `nulls not distinct`. `documentos`
+  = `{título: bool}`; `pagos` = `{concepto: 'falta'|'subido'|'verificado'}`.
+  `cambio_en` se mueve sólo si cambió el estado. Sin DNI ni archivos.
+- **Ninguna de las dos tiene policies ni grants.** `empujar_estado_google(token,
+  envío)` es la única función que puede llamar `anon`: valida el token, un
+  envío por minuto, ≤ 1 MB, ≤ 1500 filas, ≤ 25 documentos y conceptos, y
+  rechaza el envío entero si un texto tiene 7 dígitos seguidos (`PARECE_DNI`).
+  Reemplaza el estado del club (lo que no vino se borra).
+- Coordinación lee con `estado_inscripcion_del_club(club)` (empareja con las
+  fichas por `clave_inscripcion` + fecha, como `cruzarConPadron`: `ok`,
+  `homonimo`, `sin_ficha`, `sin_tablero`; nunca devuelve la fecha) y
+  `conexion_google_del_club(club)`. Contrato: `tests/contratoEstadoInscripcion.test.js`.
+  Verificación: `tests/verificarEstadoInscripcion.sql`; deshacer: `tests/rollback0060.sql`.
+
+
+## Cambio de temporada y emergencias (0059)
+
+Spec: `docs/superpowers/specs/2026-10-19-datos-conectados-design.md`.
+
+- `abrir_temporada(club, nombre)`, `pases_de_temporada(club)` y
+  `confirmar_pases(club, filas)`: `security definer` con `es_coordinador_de`.
+  Abrir copia los planteles de la vigente; los pases devuelven el **año** de
+  nacimiento (no la fecha) y los códigos de categoría; confirmar inserta la
+  pertenencia nueva y después cierra las viejas (el trigger de 0040 sella
+  `hasta` y `cerrado_por`). Una excepción acotada a 0018: armar quién está en
+  qué plantel es estructura, como asignar profes.
+- `emergencia_jugador (jugador_id, club_id, telefono_adulto,
+  contacto_urgencia, alertas[], alergias, medicacion, indicacion, obra_social,
+  actualizado_por, actualizado_en)`: salud de menores. `alertas` es una lista
+  cerrada (check; la espeja `AFECCIONES` en `src/data/emergencias.js`). La ve
+  el profe con el chico vigente en un plantel suyo y el coordinador del club;
+  nunca el jugador ni la familia. Escribe sólo `importar_emergencias(payload)`
+  (`security invoker`, `puede_escribir_plantel`). **Sin delete**: un trigger
+  en `pertenencia` la borra cuando el chico queda sin pertenencia vigente.
+  `emergencias_del_plantel(plantel)` devuelve la lista con nombre (el
+  coordinador no lee `jugador`); también trae a los chicos sin datos.
+- Verificación: `tests/verificar0059.sql` (9 casos); deshacer:
+  `tests/rollback0059.sql`; contratos: `tests/contratoEmergencia.test.js`.
+- Texto legal que hay que publicar con esta migración: `docs/LEGAL-EMERGENCIAS.md`.
 
 ## Orden de persistencia de una importación
 

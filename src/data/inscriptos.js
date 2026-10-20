@@ -4,6 +4,7 @@
  * Spec: docs/superpowers/specs/2026-10-18-cuentas-familia-design.md §3.
  */
 import { clavearNombre } from '../parser/parserCabb.js';
+import { categoriaPorNacimiento } from './categorias.js';
 
 // Texto exacto del desplegable del formulario de inscripción (11 opciones).
 // `null` = Semillero no tiene esa categoría; se saltea con aviso. U13 mixto
@@ -53,20 +54,41 @@ export function normalizarMail(texto) {
   return MAIL.test(m) ? m : null;
 }
 
+const GRUPO_DE_CODIGO = (codigo) => (codigo.startsWith('MAY_') ? 'MAYORES' : codigo.slice(0, -1));
+
+/**
+ * Si el año de nacimiento no cae en la categoría que eligió la familia, un
+ * texto para que el profe lo vea antes de tildar; null si coincide o no se
+ * puede saber. Sólo avisa: la categoría de la CABB también depende de dónde
+ * lo cite el profe.
+ */
+function avisoPorAnio(fechaNacimiento, anioTemporada, codigoCategoria) {
+  if (anioTemporada == null) return null;
+  const r = categoriaPorNacimiento(fechaNacimiento, anioTemporada, codigoCategoria.slice(-1));
+  if (!r.grupo || r.grupo === GRUPO_DE_CODIGO(codigoCategoria)) return null;
+  return `Por año de nacimiento le corresponde ${r.grupo === 'MAYORES' ? 'Mayores' : r.grupo === 'ESCUELITA' ? 'Escuelita' : r.grupo}.`;
+}
+
 /**
  * Filas del parser → inscriptos del plantel `codigoCategoria`.
  * - Junta las filas del mismo chico (apellido + nombre + fecha) y reúne sus
  *   mails: dos responsables son dos filas.
  * - `salteadas` dice qué no es de este plantel y por qué, para avisarlo.
- * - Un mail ilegible no tira la fila: el chico entra sin ese mail.
+ * - Un mail ilegible no tira la fila: el chico entra sin ese mail. Sin mail
+ *   también entra: queda sin vínculo de familia.
+ * - U13 es mixto en el formulario: en el plantel U13M las filas sin rama se
+ *   ofrecen con `sinRama` (el profe decide) en vez de saltearse.
+ * - `anioTemporada` (opcional) suma `aviso` cuando el año de nacimiento no
+ *   coincide con la categoría elegida.
  */
-export function inscriptosDelPlantel(filas, codigoCategoria) {
+export function inscriptosDelPlantel(filas, codigoCategoria, anioTemporada = null) {
   const porChico = new Map();
   const salteadas = [];
   const advertencias = [];
   for (const f of filas) {
     const { codigo, motivo } = mapearCategoria(f.categoriaTexto, f.rama);
-    if (codigo !== codigoCategoria) {
+    const sinRama = codigoCategoria === 'U13M' && motivo === 'U13 mixto sin rama';
+    if (codigo !== codigoCategoria && !sinRama) {
       salteadas.push({ fila: f.fila, motivo: motivo ?? `es de ${codigo}` });
       continue;
     }
@@ -83,6 +105,8 @@ export function inscriptosDelPlantel(filas, codigoCategoria) {
         nombreLimpio: `${f.apellido}, ${f.nombre}`,
         fechaNacimiento: f.fechaNacimiento,
         mails: mail ? [mail] : [],
+        sinRama,
+        aviso: avisoPorAnio(f.fechaNacimiento, anioTemporada, codigoCategoria),
       });
     }
   }

@@ -1,0 +1,3 @@
+# El cartel con el QR se compara byte a byte en tests/cartelQr.test.js: git no tiene que tocarle los finales de línea.
+docs/cartel-qr/*.pdf binary
+docs/cartel-qr/*.png binary

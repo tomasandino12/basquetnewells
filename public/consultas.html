@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<!-- Se sirve con Cache-Control: no-store (vercel.json): cada vez que alguien escanea el QR
+     se busca el formulario de consultas vigente. -->
+<link rel="icon" href="/public/escudo.png" type="image/png">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#131316">
+<meta name="robots" content="noindex">
+<title>Quiero jugar en Newell&#39;s · Básquet</title>
+<meta name="description" content="Consultas para sumarte al básquet formativo de Newell's Old Boys.">
+
+<link rel="preload" href="/public/fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/public/fonts/barlow-condensed-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/public/css/tokens.css">
+<link rel="stylesheet" href="/public/css/base.css">
+<link rel="stylesheet" href="/public/css/layout.css">
+<link rel="stylesheet" href="/public/css/componentes.css">
+<link rel="stylesheet" href="/public/css/publico.css">
+<!-- Lee la lista de formularios de la base (formularios_publicos): mismo import map que la
+     app y el portal, letra por letra, para compartir el hash de la CSP de vercel.json.
+     tests/consultas.test.js y csp.test.js lo comparan. -->
+<script type="importmap">
+{
+  "imports": {
+    "xlsx": "/public/vendor/xlsx.mjs",
+    "@supabase/supabase-js": "/public/vendor/supabase-js.mjs"
+  }
+}
+</script>
+<script src="/public/config.js"></script>
+</head>
+<body>
+
+<!-- =====================================================================
+     /consultas: la dirección fija del QR impreso. Lleva al formulario de
+     "Quiero jugar en Newell's" que la coordinación tenga vigente; si no hay
+     ninguno, lo dice y ofrece el portal. Sin sesión y sin service worker.
+     ===================================================================== -->
+<div class="publico" id="publico">
+  <main class="portal">
+
+    <header class="marca">
+      <img src="/public/escudo.png" alt="" width="44" height="44">
+      <div><div class="t">Básquet</div><div class="s">Newell&#39;s Old Boys</div></div>
+    </header>
+
+    <section class="portal-sec" id="consultas" aria-labelledby="t-consultas">
+      <h1 id="t-consultas">Quiero jugar en Newell&#39;s</h1>
+      <div id="consultas-estado" role="status" aria-live="polite">
+        <div class="portal-tarjeta"><div class="d">Un momento…</div></div>
+      </div>
+      <noscript>
+        <div class="portal-tarjeta">
+          <div class="d">Para consultar, entrá a la página del básquet.</div>
+          <a class="btn" href="/">Ir a la página del básquet</a>
+        </div>
+      </noscript>
+    </section>
+
+  </main>
+</div>
+
+<!-- Primero el reenvío: si la URL es la vuelta de un login, va a /app. -->
+<script type="module" src="/src/ui/portalEntrada.js"></script>
+<script type="module" src="/src/ui/consultasArranque.js"></script>
+</body>
+</html>
