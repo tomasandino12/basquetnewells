@@ -153,7 +153,7 @@ export async function renderPlantel() {
       ${avisoDeSolicitudesHtml(solicitudes)}
       <div id="plantel-misiones"></div>
       <div class="eyebrow">${escaparHtml(plantel.categoria)} <span class="der">${jugadores.length} jugador${jugadores.length === 1 ? '' : 'es'}</span></div>
-      <button class="btn sec chico" id="btn-emergencias-plantel">Datos de emergencia</button>
+      <div class="campo"><button class="btn sec chico" id="btn-emergencias-plantel">Datos de emergencia</button></div>
       <div class="lista-2col" id="plantel-lista">${jugadores.map((j) => filaJugador(j, porJugador.get(j.id) ?? null)).join('')}</div>
       ${logros ? bloqueLogros(logros) : ''}
     </div>

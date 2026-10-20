@@ -504,6 +504,32 @@ clave anon y un token del club.
   `conexion_google_del_club(club)`. Contrato: `tests/contratoEstadoInscripcion.test.js`.
   Verificación: `tests/verificarEstadoInscripcion.sql`; deshacer: `tests/rollback0060.sql`.
 
+
+## Cambio de temporada y emergencias (0059)
+
+Spec: `docs/superpowers/specs/2026-10-19-datos-conectados-design.md`.
+
+- `abrir_temporada(club, nombre)`, `pases_de_temporada(club)` y
+  `confirmar_pases(club, filas)`: `security definer` con `es_coordinador_de`.
+  Abrir copia los planteles de la vigente; los pases devuelven el **año** de
+  nacimiento (no la fecha) y los códigos de categoría; confirmar inserta la
+  pertenencia nueva y después cierra las viejas (el trigger de 0040 sella
+  `hasta` y `cerrado_por`). Una excepción acotada a 0018: armar quién está en
+  qué plantel es estructura, como asignar profes.
+- `emergencia_jugador (jugador_id, club_id, telefono_adulto,
+  contacto_urgencia, alertas[], alergias, medicacion, indicacion, obra_social,
+  actualizado_por, actualizado_en)`: salud de menores. `alertas` es una lista
+  cerrada (check; la espeja `AFECCIONES` en `src/data/emergencias.js`). La ve
+  el profe con el chico vigente en un plantel suyo y el coordinador del club;
+  nunca el jugador ni la familia. Escribe sólo `importar_emergencias(payload)`
+  (`security invoker`, `puede_escribir_plantel`). **Sin delete**: un trigger
+  en `pertenencia` la borra cuando el chico queda sin pertenencia vigente.
+  `emergencias_del_plantel(plantel)` devuelve la lista con nombre (el
+  coordinador no lee `jugador`); también trae a los chicos sin datos.
+- Verificación: `tests/verificar0059.sql` (9 casos); deshacer:
+  `tests/rollback0059.sql`; contratos: `tests/contratoEmergencia.test.js`.
+- Texto legal que hay que publicar con esta migración: `docs/LEGAL-EMERGENCIAS.md`.
+
 ## Orden de persistencia de una importación
 
 `src/data/repositorio.js` expone una función por operación de base de datos, sin transacción que las envuelva. Persistir un partido importado requiere, en este orden:
