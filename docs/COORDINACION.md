@@ -197,9 +197,12 @@ habilitarlo como profe le daría acceso a los datos de otros menores.
 
 La página que se reparte a las familias es el **portal**, en la raíz del sitio
 (`/`). Semillero, la aplicación de profes, coordinación y jugadores, vive en
-`/app` y el portal tiene un botón que lleva ahí. El portal muestra: los pasos
-("¿Qué tengo que hacer?"), los formularios, los calendarios, la información, y
-a quién escribirle si hay dudas. No tiene sesión ni muestra datos de chicos.
+`/app` y el portal tiene un botón que lleva ahí. Arriba de todo van las dos
+tarjetas que busca un padre, **Inscribir** y **Enviar comprobante**; después,
+atajos, "Quiero jugar", el calendario del mes, las categorías, otros
+formularios, la foto del club, sponsors y a quién escribirle. **Cada parte sin
+datos no se muestra** (nunca un "Próximamente"). No tiene sesión ni muestra
+datos de chicos.
 
 ### Formularios: se cargan desde la app, sin tocar código
 
@@ -218,9 +221,11 @@ básquet**. Ahí la coordinación:
   `https://forms.gle/…`); la app y la base rechazan cualquier otro.
 - **Esto lo ve cualquiera**, sin entrar con ninguna cuenta: no pongas nombres
   de chicos ni datos personales en el título ni en el texto.
-- **Primera vez, después de aplicar la migración 0058:** la lista arranca
-  vacía y el portal dice que no hay formularios abiertos. Entrá a esa pantalla
-  y tocá **"Agregar el de Inscripción"** (viene precargado) y **Guardar**.
+- **Al abrir la temporada:** publicá en Google los formularios de Inscripción y
+  de Comprobante, agregalos acá con su enlace y marcalos como "Inscripción" y
+  "Comprobante de pago" en "Cómo se muestra en la página". Las tarjetas de
+  arriba del portal se prenden solas. (Ya no hay uno precargado: el que había
+  era el formulario viejo de 2026.)
 - Para ver cómo lo ven las familias, el enlace "Ver cómo lo ven las familias"
   abre el portal en otra pestaña.
 
@@ -229,12 +234,18 @@ comprobantes) viven en Google y **nunca pasan por Semillero ni por la base**.
 Quién los recibe y cómo se organizan en Drive: ver la guía de inscripción en
 Google (rama `claude/inscripcion-google-41cf4e`).
 
-### Dos lugares especiales: "Quiero jugar" y "Sumate como sponsor"
+### Lugares especiales: Inscripción, Comprobante, "Quiero jugar" y sponsors
 
 Al agregar o editar un formulario, el selector **"Cómo se muestra en la página"**
-tiene tres opciones:
+tiene estas opciones:
 
-- **Común**: va en la lista de formularios (inscripción, pase, rifas…).
+- **Común**: va en la lista "Otros formularios" (pase, rifas…).
+- **Inscripción (tarjeta de arriba del portal)** y **Comprobante de pago
+  (tarjeta de arriba del portal)** (desde 0062): son las dos tarjetas grandes de
+  arriba. **Así se abre y se cierra la inscripción**: con el formulario marcado
+  y visible, la tarjeta dice "Inscripción abierta" y tiene el botón; oculto o
+  sin marcar, dice "Abre con la temporada" y manda a "Quiero jugar" a quien
+  viene por primera vez. Lo mismo el comprobante.
 - **Quiero jugar en Newell's (consultas)**: se muestra **destacado, arriba de todo**
   en el portal, con la ayuda paso a paso, y es el formulario al que lleva el QR
   impreso (ver abajo).
@@ -242,8 +253,9 @@ tiene tres opciones:
 
 Cada lugar especial es **único**: si marcás un formulario y otro ya lo tenía, la
 app te avisa ("Hoy lo tiene «X»: al guardar, ese formulario pasa a ser común") y
-se lo saca. Un formulario **oculto** no se muestra aunque conserve su lugar: el
-portal dice "Próximamente" (sponsors) o no muestra el acceso (consultas).
+se lo saca. Un formulario **oculto** no se muestra aunque conserve su lugar: la
+tarjeta queda cerrada (inscripción, comprobante) o la sección no se ve
+(consultas; sponsors si tampoco hay logos).
 
 ### QR para imprimir: `/consultas`
 
@@ -270,24 +282,60 @@ la idea es una pantalla "Sponsors" como la de Formularios, con los logos en
 Supabase Storage (habría que sumar ese host a `img-src` de la política de
 seguridad); no está construida.
 
-### Calendarios, información y contacto: archivo `src/data/portal.js`
+### Calendario, categorías, sede, contacto, alias y foto: archivo `src/data/portal.js`
 
-Estos tres sí son cambios de código (se hacen una vez y casi no cambian):
+Estos sí son cambios de código (se hacen una vez y casi no cambian). Cada dato
+que falta va en `null` y esa parte del portal no se ve.
 
-**Calendarios** (dos Google Calendar: partidos y torneos; eventos y
-recaudación). Para conectarlos, una sola vez, desde una compu:
-1. En Google Calendar → Configuración del calendario → "Permisos de acceso":
-   marcar **"Hacer disponible públicamente"**. Sin eso el embed sale vacío.
+| Dato | Dónde va | Qué pasa mientras falta |
+|---|---|---|
+| Temporada que se anuncia | `temporada:` (hoy 2027) | — |
+| Clave de Google (API key) | `agenda.clave` | No hay calendario |
+| ID de cada calendario | `agenda.calendarios[].id` | Ese tipo no aparece |
+| Categorías que ofrece el club | `categorias:` (los años NO: se calculan) | — |
+| Días y horario de cada categoría | `horario:` de cada categoría | La fila va sin horario |
+| Dónde se entrena | `sede:` `{ nombre, direccion, mapa }` | No se ve |
+| WhatsApp del coordinador | `contacto:` | Sin botón "Ayuda" ni "¿Dudas?" |
+| Alias para transferir | `alias:` `{ alias, titular }` | La tarjeta del comprobante va sin alias |
+| Foto del club | archivo en `public/portal/` + `foto:` | No se ve |
+| Logos de sponsors | ver "Logos de sponsors" | No se ven |
+
+**Categorías.** Los años de nacimiento no se escriben a mano: salen de
+`temporada` con la misma regla que usa Semillero para ubicar a un chico
+(`src/data/categorias.js`). Al pasar de temporada, se cambia sólo `temporada`.
+
+**Calendario.** El portal arma el mes entero con un puntito de color por evento.
+**Un calendario de Google por tipo** (Partidos, Eventos, Charlas): el tipo da el
+color, así que al cargar un evento sólo hay que elegir el calendario correcto.
+Se muestra sólo el título, la hora y el lugar; la descripción nunca. Para
+conectarlo, una sola vez, desde una compu con la cuenta de Comisión Básquet:
+1. En cada calendario: Configuración y uso compartido → "Permisos de acceso" →
+   marcar **"Hacer disponible públicamente"**. Sin eso, Google no da los eventos.
 2. En la misma pantalla, "Integrar el calendario" → copiar el **ID de
-   calendario** (termina en `@group.calendar.google.com`). También sirve pegar
-   la URL de "Código para insertar": de ahí se toma sólo el ID.
-3. Pegarlo en `id:` del calendario que corresponde en `src/data/portal.js`,
-   `npm run test:q`, commit y deploy. Mientras sea `null`, se ve "Próximamente".
+   calendario** (termina en `@group.calendar.google.com`) y pegarlo en `id:` del
+   tipo que corresponde.
+3. **La clave (API key), una sola vez:**
+   1. Entrar a <https://console.cloud.google.com> con la cuenta de Comisión
+      Básquet. Arriba, "Seleccionar un proyecto" → **Proyecto nuevo** → nombre
+      "Portal básquet" → Crear.
+   2. Menú ☰ → **APIs y servicios** → **Biblioteca** → buscar **Google Calendar
+      API** → **Habilitar**.
+   3. **APIs y servicios** → **Credenciales** → **Crear credenciales** → **Clave
+      de API**. Copiarla (empieza con `AIza`).
+   4. Tocar la clave para editarla. En **Restricciones de aplicaciones**:
+      "Sitios web" → agregar `https://app-semillero.vercel.app/*`. En
+      **Restricciones de API**: "Restringir clave" → elegir sólo **Google
+      Calendar API**. Guardar.
+   5. Pegarla en `agenda.clave`. Es pública a propósito (la ve el navegador),
+      por eso las dos restricciones: sólo sirve desde el portal y sólo para leer
+      calendarios públicos. No tiene costo para este uso.
+4. `npm run test:q`, commit y deploy.
 
 > ## ⚠️ El calendario es público: NUNCA nombres de chicos
 >
-> Cualquiera que abra la página ve **todos** los eventos, con su título y su
-> descripción. **No escribas nombres de jugadores** ni datos personales en
+> Cualquiera con el ID ve **todos** los eventos, con su título y su descripción
+> (el portal muestra sólo título, hora y lugar, pero Google da todo). **No
+> escribas nombres de jugadores** ni datos personales en
 > ningún evento. Sí: *"U13 vs. Central, 10 h, cancha 2"*. No: *"U13: convocados
 > Pérez, Gómez…"*. Si una persona carga eventos, avisale esto antes de darle
 > el permiso.
@@ -330,12 +378,18 @@ eso es sólo para que el portal pueda **mostrar** el calendario; los permisos de
 las personas de acá arriba son los que dejan **cargar** eventos. Dale el permiso
 a cada persona por separado y sólo a quien lo necesita.
 
-**Contacto** ("¿Dudas? Escribile al coordinador"): en `contacto:` va un link de
-WhatsApp (`https://wa.me/549341…`, con el código de país y de área, sin `+` ni
-espacios) o un mail (`mailto:coordinacion@…`). Otro formato no se acepta.
+**Contacto** (botón "Ayuda" de arriba y "¿Dudas? Escribile al coordinador"): en
+`contacto:` va un link de WhatsApp (`https://wa.me/549341…`, con el código de
+país y de área, sin `+` ni espacios) o un mail (`mailto:coordinacion@…`). Otro
+formato no se acepta.
 
-**Información** (categorías, entrenamientos, dónde se entrena): es texto fijo en
-`public/portal.html`, marcado con `PENDIENTE`, hasta que el club lo pase.
+**Sede**: `mapa` es el link de "Compartir" de Google Maps
+(`https://maps.app.goo.gl/…`); otro link no muestra el botón "Cómo llegar".
+
+**Foto del club**: sólo con la **autorización de imagen firmada** por las
+familias de todos los chicos que se reconozcan. Archivo jpg o webp de ~1200 px
+de ancho en `public/portal/`, y en `foto:` la ruta y un `alt` que cuente qué se
+ve (no quiénes son).
 
 ### Login de Semillero: la URL de retorno
 
