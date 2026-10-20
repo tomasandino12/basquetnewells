@@ -135,11 +135,11 @@ test('separarFormularios aparta los dos destinos y deja el resto, en orden, como
 });
 
 test('separarFormularios: sin destinos, todo es común; con un destino repetido gana el primero y el otro no se pierde', () => {
-  assert.deepEqual(separarFormularios([{ id: 'x' }, { id: 'y' }]), { consultas: null, colaboradores: null, comunes: [{ id: 'x' }, { id: 'y' }] });
+  assert.deepEqual(separarFormularios([{ id: 'x' }, { id: 'y' }]), { consultas: null, colaboradores: null, inscripcion: null, comprobante: null, comunes: [{ id: 'x' }, { id: 'y' }] });
   const r = separarFormularios([{ id: 'p', destino: 'consultas' }, { id: 'q', destino: 'consultas' }]);
   assert.equal(r.consultas.id, 'p');
   assert.deepEqual(r.comunes.map((f) => f.id), ['q']);
-  assert.deepEqual(separarFormularios([]), { consultas: null, colaboradores: null, comunes: [] });
+  assert.deepEqual(separarFormularios([]), { consultas: null, colaboradores: null, inscripcion: null, comprobante: null, comunes: [] });
 });
 
 test('quienTieneElDestino devuelve el formulario que lo usa, salvo el que se está editando', () => {

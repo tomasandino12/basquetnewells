@@ -22,10 +22,28 @@ const sql = readFileSync('supabase/migrations/0061_destino_formulario_portal.sql
 const codigo = sql.replace(/--.*$/gm, '');
 const plano = (s) => s.replace(/\s+/g, ' ').trim();
 
-test('agrega la columna destino con un check que admite sólo los destinos de la app (y nulo)', () => {
+test('0061 agrega la columna destino con un check de los destinos de entonces (y nulo)', () => {
   assert.match(plano(codigo), /alter table formulario_portal add column destino text, add constraint formulario_portal_destino_valido check \(destino in \('consultas', 'colaboradores'\)\);/);
-  const enSql = [...codigo.match(/check \(destino in \(([^)]*)\)\)/)[1].matchAll(/'(\w+)'/g)].map((m) => m[1]);
+});
+
+// 0062 rehace el check con inscripción y comprobante. La lista de la app se
+// compara con la ÚLTIMA migración que lo define: 0061 queda como se aplicó.
+const sql62 = readFileSync('supabase/migrations/0062_destinos_inscripcion_comprobante.sql', 'utf8').replace(/\r\n/g, '\n').replace(/--.*$/gm, '');
+
+test('0062: el check admite exactamente los destinos de la app, y sólo toca ese check', () => {
+  assert.match(plano(sql62), /alter table formulario_portal drop constraint formulario_portal_destino_valido, add constraint formulario_portal_destino_valido check \(destino in \([^)]*\)\);/);
+  const enSql = [...sql62.match(/check \(destino in \(([^)]*)\)\)/)[1].matchAll(/'(\w+)'/g)].map((m) => m[1]);
   assert.deepEqual(enSql, DESTINOS.map((d) => d.clave));
+  assert.doesNotMatch(sql62, /\b(grant|revoke|policy|function)\b/i);
+  for (const m of sql62.matchAll(/alter\s+table\s+(\w+)/gi)) assert.equal(m[1], 'formulario_portal');
+});
+
+test('el rollback de 0062 desmarca los dos destinos nuevos antes de volver al check de 0061', () => {
+  const rollback = readFileSync('tests/rollback0062.sql', 'utf8').replace(/\r\n/g, '\n');
+  const desmarca = rollback.indexOf("update formulario_portal set destino = null where destino in ('inscripcion', 'comprobante')");
+  const check = rollback.indexOf("check (destino in ('consultas', 'colaboradores'))");
+  assert.ok(desmarca >= 0 && check > desmarca);
+  assert.match(rollback, /version = '0062'/);
 });
 
 test('a lo sumo un formulario por destino y por club: índice único parcial', () => {
