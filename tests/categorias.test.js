@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  categoriaPorNacimiento, ramaDeCodigos, temporadaComoAnio, CATEGORIAS_SEMILLERO,
+  categoriaPorNacimiento, ramaDeCodigos, temporadaComoAnio, CATEGORIAS_SEMILLERO, aniosDeCategoria, textoAnios,
 } from '../src/data/categorias.js';
 
 const grupo = (anio, temporada = 2026) => categoriaPorNacimiento(`${anio}-06-15`, temporada, 'M').grupo;
@@ -84,4 +84,28 @@ test('rama desde los planteles vigentes', () => {
   assert.equal(ramaDeCodigos(['U21M', 'MAY_F']), null);
   assert.equal(ramaDeCodigos([]), null);
   assert.equal(ramaDeCodigos(undefined), null);
+});
+
+test('años de nacimiento de cada grupo: los mismos bordes que categoriaPorNacimiento', () => {
+  const texto = (g, t = 2026) => textoAnios(aniosDeCategoria(g, t));
+  assert.equal(texto('ESCUELITA'), '2019 en adelante');
+  assert.equal(texto('U9'), '2017 y 2018');
+  assert.equal(texto('U13'), '2013 y 2014');
+  assert.equal(texto('U21'), '2005 a 2008');
+  assert.equal(texto('MAYORES'), '2004 y antes');
+  assert.equal(texto('U9', 2027), '2018 y 2019');
+  // Cada año del rango cae en ese grupo, y los de afuera no.
+  for (const g of ['ESCUELITA', 'U9', 'U11', 'U13', 'U15', 'U17', 'U21', 'MAYORES']) {
+    const { viejo, nuevo } = aniosDeCategoria(g, 2026);
+    if (viejo != null) assert.equal(grupo(viejo), g);
+    if (nuevo != null) assert.equal(grupo(nuevo), g);
+    if (viejo != null) assert.notEqual(grupo(viejo - 1), g);
+    if (nuevo != null) assert.notEqual(grupo(nuevo + 1), g);
+  }
+});
+
+test('años de un grupo desconocido o temporada que no es año: null', () => {
+  assert.equal(aniosDeCategoria('U10', 2026), null);
+  assert.equal(aniosDeCategoria('U9', 'Apertura'), null);
+  assert.equal(textoAnios(null), '');
 });
