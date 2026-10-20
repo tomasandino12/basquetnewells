@@ -283,6 +283,7 @@
 
 .portal-sec{padding:var(--sp-8) var(--sp-4) 0;scroll-margin-top:var(--sp-4)}
 .portal-st{font-family:var(--ff-titulo);font-weight:600;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-115);color:var(--primario);margin-bottom:var(--sp-1)}
+.portal-sec.portal-ventas{padding-top:var(--sp-4)}
 .portal-sec h2{font-size:var(--fs-260);line-height:1.05;letter-spacing:.02em;margin-bottom:var(--sp-2)}
 .portal-sec .intro{color:var(--gris-osc);font-size:var(--fs-145);line-height:1.5;margin-bottom:var(--sp-4)}
 .portal-sec .portal-nota{color:var(--gris-osc);font-size:var(--fs-135);line-height:1.55;margin-top:var(--sp-4)}

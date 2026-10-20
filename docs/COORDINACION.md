@@ -258,8 +258,10 @@ app te avisa ("Hoy lo tiene «X»: al guardar, ese formulario pasa a ser común"
 se lo saca. Un formulario **oculto** no se muestra aunque conserve su lugar: la
 tarjeta queda cerrada, con el botón apagado y visible (inscripción,
 comprobante, "Quiero jugar" y "Quiero colaborar"). La tarjeta de colaborar dice
-"Dejanos tu mail y te avisamos de los eventos": el mail lo pide el formulario y
-queda en su planilla de Google, no en Semillero.
+"Dejanos tu mail y te avisamos de los eventos" y, debajo del calendario,
+hay una tarjeta chica "Enterate de las ventas del club" que apunta al mismo
+formulario. El mail lo pide el formulario y queda en su planilla de Google, no
+en Semillero.
 
 ### QR para imprimir: `/consultas`
 

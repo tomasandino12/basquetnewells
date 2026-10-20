@@ -186,10 +186,10 @@ Sin login, sin subidas, sin datos de menores. Las respuestas van a una planilla 
 |---|---|---|---|---|
 | B | Nombre y apellido | Respuesta corta | sí |  |
 | C | Empresa o comercio | Respuesta corta | no | Ayuda: "Si colaborás por tu negocio." |
-| D | Tu mail | Respuesta corta | sí | Validación: *Texto → Correo electrónico*. Ayuda: "Te escribimos acá cuando haya un evento donde podés dar una mano (rifas, polladas, etc.)." |
+| D | Tu mail | Respuesta corta | sí | Validación: *Texto → Correo electrónico*. Ayuda: "Te escribimos acá cuando haya ventas o eventos para colaborar (pizzas, rifas, comidas, etc.)." |
 | E | WhatsApp | Respuesta corta | no | Ayuda: "Si preferís que te escribamos por ahí." |
-| F | ¿Cómo querés colaborar? | Casillas | sí | Ser sponsor / Donar material / Ayudar en eventos / Otra |
-| G | ¿Querés que te avisemos de los eventos? | Opción múltiple | sí | Sí, avísenme por mail de las rifas, polladas y otros eventos para dar una mano / No, sólo quiero que me contacten por lo que puse arriba. **Sin opción premarcada.** Descripción: "Solo mandamos mails de estos eventos, nunca de partidos, y te podés dar de baja cuando quieras escribiéndonos." |
+| F | ¿Cómo querés colaborar? | Casillas | sí | Comprar en las ventas del club (pizzas, rifas, comidas) / Ser sponsor / Donar material / Ayudar en eventos / Otra |
+| G | ¿Querés que te avisemos de las ventas y eventos? | Opción múltiple | sí | Sí, avísenme por mail cuando haya ventas o eventos para colaborar / No, sólo quiero que me contacten por lo que puse arriba. **Sin opción premarcada.** Descripción: "Solo mandamos mails de ventas y eventos para colaborar, nunca de partidos, y te podés dar de baja cuando quieras escribiéndonos." |
 | H | Mensaje | Párrafo | no |  |
 
-El mail y el permiso quedan **sólo en la planilla de respuestas de este formulario** (en Google): no se cargan en Semillero. Para avisar de un evento se filtra la columna G por el "Sí". El portal lo dice en la tarjeta: "Dejanos tu mail y te avisamos de los eventos".
+El mail y el permiso quedan **sólo en la planilla de respuestas de este formulario** (en Google): no se cargan en Semillero. Para avisar de una venta o evento se filtra la columna G por el "Sí". Los mails se mandan **desde la cuenta Comisión, siempre con los destinatarios en CCO**. El aviso es sólo de ventas del club (pizzas, rifas, comidas) y eventos para colaborar: partidos y charlas no van por mail, para eso está el "Seguilo" del calendario. Este formulario tiene dos entradas en el portal: la tarjeta de sponsors y "Enterate de las ventas del club", debajo del calendario.
