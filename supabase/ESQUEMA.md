@@ -466,6 +466,35 @@ Spec: `docs/superpowers/specs/2026-10-18-cuentas-familia-design.md`.
   `tests/contratoAccesoFamilia.test.js`. Verificación:
   `tests/verificarCuentasFamilia.sql` (12 casos); deshacer: `tests/rollback0057.sql`.
 
+## Papeles y pagos desde Google (0060)
+
+Spec: `docs/superpowers/specs/2026-10-19-panel-docs-pagos-design.md`. **Lo
+primero de afuera que escribe en la base**: el Apps Script del club, con la
+clave anon y un token del club.
+
+- `conexion_google (club_id pk, token_hash, rotado_por, rotado_en,
+  ultimo_envio_en, tablero_url, gid_tablero, gid_pagos, documentos_orden,
+  conceptos_orden)`: un token por club, guardado como sha256. Lo genera
+  `rotar_conexion_google(club)` (coordinación; devuelve el token una sola vez y
+  deja sin efecto el anterior); `desconectar_google(club)` borra el token y
+  todo el estado. El trigger sella `club_id` y quién rotó.
+- `estado_inscripcion (id, club_id, apellido, nombre, clave, fecha_nacimiento,
+  categoria_texto, rama, fila, documentos jsonb, completo, pagos jsonb,
+  creado_en, cambio_en)`: una fila por chico del tablero, única por
+  `(club_id, clave, fecha_nacimiento)` con `nulls not distinct`. `documentos`
+  = `{título: bool}`; `pagos` = `{concepto: 'falta'|'subido'|'verificado'}`.
+  `cambio_en` se mueve sólo si cambió el estado. Sin DNI ni archivos.
+- **Ninguna de las dos tiene policies ni grants.** `empujar_estado_google(token,
+  envío)` es la única función que puede llamar `anon`: valida el token, un
+  envío por minuto, ≤ 1 MB, ≤ 1500 filas, ≤ 25 documentos y conceptos, y
+  rechaza el envío entero si un texto tiene 7 dígitos seguidos (`PARECE_DNI`).
+  Reemplaza el estado del club (lo que no vino se borra).
+- Coordinación lee con `estado_inscripcion_del_club(club)` (empareja con las
+  fichas por `clave_inscripcion` + fecha, como `cruzarConPadron`: `ok`,
+  `homonimo`, `sin_ficha`, `sin_tablero`; nunca devuelve la fecha) y
+  `conexion_google_del_club(club)`. Contrato: `tests/contratoEstadoInscripcion.test.js`.
+  Verificación: `tests/verificarEstadoInscripcion.sql`; deshacer: `tests/rollback0060.sql`.
+
 ## Orden de persistencia de una importación
 
 `src/data/repositorio.js` expone una función por operación de base de datos, sin transacción que las envuelva. Persistir un partido importado requiere, en este orden:
