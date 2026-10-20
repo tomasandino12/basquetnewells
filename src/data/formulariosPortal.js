@@ -17,13 +17,13 @@ import { enlaceFormulario } from './portal.js';
  * formulario sin destino es "común" y va en la lista.
  */
 export const DESTINOS = Object.freeze([
-  Object.freeze({ clave: 'consultas', rotulo: 'Quiero jugar en Newell\'s (consultas)', chip: 'Quiero jugar' }),
-  Object.freeze({ clave: 'colaboradores', rotulo: 'Sumate como sponsor o colaborador', chip: 'Sponsors' }),
-  // 0062: las dos tarjetas de arriba del portal. Sin formulario activo, dicen "abre con la temporada".
-  Object.freeze({ clave: 'inscripcion', rotulo: 'Inscripción (tarjeta de arriba del portal)', chip: 'Inscripción' }),
-  Object.freeze({ clave: 'comprobante', rotulo: 'Comprobante de pago (tarjeta de arriba del portal)', chip: 'Comprobante' }),
+  Object.freeze({ clave: 'consultas', rotulo: 'Quiero jugar en Newell\'s (botón de arriba con la inscripción cerrada; QR)', chip: 'Quiero jugar' }),
+  Object.freeze({ clave: 'colaboradores', rotulo: 'Sumate como sponsor o colaborador (lista "También podés")', chip: 'Sponsors' }),
+  // 0062: la inscripción es el botón grande de arriba; el comprobante va en la lista.
+  Object.freeze({ clave: 'inscripcion', rotulo: 'Inscripción (botón grande de arriba)', chip: 'Inscripción' }),
+  Object.freeze({ clave: 'comprobante', rotulo: 'Comprobante de pago (lista "También podés")', chip: 'Comprobante' }),
   // 0063: el aviso por mail de pizzas, rifas y comidas, debajo del calendario. Es otro formulario que el de sponsors.
-  Object.freeze({ clave: 'recaudacion', rotulo: 'Eventos de recaudación (aviso debajo del calendario)', chip: 'Recaudación' }),
+  Object.freeze({ clave: 'recaudacion', rotulo: 'Eventos de recaudación (banda roja debajo del calendario)', chip: 'Recaudación' }),
 ]);
 
 export const MENSAJE_ENLACE_FORMULARIO = 'El enlace tiene que ser de Google Forms (empieza con https://docs.google.com/forms o https://forms.gle).';

@@ -240,30 +240,27 @@ Al agregar o editar un formulario, el selector **"Cómo se muestra en la página
 tiene estas opciones:
 
 - **Común**: va en la lista "Otros formularios" (pase, rifas…).
-- **Inscripción (tarjeta de arriba del portal)** y **Comprobante de pago
-  (tarjeta de arriba del portal)** (desde 0062): son las dos tarjetas grandes de
-  arriba, **independientes entre sí** (se puede inscribir alguien sin pagar
-  nada). **Así se abre y se cierra la inscripción**: con el formulario marcado
-  y visible, la tarjeta dice "Inscripción abierta" y tiene el botón; oculto o
-  sin marcar, el botón se ve apagado ("Se habilita cuando abra la inscripción")
-  y manda a "Quiero jugar" a quien viene por primera vez. Lo mismo el comprobante.
-- **Quiero jugar en Newell's (consultas)**: se muestra **destacado, arriba de todo**
-  en el portal (siempre visible: sin formulario activo, con el botón apagado), con la ayuda paso a paso, y es el formulario al que lleva el QR
-  impreso (ver abajo).
-- **Sumate como sponsor o colaborador**: va en su propia sección del portal
-  (siempre visible; sin formulario activo, con el botón apagado).
-- **Eventos de recaudación (aviso debajo del calendario)** (desde 0063): es otro
-  formulario que el de sponsors, para quien quiere comprar y colaborar (pizzas,
-  rifas, comidas) y deja su mail. Aparece como la tarjeta chica "Enterate de los
-  eventos de recaudación del club", debajo del calendario.
+- **Inscripción (botón grande de arriba)** (desde 0062): **así se abre y se cierra
+  la inscripción**. Con el formulario marcado y visible, la banda roja y negra de
+  arriba dice "Inscribí a tu hijo o hija" con el botón; oculto o sin marcar, la
+  banda pasa a "¿Querés jugar en Newell's?".
+- **Quiero jugar en Newell's (consultas)**: es el botón grande de arriba mientras
+  la inscripción está cerrada (sin formulario activo, se ve apagado); con la
+  inscripción abierta baja a la lista "También podés". Es el formulario al que
+  lleva el QR impreso (ver abajo).
+- **Comprobante de pago** (desde 0062) y **Sumate como sponsor o colaborador**:
+  van en la lista "También podés", con el alias para transferir debajo. Sin
+  formulario activo, su fila se ve apagada y dice "Pronto". Son independientes:
+  se puede inscribir alguien sin pagar nada.
+- **Eventos de recaudación** (desde 0063): es otro formulario que el de
+  sponsors, para quien quiere comprar y colaborar (pizzas, rifas, comidas) y deja
+  su mail. Es la banda roja de debajo del calendario.
 
 Cada lugar especial es **único**: si marcás un formulario y otro ya lo tenía, la
 app te avisa ("Hoy lo tiene «X»: al guardar, ese formulario pasa a ser común") y
-se lo saca. Un formulario **oculto** no se muestra aunque conserve su lugar: la
-tarjeta queda cerrada, con el botón apagado y visible (inscripción,
-comprobante, "Quiero jugar", "Quiero colaborar" y recaudación). El mail que dejan
-colaboradores y compradores lo piden esos formularios y queda en sus planillas
-de Google, no en Semillero.
+se lo saca. Un formulario **oculto** no se muestra aunque conserve su lugar: su
+botón o su fila se ven apagados. El mail que dejan colaboradores y compradores
+lo piden esos formularios y queda en sus planillas de Google, no en Semillero.
 
 ### QR para imprimir: `/consultas`
 
