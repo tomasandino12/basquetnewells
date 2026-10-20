@@ -48,18 +48,15 @@ export const PORTAL = Object.freeze({
   // `grupo`: ESCUELITA, U9, U11, U13, U15, U17, U21 o MAYORES. `nombre`
   // opcional (para que MAYORES diga "Primera"). `horario` opcional: días y hora.
   // Horarios: descripción del formulario "Quiero jugar en Newell's" (temporada
-  // 2026). Los femeninos no figuran en ningún formulario: van sin horario.
+  // 2026). Newell's no tiene Escuelita ni femeninos de inferiores: la única
+  // femenina es Primera, que no figura en ningún formulario y va sin horario.
   categorias: Object.freeze([
-    Object.freeze({ grupo: 'ESCUELITA', rama: 'Mixto', horario: 'Mar 18 a 19 h (Estadio Cubierto) · Jue 18 a 19 h (Playón Deportivo)' }),
     Object.freeze({ grupo: 'U9', rama: 'Mixto', horario: 'Mar 18 a 19 h (Estadio Cubierto) · Jue 18 a 19 h (Playón Deportivo)' }),
     Object.freeze({ grupo: 'U11', rama: 'Mixto', horario: 'Mar 19 a 20 h (Estadio Cubierto) · Jue 19 a 20 h (Playón Deportivo)' }),
     Object.freeze({ grupo: 'U13', rama: 'Mixto', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)' }),
     Object.freeze({ grupo: 'U15', rama: 'Masculino', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)' }),
     Object.freeze({ grupo: 'U17', rama: 'Masculino', horario: 'Lun y Vie 19 a 20 h (Estadio Cubierto) · Mié 19 a 20 h (Microestadio)' }),
     Object.freeze({ grupo: 'U21', rama: 'Masculino', horario: 'Lun y Vie 20 a 21 h (Estadio Cubierto) · Mié 20 a 21 h (Microestadio)' }),
-    Object.freeze({ grupo: 'U15', rama: 'Femenino', horario: null }),
-    Object.freeze({ grupo: 'U17', rama: 'Femenino', horario: null }),
-    Object.freeze({ grupo: 'U21', rama: 'Femenino', horario: null }),
     Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Femenino', horario: null }),
   ]),
 

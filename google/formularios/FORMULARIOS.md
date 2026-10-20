@@ -186,6 +186,10 @@ Sin login, sin subidas, sin datos de menores. Las respuestas van a una planilla 
 |---|---|---|---|---|
 | B | Nombre y apellido | Respuesta corta | sí |  |
 | C | Empresa o comercio | Respuesta corta | no | Ayuda: "Si colaborás por tu negocio." |
-| D | WhatsApp o mail | Respuesta corta | sí | Ayuda: "Por donde preferís que te escribamos." |
-| E | ¿Cómo querés colaborar? | Casillas | sí | Ser sponsor / Donar material / Ayudar en eventos / Otra |
-| F | Mensaje | Párrafo | no |  |
+| D | Tu mail | Respuesta corta | sí | Validación: *Texto → Correo electrónico*. Ayuda: "Te escribimos acá cuando haya un evento donde podés dar una mano (rifas, polladas, etc.)." |
+| E | WhatsApp | Respuesta corta | no | Ayuda: "Si preferís que te escribamos por ahí." |
+| F | ¿Cómo querés colaborar? | Casillas | sí | Ser sponsor / Donar material / Ayudar en eventos / Otra |
+| G | ¿Querés que te avisemos de los eventos? | Opción múltiple | sí | Sí, avísenme por mail de las rifas, polladas y otros eventos para dar una mano / No, sólo quiero que me contacten por lo que puse arriba. **Sin opción premarcada.** Descripción: "Solo mandamos mails de estos eventos, nunca de partidos, y te podés dar de baja cuando quieras escribiéndonos." |
+| H | Mensaje | Párrafo | no |  |
+
+El mail y el permiso quedan **sólo en la planilla de respuestas de este formulario** (en Google): no se cargan en Semillero. Para avisar de un evento se filtra la columna G por el "Sí". El portal lo dice en la tarjeta: "Dejanos tu mail y te avisamos de los eventos".

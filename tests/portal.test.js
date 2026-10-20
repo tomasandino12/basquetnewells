@@ -58,6 +58,12 @@ test('categorías del portal: años de la temporada, nombre propio opcional, hor
   assert.deepEqual(categoriasDelPortal(PORTAL.categorias, 'no es año'), []);
 });
 
+test("Newell's no tiene Escuelita ni femeninos de inferiores: la única femenina es Primera", () => {
+  const femeninas = PORTAL.categorias.filter((c) => c.rama === 'Femenino');
+  assert.deepEqual(femeninas.map((c) => c.grupo), ['MAYORES']);
+  assert.ok(!PORTAL.categorias.some((c) => c.grupo === 'ESCUELITA'));
+});
+
 test('cada categoría configurada es un grupo que existe', () => {
   assert.equal(categoriasDelPortal(PORTAL.categorias, PORTAL.temporada).length, PORTAL.categorias.length);
 });

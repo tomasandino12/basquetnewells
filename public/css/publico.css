@@ -235,8 +235,6 @@
 .portal-acc-ins{border-color:var(--primario);background:var(--pub-fondo)}
 .portal-acc-ins::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 80% 70% at 0 0,var(--club),transparent);opacity:.22}
 .portal-acc-cab{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-2)}
-.portal-tag{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:var(--fs-100);padding:.125rem var(--sp-2);border-radius:var(--r-btn);background:var(--primario);color:var(--sobre-club)}
-.portal-tag.claro{background:var(--sobre-oscuro);color:var(--pub-fondo)}
 .portal-estado{display:inline-flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-115);color:var(--gris-osc)}
 .portal-estado::before{content:"";width:.4375rem;height:.4375rem;border-radius:50%;border:1px solid currentColor}
 .portal-estado.abierto{color:var(--sube-osc)}
@@ -245,9 +243,15 @@
 .portal-acc p{color:var(--gris-osc);font-size:var(--fs-135);line-height:1.5;margin:var(--sp-2) 0 var(--sp-4)}
 .portal-acc p:last-child{margin-bottom:0}
 .portal-acc .btn{text-decoration:none;min-height:3rem}
-.portal-acc .btn + .portal-mini{margin-top:var(--sp-2)}
+.portal-acc .btn + .portal-mini,.portal-acc .btn + .btn{margin-top:var(--sp-2)}
 .portal .portal-btn-claro{background:var(--sobre-oscuro);color:var(--pub-fondo)}
 .portal .portal-btn-claro:active{background:var(--gris-osc)}
+/* Botón de una tarjeta sin formulario activo: visible pero claramente apagado
+   (borde punteado y sin relleno), con el texto en una línea o dos legibles. */
+.portal .btn:disabled{
+  background:transparent;color:var(--gris-osc);border:1px dashed var(--gris-osc);
+  font-size:var(--fs-135);letter-spacing:.06em;line-height:1.25;text-align:center;cursor:not-allowed;
+}
 .portal-mini{display:block;text-align:center;font-size:var(--fs-115);color:var(--gris-osc)}
 .portal-alias{
   display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);
