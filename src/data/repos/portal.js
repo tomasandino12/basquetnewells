@@ -2,6 +2,7 @@
 // Se importa a través de src/data/repositorio.js (fachada).
 import { obtenerCliente } from '../cliente.js';
 import { formularioDesdeFila, formularioPublicoDesdeFila } from '../formulariosPortal.js';
+import { rangoDelMes, urlEventos, eventoDesdeGoogle } from '../agenda.js';
 
 const COLUMNAS = 'id, titulo, texto, enlace, orden, activo, destino, actualizado_por, actualizado_en';
 
@@ -86,4 +87,27 @@ export async function asignarDestinoFormulario(id, destino) {
   const { data, error } = await supabase.from('formulario_portal').update({ destino }).eq('id', id).select('id');
   if (error) throw error;
   if (!data.length) throw new Error('NO_SE_PUDO_EDITAR');
+}
+
+/**
+ * Los eventos de un mes (1–12) de los calendarios públicos del club, de
+ * Google Calendar. Un calendario que falla (ID mal copiado, sin internet, la
+ * clave rechazada) no tira los demás: se cuenta en `fallidos` y la página lo
+ * avisa. Uno sin ID o sin clave válida ni se pide.
+ */
+export async function eventosDelMes(calendarios, clave, anio, mes) {
+  const rango = rangoDelMes(anio, mes);
+  const listas = await Promise.all(calendarios.map(async ({ tipo, id }) => {
+    const url = urlEventos(id, clave, rango);
+    if (!url) return [];
+    try {
+      const r = await fetch(url);
+      if (!r.ok) return null;
+      const { items } = await r.json();
+      return (items ?? []).map((item) => eventoDesdeGoogle(item, tipo)).filter(Boolean);
+    } catch {
+      return null;
+    }
+  }));
+  return { eventos: listas.flatMap((l) => l ?? []), fallidos: listas.filter((l) => l == null).length };
 }

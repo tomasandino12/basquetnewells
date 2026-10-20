@@ -66,6 +66,15 @@
   --pub-tarjeta:#17171C;
   --pub-borde:#2B2B34;
 
+  /* ---- calendario del portal: un color por tipo de evento (un calendario de
+     Google por tipo). Sólo pintan puntitos, filetes y cuadraditos de la
+     leyenda: el texto del evento va en --sobre-oscuro / --gris-osc, porque
+     el rojo del club no llega a 4.5:1 sobre --pub-tarjeta. */
+  --agenda-partido:var(--club);
+  --agenda-evento:#F2B33D;
+  --agenda-charla:#5AB4F0;
+  --agenda-entrenamiento:var(--sube-osc);
+
   /* ---- semántico ---- */
   --sube:#15794F;
   --baja:#985E0C;

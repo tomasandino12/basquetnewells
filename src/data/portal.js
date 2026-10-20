@@ -1,85 +1,157 @@
+import { TIPOS_AGENDA, idCalendario, claveValida } from './agenda.js';
+import { aniosDeCategoria, textoAnios } from './categorias.js';
+
 /**
- * Enlaces externos de la página pública del básquet: los dos calendarios y el
- * formulario de inscripción. Viven todos acá y no en el HTML para que cambiar
- * uno sea tocar una línea (guía en docs/COORDINACION.md).
+ * Lo que muestra la página pública del básquet y no sale de la base: los
+ * calendarios, las categorías con sus horarios, la sede, el contacto, el alias
+ * para transferir, la foto y los sponsors. Vive acá y no en el HTML para que
+ * cambiar uno sea tocar una línea (guía en docs/COORDINACION.md).
  *
- * Lo que todavía no pasó el club va en null: la tarjeta muestra
- * "Próximamente" en vez de un iframe vacío o un botón que no lleva a ningún lado.
+ * Lo que el club todavía no pasó va en null o en una lista vacía: esa parte de
+ * la página no se muestra. Nunca un "Próximamente" ni un botón a ningún lado.
  *
- * Los calendarios son públicos para que el embed funcione: cualquiera con el
- * link ve todos los eventos. Por eso nunca nombres de jugadores en los eventos.
+ * Los calendarios son públicos: cualquiera con el ID ve todos los eventos. Por
+ * eso nunca nombres de jugadores en los eventos.
  */
 export const PORTAL = Object.freeze({
   // Newell's Old Boys (semilla 0004). El id de un club no es secreto: la función
   // pública formularios_publicos(club) sólo devuelve lo que la coordinación
   // dejó activo en la página.
   clubId: '20000000-0000-0000-0000-000000000001',
-  calendarios: Object.freeze([
-    // PENDIENTE: ID del calendario (Configuración del calendario → "ID de calendario").
-    Object.freeze({ titulo: 'Partidos y torneos', id: null }),
-    // PENDIENTE: ID del calendario de eventos y recaudación.
-    Object.freeze({ titulo: 'Eventos y recaudación', id: null }),
+
+  // La temporada que se anuncia: de ella salen los años de cada categoría y el
+  // "la inscripción 2027 todavía no abrió". PENDIENTE: confirmar con Tomás.
+  temporada: 2027,
+
+  // El calendario del portal lo arma la página con los eventos de Google
+  // Calendar. UN calendario público, y el tipo de cada evento lo dice el color
+  // que se le pone en Google (TIPO_POR_COLOR en agenda.js: Tomate = partido,
+  // Banana = evento, Pavo real = charla, Albahaca = entrenamiento). Sin color,
+  // toma `tipo`. `clave`: API key de Google, restringida al dominio del portal
+  // y a la Calendar API (pasos en docs/COORDINACION.md). Sin clave o sin ID, la
+  // sección no se ve.
+  agenda: Object.freeze({
+    // Pública a propósito: la usa el navegador. Restringida en Google Cloud al
+    // sitio app-semillero.vercel.app y sólo a la Calendar API (proyecto
+    // "Portal básquet", cuenta Comisión Básquet, 20/10/2026).
+    clave: 'AIzaSyBPZ8Sq8ho4kv-5x1mfm4bs7y40l9P7IK4',
+    calendarios: Object.freeze([
+      // "Básquet NOB · Agenda (PÚBLICO)", creado el 20/10 aparte del principal
+      // de la cuenta (comisionbasquetnob@gmail.com), que es privado y tiene lo
+      // interno de la subcomisión.
+      Object.freeze({ tipo: 'evento', titulo: 'Agenda del básquet', id: '84aad29a932a6c72cce8f11e5fb488b747d200bb45b842df1dc4260aa7f8e42b@group.calendar.google.com' }),
+    ]),
+  }),
+
+  // Las categorías que ofrece el club. Los años NO van acá: salen de la
+  // temporada con la misma regla que categoriza a un chico (categorias.js).
+  // `grupo`: ESCUELITA, U9, U11, U13, U15, U17, U21 o MAYORES. `nombre`
+  // opcional (para que MAYORES diga "Primera"). `horario` opcional: días y hora.
+  // Horarios: descripción del formulario "Quiero jugar en Newell's" (temporada
+  // 2026). Los femeninos no figuran en ningún formulario: van sin horario.
+  categorias: Object.freeze([
+    Object.freeze({ grupo: 'ESCUELITA', rama: 'Mixto', horario: 'Mar 18 a 19 h (Estadio Cubierto) · Jue 18 a 19 h (Playón Deportivo)' }),
+    Object.freeze({ grupo: 'U9', rama: 'Mixto', horario: 'Mar 18 a 19 h (Estadio Cubierto) · Jue 18 a 19 h (Playón Deportivo)' }),
+    Object.freeze({ grupo: 'U11', rama: 'Mixto', horario: 'Mar 19 a 20 h (Estadio Cubierto) · Jue 19 a 20 h (Playón Deportivo)' }),
+    Object.freeze({ grupo: 'U13', rama: 'Mixto', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)' }),
+    Object.freeze({ grupo: 'U15', rama: 'Masculino', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)' }),
+    Object.freeze({ grupo: 'U17', rama: 'Masculino', horario: 'Lun y Vie 19 a 20 h (Estadio Cubierto) · Mié 19 a 20 h (Microestadio)' }),
+    Object.freeze({ grupo: 'U21', rama: 'Masculino', horario: 'Lun y Vie 20 a 21 h (Estadio Cubierto) · Mié 20 a 21 h (Microestadio)' }),
+    Object.freeze({ grupo: 'U15', rama: 'Femenino', horario: null }),
+    Object.freeze({ grupo: 'U17', rama: 'Femenino', horario: null }),
+    Object.freeze({ grupo: 'U21', rama: 'Femenino', horario: null }),
+    Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Femenino', horario: null }),
   ]),
-  // Logos de sponsors y colaboradores, para la franja de la sección "Sumate como
-  // sponsor o colaborador". Mientras la lista esté vacía, la franja no se ve.
+
+  // Dónde se entrena. Sin calle ni número en ningún formulario: el mapa es una
+  // búsqueda de Google Maps. Si el club pasa el link de "Compartir", va ese.
+  sede: Object.freeze({
+    nombre: 'Estadio Cubierto "Claudio Newell"',
+    direccion: 'Parque de la Independencia, Rosario. Algunos días se entrena en el Microestadio o en el Playón Deportivo.',
+    mapa: 'https://www.google.com/maps/search/?api=1&query=Estadio+Cubierto+Claudio+Newell+Rosario',
+  }),
+
+  // WhatsApp del coordinador (confirmado por Tomás, 20/10): el botón "Ayuda" de
+  // arriba y el "¿Dudas?" de abajo. wa.me lleva el 9 de los celulares argentinos.
+  contacto: 'https://wa.me/5493413709161',
+
+  // Alias para transferir, en la tarjeta del comprobante con un botón Copiar.
+  // PENDIENTE: confirmar que es el de las cuotas (hubo varios) y el titular.
+  alias: Object.freeze({ alias: 'pagosbasquetnob', titular: null }),
+
+  // Foto del club. Sólo fotos con la autorización de imagen firmada por las
+  // familias de todos los chicos que se reconozcan. El archivo va en
+  // public/portal/ (jpg o webp, ~1200 px de ancho).
+  // PENDIENTE: { src: '/public/portal/club.jpg', alt: 'qué se ve en la foto', epigrafe?: '…' }.
+  foto: null,
+
+  // Logos de sponsors y colaboradores, para la sección "Sumate como sponsor".
   // Cada uno: { nombre, logo: '/public/sponsors/archivo.png', enlace?: 'https://…' }.
   // El archivo va en public/sponsors/ (png, jpg, webp o svg). Un archivo que no
   // existe o una ruta de otro lado, no se muestra: ver sponsorsValidos().
   sponsors: Object.freeze([]),
-  // PENDIENTE: link de WhatsApp (https://wa.me/549341…) o mail (mailto:…) del
-  // coordinador, para el "¿Dudas?" del portal. El club no tiene mail propio.
-  contacto: null,
-  // Respaldo de los formularios: es lo que se muestra si la base no responde.
-  // La lista de verdad la carga la coordinación desde su panel (spec v2 §3).
-  // Cada uno lleva una línea de para qué es y qué tener a mano: las familias
-  // no tienen por qué saber qué se necesita antes de abrirlo.
-  formularios: Object.freeze([
-    Object.freeze({
-      titulo: 'Inscripción',
-      texto: 'Para anotar al chico o a la chica en el club. Tené a mano el DNI del chico y el tuyo (para sacarles una foto de frente y otra de dorso), la credencial de la obra social y un celular con cámara. Después, la coordinación revisa todo y, si falta algo, te avisa tu profe.',
-      enlace: 'https://docs.google.com/forms/d/e/1FAIpQLSfXI11Sruothw4K67u6deMbRgfK0uZO00sfE-DBgsqam3peBQ/viewform',
-    }),
-  ]),
+
+  // Respaldo de los formularios: lo que se muestra si la base no responde. La
+  // lista de verdad la carga la coordinación desde su panel. Vacío a propósito
+  // mientras la inscripción nueva no esté publicada: mejor la tarjeta cerrada
+  // que mandar a un formulario viejo.
+  formularios: Object.freeze([]),
 });
 
-/** Hosts que la página pública mete en un iframe. La CSP (frame-src) tiene que permitirlos. */
-export const HOSTS_EMBEBIDOS = Object.freeze(['calendar.google.com']);
+/** Los calendarios que se pueden pedir: con un tipo conocido, un ID válido y la clave puesta. */
+export function calendariosActivos(agenda) {
+  if (!claveValida(agenda?.clave)) return [];
+  return (agenda.calendarios ?? [])
+    .filter((c) => TIPOS_AGENDA.includes(c?.tipo) && idCalendario(c.id))
+    .map((c) => ({ tipo: c.tipo, titulo: String(c.titulo ?? '').trim() || c.tipo, id: idCalendario(c.id) }));
+}
 
-const EMBED = 'https://calendar.google.com/calendar/embed';
-// Un ID de Google Calendar tiene forma de mail. Estricto porque termina en un
-// <iframe src>: con comillas o espacios, mejor "Próximamente" que un embed roto.
-const ID_CALENDARIO = /^[A-Za-z0-9._%+-]{1,200}@[A-Za-z0-9.-]{1,200}$/;
+const NOMBRE_GRUPO = { ESCUELITA: 'Escuelita', MAYORES: 'Mayores' };
+const texto = (v) => (typeof v === 'string' ? v.trim() : '');
 
 /**
- * URL del embed en vista agenda (en un celular, el mes no entra). Acepta el ID
- * o la URL de embed entera, porque es lo que Google ofrece para copiar; de esa
- * URL sólo se rescata el ID y el resto se arma acá, así el huso queda siempre
- * en el de Rosario.
+ * La lista de categorías del portal, con sus años de nacimiento para la
+ * temporada. Una con un grupo que no existe se descarta: mejor una fila menos
+ * que unos años inventados.
  */
-export function urlEmbedCalendario(valor) {
-  if (typeof valor !== 'string') return null;
-  let id = valor.trim();
-  if (id.startsWith('https://')) {
-    let u;
-    try {
-      u = new URL(id);
-    } catch {
-      return null;
-    }
-    if (`${u.origin}${u.pathname}` !== EMBED) return null;
-    id = u.searchParams.get('src') ?? '';
-  }
-  if (!ID_CALENDARIO.test(id)) return null;
-  const q = new URLSearchParams({
-    src: id,
-    ctz: 'America/Argentina/Buenos_Aires',
-    mode: 'AGENDA',
-    showTitle: '0',
-    showPrint: '0',
-    showTabs: '0',
-    showCalendars: '0',
+export function categoriasDelPortal(lista, temporada) {
+  return (Array.isArray(lista) ? lista : []).flatMap((c) => {
+    const anios = aniosDeCategoria(c?.grupo, temporada);
+    if (!anios) return [];
+    return [{
+      nombre: texto(c.nombre) || NOMBRE_GRUPO[c.grupo] || c.grupo,
+      rama: texto(c.rama) || null,
+      anios: textoAnios(anios),
+      horario: texto(c.horario) || null,
+    }];
   });
-  return `${EMBED}?${q}`;
+}
+
+const MAPA = /^https:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps|www\.google\.com\/maps|maps\.google\.com)\/[^\s"<>]*$/;
+
+/** La sede si tiene nombre; el link al mapa sólo si es de Google Maps. */
+export function sedeValida(sede) {
+  const nombre = texto(sede?.nombre);
+  if (!nombre) return null;
+  return { nombre, direccion: texto(sede.direccion) || null, mapa: MAPA.test(sede.mapa ?? '') ? sede.mapa : null };
+}
+
+// Alias de CBU/CVU: de 6 a 20 letras, números, puntos o guiones.
+const ALIAS = /^[A-Za-z0-9.-]{6,20}$/;
+
+export function aliasValido(valor) {
+  const alias = texto(valor?.alias);
+  return ALIAS.test(alias) ? { alias, titular: texto(valor.titular) || null } : null;
+}
+
+// Sólo una foto propia de public/portal/: la CSP no deja cargar imágenes de otro sitio.
+const RUTA_FOTO = /^\/public\/portal\/[\w-]+\.(?:jpe?g|webp)$/;
+
+/** La foto si es un archivo propio y tiene texto alternativo (contar qué se ve, no quiénes son). */
+export function fotoValida(foto) {
+  const alt = texto(foto?.alt);
+  if (!RUTA_FOTO.test(foto?.src ?? '') || !alt) return null;
+  return { src: foto.src, alt, epigrafe: texto(foto.epigrafe) || null };
 }
 
 /**

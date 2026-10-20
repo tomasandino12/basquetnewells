@@ -72,3 +72,31 @@ export function ramaDeCodigos(codigos) {
   const ramas = new Set((codigos ?? []).map((c) => String(c).slice(-1)).filter((x) => x === 'M' || x === 'F'));
   return ramas.size === 1 ? [...ramas][0] : null;
 }
+
+/**
+ * Los años de nacimiento que entran en un grupo, según TRAMOS: la misma
+ * regla que decide la categoría de un chico, así el portal no repite años a
+ * mano que haya que correr cada temporada. `nuevo` null = Mayores (no hay
+ * tope); `viejo` null = Escuelita (todo lo más chico). Grupo o temporada
+ * desconocidos → null.
+ */
+export function aniosDeCategoria(grupo, temporada) {
+  const t = temporadaComoAnio(temporada);
+  if (t == null) return null;
+  if (grupo === 'MAYORES') return { viejo: null, nuevo: t - TRAMOS.at(-1)[0] - 1 };
+  const i = TRAMOS.findIndex(([, g]) => g === grupo);
+  if (i < 0) return null;
+  const maxima = TRAMOS[i][0];
+  if (i === 0) return { viejo: t - maxima, nuevo: null };
+  return { viejo: t - maxima, nuevo: t - TRAMOS[i - 1][0] - 1 };
+}
+
+/** { viejo, nuevo } → "2017 y 2018", "2005 a 2008", "2019 en adelante", "2004 y antes". */
+export function textoAnios(anios) {
+  if (!anios) return '';
+  const { viejo, nuevo } = anios;
+  if (nuevo == null) return `${viejo} en adelante`;
+  if (viejo == null) return `${nuevo} y antes`;
+  if (viejo === nuevo) return String(viejo);
+  return nuevo - viejo === 1 ? `${viejo} y ${nuevo}` : `${viejo} a ${nuevo}`;
+}

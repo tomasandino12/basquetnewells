@@ -381,15 +381,34 @@
   .publico .beneficios{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4);padding-inline:var(--sp-6);max-width:64rem;margin-inline:auto}
   .publico .acciones-landing{flex-direction:row;justify-content:center;max-width:30rem}
   .publico .futuro{padding-inline:var(--sp-6)}
-  /* Portal: formularios y calendarios en dos columnas; los pasos en 2x2. */
-  .publico .portal-sec{padding-inline:var(--sp-6)}
-  .publico .portal-pasos,.publico .portal-lista,.publico .portal-calendarios{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4)}
+  /* Portal: las dos tarjetas de arriba lado a lado, atajos en una fila,
+     formularios y categorías en dos columnas. */
+  .publico .portal-barra,.publico .portal-hero,.publico .portal-acciones,.publico .portal-atajos,.publico .portal-sec{padding-inline:var(--sp-6)}
+  .publico .portal-barra{padding-top:var(--sp-5)}
+  .publico .portal-hero{padding-top:var(--sp-8);padding-bottom:var(--sp-6);max-width:44rem}
+  .publico .portal-acciones{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4)}
+  .publico .portal-acc{padding:var(--sp-6);display:flex;flex-direction:column}
+  .publico .portal-acc p{flex:1 0 auto}
+  .publico .portal-atajos{grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:var(--sp-3)}
+  .publico .portal-atajos a{flex-direction:row;justify-content:center;font-size:var(--fs-145);padding:var(--sp-3)}
+  .publico .portal-lista{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4)}
+  .publico .portal-cats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .publico .portal-cats li + li{border-top:0}
+  .publico .portal-cats li:nth-child(n+3){border-top:1px solid var(--pub-borde)}
+  .publico .portal-cats li:nth-child(even){border-left:1px solid var(--pub-borde)}
   .publico .portal-logos-lista{grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-4)}
   /* Bento en 2 columnas: las anchas y las altas ocupan el ancho completo; las dos últimas van lado a lado. */
   .publico .ben.ancha,.publico .ben.alta{grid-column:1 / -1}
 }
 @media (min-width:64rem){
   .publico .beneficios{grid-template-columns:repeat(3,minmax(0,1fr))}
+  /* Portal: la grilla del mes a la izquierda y lo del día a la derecha. */
+  .publico .portal-cal{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);grid-template-areas:"cab cab" "ley dia" "grilla dia";grid-template-rows:auto auto 1fr}
+  .publico .portal-cal-cab{grid-area:cab}
+  .publico .portal-ley{grid-area:ley;align-self:start}
+  .publico .portal-grilla{grid-area:grilla;padding:var(--sp-2) var(--sp-4) var(--sp-4)}
+  .publico .portal-dia{min-height:3.5rem}
+  .publico .portal-cal-dia{grid-area:dia;border-top:0;border-left:1px solid var(--pub-borde);padding:var(--sp-4) var(--sp-5)}
   /* Bento en 3 columnas: .ancha ocupa 2 y .alta ocupa 2 filas (queda 1 columna). */
   .publico .ben.ancha{grid-column:span 2}
   .publico .ben.alta{grid-column:auto;grid-row:span 2}

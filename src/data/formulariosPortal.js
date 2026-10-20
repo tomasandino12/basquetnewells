@@ -12,13 +12,16 @@ import { enlaceFormulario } from './portal.js';
  */
 
 /**
- * Los dos destinos especiales de un formulario (0061). Las claves son las del
+ * Los destinos especiales de un formulario (0061, y 0062 suma inscripción y comprobante). Las claves son las del
  * check de la base: tests/contratoDestinoFormulario.test.js las compara. Un
  * formulario sin destino es "común" y va en la lista.
  */
 export const DESTINOS = Object.freeze([
   Object.freeze({ clave: 'consultas', rotulo: 'Quiero jugar en Newell\'s (consultas)', chip: 'Quiero jugar' }),
   Object.freeze({ clave: 'colaboradores', rotulo: 'Sumate como sponsor o colaborador', chip: 'Sponsors' }),
+  // 0062: las dos tarjetas de arriba del portal. Sin formulario activo, dicen "abre con la temporada".
+  Object.freeze({ clave: 'inscripcion', rotulo: 'Inscripción (tarjeta de arriba del portal)', chip: 'Inscripción' }),
+  Object.freeze({ clave: 'comprobante', rotulo: 'Comprobante de pago (tarjeta de arriba del portal)', chip: 'Comprobante' }),
 ]);
 
 export const MENSAJE_ENLACE_FORMULARIO = 'El enlace tiene que ser de Google Forms (empieza con https://docs.google.com/forms o https://forms.gle).';
@@ -58,7 +61,7 @@ export function validarFormulario({ titulo, texto, enlace, destino } = {}) {
  * llegaran dos, gana el primero y el otro pasa a la lista en vez de perderse.
  */
 export function separarFormularios(lista) {
-  const r = { consultas: null, colaboradores: null, comunes: [] };
+  const r = { consultas: null, colaboradores: null, inscripcion: null, comprobante: null, comunes: [] };
   for (const f of lista) {
     const destino = DESTINOS.some((d) => d.clave === f.destino) ? f.destino : null;
     if (destino && !r[destino]) r[destino] = f;
