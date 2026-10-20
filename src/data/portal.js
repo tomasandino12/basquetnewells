@@ -20,6 +20,12 @@ export const PORTAL = Object.freeze({
     // PENDIENTE: ID del calendario de eventos y recaudación.
     Object.freeze({ titulo: 'Eventos y recaudación', id: null }),
   ]),
+  // Logos de sponsors y colaboradores, para la franja de la sección "Sumate como
+  // sponsor o colaborador". Mientras la lista esté vacía, la franja no se ve.
+  // Cada uno: { nombre, logo: '/public/sponsors/archivo.png', enlace?: 'https://…' }.
+  // El archivo va en public/sponsors/ (png, jpg, webp o svg). Un archivo que no
+  // existe o una ruta de otro lado, no se muestra: ver sponsorsValidos().
+  sponsors: Object.freeze([]),
   // PENDIENTE: link de WhatsApp (https://wa.me/549341…) o mail (mailto:…) del
   // coordinador, para el "¿Dudas?" del portal. El club no tiene mail propio.
   contacto: null,
@@ -112,4 +118,15 @@ export function enlaceContacto(valor) {
     return null;
   }
   return u.protocol === 'https:' && u.hostname === 'wa.me' && u.pathname.length > 1 ? valor : null;
+}
+
+// Sólo imágenes propias, de la carpeta de logos: el CSP de la app no deja cargar
+// imágenes de otro sitio y un nombre de archivo raro no tiene que poder salirse de ella.
+const RUTA_LOGO = /^\/public\/sponsors\/[\w-]+\.(?:png|jpe?g|webp|svg)$/;
+
+/** De la lista de sponsors, los que se pueden mostrar: con nombre, con un logo propio y, si traen enlace, que sea https. */
+export function sponsorsValidos(lista) {
+  return (Array.isArray(lista) ? lista : []).filter((s) => typeof s?.nombre === 'string' && s.nombre.trim() !== ''
+    && RUTA_LOGO.test(s.logo ?? '')
+    && (s.enlace == null || /^https:\/\/[^\s"<>]+$/.test(s.enlace)));
 }

@@ -1,7 +1,7 @@
 import { html } from './html.js';
 import { $ } from './dom.js';
 import { formulariosPublicos } from '../data/repositorio.js';
-import { PORTAL, urlEmbedCalendario, enlaceFormulario, enlaceContacto } from '../data/portal.js';
+import { PORTAL, urlEmbedCalendario, enlaceFormulario, enlaceContacto, sponsorsValidos } from '../data/portal.js';
 import { resolverFormularios, separarFormularios } from '../data/formulariosPortal.js';
 import { destinoDeAuth } from '../data/entradaAuth.js';
 
@@ -53,6 +53,39 @@ export function htmlAvisoRespaldo() {
 }
 
 /**
+ * El botón de "Sumate como sponsor o colaborador": el formulario que la
+ * coordinación marcó con el destino colaboradores, con su línea de ayuda y los
+ * tres pasos. Sin formulario (o con un enlace que no es de Google Forms) queda
+ * "Próximamente" y no un botón a ningún lado.
+ */
+export function htmlColaboradores(formulario) {
+  const url = formulario ? enlaceFormulario(formulario.enlace) : null;
+  if (!url) return PRONTO;
+  return html`<div class="portal-tarjeta">
+    <div class="d">${formulario.texto}</div>
+    <ol class="portal-ayuda">
+      <li>Tocá el botón de abajo.</li>
+      <li>Se abre un formulario de Google: contanos quién sos y cómo querés colaborar.</li>
+      <li>Mandalo: con eso ya quedó tu propuesta.</li>
+    </ol>
+    <a class="btn" href="${url}" target="_blank" rel="noopener">Quiero colaborar</a>
+  </div>`;
+}
+
+/**
+ * La franja de logos de sponsors. Sin ninguno válido no devuelve nada y la
+ * franja queda oculta: no se muestra un cartel vacío.
+ */
+export function htmlLogos(sponsors) {
+  const lista = sponsorsValidos(sponsors);
+  if (!lista.length) return html``;
+  return html`<ul class="portal-logos-lista">${lista.map((s) => {
+    const imagen = html`<img src="${s.logo}" alt="${s.nombre}" loading="lazy">`;
+    return html`<li>${s.enlace ? html`<a href="${s.enlace}" target="_blank" rel="noopener">${imagen}</a>` : imagen}</li>`;
+  })}</ul>`;
+}
+
+/**
  * Una tarjeta por formulario, con su línea de para qué es y qué tener a mano.
  * Si el enlace no es de Google Forms (lo pegó alguien a mano) la tarjeta
  * queda sin botón: mejor "Próximamente" que un link a cualquier lado.
@@ -93,6 +126,10 @@ export function htmlContacto(contacto) {
 export async function iniciarPortal() {
   $('portal-calendarios').innerHTML = htmlCalendarios(PORTAL.calendarios);
   $('portal-contacto').innerHTML = htmlContacto(PORTAL.contacto);
+  // La franja de logos no depende de la base: sale de src/data/portal.js y queda oculta sin ninguno.
+  const logos = htmlLogos(PORTAL.sponsors);
+  $('portal-logos').innerHTML = logos;
+  $('portal-logos').hidden = !logos.toString();
 
   // Si la URL es la vuelta de un login, portalEntrada.js ya está mandando a la
   // persona a /app. Acá no se consulta nada: el cliente de Supabase canjearía
@@ -101,14 +138,14 @@ export async function iniciarPortal() {
 
   const { estado, formularios } = await resolverFormularios(() => formulariosPublicos(PORTAL.clubId), PORTAL.formularios);
 
-  // El de consultas va destacado arriba y no se repite en la lista.
-  const { consultas } = separarFormularios(formularios);
+  // Los dos con lugar propio (consultas arriba, colaboradores en su sección) no se repiten en la lista.
+  const { consultas, colaboradores, comunes } = separarFormularios(formularios);
   const jugar = htmlJugar(consultas);
   $('portal-jugar').innerHTML = jugar;
   $('jugar').hidden = !jugar.toString();
+  $('portal-colaboradores').innerHTML = htmlColaboradores(colaboradores);
 
-  const resto = formularios.filter((f) => f !== consultas);
   $('portal-formularios').innerHTML = estado === 'vacio'
     ? htmlSinFormularios()
-    : html`${estado === 'respaldo' && htmlAvisoRespaldo()}${resto.length ? htmlFormularios(resto) : htmlSinFormularios({ hayOtros: Boolean(consultas) })}`;
+    : html`${estado === 'respaldo' && htmlAvisoRespaldo()}${comunes.length ? htmlFormularios(comunes) : htmlSinFormularios({ hayOtros: Boolean(consultas || colaboradores) })}`;
 }

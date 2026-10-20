@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { htmlFormularios, htmlCalendarios, htmlContacto, htmlSinFormularios, htmlAvisoRespaldo, htmlJugar } from '../src/ui/portal.js';
+import { htmlFormularios, htmlCalendarios, htmlContacto, htmlSinFormularios, htmlAvisoRespaldo, htmlJugar, htmlColaboradores, htmlLogos } from '../src/ui/portal.js';
 
 /**
  * portal.html es HTML escrito a mano y no hay navegador en los tests: se lee
@@ -12,7 +12,7 @@ const pagina = readFileSync('public/portal.html', 'utf8');
 const ids = [...pagina.matchAll(/\bid="([\w-]+)"/g)].map((m) => m[1]);
 
 test('el portal trae las secciones en orden', () => {
-  const orden = ['que-hacer', 'formularios', 'calendario', 'informacion', 'semillero', 'dudas'];
+  const orden = ['que-hacer', 'formularios', 'calendario', 'informacion', 'sponsors', 'semillero', 'dudas'];
   const posiciones = orden.map((id) => pagina.indexOf(`<section class="portal-sec" id="${id}"`));
   assert.ok(posiciones.every((p) => p > 0), `faltan secciones: ${posiciones}`);
   assert.deepEqual([...posiciones].sort((a, b) => a - b), posiciones, 'las secciones están desordenadas');
@@ -161,4 +161,62 @@ test('el portal aparta el formulario de consultas de la lista: no aparece dos ve
   assert.match(portal, /separarFormularios\(formularios\)/);
   assert.match(portal, /htmlJugar\(consultas\)/);
   assert.match(portal, /\$\('jugar'\)\.hidden = !/);
+});
+
+// ---- "Sumate como sponsor o colaborador" (destino colaboradores, 0061) ----
+
+test('la sección de sponsors tiene su texto y su franja de logos, que arranca oculta', () => {
+  const sec = pagina.match(/<section class="portal-sec" id="sponsors"[\s\S]*?<\/section>/)?.[0] ?? '';
+  assert.match(sec, /Sumate como sponsor o colaborador/);
+  assert.match(sec, /id="portal-colaboradores"/);
+  assert.match(sec, /<div class="portal-logos" id="portal-logos" hidden>/);
+});
+
+test('htmlColaboradores: la línea de la coordinación, tres pasos y el botón al formulario', () => {
+  const out = htmlColaboradores({ titulo: 'x', texto: 'Si tenés un comercio <o empresa>.', enlace: 'https://forms.gle/Col1' }).toString();
+  assert.match(out, /Si tenés un comercio &lt;o empresa&gt;\./);
+  assert.equal((out.match(/<li>/g) ?? []).length, 3, 'paso a paso: tres pasos');
+  assert.match(out, /<a class="btn" href="https:\/\/forms\.gle\/Col1" target="_blank" rel="noopener">Quiero colaborar<\/a>/);
+  assert.doesNotMatch(out, /<o empresa>/);
+});
+
+test('htmlColaboradores sin formulario o con un enlace que no es de Google Forms dice Próximamente y no tiene <a>', () => {
+  for (const f of [null, undefined, { texto: 'x', enlace: 'https://evil.com/forms/x' }]) {
+    const out = htmlColaboradores(f).toString();
+    assert.match(out, /Próximamente/);
+    assert.doesNotMatch(out, /<a /);
+  }
+});
+
+test('htmlLogos: sin sponsors no muestra nada; con sponsors, una imagen con su nombre, escapado', () => {
+  assert.equal(htmlLogos([]).toString(), '');
+  assert.equal(htmlLogos(undefined).toString(), '');
+  const out = htmlLogos([
+    { nombre: 'Ferretería <Sur>', logo: '/public/sponsors/ferreteria-sur.png', enlace: 'https://ferreteriasur.example/' },
+    { nombre: 'Panadería', logo: '/public/sponsors/panaderia.svg' },
+  ]).toString();
+  assert.match(out, /<img src="\/public\/sponsors\/ferreteria-sur\.png" alt="Ferretería &lt;Sur&gt;" loading="lazy">/);
+  assert.match(out, /<a href="https:\/\/ferreteriasur\.example\/" target="_blank" rel="noopener"><img /);
+  assert.match(out, /<li><img src="\/public\/sponsors\/panaderia\.svg" alt="Panadería" loading="lazy"><\/li>/);
+  assert.doesNotMatch(out, /<Sur>/);
+});
+
+test('htmlLogos descarta lo que no es un logo propio: otro sitio, rutas raras, sin nombre', () => {
+  const out = htmlLogos([
+    { nombre: 'Ajeno', logo: 'https://cdn.evil.com/x.png' },
+    { nombre: 'Subida', logo: '/public/sponsors/../escudo.png' },
+    { nombre: '', logo: '/public/sponsors/sin-nombre.png' },
+    { nombre: 'Script', logo: '/public/sponsors/x.html' },
+    { nombre: 'Bueno', logo: '/public/sponsors/bueno.webp' },
+  ]).toString();
+  assert.equal((out.match(/<img /g) ?? []).length, 1);
+  assert.match(out, /alt="Bueno"/);
+});
+
+test('el portal aparta también el formulario de colaboradores de la lista y muestra los logos sólo si hay', () => {
+  const portal = readFileSync('src/ui/portal.js', 'utf8');
+  assert.match(portal, /const \{ consultas, colaboradores, comunes \} = separarFormularios\(formularios\);/);
+  assert.match(portal, /htmlColaboradores\(colaboradores\)/);
+  assert.match(portal, /\$\('portal-logos'\)\.hidden = !/);
+  assert.doesNotMatch(portal, /formularios\.filter\(\(f\) => f !== consultas\)/);
 });
