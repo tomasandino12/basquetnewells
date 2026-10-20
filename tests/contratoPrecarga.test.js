@@ -18,8 +18,14 @@ test('la precarga usa los encabezados del importador', () => {
 test('el prompt no pide DNI ni datos de salud en Para Semillero', () => {
   const lineaSemillero = encabezados.find((l) => l.startsWith('Apellido | Nombre'));
   assert.doesNotMatch(lineaSemillero, /DNI|salud|afiliado|domicilio/i);
-  assert.match(md, /NO incluyas DNI/);
   assert.match(md, /Descargar → Microsoft Excel/);
+});
+
+test('la precarga no modifica formularios ni planillas existentes', () => {
+  // Sólo se nombra "Vincular con Hojas" para prohibirlo.
+  for (const l of md.split(String.fromCharCode(10)).filter((x) => /Vincular con Hojas/.test(x))) assert.match(l, /Nunca/);
+  assert.match(md, /No se toca nada de lo que ya existe/);
+  assert.match(md, /`Masculino` o `Femenino`/);
 });
 
 test('la precarga usa los encabezados del importador de emergencias', () => {

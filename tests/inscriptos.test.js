@@ -210,3 +210,12 @@ test('inscriptosDelPlantel: avisa si el año de nacimiento no es de la categorí
   const sinAnio = inscriptosDelPlantel([fila({ fechaNacimiento: '2009-03-03' })], 'U15M');
   assert.equal(sinAnio.inscriptos[0].aviso, null);
 });
+
+test('mapearCategoria: la rama se acepta con cualquier mayúscula', () => {
+  for (const rama of ['Masculino', 'MASCULINO', 'masculino', ' Masculino ']) {
+    assert.deepEqual(mapearCategoria('U13 - MIXTO (2014 Y 2013)', rama), { codigo: 'U13M' }, rama);
+  }
+  for (const rama of ['Femenino', 'FEMENINO', 'femenino']) {
+    assert.equal(mapearCategoria('U13 - MIXTO (2014 Y 2013)', rama).codigo, null, rama);
+  }
+});
