@@ -6,15 +6,15 @@ Spec: `docs/superpowers/specs/2026-10-19-datos-conectados-design.md`. Migración
 
 | Task | Estado |
 |---|---|
-| 1 Categoría por año | pendiente |
-| 2 Importador: U13 sin rama y aviso por año | pendiente |
-| 3 Prompt de precarga | pendiente |
-| 4 Migración 0059 | pendiente |
-| 5 Pases de temporada: lógica y repo | pendiente |
-| 6 Asistente de temporada (pantalla) | pendiente |
-| 7 Emergencias: parser y lógica | pendiente |
-| 8 Emergencias: pantallas | pendiente |
-| 9 Docs y aviso legal | pendiente |
+| 1 Categoría por año | hecha (no pusheada) |
+| 2 Importador: U13 sin rama y aviso por año | hecha (no pusheada) |
+| 3 Prompt de precarga | hecha (no pusheada) |
+| 4 Migración 0059 | hecha, NO aplicada en producción (no pusheada) |
+| 5 Pases de temporada: lógica y repo | hecha (no pusheada) |
+| 6 Asistente de temporada (pantalla) | hecha (no pusheada) |
+| 7 Emergencias: parser y lógica | hecha (no pusheada) |
+| 8 Emergencias: pantallas | hecha (no pusheada) |
+| 9 Docs y aviso legal | hecha (no pusheada) |
 
 ## Task 1 — `categoriaPorNacimiento`
 - Archivos: `src/data/categorias.js` (nuevo, puro), `tests/categorias.test.js`.
