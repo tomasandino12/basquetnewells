@@ -36,10 +36,10 @@ export const PORTAL = Object.freeze({
     // "Portal básquet", cuenta Comisión Básquet, 20/10/2026).
     clave: 'AIzaSyBPZ8Sq8ho4kv-5x1mfm4bs7y40l9P7IK4',
     calendarios: Object.freeze([
-      // PENDIENTE: el ID del calendario público del básquet. No el principal de
-      // la cuenta (comisionbasquetnob@gmail.com), que es privado y tiene lo
+      // "Básquet NOB · Agenda (PÚBLICO)", creado el 20/10 aparte del principal
+      // de la cuenta (comisionbasquetnob@gmail.com), que es privado y tiene lo
       // interno de la subcomisión.
-      Object.freeze({ tipo: 'evento', titulo: 'Agenda del básquet', id: null }),
+      Object.freeze({ tipo: 'evento', titulo: 'Agenda del básquet', id: '84aad29a932a6c72cce8f11e5fb488b747d200bb45b842df1dc4260aa7f8e42b@group.calendar.google.com' }),
     ]),
   }),
 
