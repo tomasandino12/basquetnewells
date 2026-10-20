@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   htmlFormularios, htmlContacto, htmlAvisoRespaldo, htmlJugar, htmlColaboradores, htmlLogos, htmlInscripcion,
-  htmlComprobante, htmlAtajos, htmlCalendario, htmlCategorias, htmlSede, htmlFoto, diaInicial,
+  htmlComprobante, htmlAtajos, htmlCalendario, htmlCategorias, htmlSede, htmlFoto, diaInicial, htmlSuscripcion,
 } from '../src/ui/portal.js';
 import { eventoDesdeGoogle, eventosPorDia } from '../src/data/agenda.js';
 
@@ -265,4 +265,36 @@ test('htmlLogos: sin sponsors no muestra nada; con sponsors, una imagen con su n
   assert.match(out, /<a href="https:\/\/ferreteriasur\.example\/" target="_blank" rel="noopener"><img /);
   assert.match(out, /<li><img src="\/public\/sponsors\/panaderia\.svg" alt="Panadería" loading="lazy"><\/li>/);
   assert.equal((out.match(/<img /g) ?? []).length, 2);
+});
+
+// ---- Un solo calendario con colores, y "Agregar a mi calendario" ----
+
+test('cada evento ofrece agregarlo: link a Google y botón que baja el .ics', () => {
+  const out = htmlCalendario(estado(), CALS).toString();
+  const evento = out.match(/<li class="portal-ev tipo-partido">[\s\S]*?<\/li>/)[0];
+  assert.match(evento, /<a href="https:\/\/calendar\.google\.com\/calendar\/render\?action=TEMPLATE[^"]*" target="_blank" rel="noopener">Google<\/a>/);
+  assert.match(evento, /<button type="button" data-ics="1\|2026-10-24">iPhone<\/button>/);
+  assert.match(evento, /Partidos · 10:30 a 11:30/);
+});
+
+test('la leyenda muestra sólo los tipos que hay en el mes', () => {
+  const soloPartidos = eventosPorDia([ev('9', 'partido', { summary: 'x', start: { date: '2026-10-02' } }), ev('8', 'charla', { summary: 'y', colorId: '7', start: { date: '2026-10-03' } })]);
+  const out = htmlCalendario(estado({ porDia: soloPartidos }), CALS).toString();
+  assert.match(out, /<li class="tipo-partido">Partidos<\/li><li class="tipo-charla">Charlas<\/li><\/ul>/);
+  assert.doesNotMatch(out, /tipo-evento">Eventos/);
+});
+
+test('seguir el calendario: Android/compu e iPhone; sin ID válido, nada', () => {
+  const out = htmlSuscripcion([{ tipo: 'evento', id: 'abc@group.calendar.google.com' }]).toString();
+  assert.match(out, /href="https:\/\/calendar\.google\.com\/calendar\/render\?cid=abc%40group\.calendar\.google\.com"/);
+  assert.match(out, /href="webcal:\/\/calendar\.google\.com\/calendar\/ical\/abc%40group\.calendar\.google\.com\/public\/basic\.ics"/);
+  assert.equal(htmlSuscripcion([{ tipo: 'evento', id: 'roto' }]).toString(), '');
+  assert.match(htmlCalendario(estado(), CALS).toString(), /Querés tener todo el calendario en tu celular/);
+});
+
+test('inscripción cerrada sin "Quiero jugar": manda al WhatsApp del coordinador si lo hay', () => {
+  const out = htmlInscripcion(null, { contacto: 'https://wa.me/5493410000000' }).toString();
+  assert.match(out, /<a class="btn sec" href="https:\/\/wa\.me\/5493410000000" target="_blank" rel="noopener">Preguntale al coordinador<\/a>/);
+  assert.doesNotMatch(htmlInscripcion(null, { contacto: 'javascript:alert(1)' }).toString(), /<a /);
+  assert.match(htmlInscripcion(null, { hayConsultas: true, contacto: 'https://wa.me/5493410000000' }).toString(), /href="#jugar"/);
 });

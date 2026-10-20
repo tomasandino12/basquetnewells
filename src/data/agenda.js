@@ -13,8 +13,24 @@ export const ZONA = 'America/Argentina/Buenos_Aires';
 // las 00:00 -03:00 del 1 a las 00:00 -03:00 del 1 del mes siguiente.
 const DESFASE = '-03:00';
 
-/** Un calendario de Google por tipo: el tipo da el color (tokens --agenda-*) y el nombre de la leyenda. */
+/** Los tipos de evento: cada uno tiene su color en la página (tokens --agenda-*) y su nombre en la leyenda. */
 export const TIPOS_AGENDA = Object.freeze(['partido', 'evento', 'charla', 'entrenamiento']);
+
+export const NOMBRE_TIPO = Object.freeze({ partido: 'Partidos', evento: 'Eventos', charla: 'Charlas', entrenamiento: 'Entrenamientos' });
+
+/**
+ * Todo va en UN calendario y el tipo lo dice el color que se le pone al
+ * evento en Google Calendar (decisión de Tomás, 20/10): así quien carga sólo
+ * elige un color, sin cambiar de calendario. Las claves son los colorId de la
+ * API; los nombres, los del menú de colores de Google en español. Un evento
+ * sin color, o con otro, toma el tipo por defecto del calendario.
+ */
+export const TIPO_POR_COLOR = Object.freeze({
+  11: 'partido', // Tomate
+  5: 'evento', // Banana
+  7: 'charla', // Pavo real
+  10: 'entrenamiento', // Albahaca
+});
 
 /** El host al que el portal le pide los eventos: connect-src de vercel.json lo tiene que permitir (tests/csp.test.js). */
 export const HOST_AGENDA = 'www.googleapis.com';
@@ -79,7 +95,7 @@ export function urlEventos(valorId, clave, { desde, hasta }) {
     orderBy: 'startTime',
     maxResults: '250',
     timeZone: ZONA,
-    fields: 'items(id,status,summary,location,start,end)',
+    fields: 'items(id,status,summary,location,colorId,start,end)',
   });
   return `${API}${encodeURIComponent(id)}/events?${q}`;
 }
@@ -105,22 +121,27 @@ const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const texto = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
 /**
- * Un evento de la API → { id, tipo, titulo, lugar, dia, hasta, hora }.
- * Los de todo el día traen hora null y pueden durar varios (un torneo):
- * `hasta` es su último día (Google da el fin exclusivo). Cancelados o sin
- * fecha → null.
+ * Un evento de la API → { id, tipo, titulo, lugar, dia, hasta, hora, horaFin }.
+ * El tipo sale del color del evento (TIPO_POR_COLOR) o, si no tiene uno
+ * conocido, del calendario. Los de todo el día traen hora null y pueden
+ * durar varios (un torneo): `hasta` es su último día (Google da el fin
+ * exclusivo). Cancelados o sin fecha → null.
  */
-export function eventoDesdeGoogle(item, tipo) {
+export function eventoDesdeGoogle(item, tipoPorDefecto) {
+  const tipo = TIPO_POR_COLOR[item?.colorId] ?? tipoPorDefecto;
   if (!item || item.status === 'cancelled' || !TIPOS_AGENDA.includes(tipo)) return null;
   const base = { id: String(item.id ?? ''), tipo, titulo: texto(item.summary, 120) || 'Evento', lugar: texto(item.location, 160) || null };
   if (typeof item.start?.date === 'string' && FECHA.test(item.start.date)) {
     const fin = typeof item.end?.date === 'string' && FECHA.test(item.end.date) ? sumarDias(item.end.date, -1) : item.start.date;
-    return { ...base, dia: item.start.date, hasta: fin > item.start.date ? fin : item.start.date, hora: null };
+    return { ...base, dia: item.start.date, hasta: fin > item.start.date ? fin : item.start.date, hora: null, horaFin: null };
   }
   const inicio = new Date(item.start?.dateTime ?? NaN);
   if (Number.isNaN(inicio.getTime())) return null;
   const { dia, hora } = enRosario(inicio);
-  return { ...base, dia, hasta: dia, hora };
+  // Sin fin (o con uno anterior al inicio), una hora: es lo que pone Google por defecto.
+  const finDado = new Date(item.end?.dateTime ?? NaN);
+  const fin = finDado.getTime() > inicio.getTime() ? finDado : new Date(inicio.getTime() + 3600e3);
+  return { ...base, dia, hasta: dia, hora, horaFin: enRosario(fin).hora, diaFin: enRosario(fin).dia };
 }
 
 // Un evento de todo el día mal cargado (de enero a diciembre) no tiene que
@@ -203,4 +224,68 @@ export function tituloMes(anio, mes) {
 export function fechaLarga(fecha) {
   const d = new Date(`${fecha}T00:00:00Z`);
   return `${mayuscula(DIAS[d.getUTCDay()])} ${d.getUTCDate()} de ${MESES[d.getUTCMonth()]}`;
+}
+
+/* ---------- Agregar a mi calendario ---------- */
+
+const compacta = (fecha) => fecha.replaceAll('-', '');
+const horaCompacta = (hora) => `${hora.replace(':', '')}00`;
+
+/** Fin exclusivo de un evento de todo el día, como lo piden Google y el .ics. */
+const diaSiguienteAlFin = (e) => sumarDias(e.hasta, 1);
+
+/**
+ * El link "Agregar a Google Calendar" de un evento: abre Google con el evento
+ * ya armado para guardarlo en el calendario propio. Las horas van en hora de
+ * Rosario y `ctz` lo dice.
+ */
+export function enlaceAgregarGoogle(e) {
+  const fechas = e.hora == null
+    ? `${compacta(e.dia)}/${compacta(diaSiguienteAlFin(e))}`
+    : `${compacta(e.dia)}T${horaCompacta(e.hora)}/${compacta(e.diaFin ?? e.dia)}T${horaCompacta(e.horaFin ?? e.hora)}`;
+  const q = new URLSearchParams({ action: 'TEMPLATE', text: e.titulo, dates: fechas, ctz: ZONA });
+  if (e.lugar) q.set('location', e.lugar);
+  return `https://calendar.google.com/calendar/render?${q}`;
+}
+
+// En el .ics, coma, punto y coma, barra y salto de línea van escapados (RFC 5545).
+const escaparIcs = (t) => t.replace(/[\\;,]/g, (c) => `\\${c}`).replace(/\r?\n/g, '\\n');
+
+/** 'aaaa-mm-dd' + 'hh:mm' de Rosario → '20261024T133000Z' (UTC, sin depender de zonas en el .ics). */
+function utcIcs(dia, hora) {
+  return new Date(`${dia}T${hora}:00${DESFASE}`).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+}
+
+/**
+ * Un archivo .ics con un evento: es lo que abre el calendario del iPhone (y
+ * casi cualquier otro) con el botón "Agregar". `ahora` es para el DTSTAMP.
+ */
+export function textoIcs(e, ahora = new Date()) {
+  const cuando = e.hora == null
+    ? [`DTSTART;VALUE=DATE:${compacta(e.dia)}`, `DTEND;VALUE=DATE:${compacta(diaSiguienteAlFin(e))}`]
+    : [`DTSTART:${utcIcs(e.dia, e.hora)}`, `DTEND:${utcIcs(e.diaFin ?? e.dia, e.horaFin ?? e.hora)}`];
+  return [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Basquet Newells//Portal//ES', 'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:${escaparIcs(`${e.id}-${e.dia}`)}@app-semillero.vercel.app`,
+    `DTSTAMP:${ahora.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`,
+    ...cuando,
+    `SUMMARY:${escaparIcs(e.titulo)}`,
+    ...(e.lugar ? [`LOCATION:${escaparIcs(e.lugar)}`] : []),
+    'END:VEVENT', 'END:VCALENDAR', '',
+  ].join('\r\n');
+}
+
+/**
+ * Para seguir el calendario entero desde el celular: en Google Calendar
+ * (Android o compu) y como suscripción webcal (iPhone). Con un ID inválido → null.
+ */
+export function enlacesSuscripcion(valorId) {
+  const id = idCalendario(valorId);
+  if (!id) return null;
+  const cod = encodeURIComponent(id);
+  return {
+    google: `https://calendar.google.com/calendar/render?cid=${cod}`,
+    ical: `webcal://calendar.google.com/calendar/ical/${cod}/public/basic.ics`,
+  };
 }

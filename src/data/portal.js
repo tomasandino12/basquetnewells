@@ -24,21 +24,22 @@ export const PORTAL = Object.freeze({
   temporada: 2027,
 
   // El calendario del portal lo arma la página con los eventos de Google
-  // Calendar. Un calendario por tipo: el tipo da el color y `titulo` el nombre
-  // en la leyenda. `clave`: API key de Google, restringida al dominio del
-  // portal y a la Calendar API (pasos en docs/COORDINACION.md). Sin clave o sin
-  // ningún ID, la sección no se ve.
+  // Calendar. UN calendario público, y el tipo de cada evento lo dice el color
+  // que se le pone en Google (TIPO_POR_COLOR en agenda.js: Tomate = partido,
+  // Banana = evento, Pavo real = charla, Albahaca = entrenamiento). Sin color,
+  // toma `tipo`. `clave`: API key de Google, restringida al dominio del portal
+  // y a la Calendar API (pasos en docs/COORDINACION.md). Sin clave o sin ID, la
+  // sección no se ve.
   agenda: Object.freeze({
     // Pública a propósito: la usa el navegador. Restringida en Google Cloud al
     // sitio app-semillero.vercel.app y sólo a la Calendar API (proyecto
     // "Portal básquet", cuenta Comisión Básquet, 20/10/2026).
     clave: 'AIzaSyBPZ8Sq8ho4kv-5x1mfm4bs7y40l9P7IK4',
     calendarios: Object.freeze([
-      // PENDIENTE: un calendario público por tipo, aparte del principal de la
-      // cuenta (que tiene todo lo de la subcomisión y no es público).
-      Object.freeze({ tipo: 'partido', titulo: 'Partidos', id: null }),
-      Object.freeze({ tipo: 'evento', titulo: 'Eventos', id: null }),
-      Object.freeze({ tipo: 'charla', titulo: 'Charlas', id: null }),
+      // PENDIENTE: el ID del calendario público del básquet. No el principal de
+      // la cuenta (comisionbasquetnob@gmail.com), que es privado y tiene lo
+      // interno de la subcomisión.
+      Object.freeze({ tipo: 'evento', titulo: 'Agenda del básquet', id: null }),
     ]),
   }),
 
@@ -70,10 +71,9 @@ export const PORTAL = Object.freeze({
     mapa: 'https://www.google.com/maps/search/?api=1&query=Estadio+Cubierto+Claudio+Newell+Rosario',
   }),
 
-  // PENDIENTE: link de WhatsApp (https://wa.me/549341…) o mail (mailto:…) del
-  // coordinador: el botón "Ayuda" de arriba y el "¿Dudas?" de abajo. El club no
-  // tiene mail propio.
-  contacto: null,
+  // WhatsApp del coordinador (confirmado por Tomás, 20/10): el botón "Ayuda" de
+  // arriba y el "¿Dudas?" de abajo. wa.me lleva el 9 de los celulares argentinos.
+  contacto: 'https://wa.me/5493413709161',
 
   // Alias para transferir, en la tarjeta del comprobante con un botón Copiar.
   // PENDIENTE: confirmar que es el de las cuotas (hubo varios) y el titular.

@@ -291,7 +291,7 @@ que falta va en `null` y esa parte del portal no se ve.
 |---|---|---|
 | Temporada que se anuncia | `temporada:` (hoy 2027) | — |
 | Clave de Google (API key) | `agenda.clave` | No hay calendario |
-| ID de cada calendario | `agenda.calendarios[].id` | Ese tipo no aparece |
+| ID del calendario público | `agenda.calendarios[0].id` | No hay calendario |
 | Categorías que ofrece el club | `categorias:` (los años NO: se calculan) | — |
 | Días y horario de cada categoría | `horario:` de cada categoría | La fila va sin horario |
 | Dónde se entrena | `sede:` `{ nombre, direccion, mapa }` | No se ve |
@@ -305,16 +305,31 @@ que falta va en `null` y esa parte del portal no se ve.
 (`src/data/categorias.js`). Al pasar de temporada, se cambia sólo `temporada`.
 
 **Calendario.** El portal arma el mes entero con un puntito de color por evento.
-**Un calendario de Google por tipo** (Partidos, Eventos, Charlas): el tipo da el
-color, así que al cargar un evento sólo hay que elegir el calendario correcto.
-Se muestra sólo el título, la hora y el lugar; la descripción nunca. Para
-conectarlo, una sola vez, desde una compu con la cuenta de Comisión Básquet:
-1. En cada calendario: Configuración y uso compartido → "Permisos de acceso" →
-   marcar **"Hacer disponible públicamente"**. Sin eso, Google no da los eventos.
-2. En la misma pantalla, "Integrar el calendario" → copiar el **ID de
-   calendario** (termina en `@group.calendar.google.com`) y pegarlo en `id:` del
-   tipo que corresponde.
-3. **La clave (API key), una sola vez:**
+Es **un solo calendario de Google**, público, y **el color del evento dice qué
+es**. Al cargar un evento en Google Calendar, se toca el color y se elige:
+
+| Color en Google | En el portal |
+|---|---|
+| **Tomate** (rojo) | Partido (Primera, intermedias…) |
+| **Banana** (amarillo) | Evento de recaudación (rifas, pollada, cena) |
+| **Pavo real** (celeste) | Charla |
+| **Albahaca** (verde) | Entrenamiento especial |
+| Sin color, u otro | Evento |
+
+Se muestra sólo el título, la hora y el lugar; la descripción nunca. Cada evento
+tiene **"Agregar a mi calendario"** (Google o iPhone), y abajo hay un botón para
+**seguir el calendario entero** desde el celular: los eventos nuevos le aparecen
+solos a la familia. Para conectarlo, una sola vez, desde una compu con la cuenta
+de Comisión Básquet:
+1. Crear un calendario **aparte** del principal (el principal tiene lo interno
+   de la subcomisión): ☰ → Otros calendarios → **+** → Crear calendario →
+   nombre *"Básquet NOB · Agenda (PÚBLICO)"*.
+2. En su Configuración y uso compartido → "Permisos de acceso" → marcar
+   **"Hacer disponible públicamente"** con **"Ver todos los detalles"**. Sin eso,
+   Google no da los eventos.
+3. En la misma pantalla, "Integrar el calendario" → copiar el **ID de
+   calendario** (termina en `@group.calendar.google.com`) y pegarlo en `id:`.
+4. **La clave (API key), una sola vez** (ya está hecha y cargada desde el 20/10):
    1. Entrar a <https://console.cloud.google.com> con la cuenta de Comisión
       Básquet. Arriba, "Seleccionar un proyecto" → **Proyecto nuevo** → nombre
       "Portal básquet" → Crear.
@@ -329,7 +344,7 @@ conectarlo, una sola vez, desde una compu con la cuenta de Comisión Básquet:
    5. Pegarla en `agenda.clave`. Es pública a propósito (la ve el navegador),
       por eso las dos restricciones: sólo sirve desde el portal y sólo para leer
       calendarios públicos. No tiene costo para este uso.
-4. `npm run test:q`, commit y deploy.
+5. `npm run test:q`, commit y deploy.
 
 > ## ⚠️ El calendario es público: NUNCA nombres de chicos
 >

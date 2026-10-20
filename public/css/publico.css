@@ -351,6 +351,18 @@
 .portal-ev small{display:block;font-size:var(--fs-115);font-weight:600;color:var(--gris-osc);letter-spacing:.04em}
 .portal-ev b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-190);letter-spacing:.02em;line-height:1.1;margin:.125rem 0}
 .portal-ev span{display:block;font-size:var(--fs-125);color:var(--gris-osc)}
+/* "Agregar a mi calendario": dos botones chicos pero de 44 px de alto para el pulgar. */
+.portal-ev-agregar{display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--sp-2);margin-top:var(--sp-1);font-size:var(--fs-115);color:var(--gris-osc)}
+.portal-ev-agregar a,.portal-ev-agregar button{
+  display:inline-flex;align-items:center;min-height:var(--tap);padding:0 var(--sp-2);
+  font:inherit;font-weight:600;color:var(--sobre-oscuro);text-decoration:underline;text-underline-offset:.2em;
+  background:transparent;border:0;cursor:pointer;
+}
+.portal-seguir{margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--pub-borde)}
+.portal-seguir b{display:block;font-size:var(--fs-145)}
+.portal-seguir span{display:block;font-size:var(--fs-125);color:var(--gris-osc);margin:var(--sp-1) 0 var(--sp-3)}
+.portal-seguir-bot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}
+.portal-seguir .btn{text-decoration:none;font-size:var(--fs-135);padding:var(--sp-2);letter-spacing:.08em}
 
 /* ---- categorías y sede ---- */
 .portal-cats{list-style:none;margin:0;padding:0;background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r)}

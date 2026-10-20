@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   idCalendario, claveValida, rangoDelMes, urlEventos, eventoDesdeGoogle, eventosPorDia,
   proximosEventos, semanasDelMes, mesVecino, hoyEnRosario, tituloMes, fechaLarga,
+  TIPO_POR_COLOR, TIPOS_AGENDA, enlaceAgregarGoogle, textoIcs, enlacesSuscripcion,
 } from '../src/data/agenda.js';
 
 const ID = 'abc123@group.calendar.google.com';
@@ -40,7 +41,8 @@ test('la URL de eventos pide sólo título, lugar y fechas (nunca la descripció
 
 test('evento con hora: día y hora de Rosario aunque Google lo mande en UTC', () => {
   const e = eventoDesdeGoogle({ id: '1', summary: ' U15 vs. Náutico ', location: 'Microestadio', description: 'Juan Pérez', start: { dateTime: '2026-10-25T01:30:00Z' } }, 'partido');
-  assert.deepEqual(e, { id: '1', tipo: 'partido', titulo: 'U15 vs. Náutico', lugar: 'Microestadio', dia: '2026-10-24', hasta: '2026-10-24', hora: '22:30' });
+  // Sin fin, dura una hora (lo que pone Google por defecto).
+  assert.deepEqual(e, { id: '1', tipo: 'partido', titulo: 'U15 vs. Náutico', lugar: 'Microestadio', dia: '2026-10-24', hasta: '2026-10-24', hora: '22:30', horaFin: '23:30', diaFin: '2026-10-24' });
   assert.equal('descripcion' in e || 'description' in e, false);
 });
 
@@ -105,4 +107,54 @@ test('mes vecino, hoy en Rosario y textos', () => {
   assert.equal(hoyEnRosario(new Date('2026-10-21T02:00:00Z')), '2026-10-20');
   assert.equal(tituloMes(2026, 10), 'Octubre 2026');
   assert.equal(fechaLarga('2026-10-24'), 'Sábado 24 de octubre');
+});
+
+// ---- Un solo calendario: el tipo lo da el color del evento ----
+
+test('el color del evento decide el tipo; sin color (o con otro) queda el del calendario', () => {
+  const con = (colorId) => eventoDesdeGoogle({ id: 'c', colorId, start: { date: '2026-10-24' } }, 'evento')?.tipo;
+  assert.equal(con('11'), 'partido'); // Tomate
+  assert.equal(con('5'), 'evento'); // Banana
+  assert.equal(con('7'), 'charla'); // Pavo real
+  assert.equal(con('10'), 'entrenamiento'); // Albahaca
+  assert.equal(con(undefined), 'evento');
+  assert.equal(con('3'), 'evento');
+  for (const tipo of Object.values(TIPO_POR_COLOR)) assert.ok(TIPOS_AGENDA.includes(tipo));
+  assert.match(new URL(urlEventos(ID, CLAVE, rangoDelMes(2026, 10))).searchParams.get('fields'), /colorId/);
+});
+
+// ---- Agregar a mi calendario ----
+
+const partido = eventoDesdeGoogle({ id: 'p1', summary: 'U15, vs; Náutico', location: 'Microestadio', start: { dateTime: '2026-10-24T10:30:00-03:00' }, end: { dateTime: '2026-10-24T12:00:00-03:00' } }, 'partido');
+const torneo = eventoDesdeGoogle({ id: 't1', summary: 'Torneo', start: { date: '2026-10-30' }, end: { date: '2026-11-02' } }, 'partido');
+
+test('link a Google Calendar con el evento armado, en hora de Rosario', () => {
+  const u = new URL(enlaceAgregarGoogle(partido));
+  assert.equal(`${u.origin}${u.pathname}`, 'https://calendar.google.com/calendar/render');
+  assert.equal(u.searchParams.get('action'), 'TEMPLATE');
+  assert.equal(u.searchParams.get('text'), 'U15, vs; Náutico');
+  assert.equal(u.searchParams.get('dates'), '20261024T103000/20261024T120000');
+  assert.equal(u.searchParams.get('ctz'), 'America/Argentina/Buenos_Aires');
+  assert.equal(u.searchParams.get('location'), 'Microestadio');
+  // Todo el día: fin exclusivo, como lo pide Google.
+  assert.equal(new URL(enlaceAgregarGoogle(torneo)).searchParams.get('dates'), '20261030/20261102');
+});
+
+test('archivo .ics para el iPhone: horas en UTC, texto escapado', () => {
+  const ics = textoIcs(partido, new Date('2026-10-20T00:00:00Z'));
+  assert.match(ics, /^BEGIN:VCALENDAR\r\n/);
+  assert.match(ics, /\r\nDTSTART:20261024T133000Z\r\nDTEND:20261024T150000Z\r\n/);
+  assert.ok(ics.includes('\r\nSUMMARY:U15\\, vs\\; Náutico\r\n'), 'coma y punto y coma escapados');
+  assert.match(ics, /\r\nLOCATION:Microestadio\r\n/);
+  assert.match(ics, /END:VCALENDAR\r\n$/);
+  const todoElDia = textoIcs(torneo);
+  assert.match(todoElDia, /DTSTART;VALUE=DATE:20261030\r\nDTEND;VALUE=DATE:20261102/);
+  assert.doesNotMatch(todoElDia, /LOCATION/);
+});
+
+test('seguir el calendario entero: Google y webcal; con un ID inválido, nada', () => {
+  const s = enlacesSuscripcion(ID);
+  assert.equal(s.google, `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(ID)}`);
+  assert.equal(s.ical, `webcal://calendar.google.com/calendar/ical/${encodeURIComponent(ID)}/public/basic.ics`);
+  assert.equal(enlacesSuscripcion('roto'), null);
 });

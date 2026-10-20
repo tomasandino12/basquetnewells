@@ -8,6 +8,7 @@ import {
 import { resolverFormularios, separarFormularios } from '../data/formulariosPortal.js';
 import {
   eventosPorDia, proximosEventos, semanasDelMes, mesVecino, hoyEnRosario, tituloMes, fechaLarga,
+  TIPOS_AGENDA, NOMBRE_TIPO, enlaceAgregarGoogle, textoIcs, enlacesSuscripcion,
 } from '../data/agenda.js';
 import { destinoDeAuth } from '../data/entradaAuth.js';
 
@@ -41,7 +42,7 @@ const botonExterno = (url, texto, clase = 'btn') => html`<a class="${clase}" hre
  * que abre con la temporada y, si hay formulario de consultas, manda ahí a
  * quien viene por primera vez. Nunca un botón que no lleva a ningún lado.
  */
-export function htmlInscripcion(formulario, { temporada = null, hayConsultas = false } = {}) {
+export function htmlInscripcion(formulario, { temporada = null, hayConsultas = false, contacto = null } = {}) {
   const url = formulario ? enlaceFormulario(formulario.enlace) : null;
   const cab = html`<div class="portal-acc-cab"><span class="portal-tag">Paso 1</span>${url
     ? html`<span class="portal-estado abierto">Inscripción abierta</span>`
@@ -54,7 +55,9 @@ export function htmlInscripcion(formulario, { temporada = null, hayConsultas = f
   }
   return html`${cab}<h3>Inscribir a mi hijo o hija</h3>
     <p>La inscripción${temporada ? html` ${temporada}` : ''} todavía no abrió. Cuando abra, el botón aparece acá mismo.</p>
-    ${hayConsultas && html`<a class="btn sec" href="#jugar">¿Es la primera vez? Dejá tus datos</a>`}`;
+    ${hayConsultas
+      ? html`<a class="btn sec" href="#jugar">¿Es la primera vez? Dejá tus datos</a>`
+      : enlaceContacto(contacto) && html`<a class="btn sec" href="${enlaceContacto(contacto)}" target="_blank" rel="noopener">Preguntale al coordinador</a>`}`;
 }
 
 /** La tarjeta del comprobante (destino comprobante, 0062), con el alias para copiar si el club lo cargó. */
@@ -188,23 +191,50 @@ export function htmlContacto(contacto) {
 
 const DIAS_SEMANA = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
-function htmlEvento({ tipo, titulo, lugar, hora }, nombres) {
-  return html`<li class="portal-ev tipo-${tipo}">
-    <small>${nombres[tipo] ?? tipo}${hora ? html` · ${hora}` : html` · Todo el día`}</small>
-    <b>${titulo}</b>${lugar && html`<span>${lugar}</span>`}
+/** La clave con la que el botón "iPhone" encuentra su evento: un torneo de varios días es uno solo. */
+export const claveEvento = (e) => `${e.id}|${e.dia}`;
+
+/**
+ * Un evento de la lista, con "Agregar a mi calendario": Google abre el evento
+ * armado (Android, compu); el botón del iPhone baja un .ics que el calendario
+ * del celular ofrece agregar. `fecha`: para la lista de lo que viene.
+ */
+export function htmlEvento(e, fecha = null) {
+  const cuando = e.hora ? `${e.hora} a ${e.horaFin}` : 'Todo el día';
+  return html`<li class="portal-ev tipo-${e.tipo}">
+    <small>${fecha ? fechaLarga(fecha) : NOMBRE_TIPO[e.tipo]} · ${cuando}</small>
+    <b>${e.titulo}</b>${e.lugar && html`<span>${e.lugar}</span>`}
+    <div class="portal-ev-agregar">Agregar a mi calendario:
+      <a href="${enlaceAgregarGoogle(e)}" target="_blank" rel="noopener">Google</a>
+      <button type="button" data-ics="${claveEvento(e)}">iPhone</button>
+    </div>
   </li>`;
+}
+
+/** Para tener el calendario entero en el celular, una vez, y que los eventos nuevos aparezcan solos. */
+export function htmlSuscripcion(calendarios) {
+  const enlaces = calendarios.map((c) => enlacesSuscripcion(c.id)).filter(Boolean);
+  if (!enlaces.length) return html``;
+  return html`<div class="portal-seguir">
+    <b>¿Querés tener todo el calendario en tu celular?</b>
+    <span>Seguilo una vez y los partidos y eventos nuevos te aparecen solos.</span>
+    ${enlaces.map(({ google, ical }) => html`<div class="portal-seguir-bot">
+      <a class="btn sec" href="${google}" target="_blank" rel="noopener">Android o compu</a>
+      <a class="btn sec" href="${ical}">iPhone</a>
+    </div>`)}
+  </div>`;
 }
 
 /**
  * El calendario del mes: grilla de lunes a domingo con un puntito por evento
  * (color por tipo) y, abajo, lo del día elegido. Si ese día no hay nada, los
- * próximos que haya en el mes. `estado`: { anio, mes, elegido, hoy, porDia,
- * fallidos, cargando }.
+ * próximos que haya en el mes. La leyenda muestra sólo los tipos que hay en
+ * el mes. `estado`: { anio, mes, elegido, hoy, porDia, fallidos, cargando }.
  */
 export function htmlCalendario(estado, calendarios) {
   const { anio, mes, elegido, hoy, porDia, fallidos, cargando } = estado;
-  const nombres = Object.fromEntries(calendarios.map((c) => [c.tipo, c.titulo]));
-  const tipos = [...new Set(calendarios.map((c) => c.tipo))];
+  const presentes = new Set([...porDia.values()].flat().map((e) => e.tipo));
+  const tipos = TIPOS_AGENDA.filter((t) => presentes.has(t));
   const delDia = porDia.get(elegido) ?? [];
   const proximos = delDia.length ? [] : proximosEventos(porDia, elegido > hoy ? elegido : hoy, 3);
 
@@ -225,19 +255,19 @@ export function htmlCalendario(estado, calendarios) {
         <button type="button" class="portal-cal-nav" data-mes="1" aria-label="Mes siguiente">›</button>
       </span>
     </div>
-    ${tipos.length > 1 && html`<ul class="portal-ley">${tipos.map((t) => html`<li class="tipo-${t}">${nombres[t]}</li>`)}</ul>`}
+    ${tipos.length > 1 && html`<ul class="portal-ley">${tipos.map((t) => html`<li class="tipo-${t}">${NOMBRE_TIPO[t]}</li>`)}</ul>`}
     <div class="portal-grilla" role="group" aria-label="Días de ${tituloMes(anio, mes)}">
       ${DIAS_SEMANA.map((d) => html`<span class="portal-dn" aria-hidden="true">${d}</span>`)}
       ${semanasDelMes(anio, mes).flat().map(celda)}
     </div>
     <div class="portal-cal-dia">
       ${fallidos > 0 && html`<p class="portal-aviso">No pudimos traer una parte del calendario. Probá de nuevo en un rato.</p>`}
+      <div class="portal-cal-t">${fechaLarga(elegido)}</div>
       ${delDia.length
-        ? html`<div class="portal-cal-t">${fechaLarga(elegido)}</div><ul class="portal-evs">${delDia.map((e) => htmlEvento(e, nombres))}</ul>`
-        : html`<div class="portal-cal-t">${fechaLarga(elegido)}</div><p class="portal-cal-nada">${cargando ? 'Cargando…' : 'No hay nada cargado para este día.'}</p>
-          ${proximos.length > 0 && html`<div class="portal-cal-t">Lo que viene</div><ul class="portal-evs">${proximos.map(({ fecha, evento }) => html`<li class="portal-ev tipo-${evento.tipo}">
-            <small>${fechaLarga(fecha)}${evento.hora ? html` · ${evento.hora}` : ''}</small><b>${evento.titulo}</b>${evento.lugar && html`<span>${evento.lugar}</span>`}
-          </li>`)}</ul>`}`}
+        ? html`<ul class="portal-evs">${delDia.map((e) => htmlEvento(e))}</ul>`
+        : html`<p class="portal-cal-nada">${cargando ? 'Cargando…' : 'No hay nada cargado para este día.'}</p>
+          ${proximos.length > 0 && html`<div class="portal-cal-t">Lo que viene</div><ul class="portal-evs">${proximos.map(({ fecha, evento }) => htmlEvento(evento, fecha))}</ul>`}`}
+      ${htmlSuscripcion(calendarios)}
     </div>
   </div>`;
 }
@@ -248,6 +278,19 @@ export function diaInicial(anio, mes, hoy, porDia) {
   if (hoy.startsWith(prefijo)) return hoy;
   const conAlgo = [...porDia.keys()].filter((f) => f.startsWith(prefijo)).sort()[0];
   return conAlgo ?? `${prefijo}-01`;
+}
+
+/**
+ * Baja el .ics del evento. En el iPhone, Safari lo abre con "Agregar al
+ * calendario"; en otros celulares queda en Descargas y se abre desde ahí.
+ */
+function bajarIcs(evento) {
+  const url = URL.createObjectURL(new Blob([textoIcs(evento)], { type: 'text/calendar;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'evento-basquet-newells.ics';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
 function iniciarCalendario(calendarios) {
@@ -274,6 +317,12 @@ function iniciarCalendario(calendarios) {
   }
 
   $('portal-calendario').addEventListener('click', (ev) => {
+    const ics = ev.target.closest('[data-ics]');
+    if (ics) {
+      const evento = [...estado.porDia.values()].flat().find((e) => claveEvento(e) === ics.dataset.ics);
+      if (evento) bajarIcs(evento);
+      return;
+    }
     const dia = ev.target.closest('[data-dia]');
     if (dia) {
       estado.elegido = dia.dataset.dia;
@@ -343,7 +392,7 @@ export async function iniciarPortal() {
   const { inscripcion, comprobante, consultas, colaboradores, comunes } = separarFormularios(formularios);
   const jugar = htmlJugar(consultas);
   mostrar('jugar', jugar);
-  $('portal-inscripcion').innerHTML = htmlInscripcion(inscripcion, { temporada: PORTAL.temporada, hayConsultas: Boolean(jugar.toString()) });
+  $('portal-inscripcion').innerHTML = htmlInscripcion(inscripcion, { temporada: PORTAL.temporada, hayConsultas: Boolean(jugar.toString()), contacto: PORTAL.contacto });
   $('portal-comprobante').innerHTML = htmlComprobante(comprobante, PORTAL.alias);
 
   const colaborar = htmlColaboradores(colaboradores);
