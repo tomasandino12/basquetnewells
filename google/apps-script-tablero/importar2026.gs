@@ -6,14 +6,26 @@
  * En el registro de ejecuciones van sólo cantidades, nunca nombres ni DNIs.
  */
 function actualizar2026() {
-  var respuestas = FormApp.openById(FORM_2026_ID).getResponses();
+  var formulario = FormApp.openById(FORM_2026_ID);
+  // Cada llamada a Forms es un viaje a Google: recorrer todas las preguntas de cada
+  // respuesta pasaba el límite de 6 minutos. Se buscan una vez las preguntas que se usan
+  // y de cada respuesta se piden sólo esas.
+  var buscadas = {};
+  Object.keys(TITULOS_2026).forEach(function (campo) { buscadas[claveTitulo(TITULOS_2026[campo])] = true; });
+  var preguntas = [];
+  formulario.getItems().forEach(function (item) {
+    var clave = claveTitulo(item.getTitle());
+    if (buscadas[clave]) preguntas.push({ item: item, clave: clave });
+  });
+  var respuestas = formulario.getResponses();
   var registros = [];
   var salteadas = 0;
 
   respuestas.forEach(function (resp) {
     var cruda = { momento: resp.getTimestamp().getTime(), respuestas: {} };
-    resp.getItemResponses().forEach(function (ir) {
-      cruda.respuestas[claveTitulo(ir.getItem().getTitle())] = ir.getResponse();
+    preguntas.forEach(function (p) {
+      var ir = resp.getResponseForItem(p.item);
+      if (ir) cruda.respuestas[p.clave] = ir.getResponse();
     });
     var reg = registroDeRespuesta(cruda, TITULOS_2026);
     if (reg) registros.push(reg); else salteadas++;
@@ -34,7 +46,8 @@ function actualizar2026() {
   escribirHoja(planilla, HOJA_REVISAR_2026, ['DNI', 'Apellido', 'Nombre', 'Por qué'],
     dudosos.map(function (c) { return [c.dni, c.apellido, c.nombre, 'Apellido y nombre dudosos: corregir en "' + HOJA_CORRECCIONES_2026 + '"']; }));
 
-  Logger.log('Respuestas: ' + respuestas.length + ' · chicos: ' + chicos.length + ' · sin DNI válido (salteadas): ' + salteadas +
+  Logger.log('Preguntas encontradas: ' + preguntas.length + ' de ' + Object.keys(buscadas).length +
+    ' · respuestas: ' + respuestas.length + ' · chicos: ' + chicos.length + ' · sin DNI válido (salteadas): ' + salteadas +
     ' · con emergencias: ' + emergencias.length + ' · a revisar: ' + dudosos.length);
 }
 
