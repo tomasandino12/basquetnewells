@@ -3,8 +3,9 @@ import { $ } from './dom.js';
 import { formulariosPublicos, eventosDelMes } from '../data/repositorio.js';
 import {
   PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal,
-  sedeValida, aliasValido, fotoValida,
+  categoriasDelAnio, sedeValida, aliasValido, fotoValida,
 } from '../data/portal.js';
+import { temporadaComoAnio } from '../data/categorias.js';
 import { resolverFormularios, separarFormularios } from '../data/formulariosPortal.js';
 import {
   eventosPorDia, proximosEventos, semanasDelMes, mesVecino, hoyEnRosario, tituloMes, fechaLarga,
@@ -167,6 +168,36 @@ export function htmlCategorias(categorias) {
     <div class="portal-cats-anios">${anios}</div>
     ${horario && html`<div class="portal-cats-hora">${horario.split(' · ').map((h) => html`<span>${h}</span>`)}</div>`}
   </li>`)}</ul>`;
+}
+
+/** El selector de año del "¿En qué categoría juega?": − y + alrededor del año, y el lugar del resultado. */
+export function htmlBuscador(anio, { min, max }) {
+  return html`<span class="portal-anio-et" id="portal-anio-et">Año de nacimiento</span>
+    <div class="portal-anio" role="group" aria-labelledby="portal-anio-et">
+      <button type="button" data-anio="-1" aria-label="Un año antes"${anio <= min && html` disabled`}>−</button>
+      <output id="portal-anio">${anio}</output>
+      <button type="button" data-anio="1" aria-label="Un año después"${anio >= max && html` disabled`}>+</button>
+    </div>
+    <div id="portal-cat-res" aria-live="polite"></div>`;
+}
+
+/**
+ * Lo que le toca a quien nació en `anio`: la categoría grande, sus años y su
+ * horario. Puede ser más de una (las dos Primeras). Sin ninguna (más chico
+ * que la U9), lo dice y manda al coordinador si hay contacto.
+ */
+export function htmlCategoriaDelAnio(anio, categorias, contacto = null) {
+  const url = enlaceContacto(contacto);
+  if (!categorias.length) {
+    return html`<p class="portal-cat-nada">Para chicos nacidos en ${anio} todavía no hay categoría.${url && html` <a href="${url}" target="_blank" rel="noopener">Escribile al coordinador</a> y te cuenta.`}</p>`;
+  }
+  return html`${categorias.map(({ nombre, rama, anios, horario }) => html`<div class="portal-cat-res">
+    <div class="portal-cat-nombre"><b>${nombre}</b>${rama && html`<span>${rama}</span>`}</div>
+    <div class="portal-cat-anios">Nacidos ${anios}</div>
+    ${horario
+      ? html`<ul class="portal-cat-hora">${horario.split(' · ').map((h) => html`<li>${h}</li>`)}</ul>`
+      : html`<p class="portal-cat-sin">Horario a confirmar: preguntale al coordinador.</p>`}
+  </div>`)}`;
 }
 
 export function htmlSede(sede) {
@@ -335,6 +366,35 @@ function iniciarCalendario(calendarios) {
   cargar(estado.anio, estado.mes);
 }
 
+/* ---------- ¿En qué categoría juega? ---------- */
+
+/**
+ * Arranca en un año de U13 (el del medio de las formativas) y deja moverse de
+ * a uno. Los topes cubren de Primera a unos años más chicos que la U9, para
+ * que quien busca a un nene de 4 vea que todavía no hay categoría.
+ */
+function iniciarBuscador(temporada) {
+  const rango = { min: temporada - 30, max: temporada - 4 };
+  let anio = temporada - 13;
+  const buscador = $('portal-buscador');
+  buscador.innerHTML = htmlBuscador(anio, rango);
+  // Se cambian el año, los topes y el resultado, no el selector entero: así el
+  // foco queda en el botón y el resultado (aria-live) se anuncia al cambiar.
+  const pintar = () => {
+    $('portal-anio').textContent = anio;
+    buscador.querySelector('[data-anio="-1"]').disabled = anio <= rango.min;
+    buscador.querySelector('[data-anio="1"]').disabled = anio >= rango.max;
+    $('portal-cat-res').innerHTML = htmlCategoriaDelAnio(anio, categoriasDelAnio(PORTAL.categorias, temporada, anio), PORTAL.contacto);
+  };
+  buscador.addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-anio]');
+    if (!b) return;
+    anio = Math.min(rango.max, Math.max(rango.min, anio + Number(b.dataset.anio)));
+    pintar();
+  });
+  pintar();
+}
+
 /* ---------- Armado de la página ---------- */
 
 function mostrar(id, contenido, contenedor = `portal-${id}`) {
@@ -368,7 +428,10 @@ export async function iniciarPortal() {
   $('portal-categorias').innerHTML = htmlCategorias(categorias);
   $('portal-sede').innerHTML = htmlSede(PORTAL.sede);
   $('categorias').hidden = !categorias.length && !sedeValida(PORTAL.sede);
-  if (PORTAL.temporada) $('t-categorias-temp').textContent = ` ${PORTAL.temporada}`;
+  $('portal-categorias').closest('details').hidden = !categorias.length;
+  const temporada = temporadaComoAnio(PORTAL.temporada);
+  if (temporada) $('t-categorias-temp').textContent = ` ${temporada}`;
+  if (temporada && categorias.length) iniciarBuscador(temporada);
   mostrar('club', htmlFoto(PORTAL.foto), 'portal-foto');
   mostrar('sponsors', htmlLogos(PORTAL.sponsors), 'portal-logos');
   $('portal-alias').innerHTML = htmlAlias(PORTAL.alias);

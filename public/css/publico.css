@@ -382,6 +382,34 @@ a.portal-fila:active{background:var(--presion-osc)}
 .portal-seguir .btn{text-decoration:none;font-size:var(--fs-135);padding:var(--sp-2);letter-spacing:.08em}
 
 /* ---- categorías y sede ---- */
+/* "¿En qué categoría juega?": una banda a todo el ancho con un filete del club.
+   Elegís el año con − y + y la categoría aparece grande, en rojo. */
+.portal-sec.portal-cat{margin-top:var(--sp-8);padding-top:var(--sp-6);padding-bottom:var(--sp-6);background:var(--pub-tarjeta);border-top:3px solid var(--primario)}
+.portal-cat h2{font-size:clamp(2rem,1.6rem + 2vw,2.75rem);line-height:.95}
+.portal-anio-et{display:block;font-size:var(--fs-115);color:var(--gris-osc);margin-bottom:var(--sp-1)}
+.portal-anio{display:grid;grid-template-columns:3.5rem 1fr 3.5rem;align-items:center;max-width:24rem;background:var(--pub-fondo);border:1px solid var(--pub-borde);border-radius:var(--r)}
+.portal-anio button{
+  min-height:3.5rem;font:inherit;font-size:var(--fs-260);line-height:1;color:var(--sobre-oscuro);background:none;border:0;cursor:pointer;
+  transition:transform var(--dur-1) var(--ease-salida);
+}
+.portal-anio button:active{transform:scale(.9)}
+.portal-anio button:disabled{color:var(--gris-osc);cursor:default;transform:none}
+.portal-anio output{text-align:center;font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-300)}
+.portal-cat-res{margin-top:var(--sp-3);max-width:24rem;padding:var(--sp-4);border-radius:var(--r);background:var(--primario);color:var(--sobre-club)}
+.portal-cat-res + .portal-cat-res{margin-top:var(--sp-2)}
+.portal-cat-nombre{display:flex;align-items:baseline;gap:var(--sp-2)}
+.portal-cat-nombre b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:clamp(2.5rem,2.2rem + 1.5vw,3rem);line-height:1}
+.portal-cat-nombre span{font-family:var(--ff-titulo);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:var(--fs-125)}
+.portal-cat-anios{font-size:var(--fs-125);margin-top:var(--sp-1)}
+.portal-cat-hora{list-style:none;margin:var(--sp-3) 0 0;padding:0;display:grid;gap:var(--sp-1);font-size:var(--fs-135);font-weight:600}
+.portal-cat-sin{margin:var(--sp-3) 0 0;font-size:var(--fs-135)}
+.portal-cat-nada{margin:var(--sp-3) 0 0;max-width:24rem;color:var(--gris-osc);font-size:var(--fs-145);line-height:1.45}
+.portal-cat-nada a{color:var(--sobre-oscuro);font-weight:600}
+.portal-todas{margin-top:var(--sp-5);border-top:1px solid var(--pub-borde);padding-top:var(--sp-2)}
+.portal-todas summary{display:flex;align-items:center;min-height:var(--tap);font-weight:600;font-size:var(--fs-145);cursor:pointer}
+.portal-todas[open] summary{margin-bottom:var(--sp-2)}
+/* Dentro de la banda, la lista y la sede van sobre el fondo, para que se despeguen. */
+.portal-cat .portal-cats,.portal-cat .portal-sede{background:var(--pub-fondo)}
 .portal-cats{list-style:none;margin:0;padding:0;background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r)}
 .portal-cats li{display:grid;grid-template-columns:1fr auto;gap:0 var(--sp-3);align-items:baseline;padding:var(--sp-3) var(--sp-4)}
 .portal-cats li + li{border-top:1px solid var(--pub-borde)}

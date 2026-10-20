@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlHeroe, htmlMas, htmlAlias,
+  htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlHeroe, htmlMas, htmlAlias, htmlBuscador, htmlCategoriaDelAnio,
   htmlRecaudacion, htmlAtajos, htmlCalendario, htmlCategorias, htmlSede, htmlFoto, diaInicial, htmlSuscripcion,
 } from '../src/ui/portal.js';
 import { eventoDesdeGoogle, eventosPorDia } from '../src/data/agenda.js';
@@ -216,6 +216,35 @@ test('sin datos, cada parte no devuelve nada (la sección queda oculta)', () => 
   assert.equal(htmlSede(null).toString(), '');
   assert.equal(htmlFoto(null).toString(), '');
   assert.equal(htmlFormularios([]).toString(), '');
+});
+
+test('buscador: − y + alrededor del año, apagados en los topes, y el resultado se anuncia', () => {
+  const out = htmlBuscador(2014, { min: 1997, max: 2023 }).toString();
+  assert.match(out, /<button type="button" data-anio="-1" aria-label="Un año antes">−<\/button>/);
+  assert.match(out, /<output id="portal-anio">2014<\/output>/);
+  assert.match(out, /<div id="portal-cat-res" aria-live="polite">/);
+  assert.match(htmlBuscador(1997, { min: 1997, max: 2023 }).toString(), /data-anio="-1" aria-label="Un año antes" disabled/);
+  assert.match(htmlBuscador(2023, { min: 1997, max: 2023 }).toString(), /data-anio="1" aria-label="Un año después" disabled/);
+});
+
+test('categoría del año: grande, con sus años y su horario; sin horario, lo dice; escapado', () => {
+  const out = htmlCategoriaDelAnio(2014, [{ nombre: 'U13', rama: 'Mixto', anios: '2014 y 2015', horario: 'Lun <18 h> · Mié 18 h' }]).toString();
+  assert.match(out, /<b>U13<\/b><span>Mixto<\/span>/);
+  assert.match(out, /Nacidos 2014 y 2015/);
+  assert.match(out, /<li>Lun &lt;18 h&gt;<\/li><li>Mié 18 h<\/li>/);
+  const primeras = htmlCategoriaDelAnio(1990, [
+    { nombre: 'Primera', rama: 'Masculino', anios: '2005 y antes', horario: null },
+    { nombre: 'Primera', rama: 'Femenino', anios: '2005 y antes', horario: null },
+  ]).toString();
+  assert.equal((primeras.match(/class="portal-cat-res"/g) ?? []).length, 2);
+  assert.match(primeras, /Horario a confirmar/);
+});
+
+test('categoría del año: sin ninguna, lo dice y manda al coordinador sólo si el contacto es válido', () => {
+  const out = htmlCategoriaDelAnio(2021, [], 'https://wa.me/5493410000000').toString();
+  assert.match(out, /Para chicos nacidos en 2021 todavía no hay categoría\./);
+  assert.match(out, /<a href="https:\/\/wa\.me\/5493410000000" target="_blank" rel="noopener">Escribile al coordinador<\/a>/);
+  assert.doesNotMatch(htmlCategoriaDelAnio(2021, [], 'javascript:alert(1)').toString(), /<a /);
 });
 
 test('categorías: nombre, rama, años y horario, escapados', () => {

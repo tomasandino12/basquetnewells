@@ -126,6 +126,19 @@ export function categoriasDelPortal(lista, temporada) {
   });
 }
 
+/**
+ * "¿En qué categoría juega?": las categorías del portal que le tocan a quien
+ * nació en `anio`, con la misma regla de la CABB que la lista. Puede ser más
+ * de una (Primera masculino y femenino) o ninguna (más chico que la U9).
+ */
+export function categoriasDelAnio(lista, temporada, anio) {
+  const leTocan = (Array.isArray(lista) ? lista : []).filter((c) => {
+    const a = aniosDeCategoria(c?.grupo, temporada);
+    return a && Number.isInteger(anio) && (a.viejo == null || anio >= a.viejo) && (a.nuevo == null || anio <= a.nuevo);
+  });
+  return categoriasDelPortal(leTocan, temporada);
+}
+
 const MAPA = /^https:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps|www\.google\.com\/maps|maps\.google\.com)\/[^\s"<>]*$/;
 
 /** La sede si tiene nombre; el link al mapa sólo si es de Google Maps. */

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import {
-  PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal,
+  PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal, categoriasDelAnio,
   sedeValida, aliasValido, fotoValida,
 } from '../src/data/portal.js';
 import { TIPOS_AGENDA, idCalendario } from '../src/data/agenda.js';
@@ -62,6 +62,20 @@ test("Newell's no tiene Escuelita ni femeninos de inferiores: la única femenina
   const femeninas = PORTAL.categorias.filter((c) => c.rama === 'Femenino');
   assert.deepEqual(femeninas.map((c) => c.grupo), ['MAYORES']);
   assert.ok(!PORTAL.categorias.some((c) => c.grupo === 'ESCUELITA'));
+});
+
+test('categoriasDelAnio: la categoría (y su horario) de un año de nacimiento, con la regla de la lista', () => {
+  const lista = PORTAL.categorias;
+  const nombres = (anio) => categoriasDelAnio(lista, 2027, anio).map((c) => `${c.nombre} ${c.rama}`);
+  assert.deepEqual(nombres(2014), ['U13 Mixto']);
+  assert.deepEqual(nombres(2015), ['U13 Mixto']);
+  assert.deepEqual(nombres(2012), ['U15 Masculino']);
+  assert.deepEqual(nombres(1990), ['Primera Masculino', 'Primera Femenino']);
+  assert.deepEqual(nombres(2021), [], 'más chico que la U9: no hay categoría');
+  assert.equal(categoriasDelAnio(lista, 2027, 2014)[0].anios, '2014 y 2015');
+  assert.match(categoriasDelAnio(lista, 2027, 2014)[0].horario, /Lun y Vie/);
+  assert.deepEqual(categoriasDelAnio(lista, 2027, 'x'), []);
+  assert.deepEqual(categoriasDelAnio(null, 2027, 2014), []);
 });
 
 test('hay Primera masculino y Primera femenino', () => {
