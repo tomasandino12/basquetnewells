@@ -26,10 +26,10 @@ test('Para Semillero no lleva el DNI', () => {
 });
 
 test('las fórmulas usan nombres de función en español', () => {
-  for (const fn of ['CONTAR.SI.CONJUNTO', 'UNICOS', 'FILTRO', 'HIPERVINCULO', 'IMPORTRANGE', 'TRANSPONER']) {
+  for (const fn of ['CONTAR.SI.CONJUNTO', 'UNIQUE', 'FILTER(', 'SI.ERROR', 'HIPERVINCULO', 'IMPORTRANGE', 'TRANSPONER']) {
     assert.ok(tablero.includes(fn), `falta ${fn}`);
   }
-  for (const en of ['COUNTIFS', 'HYPERLINK(', 'UNIQUE(', 'FILTER(', 'IFERROR', 'TRANSPOSE', 'VLOOKUP', 'XLOOKUP']) {
+  for (const en of ['COUNTIFS', 'HYPERLINK(', 'IFERROR', 'SIERROR', 'UNICOS', 'FILTRO(', 'TRANSPOSE', 'VLOOKUP', 'XLOOKUP']) {
     assert.ok(!tablero.includes(en), `quedó ${en} en inglés`);
   }
 });
