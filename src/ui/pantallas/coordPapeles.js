@@ -186,11 +186,9 @@ function mostrarToken(token) {
     titulo: 'Token del script de Google',
     cuerpo: html`
       <div class="p">Este token se ve <strong>una sola vez</strong>. Copialo ahora y pegalo en el script del club.</div>
-      <ol class="p">
-        <li>Tocá <strong>Copiar</strong>.</li>
-        <li>En el Apps Script del club: <em>Configuración del proyecto → Propiedades del script</em>, agregá <span class="mono">SEMILLERO_TOKEN</span> con este valor.</li>
-        <li>Seguí la guía del script (<span class="mono">google/GUIA.md</span>). En unos minutos el panel se llena solo.</li>
-      </ol>
+      <div class="p">1. Tocá <strong>Copiar</strong>.</div>
+      <div class="p">2. En el Apps Script del club: <em>Configuración del proyecto → Propiedades del script</em>, agregá <span class="mono">SEMILLERO_TOKEN</span> con este valor.</div>
+      <div class="p">3. Seguí la guía del script (<span class="mono">google/GUIA.md</span>). En unos minutos el panel se llena solo.</div>
       <input class="campo mono" id="papeles-token" readonly value="${token}" aria-label="Token del script" />
       <div class="acciones-hoja">
         <button type="button" class="btn sec" id="papeles-token-cerrar">Ya lo pegué</button>
