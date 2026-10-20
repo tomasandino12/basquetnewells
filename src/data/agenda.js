@@ -16,7 +16,9 @@ const DESFASE = '-03:00';
 /** Un calendario de Google por tipo: el tipo da el color (tokens --agenda-*) y el nombre de la leyenda. */
 export const TIPOS_AGENDA = Object.freeze(['partido', 'evento', 'charla', 'entrenamiento']);
 
-const API = 'https://www.googleapis.com/calendar/v3/calendars/';
+/** El host al que el portal le pide los eventos: connect-src de vercel.json lo tiene que permitir (tests/csp.test.js). */
+export const HOST_AGENDA = 'www.googleapis.com';
+const API = `https://${HOST_AGENDA}/calendar/v3/calendars/`;
 const EMBED = 'https://calendar.google.com/calendar/embed';
 // Un ID de Google Calendar tiene forma de mail. Estricto porque termina en una URL.
 const ID_CALENDARIO = /^[A-Za-z0-9._%+-]{1,200}@[A-Za-z0-9.-]{1,200}$/;

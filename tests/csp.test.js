@@ -55,6 +55,15 @@ test('el import map apunta a archivos que existen en public/vendor', () => {
   }
 });
 
+// El calendario del portal le pide los eventos a la API de Google Calendar.
+// Además de Supabase, es el único host de connect-src.
+test('connect-src: Supabase y la API de Google Calendar, nada más', async () => {
+  const { HOST_AGENDA } = await import('../src/data/agenda.js');
+  const url = readFileSync(path.join(raiz, 'public', 'config.js'), 'utf8').match(/SUPABASE_URL = '([^']+)'/)[1];
+  const otros = directiva('connect-src').filter((h) => h !== "'self'" && h !== url && h !== url.replace('https://', 'wss://'));
+  assert.deepEqual(otros, [`https://${HOST_AGENDA}`]);
+});
+
 test('connect-src llega al proyecto de Supabase que usa la app', () => {
   const url = readFileSync(path.join(raiz, 'public', 'config.js'), 'utf8').match(/SUPABASE_URL = '([^']+)'/)[1];
   assert.ok(directiva('connect-src')?.includes(url), `connect-src sin ${url}`);
