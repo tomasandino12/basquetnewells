@@ -8,7 +8,7 @@ Spec: `docs/superpowers/specs/2026-10-19-formularios-v2-design.md`. Una task por
 | 0 | Rama `feat/formularios-v2`, spec y plan | hecho (aprobados 19/10) |
 | 1 | `FORMULARIOS.md` v2: los 5 formularios y la plantilla | hecho (el Mapa de columnas de `TABLERO.md` se adelantó acá para que el test siga en verde) |
 | 2 | `TABLERO.md` v2: Base con la pestaña única, Pagos con formulario propio, Revisar categoría/año | hecho |
-| 3 | `GUIA.md` y `PADRES.md` v2 | pendiente |
+| 3 | `GUIA.md` y `PADRES.md` v2 | hecho |
 | 4 | Script del Tablero: importar las respuestas 2026 (se hace primero) | hecho |
 | 5 | `PROMPT-NAVEGADOR.md` para Claude en el navegador | pendiente |
 
