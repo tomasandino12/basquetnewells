@@ -360,6 +360,8 @@
 .portal-cats li > div:first-child span{margin-left:var(--sp-2);font-size:var(--fs-115);color:var(--gris-osc);text-transform:uppercase;letter-spacing:.08em}
 .portal-cats-anios{font-family:var(--ff-mono);font-size:var(--fs-135);color:var(--sobre-oscuro);text-align:right}
 .portal-cats-hora{grid-column:1 / -1;font-size:var(--fs-125);color:var(--gris-osc);margin-top:var(--sp-1)}
+/* Un día por renglón ("Mar 18 a 19 h (Estadio Cubierto)"): partido a la mitad no se lee. */
+.portal-cats-hora span{display:block}
 .portal-sede{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-top:var(--sp-3);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);padding:var(--sp-4)}
 .portal-sede small{display:block;font-size:var(--fs-100);color:var(--gris-osc);text-transform:uppercase;letter-spacing:.1em}
 .portal-sede b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-190)}

@@ -158,7 +158,7 @@ export function htmlCategorias(categorias) {
   return html`<ul class="portal-cats">${categorias.map(({ nombre, rama, anios, horario }) => html`<li>
     <div><b>${nombre}</b>${rama && html`<span>${rama}</span>`}</div>
     <div class="portal-cats-anios">${anios}</div>
-    ${horario && html`<div class="portal-cats-hora">${horario}</div>`}
+    ${horario && html`<div class="portal-cats-hora">${horario.split(' · ').map((h) => html`<span>${h}</span>`)}</div>`}
   </li>`)}</ul>`;
 }
 

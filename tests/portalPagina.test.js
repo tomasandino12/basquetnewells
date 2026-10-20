@@ -193,6 +193,8 @@ test('categorías: nombre, rama, años y horario, escapados', () => {
   assert.match(out, /<b>U9<\/b><span>Mixto<\/span>/);
   assert.match(out, /2017 y 2018/);
   assert.match(out, /Lun &lt;18 h&gt;/);
+  const dos = htmlCategorias([{ nombre: 'U13', rama: null, anios: 'x', horario: 'Lun 18 h · Mié 19 h' }]).toString();
+  assert.match(dos, /<span>Lun 18 h<\/span><span>Mié 19 h<\/span>/);
 });
 
 test('sede con "Cómo llegar" sólo si el mapa es de Google Maps; foto con su alt', () => {

@@ -29,9 +29,13 @@ export const PORTAL = Object.freeze({
   // portal y a la Calendar API (pasos en docs/COORDINACION.md). Sin clave o sin
   // ningún ID, la sección no se ve.
   agenda: Object.freeze({
-    clave: null,
+    // Pública a propósito: la usa el navegador. Restringida en Google Cloud al
+    // sitio app-semillero.vercel.app y sólo a la Calendar API (proyecto
+    // "Portal básquet", cuenta Comisión Básquet, 20/10/2026).
+    clave: 'AIzaSyBPZ8Sq8ho4kv-5x1mfm4bs7y40l9P7IK4',
     calendarios: Object.freeze([
-      // PENDIENTE: ID de cada calendario (Configuración del calendario → "ID de calendario").
+      // PENDIENTE: un calendario público por tipo, aparte del principal de la
+      // cuenta (que tiene todo lo de la subcomisión y no es público).
       Object.freeze({ tipo: 'partido', titulo: 'Partidos', id: null }),
       Object.freeze({ tipo: 'evento', titulo: 'Eventos', id: null }),
       Object.freeze({ tipo: 'charla', titulo: 'Charlas', id: null }),
@@ -42,20 +46,29 @@ export const PORTAL = Object.freeze({
   // temporada con la misma regla que categoriza a un chico (categorias.js).
   // `grupo`: ESCUELITA, U9, U11, U13, U15, U17, U21 o MAYORES. `nombre`
   // opcional (para que MAYORES diga "Primera"). `horario` opcional: días y hora.
-  // PENDIENTE: que Tomás confirme la lista y pase los horarios.
+  // Horarios: descripción del formulario "Quiero jugar en Newell's" (temporada
+  // 2026). Los femeninos no figuran en ningún formulario: van sin horario.
   categorias: Object.freeze([
-    Object.freeze({ grupo: 'ESCUELITA', rama: 'Mixto', horario: null }),
-    Object.freeze({ grupo: 'U9', rama: 'Mixto', horario: null }),
-    Object.freeze({ grupo: 'U11', rama: 'Mixto', horario: null }),
-    Object.freeze({ grupo: 'U13', rama: 'Mixto', horario: null }),
-    Object.freeze({ grupo: 'U15', rama: 'Masculino', horario: null }),
-    Object.freeze({ grupo: 'U17', rama: 'Masculino', horario: null }),
-    Object.freeze({ grupo: 'U21', rama: 'Masculino', horario: null }),
+    Object.freeze({ grupo: 'ESCUELITA', rama: 'Mixto', horario: 'Mar 18 a 19 h (Estadio Cubierto) · Jue 18 a 19 h (Playón Deportivo)' }),
+    Object.freeze({ grupo: 'U9', rama: 'Mixto', horario: 'Mar 18 a 19 h (Estadio Cubierto) · Jue 18 a 19 h (Playón Deportivo)' }),
+    Object.freeze({ grupo: 'U11', rama: 'Mixto', horario: 'Mar 19 a 20 h (Estadio Cubierto) · Jue 19 a 20 h (Playón Deportivo)' }),
+    Object.freeze({ grupo: 'U13', rama: 'Mixto', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)' }),
+    Object.freeze({ grupo: 'U15', rama: 'Masculino', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)' }),
+    Object.freeze({ grupo: 'U17', rama: 'Masculino', horario: 'Lun y Vie 19 a 20 h (Estadio Cubierto) · Mié 19 a 20 h (Microestadio)' }),
+    Object.freeze({ grupo: 'U21', rama: 'Masculino', horario: 'Lun y Vie 20 a 21 h (Estadio Cubierto) · Mié 20 a 21 h (Microestadio)' }),
+    Object.freeze({ grupo: 'U15', rama: 'Femenino', horario: null }),
+    Object.freeze({ grupo: 'U17', rama: 'Femenino', horario: null }),
+    Object.freeze({ grupo: 'U21', rama: 'Femenino', horario: null }),
     Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Femenino', horario: null }),
   ]),
 
-  // Dónde se entrena. PENDIENTE: { nombre, direccion, mapa: 'https://maps.app.goo.gl/…' }.
-  sede: null,
+  // Dónde se entrena. Sin calle ni número en ningún formulario: el mapa es una
+  // búsqueda de Google Maps. Si el club pasa el link de "Compartir", va ese.
+  sede: Object.freeze({
+    nombre: 'Estadio Cubierto "Claudio Newell"',
+    direccion: 'Parque de la Independencia, Rosario. Algunos días se entrena en el Microestadio o en el Playón Deportivo.',
+    mapa: 'https://www.google.com/maps/search/?api=1&query=Estadio+Cubierto+Claudio+Newell+Rosario',
+  }),
 
   // PENDIENTE: link de WhatsApp (https://wa.me/549341…) o mail (mailto:…) del
   // coordinador: el botón "Ayuda" de arriba y el "¿Dudas?" de abajo. El club no
