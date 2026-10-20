@@ -6,4 +6,4 @@
  * public/legal/ muestran esta misma fecha: lo compara
  * tests/contratoLegal.test.js.
  */
-export const VERSION_LEGAL = '2026-10-18';
+export const VERSION_LEGAL = '2026-10-19';
