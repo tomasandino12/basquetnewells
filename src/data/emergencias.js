@@ -109,3 +109,21 @@ export function filasParaImportarEmergencias(cruzadas) {
   return cruzadas.map(({ jugadorId, telefonoAdulto, contactoUrgencia, alertas, alergias, medicacion, indicacion, obraSocial }) => (
     { jugadorId, telefonoAdulto, contactoUrgencia, alertas, alergias, medicacion, indicacion, obraSocial }));
 }
+
+/**
+ * Un teléfono escrito a mano ("341 555-0000", "tía Ana (0341) 15-555-0001") →
+ * 'tel:...' para llamar con un toque, o null si no hay un número. Toma el
+ * primer grupo de 6 o más dígitos; conserva un "+" inicial.
+ */
+export function enlaceTelefono(texto) {
+  const m = /(\+?)(\d[\d\s().-]{4,}\d)/.exec(String(texto ?? ''));
+  if (!m) return null;
+  const digitos = m[2].replace(/\D/g, '');
+  return digitos.length >= 6 ? `tel:${m[1]}${digitos}` : null;
+}
+
+/** Etiquetas legibles de los códigos de alerta, en el orden de la lista cerrada. */
+export function etiquetasDeAlertas(alertas) {
+  const set = new Set(alertas ?? []);
+  return AFECCIONES.filter(([codigo]) => set.has(codigo)).map(([, etiqueta]) => etiqueta);
+}

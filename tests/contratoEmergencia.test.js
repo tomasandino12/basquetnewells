@@ -42,3 +42,18 @@ test('las funciones definer fijan el search_path', () => {
     if (/security definer/.test(m[0])) assert.match(m[0], /set search_path = ''/, m[1]);
   }
 });
+
+test('la emergencia nunca se guarda en el celular', () => {
+  const archivos = ['src/data/repos/emergencias.js', 'src/data/emergencias.js',
+    'src/ui/pantallas/emergencias.js', 'src/ui/pantallas/importarEmergencias.js'];
+  for (const a of archivos) {
+    const codigo = readFileSync(a, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    assert.doesNotMatch(codigo, /localStorage|sessionStorage|indexedDB|caches\.|serviceWorker/, a);
+  }
+});
+
+test('la hoja de emergencias se vacía al cerrar', () => {
+  for (const a of ['src/ui/pantallas/emergencias.js', 'src/ui/pantallas/importarEmergencias.js']) {
+    assert.match(readFileSync(a, 'utf8'), /alCerrar: vaciar/, a);
+  }
+});

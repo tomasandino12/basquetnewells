@@ -112,3 +112,20 @@ test('lo que se manda no lleva nombre ni fila', () => {
     'alergias', 'alertas', 'contactoUrgencia', 'indicacion', 'jugadorId', 'medicacion', 'obraSocial', 'telefonoAdulto',
   ]);
 });
+
+import { enlaceTelefono, etiquetasDeAlertas } from '../src/data/emergencias.js';
+
+test('el teléfono escrito a mano se vuelve un link para llamar', () => {
+  assert.equal(enlaceTelefono('341 555-0000'), 'tel:3415550000');
+  assert.equal(enlaceTelefono('Zztest tía (0341) 15-555-0001'), 'tel:0341155550001');
+  assert.equal(enlaceTelefono('+54 9 341 555 0002'), 'tel:+5493415550002');
+  assert.equal(enlaceTelefono('sin número'), null);
+  assert.equal(enlaceTelefono('12345'), null);
+  assert.equal(enlaceTelefono(null), null);
+});
+
+test('las alertas se muestran con su etiqueta y en el orden de la lista', () => {
+  assert.deepEqual(etiquetasDeAlertas(['asma', 'epilepsia']), ['Epilepsia', 'Asma']);
+  assert.deepEqual(etiquetasDeAlertas([]), []);
+  assert.deepEqual(etiquetasDeAlertas(undefined), []);
+});

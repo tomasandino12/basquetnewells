@@ -10,6 +10,7 @@ import { escaparHtml, toast, formatearFechaCorta } from '../nav.js';
 import { abrirHoja, cerrarHoja } from '../componentes/hoja.js';
 import { verDetallesHtml } from '../componentes/verDetalles.js';
 import { ir } from '../main.js';
+import { abrirEmergencias } from './emergencias.js';
 import { $ } from '../dom.js';
 import { html } from '../html.js';
 import { mensajeAlGuardar, textoDeError } from '../errores.js';
@@ -387,6 +388,10 @@ export async function renderProfes() {
         <button class="btn sec" id="btn-cambio-temporada">Cambio de temporada</button>
       </div>
 
+      <div class="eyebrow">Datos de emergencia</div>
+      <p class="p">Teléfonos y alertas médicas de cada categoría, sólo para leer. Los carga el profe de la categoría.</p>
+      <div class="lista-2col">${vista.plantelesDeLaTemporada.map((p) => `<button class="btn sec chico" data-emergencias="${escaparHtml(p.id)}">${escaparHtml(p.categoria)}</button>`).join('')}</div>
+
       <div class="eyebrow">Categorías sin profe</div>
       ${sinProfeHtml(vista.sinProfe)}
 
@@ -399,6 +404,9 @@ export async function renderProfes() {
     </div>
   `;
 
+  contenedor().querySelectorAll('[data-emergencias]').forEach((b) => b.addEventListener('click', () => {
+    abrirEmergencias({ plantel: vista.plantelesDeLaTemporada.find((p) => p.id === b.dataset.emergencias) });
+  }));
   $('btn-cambio-temporada').addEventListener('click', () => ir('p-coord-temporada', { push: true }));
   contenedor().querySelectorAll('[data-habilitar]').forEach((b) => b.addEventListener('click', () => {
     abrirHabilitar(vista.pendientes.find((u) => u.userId === b.dataset.habilitar));
