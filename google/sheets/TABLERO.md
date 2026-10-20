@@ -185,7 +185,8 @@ Para quien no pudo subir los archivos y los entregó en papel: el coordinador lo
 
 **`Faltan reinscribir`** (estaban en 2026 —o la temporada pasada— y todavía no vinieron). Es útil desde el primer día: toma a los chicos de `Inscripción 2026` y les suma los de la temporada anterior que haya en `Base`. Encabezados: `A DNI | B Apellido | C Nombre | D Mail del adulto | F (auxiliar)`.
 - `F2` (auxiliar, DNIs de la temporada pasada):
-  `=SI.ERROR(UNIQUE({'Inscripción 2026'!$A$2:$A&""; FILTER(Base!$B$2:$B; Base!$A$2:$A>=Config!$B$3; Base!$A$2:$A<Config!$B$2)}); "")`
+  `=SI.ERROR(ARRAYFORMULA(UNIQUE({'Inscripción 2026'!$A$2:$A&""; SI.ERROR(FILTER(Base!$B$2:$B; Base!$A$2:$A>=Config!$B$3; Base!$A$2:$A<Config!$B$2); "")})); "")`
+  (Sin `ARRAYFORMULA`, el `&""` toma sólo el primer DNI. El `SI.ERROR` de adentro evita que una temporada pasada vacía en `Base` borre a los de 2026.)
 - `A2`: `=SI.ERROR(FILTER($F$2:$F; $F$2:$F<>""; ARRAYFORMULA(CONTAR.SI(Tablero!$A$2:$A; $F$2:$F)=0)); "")`
 - `B2` (primero busca en 2026, después en `Base`):
   `=ARRAYFORMULA(SI($A$2:$A=""; ""; SI.ERROR(BUSCARX($A$2:$A; 'Inscripción 2026'!$A$2:$A&""; 'Inscripción 2026'!$B$2:$B); BUSCARX($A$2:$A; Base!$B$2:$B; Base!$C$2:$C; ""; 0; -1))))`
@@ -244,27 +245,27 @@ Hoja `Salida Semillero`, encabezados exactos (fila 1):
 Apellido | Nombre | Fecha de nacimiento | Categoría | Mail del responsable | Rama
 ```
 
-Fórmulas en la fila 2 (una por columna). Cada una apila dos bloques: **el padrón** (los chicos de esta temporada, con los datos de su última respuesta; el DNI no se muestra) y **los de 2026 que no están en el padrón** (`Inscripción 2026`). Para un chico que sólo está en 2026, el mail queda vacío (ese formulario no lo pedía). La condición "no está en el padrón" es, en las seis columnas, `ARRAYFORMULA(CONTAR.SI(Tablero!$A$2:$A; 'Inscripción 2026'!$A$2:$A&"")=0)`.
+Fórmulas en la fila 2 (una por columna). Cada una apila dos bloques: **el padrón** (los chicos de esta temporada, con los datos de su última respuesta; el DNI no se muestra) y **los de 2026 que no están en el padrón** (`Inscripción 2026`). Para un chico que sólo está en 2026, el mail queda vacío (ese formulario no lo pedía). La condición "no está en el padrón" es, en las seis columnas, `ARRAYFORMULA(CONTAR.SI(Tablero!$A$2:$A; 'Inscripción 2026'!$A$2:$A&"")=0)`. Los dos bloques van envueltos en `SI.ERROR(…; "")`: sin inscripciones de esta temporada el del padrón da `#N/A`, y así queda una fila en blanco que el importador saltea.
 
 - `A2` Apellido:
 ```
-={FILTER(Tablero!$B$2:$B; Tablero!$A$2:$A<>""); SI.ERROR(FILTER('Inscripción 2026'!$B$2:$B; 'Inscripción 2026'!$A$2:$A<>""; ARRAYFORMULA(CONTAR.SI(Tablero!$A$2:$A; 'Inscripción 2026'!$A$2:$A&"")=0)); "")}
+={SI.ERROR(FILTER(Tablero!$B$2:$B; Tablero!$A$2:$A<>""); ""); SI.ERROR(FILTER('Inscripción 2026'!$B$2:$B; 'Inscripción 2026'!$A$2:$A<>""; ARRAYFORMULA(CONTAR.SI(Tablero!$A$2:$A; 'Inscripción 2026'!$A$2:$A&"")=0)); "")}
 ```
 - `B2` Nombre: igual, con `Tablero!$C$2:$C` y `'Inscripción 2026'!$C$2:$C`.
 - `C2` Fecha de nacimiento (formato *Fecha* `dd/mm/aaaa`; la del padrón sale de su última respuesta):
 ```
-={ARRAYFORMULA(BUSCARX(FILTER(Tablero!$A$2:$A; Tablero!$A$2:$A<>""); Base!$B$2:$B; Base!$H$2:$H; ""; 0; -1)); SI.ERROR(FILTER('Inscripción 2026'!$D$2:$D; 'Inscripción 2026'!$A$2:$A<>""; ARRAYFORMULA(CONTAR.SI(Tablero!$A$2:$A; 'Inscripción 2026'!$A$2:$A&"")=0)); "")}
+={SI.ERROR(ARRAYFORMULA(BUSCARX(FILTER(Tablero!$A$2:$A; Tablero!$A$2:$A<>""); Base!$B$2:$B; Base!$H$2:$H; ""; 0; -1)); ""); SI.ERROR(FILTER('Inscripción 2026'!$D$2:$D; 'Inscripción 2026'!$A$2:$A<>""; ARRAYFORMULA(CONTAR.SI(Tablero!$A$2:$A; 'Inscripción 2026'!$A$2:$A&"")=0)); "")}
 ```
 - `D2` Categoría (texto exacto del desplegable, ej. `U13 - MIXTO (2014 y 2013)`): igual que `A2` con `Tablero!$D$2:$D` y `'Inscripción 2026'!$E$2:$E`.
 - `E2` Mail del responsable (el verificado por Google, en minúsculas; vacío para los de 2026):
 ```
-={FILTER(MINUSC(Tablero!$E$2:$E); Tablero!$A$2:$A<>""); SI.ERROR(FILTER(ARRAYFORMULA(SI('Inscripción 2026'!$A$2:$A=""; ""; "")); 'Inscripción 2026'!$A$2:$A<>""; ARRAYFORMULA(CONTAR.SI(Tablero!$A$2:$A; 'Inscripción 2026'!$A$2:$A&"")=0)); "")}
+={SI.ERROR(FILTER(MINUSC(Tablero!$E$2:$E); Tablero!$A$2:$A<>""); ""); SI.ERROR(FILTER(ARRAYFORMULA(SI('Inscripción 2026'!$A$2:$A=""; ""; "")); 'Inscripción 2026'!$A$2:$A<>""; ARRAYFORMULA(CONTAR.SI(Tablero!$A$2:$A; 'Inscripción 2026'!$A$2:$A&"")=0)); "")}
 ```
 - `F2` Rama (`Masculino` / `Femenino`). En el padrón: de la categoría si lo dice y, si es mixta (ej. U13), de la pregunta "Rama" (`Base!F`). En 2026: sólo de la categoría; si es mixta queda vacía y la persona que importa la completa (ver `PRECARGA-2026.md`):
 ```
-={ARRAYFORMULA(SI(ESNUMERO(HALLAR("FEMENINO"; FILTER(Tablero!$D$2:$D; Tablero!$A$2:$A<>""))); "Femenino";
+={SI.ERROR(ARRAYFORMULA(SI(ESNUMERO(HALLAR("FEMENINO"; FILTER(Tablero!$D$2:$D; Tablero!$A$2:$A<>""))); "Femenino";
    SI(ESNUMERO(HALLAR("MASCULINO"; FILTER(Tablero!$D$2:$D; Tablero!$A$2:$A<>""))); "Masculino";
-   BUSCARX(FILTER(Tablero!$A$2:$A; Tablero!$A$2:$A<>""); Base!$B$2:$B; Base!$F$2:$F; ""; 0; -1))));
+   BUSCARX(FILTER(Tablero!$A$2:$A; Tablero!$A$2:$A<>""); Base!$B$2:$B; Base!$F$2:$F; ""; 0; -1)))); "");
  SI.ERROR(FILTER(ARRAYFORMULA(SI(ESNUMERO(HALLAR("FEMENINO"; 'Inscripción 2026'!$E$2:$E)); "Femenino"; SI(ESNUMERO(HALLAR("MASCULINO"; 'Inscripción 2026'!$E$2:$E)); "Masculino"; "")));
    'Inscripción 2026'!$A$2:$A<>""; ARRAYFORMULA(CONTAR.SI(Tablero!$A$2:$A; 'Inscripción 2026'!$A$2:$A&"")=0)); "")}
 ```
@@ -301,7 +302,7 @@ La hoja `Aux emergencias` (oculta) arma dos bloques lado a lado.
 
 En `Salida Emergencias` (encabezados exactos de arriba, fila 1) cada columna apila dos bloques: los de esta temporada y los de 2026 que no están en el padrón. `A2` Apellido y nombre:
 ```
-={FILTER('Aux emergencias'!$B$2:$B; 'Aux emergencias'!$A$2:$A<>""); SI.ERROR(FILTER('Aux emergencias'!$M$2:$M; 'Aux emergencias'!$L$2:$L<>""; ARRAYFORMULA(CONTAR.SI(Tablero!$A$2:$A; 'Aux emergencias'!$L$2:$L)=0)); "")}
+={SI.ERROR(FILTER('Aux emergencias'!$B$2:$B; 'Aux emergencias'!$A$2:$A<>""); ""); SI.ERROR(FILTER('Aux emergencias'!$M$2:$M; 'Aux emergencias'!$L$2:$L<>""; ARRAYFORMULA(CONTAR.SI(Tablero!$A$2:$A; 'Aux emergencias'!$L$2:$L)=0)); "")}
 ```
 `B2` a `I2`: igual, con la columna de `Aux emergencias` que corresponde a cada encabezado: de esta temporada `C` a `J`, de 2026 `N` a `U`. La fecha de nacimiento, formato *Fecha* `dd/mm/aaaa`.
 

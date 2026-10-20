@@ -34,6 +34,15 @@ test('las fórmulas usan nombres de función en español', () => {
   }
 });
 
+// Sin inscripciones de esta temporada el bloque del padrón da #N/A y llega como fila a las planillas importadas.
+test('las salidas no empiezan con un FILTER sin SI.ERROR', () => {
+  assert.ok(!/=\{(ARRAYFORMULA\()?FILTER\(/.test(tablero));
+});
+
+test('Faltan reinscribir arma la lista de DNIs con ARRAYFORMULA', () => {
+  assert.match(tablero, /SI\.ERROR\(ARRAYFORMULA\(UNIQUE\(\{'Inscripción 2026'!\$A\$2:\$A&""/);
+});
+
 test('nunca se manda a publicar en la web', () => {
   assert.match(tablero, /Nunca \*Archivo → Compartir → Publicar en la web\*/);
 });
