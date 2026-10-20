@@ -145,3 +145,20 @@ export async function resolverFormularios(leer, respaldo) {
     return { estado: 'respaldo', formularios: respaldo };
   }
 }
+
+/**
+ * A dónde lleva /consultas, la dirección fija del QR impreso: al formulario de
+ * consultas vigente. Nunca inventa un destino: sin formulario (o con un enlace
+ * que no es de Google Forms) dice 'sin-formulario', y si la base falla, 'error'.
+ * `leer` consulta la base (la inyecta la página, así esto se prueba sin red).
+ *
+ * @returns {Promise<{estado: 'redirigir', url: string} | {estado: 'sin-formulario'} | {estado: 'error'}>}
+ */
+export async function resolverConsultas(leer) {
+  try {
+    const url = enlaceDeConsultas(await leer());
+    return url ? { estado: 'redirigir', url } : { estado: 'sin-formulario' };
+  } catch {
+    return { estado: 'error' };
+  }
+}

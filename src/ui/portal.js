@@ -2,7 +2,7 @@ import { html } from './html.js';
 import { $ } from './dom.js';
 import { formulariosPublicos } from '../data/repositorio.js';
 import { PORTAL, urlEmbedCalendario, enlaceFormulario, enlaceContacto } from '../data/portal.js';
-import { resolverFormularios } from '../data/formulariosPortal.js';
+import { resolverFormularios, separarFormularios } from '../data/formulariosPortal.js';
 import { destinoDeAuth } from '../data/entradaAuth.js';
 
 /*
@@ -15,9 +15,36 @@ import { destinoDeAuth } from '../data/entradaAuth.js';
 
 const PRONTO = html`<div class="portal-pronto">Próximamente</div>`;
 
-/** Con la lista vacía: la coordinación los ocultó a todos, o todavía no cargó ninguno. */
-export function htmlSinFormularios() {
-  return html`<div class="portal-tarjeta"><div class="d">Por ahora no hay formularios abiertos. Si necesitás algo, escribile al coordinador (más abajo en esta página).</div></div>`;
+/**
+ * Con la lista vacía: la coordinación los ocultó a todos, o todavía no cargó
+ * ninguno. `hayOtros` es para cuando sí hay uno con lugar propio (por ejemplo
+ * el de "Quiero jugar" arriba de la página) y la lista común quedó vacía.
+ */
+export function htmlSinFormularios({ hayOtros = false } = {}) {
+  const cuales = hayOtros ? 'otros formularios' : 'formularios';
+  return html`<div class="portal-tarjeta"><div class="d">Por ahora no hay ${cuales} abiertos. Si necesitás algo, escribile al coordinador (más abajo en esta página).</div></div>`;
+}
+
+/**
+ * El acceso destacado de arriba de la página: "Quiero jugar en Newell's". Es el
+ * formulario que la coordinación marcó con el destino consultas; el texto es su
+ * línea de ayuda y los tres pasos son los mismos de siempre (no suponer que las
+ * familias saben qué se hace con un formulario de Google). Sin formulario, o con
+ * un enlace que no es de Google Forms, no se muestra nada: la sección queda oculta.
+ */
+export function htmlJugar(formulario) {
+  const url = formulario ? enlaceFormulario(formulario.enlace) : null;
+  if (!url) return html``;
+  return html`<div class="portal-destacado">
+    <div class="t">Quiero jugar en Newell's</div>
+    <div class="d">${formulario.texto}</div>
+    <ol class="portal-ayuda">
+      <li>Tocá el botón de abajo.</li>
+      <li>Se abre un formulario de Google: completalo con los datos que te pida.</li>
+      <li>Mandalo: con eso ya quedó tu consulta.</li>
+    </ol>
+    <a class="btn" href="${url}" target="_blank" rel="noopener">Quiero jugar en Newell's</a>
+  </div>`;
 }
 
 /** Si la base no respondió se muestra una copia: mejor eso que nada, pero que se note. */
@@ -73,7 +100,15 @@ export async function iniciarPortal() {
   if (destinoDeAuth(window.location.search, window.location.hash)) return;
 
   const { estado, formularios } = await resolverFormularios(() => formulariosPublicos(PORTAL.clubId), PORTAL.formularios);
+
+  // El de consultas va destacado arriba y no se repite en la lista.
+  const { consultas } = separarFormularios(formularios);
+  const jugar = htmlJugar(consultas);
+  $('portal-jugar').innerHTML = jugar;
+  $('jugar').hidden = !jugar.toString();
+
+  const resto = formularios.filter((f) => f !== consultas);
   $('portal-formularios').innerHTML = estado === 'vacio'
     ? htmlSinFormularios()
-    : html`${estado === 'respaldo' && htmlAvisoRespaldo()}${htmlFormularios(formularios)}`;
+    : html`${estado === 'respaldo' && htmlAvisoRespaldo()}${resto.length ? htmlFormularios(resto) : htmlSinFormularios({ hayOtros: Boolean(consultas) })}`;
 }

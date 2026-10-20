@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { LIMITE } from '../src/data/limites.js';
 import { readFileSync } from 'node:fs';
-import { validarFormulario, moverFormulario, ordenarFormularios, formularioDesdeFila, formularioPublicoDesdeFila, resolverFormularios, DESTINOS, separarFormularios, quienTieneElDestino, enlaceDeConsultas } from '../src/data/formulariosPortal.js';
+import { validarFormulario, moverFormulario, ordenarFormularios, formularioDesdeFila, formularioPublicoDesdeFila, resolverFormularios, resolverConsultas, DESTINOS, separarFormularios, quienTieneElDestino, enlaceDeConsultas } from '../src/data/formulariosPortal.js';
 
 /**
  * Lo que la coordinación escribe en el panel termina en una tarjeta de la
@@ -186,4 +186,21 @@ test('resolverFormularios: lista vacía es vacía, no respaldo: la coordinación
 test('resolverFormularios: si la base falla, cae al respaldo y no tira', async () => {
   const r = await resolverFormularios(async () => { throw new Error('sin red'); }, respaldo);
   assert.deepEqual(r, { estado: 'respaldo', formularios: respaldo });
+});
+
+// ---- /consultas: a dónde lleva la dirección fija del QR ----
+
+test('resolverConsultas: con el formulario de consultas vigente, redirige a su enlace', async () => {
+  const lista = [{ destino: null, enlace: 'https://forms.gle/otro' }, { destino: 'consultas', enlace: 'https://forms.gle/Consultas1' }];
+  assert.deepEqual(await resolverConsultas(async () => lista), { estado: 'redirigir', url: 'https://forms.gle/Consultas1' });
+});
+
+test('resolverConsultas: sin formulario de consultas (o con enlace no válido) no redirige a ningún lado', async () => {
+  assert.deepEqual(await resolverConsultas(async () => []), { estado: 'sin-formulario' });
+  assert.deepEqual(await resolverConsultas(async () => [{ destino: 'colaboradores', enlace: 'https://forms.gle/x' }]), { estado: 'sin-formulario' });
+  assert.deepEqual(await resolverConsultas(async () => [{ destino: 'consultas', enlace: 'https://evil.com/forms/x' }]), { estado: 'sin-formulario' });
+});
+
+test('resolverConsultas: si la base falla, dice error (no inventa un destino) y no tira', async () => {
+  assert.deepEqual(await resolverConsultas(async () => { throw new Error('sin red'); }), { estado: 'error' });
 });

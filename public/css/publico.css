@@ -201,6 +201,7 @@
 .portal{max-width:64rem;margin-inline:auto;width:100%;padding-bottom:var(--sp-4)}
 .portal-sec{padding:var(--sp-5) var(--sp-4) var(--sp-2);scroll-margin-top:var(--sp-4)}
 .portal-sec h2{font-size:var(--fs-220);letter-spacing:.06em;margin-bottom:var(--sp-2)}
+.portal-sec h1{font-size:var(--fs-250);letter-spacing:.04em;margin-bottom:var(--sp-3)}
 .portal-sec .intro{color:var(--gris-osc);font-size:var(--fs-145);line-height:1.5;margin-bottom:var(--sp-4)}
 .portal-sec .portal-nota{color:var(--gris-osc);font-size:var(--fs-135);line-height:1.55;margin-top:var(--sp-4)}
 .portal-sec .portal-nota b{color:var(--sobre-oscuro);font-weight:600}
@@ -229,6 +230,14 @@
 .portal-tarjeta .t{font-family:var(--ff-titulo);font-size:var(--fs-170);font-weight:600;text-transform:uppercase;letter-spacing:.04em;line-height:1.15}
 .portal-tarjeta .d{color:var(--gris-osc);font-size:var(--fs-135);line-height:1.55;margin:var(--sp-2) 0 var(--sp-4)}
 .portal-tarjeta .btn{text-decoration:none}
+/* El acceso destacado de arriba ("Quiero jugar"): la misma tarjeta, con el borde en el color del club. */
+.portal-destacado{background:var(--pub-tarjeta);border:1px solid var(--primario);border-radius:var(--r);padding:var(--sp-5) var(--sp-4)}
+.portal-destacado .t{font-family:var(--ff-titulo);font-size:var(--fs-230);font-weight:700;text-transform:uppercase;letter-spacing:.04em;line-height:1.1}
+.portal-destacado .d{color:var(--gris-osc);font-size:var(--fs-145);line-height:1.55;margin:var(--sp-2) 0 var(--sp-4)}
+.portal-destacado .btn{text-decoration:none}
+.portal-ayuda{list-style:none;margin:0 0 var(--sp-4);padding:0;display:grid;gap:var(--sp-2);counter-reset:portal-ayuda}
+.portal-ayuda li{counter-increment:portal-ayuda;position:relative;padding-left:var(--sp-6);color:var(--sobre-oscuro);font-size:var(--fs-135);line-height:1.45}
+.portal-ayuda li::before{content:counter(portal-ayuda);position:absolute;left:0;top:0;font-family:var(--ff-titulo);font-weight:700;color:var(--primario)}
 /* Lo que el club todavía no pasó: se dice que falta, en gris, nunca vacío. */
 .portal-pronto{color:var(--gris-osc);font-style:italic;font-size:var(--fs-135)}
 .portal-tarjeta .portal-pronto{min-height:var(--tap);display:flex;align-items:center}

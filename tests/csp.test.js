@@ -120,3 +120,14 @@ test('el import map del portal tiene su hash en script-src y no hay otros script
   const inline = [...portal.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>/g)].filter((x) => !/type="importmap"/.test(x[1]));
   assert.deepEqual(inline.map((x) => x[0]), []);
 });
+
+// Lo mismo para /consultas: lee la lista de formularios, así que lleva el mismo import map.
+test('el import map de /consultas tiene su hash en script-src y no hay otros scripts inline', () => {
+  const pagina = readFileSync(path.join(raiz, 'public', 'consultas.html'), 'utf8').replace(/\r\n/g, '\n');
+  const m = pagina.match(/<script type="importmap">([\s\S]*?)<\/script>/);
+  assert.ok(m, 'consultas.html no tiene import map');
+  const hash = `'sha256-${createHash('sha256').update(m[1], 'utf8').digest('base64')}'`;
+  assert.ok(directiva('script-src')?.includes(hash), `script-src no tiene ${hash} de consultas.html`);
+  const inline = [...pagina.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>/g)].filter((x) => !/type="importmap"/.test(x[1]));
+  assert.deepEqual(inline.map((x) => x[0]), []);
+});

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { htmlFormularios, htmlCalendarios, htmlContacto, htmlSinFormularios, htmlAvisoRespaldo } from '../src/ui/portal.js';
+import { htmlFormularios, htmlCalendarios, htmlContacto, htmlSinFormularios, htmlAvisoRespaldo, htmlJugar } from '../src/ui/portal.js';
 
 /**
  * portal.html es HTML escrito a mano y no hay navegador en los tests: se lee
@@ -123,4 +123,42 @@ test('el contacto sin configurar dice Próximamente; con WhatsApp o mail es un e
   assert.match(htmlContacto('javascript:alert(1)').toString(), /Próximamente/);
   assert.match(htmlContacto('https://wa.me/5493410000000').toString(), /<a [^>]*href="https:\/\/wa\.me\/5493410000000"/);
   assert.match(htmlContacto('mailto:coord@club.com').toString(), /<a [^>]*href="mailto:coord@club\.com"/);
+});
+
+// ---- "Quiero jugar en Newell's": el acceso destacado (destino consultas, 0061) ----
+
+test('el acceso "Quiero jugar" va arriba de todo, antes de los pasos, y arranca oculto', () => {
+  const jugar = pagina.indexOf('<section class="portal-sec portal-jugar" id="jugar"');
+  assert.ok(jugar > 0, 'falta la sección jugar');
+  assert.ok(jugar > pagina.indexOf('class="hero"'), 'va después de la presentación');
+  assert.ok(jugar < pagina.indexOf('id="que-hacer"'), 'y antes de los pasos');
+  assert.match(pagina.slice(jugar, jugar + 200), /\bhidden\b/, 'arranca oculta: sin formulario no hay nada que mostrar');
+  assert.match(pagina, /id="portal-jugar"/);
+});
+
+test('htmlJugar muestra la línea de ayuda de la coordinación, tres pasos y el botón al formulario', () => {
+  const out = htmlJugar({ titulo: 'x', texto: 'Para chicos de 8 a 12 <años>.', enlace: 'https://forms.gle/Jug1' }).toString();
+  assert.match(out, /<div class="t">Quiero jugar en Newell's<\/div>/);
+  assert.match(out, /Para chicos de 8 a 12 &lt;años&gt;\./);
+  assert.equal((out.match(/<li>/g) ?? []).length, 3, 'paso a paso: tres pasos');
+  assert.match(out, /<a class="btn" href="https:\/\/forms\.gle\/Jug1" target="_blank" rel="noopener">/);
+  assert.doesNotMatch(out, /<años>/);
+});
+
+test('htmlJugar no muestra nada si no hay formulario o su enlace no es de Google Forms', () => {
+  assert.equal(htmlJugar(null).toString(), '');
+  assert.equal(htmlJugar(undefined).toString(), '');
+  assert.equal(htmlJugar({ texto: 'x', enlace: 'https://evil.com/forms/x' }).toString(), '');
+});
+
+test('con otros destinos presentes, la lista dice "otros" y no promete que no hay formularios', () => {
+  assert.match(htmlSinFormularios({ hayOtros: true }).toString(), /no hay otros formularios abiertos/i);
+  assert.match(htmlSinFormularios().toString(), /no hay formularios abiertos/i);
+});
+
+test('el portal aparta el formulario de consultas de la lista: no aparece dos veces', () => {
+  const portal = readFileSync('src/ui/portal.js', 'utf8');
+  assert.match(portal, /separarFormularios\(formularios\)/);
+  assert.match(portal, /htmlJugar\(consultas\)/);
+  assert.match(portal, /\$\('jugar'\)\.hidden = !/);
 });

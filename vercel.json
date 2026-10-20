@@ -3,6 +3,7 @@
   "rewrites": [
     { "source": "/", "destination": "/public/portal.html" },
     { "source": "/app", "destination": "/public/index.html" },
+    { "source": "/consultas", "destination": "/public/consultas.html" },
     { "source": "/robots.txt", "destination": "/public/robots.txt" },
     { "source": "/sitemap.xml", "destination": "/public/sitemap.xml" },
     { "source": "/privacidad", "destination": "/public/legal/privacidad.html" },
@@ -11,6 +12,8 @@
   "headers": [
     { "source": "/", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
     { "source": "/app", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/consultas", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/public/consultas.html", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
     { "source": "/public/index.html", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
     { "source": "/public/portal.html", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
     { "source": "/src/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },

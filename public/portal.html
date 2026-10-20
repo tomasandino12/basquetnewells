@@ -71,6 +71,13 @@
       <div class="bajada">Acá encontrás cómo inscribir a tu hijo o hija, los formularios del club, el calendario de partidos y eventos, y a quién escribirle si tenés dudas.</div>
     </div>
 
+    <!-- Acceso destacado: el formulario que la coordinación marcó como "Quiero jugar
+         en Newell's" (destino consultas). Arranca oculto; src/ui/portal.js lo muestra
+         sólo si hay un formulario de consultas activo. -->
+    <section class="portal-sec portal-jugar" id="jugar" aria-label="Quiero jugar en Newell's" hidden>
+      <div id="portal-jugar"></div>
+    </section>
+
     <section class="portal-sec" id="que-hacer" aria-labelledby="t-que-hacer">
       <h2 id="t-que-hacer">¿Qué tengo que hacer?</h2>
       <p class="intro">Seguí estos pasos en orden. Todo se hace desde el celular y toca un solo botón por paso.</p>
