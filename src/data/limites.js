@@ -41,9 +41,12 @@ export const LIMITE = {
   contactoUrgencia: 80,
   textoSalud: 300,
   obraSocial: 60,
+  // Línea de ayuda de un formulario del portal: para qué es y qué tener a mano.
+  // Va entera en la tarjeta que ve cualquiera, así que no es texto libre largo.
+  textoFormulario: 500,
 };
 
-/** 'tabla.columna' → largo máximo. Es el espejo exacto de 0028 y de los checks en línea de las tablas nuevas (0035, 0052, 0054, 0055, 0057, 0059). */
+/** 'tabla.columna' → largo máximo. Es el espejo exacto de 0028 y de los checks en línea de las tablas nuevas (0035, 0052, 0054, 0055, 0057, 0058, 0059). */
 export const LIMITES_POR_COLUMNA = {
   'jugador.nombre_clave': LIMITE.nombrePersona,
   'jugador.nombre_limpio': LIMITE.nombrePersona,
@@ -94,4 +97,7 @@ export const LIMITES_POR_COLUMNA = {
   'emergencia_jugador.medicacion': LIMITE.textoSalud,
   'emergencia_jugador.indicacion': LIMITE.textoSalud,
   'emergencia_jugador.obra_social': LIMITE.obraSocial,
+  'formulario_portal.titulo': LIMITE.titulo,
+  'formulario_portal.texto': LIMITE.textoFormulario,
+  'formulario_portal.enlace': LIMITE.enlace,
 };

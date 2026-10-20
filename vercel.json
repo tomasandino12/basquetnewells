@@ -1,7 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
-    { "source": "/", "destination": "/public/index.html" },
+    { "source": "/", "destination": "/public/portal.html" },
+    { "source": "/app", "destination": "/public/index.html" },
+    { "source": "/consultas", "destination": "/public/consultas.html" },
     { "source": "/robots.txt", "destination": "/public/robots.txt" },
     { "source": "/sitemap.xml", "destination": "/public/sitemap.xml" },
     { "source": "/privacidad", "destination": "/public/legal/privacidad.html" },
@@ -9,16 +11,27 @@
   ],
   "headers": [
     { "source": "/", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/app", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/consultas", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/public/consultas.html", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
     { "source": "/public/index.html", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/public/portal.html", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
     { "source": "/src/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
     { "source": "/public/css/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
     { "source": "/public/config.js", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
+    {
+      "source": "/public/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache" },
+        { "key": "Service-Worker-Allowed", "value": "/app" }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'sha256-Bujujk4mmUFZZB4u54NvOipHhu5SYt4vkrP/D06zoR0='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' blob: https://i.ytimg.com; media-src blob:; frame-src https://www.youtube-nocookie.com; connect-src 'self' https://lseqvbtdzebomxwtqhwu.supabase.co wss://lseqvbtdzebomxwtqhwu.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+          "value": "default-src 'self'; script-src 'self' 'sha256-Bujujk4mmUFZZB4u54NvOipHhu5SYt4vkrP/D06zoR0='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' blob: https://i.ytimg.com; media-src blob:; frame-src https://www.youtube-nocookie.com https://calendar.google.com; connect-src 'self' https://lseqvbtdzebomxwtqhwu.supabase.co wss://lseqvbtdzebomxwtqhwu.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
         },
         { "key": "X-Frame-Options", "value": "DENY" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },

@@ -1,7 +1,8 @@
-# La app tiene una sola URL pública: la landing en /. No hay ruteo — navegar
-# muestra y esconde secciones del mismo documento — así que no existen rutas
-# de la app que un buscador pueda pedir, y todo lo que hay detrás de la
-# sesión son datos de menores que nunca salen al HTML sin auth.
+# Hay dos páginas públicas: el portal del básquet en / y la landing de
+# Semillero en /app. Dentro de la app no hay ruteo — navegar muestra y esconde
+# secciones del mismo documento — así que no existen otras rutas que un
+# buscador pueda pedir, y todo lo que hay detrás de la sesión son datos de
+# menores que nunca salen al HTML sin auth.
 #
 # No se bloquea /public/ a propósito: ahí viven el CSS, el JS y el escudo.
 # Google necesita bajarlos para renderizar la página, y bloquearlos le haría

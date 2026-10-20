@@ -21,3 +21,4 @@ export * from './repos/misiones.js';
 export * from './repos/familia.js';
 export * from './repos/temporadas.js';
 export * from './repos/emergencias.js';
+export * from './repos/portal.js';

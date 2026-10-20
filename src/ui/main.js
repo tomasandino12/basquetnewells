@@ -31,6 +31,7 @@ import {
   iniciarPublico, mostrarPublico, mostrarApp, mostrarLanding, mostrarSinClub, mostrarPedirNombre,
   mostrarAceptarLegal, tomarJugadorPorGoogle,
 } from './publico.js';
+import { registrarServiceWorker } from './pwa.js';
 
 const pantallas = new Map();
 const pila = [];
@@ -491,3 +492,4 @@ async function iniciar() {
 }
 
 iniciar();
+registrarServiceWorker();

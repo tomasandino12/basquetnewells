@@ -40,6 +40,15 @@ Sin esto no funcionan ni la recuperación de contraseña ni Google.
    Si `npx serve` levanta en otro puerto, agregá ese también. Los `**` son
    necesarios: sin ellos no entra `/public/`.
 
+   **Portal y Semillero (desde la spec v2 del portal).** El portal vive en `/`
+   y la app en `/app`: el login vuelve a `https://app-semillero.vercel.app/app`.
+   La entrada con `/**` de arriba **ya la cubre**: alcanza con confirmar en el
+   panel que existe tal cual. Si en cambio se cargó la lista con URLs exactas
+   (sin `**`), hay que agregar `https://app-semillero.vercel.app/app` **antes**
+   de deployar; agregar una entrada no rompe nada de lo que anda.
+   Los links de mail viejos que apuntan a `/` los reenvía el portal a `/app`
+   (`src/ui/portalEntrada.js`), así que no hace falta reenviar ningún mail.
+
 ---
 
 ## 2. Supabase — confirmación de mail y contraseñas

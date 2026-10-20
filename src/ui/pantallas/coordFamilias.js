@@ -6,6 +6,7 @@ import { html, crudo } from '../html.js';
 import { avisoDeError, mensajeAlGuardar } from '../errores.js';
 import { $ } from '../dom.js';
 import { renderPapeles } from './coordPapeles.js';
+import { ir } from '../main.js';
 
 const contenedor = () => $('coord-cuentas-contenido');
 const anfitrion = () => $('coord-familias-contenido');
@@ -18,6 +19,13 @@ const anfitrion = () => $('coord-familias-contenido');
  */
 
 const REGLAS = [[/VINCULO_NO_ENCONTRADO/, 'Ese vínculo ya no está. Actualizá la lista.']];
+
+// Los formularios de la página del básquet (0058) viven acá porque son de las
+// familias: se suman, ocultan y ordenan desde esa pantalla, no desde una
+// pestaña más (la barra de coordinación ya tiene cinco).
+const accesoFormularios = html`
+  <div class="acciones"><button class="btn sec" id="fam-ir-formularios">Formularios de la página del básquet</button></div>`;
+const cablearFormularios = () => $('fam-ir-formularios').addEventListener('click', () => ir('p-coord-formularios', { push: true }));
 
 const filaHtml = (v) => html`
   <div class="profe">
@@ -51,15 +59,19 @@ async function renderCuentas() {
           <h2>Todavía no hay familias vinculadas</h2>
           <div class="p">Aparecen cuando un padre entra a la app con el mail con el que inscribió a su hijo y el profe ya cargó la inscripción en su categoría.</div>
         </div>
+        ${accesoFormularios}
       </div>`;
+    cablearFormularios();
     return;
   }
   contenedor().innerHTML = html`
     <div class="pad">
+      ${accesoFormularios}
       ${explicacion}
       <div class="eyebrow">Vinculadas <span class="der">${vinculos.length}</span></div>
       ${vinculos.map(filaHtml)}
     </div>`;
+  cablearFormularios();
   contenedor().querySelectorAll('[data-baja]').forEach((b) => {
     b.addEventListener('click', () => {
       const v = vinculos.find((x) => x.id === b.dataset.baja);

@@ -58,12 +58,15 @@ test('urlDeReproductor arma el embed sin cookies, o null si no es un video', () 
   assert.equal(urlDeReproductor('https://example.com/video.mp4'), null);
 });
 
-test('vercel.json deja embeber youtube-nocookie y sólo eso', () => {
+// La lista completa de frame-src la controla tests/csp.test.js; acá importa
+// que de YouTube entre sólo el dominio sin cookies.
+test('vercel.json deja embeber youtube-nocookie y ningún otro YouTube', () => {
   const raiz = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
   const vercel = JSON.parse(readFileSync(path.join(raiz, 'vercel.json'), 'utf8'));
   const csp = vercel.headers.flatMap((h) => h.headers).find((h) => h.key === 'Content-Security-Policy').value;
   const frame = csp.split(';').map((s) => s.trim()).find((s) => s.startsWith('frame-src '));
-  assert.equal(frame, 'frame-src https://www.youtube-nocookie.com');
+  const hosts = frame.split(/\s+/).slice(1);
+  assert.deepEqual(hosts.filter((h) => /youtu/.test(h)), ['https://www.youtube-nocookie.com']);
 });
 
 test('miniatura sólo con ID válido', () => {

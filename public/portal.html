@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<!-- Se sirve con Cache-Control: no-store (vercel.json), igual que la app: guardado,
+     el navegador lo revalida y el 304 no trae la CSP vigente. -->
+<link rel="icon" href="/public/escudo.png" type="image/png">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#131316">
+<title>Básquet · Newell&#39;s Old Boys</title>
+<meta name="description" content="Básquet formativo de Newell's Old Boys: inscripción, formularios, calendario de partidos y eventos, e información para las familias.">
+
+<!-- Open Graph: el link se reparte por WhatsApp. URL absoluta y medidas
+     declaradas a propósito (ver el comentario de index.html). -->
+<link rel="canonical" href="https://app-semillero.vercel.app/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Básquet Newell's">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://app-semillero.vercel.app/">
+<meta property="og:title" content="Básquet · Newell's Old Boys">
+<meta property="og:description" content="Básquet formativo de Newell's Old Boys: inscripción, formularios, calendario de partidos y eventos, e información para las familias.">
+<meta property="og:image" content="https://app-semillero.vercel.app/public/escudo.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:image:alt" content="Escudo del club">
+<meta name="twitter:card" content="summary">
+
+<link rel="preload" href="/public/fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/public/fonts/barlow-condensed-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/public/css/tokens.css">
+<link rel="stylesheet" href="/public/css/base.css">
+<link rel="stylesheet" href="/public/css/layout.css">
+<link rel="stylesheet" href="/public/css/componentes.css">
+<link rel="stylesheet" href="/public/css/publico.css">
+<!-- El portal lee la lista de formularios de la base (una sola función anónima,
+     formularios_publicos). Por eso lleva el MISMO import map que la app, letra
+     por letra: así comparten el hash de la CSP de vercel.json y no hace falta
+     tocarla. tests/portalPagina.test.js y csp.test.js lo comparan. -->
+<script type="importmap">
+{
+  "imports": {
+    "xlsx": "/public/vendor/xlsx.mjs",
+    "@supabase/supabase-js": "/public/vendor/supabase-js.mjs"
+  }
+}
+</script>
+<script src="/public/config.js"></script>
+</head>
+<body>
+
+<!-- =====================================================================
+     PORTAL "BÁSQUET NEWELL'S": la puerta pública para las familias.
+     Sin sesión y sin service worker (la app instalable es /app). Lo único
+     que lee de la base es la lista de formularios activos, por la función
+     anónima formularios_publicos. Calendarios y contacto salen de
+     src/data/portal.js; src/ui/portal.js completa todo.
+     Textos en voseo y sin suponer que saben de computadoras.
+     ===================================================================== -->
+<div class="publico" id="publico">
+  <main class="portal">
+
+    <header class="marca">
+      <img src="/public/escudo.png" alt="" width="44" height="44">
+      <div><div class="t">Básquet</div><div class="s">Newell&#39;s Old Boys</div></div>
+    </header>
+
+    <div class="hero">
+      <div class="club">Inferiores · Básquet formativo</div>
+      <h1>Todo lo del básquet, <span class="r">en un solo lugar</span></h1>
+      <div class="bajada">Acá encontrás cómo inscribir a tu hijo o hija, los formularios del club, el calendario de partidos y eventos, y a quién escribirle si tenés dudas.</div>
+    </div>
+
+    <!-- Acceso destacado: el formulario que la coordinación marcó como "Quiero jugar
+         en Newell's" (destino consultas). Arranca oculto; src/ui/portal.js lo muestra
+         sólo si hay un formulario de consultas activo. -->
+    <section class="portal-sec portal-jugar" id="jugar" aria-label="Quiero jugar en Newell's" hidden>
+      <div id="portal-jugar"></div>
+    </section>
+
+    <section class="portal-sec" id="que-hacer" aria-labelledby="t-que-hacer">
+      <h2 id="t-que-hacer">¿Qué tengo que hacer?</h2>
+      <p class="intro">Seguí estos pasos en orden. Todo se hace desde el celular y toca un solo botón por paso.</p>
+      <ol class="portal-pasos">
+        <li><a href="#formularios"><b>Inscribir al chico o a la chica</b><span>Completá el formulario de Inscripción. La primera vez se hace una sola vez.</span></a></li>
+        <li><a href="#formularios"><b>Mandar la documentación</b><span>Las fotos del DNI se suben en el mismo formulario, sacadas con el celular.</span></a></li>
+        <li><a href="#formularios"><b>Pagar y subir el comprobante</b><span>Cuando haya algo para pagar (una cuota, unas rifas), abrí el formulario del comprobante y subí la foto.</span></a></li>
+        <li><a href="#calendario"><b>Mirar el calendario</b><span>Ahí están los partidos, los torneos y los eventos.</span></a></li>
+      </ol>
+    </section>
+
+    <section class="portal-sec" id="formularios" aria-labelledby="t-formularios">
+      <h2 id="t-formularios">Formularios</h2>
+      <p class="intro">Cada formulario te cuenta para qué es y qué tenés que tener a mano antes de abrirlo. Los completás en Google y los datos llegan directo a la coordinación.</p>
+      <div class="portal-lista" id="portal-formularios"><div class="portal-pronto">Cargando…</div></div>
+    </section>
+
+    <section class="portal-sec" id="calendario" aria-labelledby="t-calendario">
+      <h2 id="t-calendario">Calendario</h2>
+      <p class="intro">Partidos, torneos y eventos del básquet. Lo actualiza la coordinación.</p>
+      <div class="portal-calendarios" id="portal-calendarios"></div>
+    </section>
+
+    <section class="portal-sec" id="informacion" aria-labelledby="t-informacion">
+      <h2 id="t-informacion">Información</h2>
+      <!-- PENDIENTE: el club pasa categorías, entrenamientos y sede. -->
+      <dl class="portal-datos">
+        <div><dt>Categorías</dt><dd class="portal-pronto">Próximamente</dd></div>
+        <div><dt>Entrenamientos</dt><dd class="portal-pronto">Próximamente</dd></div>
+        <div><dt>Dónde se entrena</dt><dd class="portal-pronto">Próximamente</dd></div>
+      </dl>
+    </section>
+
+    <section class="portal-sec" id="sponsors" aria-labelledby="t-sponsors">
+      <h2 id="t-sponsors">Sumate como sponsor o colaborador</h2>
+      <p class="intro">Si tenés un comercio, una empresa o querés dar una mano al club, escribinos: el básquet formativo se sostiene con el aporte de muchos.</p>
+      <div id="portal-colaboradores"><div class="portal-pronto">Próximamente</div></div>
+      <!-- Los logos de quienes ya colaboran. Oculto mientras no haya ninguno (PORTAL.sponsors, src/data/portal.js). -->
+      <div class="portal-logos" id="portal-logos" hidden></div>
+    </section>
+
+    <section class="portal-sec" id="semillero" aria-labelledby="t-semillero">
+      <h2 id="t-semillero">Si sos profe, jugador o coordinador</h2>
+      <p class="intro">Semillero es la aplicación del cuerpo técnico y de los jugadores: entrenamientos, ejercicios y seguimiento. Las familias no la necesitan; todo lo tuyo está en esta página.</p>
+      <a class="btn" href="/app">Entrar a Semillero</a>
+      <p class="portal-nota">Para tenerla como una app en el celular: en Android, abrila con Chrome y tocá el menú (los tres puntitos) → <b>Instalar app</b>. En iPhone, abrila con Safari, tocá el botón <b>Compartir</b> → <b>Agregar a inicio</b>.</p>
+    </section>
+
+    <section class="portal-sec" id="dudas" aria-labelledby="t-dudas">
+      <h2 id="t-dudas">¿Dudas? Escribile al coordinador</h2>
+      <p class="intro">Si algo no se entiende o no te funciona, no te quedes con la duda: escribile y te ayuda a completarlo.</p>
+      <div id="portal-contacto"><div class="portal-pronto">Próximamente</div></div>
+    </section>
+
+    <div class="pie-legal"><a href="/public/legal/privacidad.html">Política de privacidad</a> · <a href="/public/legal/terminos.html">Términos y condiciones</a></div>
+  </main>
+</div>
+
+<!-- Primero el reenvío: los mails de Supabase ya enviados apuntan a "/" y tienen
+     que llegar a /app con sus parámetros. -->
+<script type="module" src="/src/ui/portalEntrada.js"></script>
+<script type="module" src="/src/ui/portalArranque.js"></script>
+</body>
+</html>
