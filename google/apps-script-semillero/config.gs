@@ -1,5 +1,6 @@
 /**
- * Script atado a la planilla Tablero: le manda a Semillero el ESTADO de cada
+ * Script (proyecto propio, no atado a la planilla: el Tablero ya tiene otro
+ * script atado y una planilla admite uno solo) que le manda a Semillero el ESTADO de cada
  * chico (documentos ✅/❌, pagos por concepto, fecha de actualización). Nunca
  * DNIs, archivos ni datos médicos.
  *
@@ -12,6 +13,9 @@
 // token del club no sirven para nada: la función de la base lo exige.
 var SEMILLERO_URL = 'https://lseqvbtdzebomxwtqhwu.supabase.co';
 var SEMILLERO_CLAVE_PUBLICA = 'sb_publishable_nuPVo5yqsAFzY1uf6qcWBA_quRRgUFF';
+
+// ID del Tablero: está en la URL, docs.google.com/spreadsheets/d/<ESTE_ID>/edit
+var TABLERO_ID = 'PEGAR_ID_DEL_TABLERO';
 
 // Hojas del Tablero que el script LEE (no escribe nada, en ninguna).
 var HOJA_TABLERO = 'Tablero';

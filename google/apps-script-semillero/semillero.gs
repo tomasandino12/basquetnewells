@@ -1,5 +1,5 @@
 /**
- * Manda a Semillero el estado de papeles y pagos del Tablero.
+ * Manda a Semillero el estado de papeles y pagos del Tablero (lo abre por su ID: TABLERO_ID).
  *
  * Primero correr instalarEnvio() una vez (crea el disparador, sin duplicarlo)
  * y pegar el token en Propiedades del script → SEMILLERO_TOKEN. Para probar a
@@ -45,7 +45,7 @@ function enviarEstado() {
     return;
   }
   try {
-    var datos = leerTablero(SpreadsheetApp.getActiveSpreadsheet());
+    var datos = leerTablero(SpreadsheetApp.openById(TABLERO_ID));
     if (!datos) return;
     var armado = armarEnvio(datos);
     // Un Tablero vacío (una fórmula rota, una hoja renombrada) no se manda:

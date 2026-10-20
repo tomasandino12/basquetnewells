@@ -28,7 +28,7 @@ function entorno({ hojas, token = 'T'.repeat(43), respuesta = { codigo: 200, cue
     Logger: { log: (t) => registro.push(String(t)) },
     PropertiesService: { getScriptProperties: () => ({ getProperty: () => token }) },
     LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock() {} }) },
-    SpreadsheetApp: { getActiveSpreadsheet: () => ({ getSheetByName: hoja, getUrl: () => 'https://docs.google.com/spreadsheets/d/abcdefghijklmnopqrstuvwxyz012345/edit?gid=0' }) },
+    SpreadsheetApp: { openById: () => ({ getSheetByName: hoja, getUrl: () => 'https://docs.google.com/spreadsheets/d/abcdefghijklmnopqrstuvwxyz012345/edit?gid=0' }) },
     UrlFetchApp: {
       fetch: (url, opciones) => {
         pedidos.push({ url, opciones });
@@ -74,12 +74,12 @@ const salida = () => ({
   ],
 });
 
-test('appsscript.json pide sólo su hoja, llamadas externas y disparador, y limita a qué URL llama', () => {
+test('appsscript.json pide sólo leer planillas, llamadas externas y disparador, y limita a qué URL llama', () => {
   const m = JSON.parse(leer('appsscript.json'));
   assert.deepEqual([...m.oauthScopes].sort(), [
     'https://www.googleapis.com/auth/script.external_request',
     'https://www.googleapis.com/auth/script.scriptapp',
-    'https://www.googleapis.com/auth/spreadsheets.currentonly',
+    'https://www.googleapis.com/auth/spreadsheets.readonly',
   ]);
   assert.deepEqual(m.urlFetchWhitelist, ['https://lseqvbtdzebomxwtqhwu.supabase.co/rest/v1/rpc/empujar_estado_google']);
 });
@@ -91,11 +91,17 @@ test('la URL del código está dentro de la lista blanca del manifiesto', () => 
 });
 
 test('el script sólo lee: no escribe hojas, no toca Drive, Forms ni mail, y nunca guarda el token', () => {
-  const prohibidos = /setValue|setValues|clear\(|insertSheet|appendRow|deleteRow|deleteSheet|DriveApp|FormApp|MailApp|GmailApp|openById|openByUrl|setProperty|setProperties/;
+  const prohibidos = /setValue|setValues|clear\(|insertSheet|appendRow|deleteRow|deleteSheet|DriveApp|FormApp|MailApp|GmailApp|openByUrl|setProperty|setProperties/;
   for (const nombre of readdirSync(CARPETA).filter((n) => n.endsWith('.gs'))) {
     const sinComentarios = leer(nombre).replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
     assert.doesNotMatch(sinComentarios, prohibidos, nombre);
   }
+});
+
+test('abre una sola planilla, la del Tablero, por su ID', () => {
+  const usos = readdirSync(CARPETA).filter((n) => n.endsWith('.gs'))
+    .flatMap((n) => [...leer(n).replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '').matchAll(/(openById|getActiveSpreadsheet)\(([^)]*)\)/g)]);
+  assert.deepEqual(usos.map((m) => m[0]), ['openById(TABLERO_ID)']);
 });
 
 test('todos los .gs compilan', () => {
