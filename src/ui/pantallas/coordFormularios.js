@@ -155,7 +155,7 @@ function abrirFormulario(formulario, inicial = null) {
           ${DESTINOS.map((d) => html`<option value="${d.clave}"${v.destino === d.clave && html` selected`}>${d.rotulo}</option>`)}
         </select></span>
       </div>
-      <div class="p det">Los lugares especiales son únicos: "Quiero jugar en Newell's" va destacado arriba de la página y es al que lleva el QR impreso; "Sumate como sponsor o colaborador" va en su propia sección; "Eventos de recaudación" es el aviso de pizzas, rifas y comidas que va debajo del calendario.${formulario?.destino && !formulario.activo ? ' Mientras esté oculto no se muestra, aunque tenga este lugar.' : ''}</div>
+      <div class="p det">Los lugares especiales son únicos: la inscripción es el botón grande de arriba (si está cerrada, ese lugar es de "Quiero jugar", al que lleva el QR impreso); comprobante y sponsors van en la lista "También podés"; recaudación es la banda roja de debajo del calendario.${formulario?.destino && !formulario.activo ? ' Mientras esté oculto no se muestra, aunque tenga este lugar.' : ''}</div>
       <div id="form-destino-nota" class="p det" role="status"></div>
       <div id="form-aviso"></div>
       <div class="acciones-hoja">

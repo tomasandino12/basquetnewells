@@ -226,6 +226,19 @@ export function fechaLarga(fecha) {
   return `${mayuscula(DIAS[d.getUTCDay()])} ${d.getUTCDate()} de ${MESES[d.getUTCMonth()]}`;
 }
 
+/** '2026-10-21' → { semana: 'mié', dia: 21, mes: 'oct' }: la fecha del tablero de "Lo que viene". */
+export function partesDeFecha(fecha) {
+  const d = new Date(`${fecha}T00:00:00Z`);
+  return { semana: DIAS[d.getUTCDay()].slice(0, 3), dia: d.getUTCDate(), mes: MESES[d.getUTCMonth()].slice(0, 3) };
+}
+
+/** "Hoy", "Mañana" o null: para que el próximo evento diga cuánto falta sin hacer cuentas. */
+export function cuandoEs(fecha, hoy) {
+  if (fecha === hoy) return 'Hoy';
+  if (fecha === sumarDias(hoy, 1)) return 'Mañana';
+  return null;
+}
+
 /* ---------- Agregar a mi calendario ---------- */
 
 const compacta = (fecha) => fecha.replaceAll('-', '');

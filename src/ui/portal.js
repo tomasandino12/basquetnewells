@@ -3,19 +3,22 @@ import { $ } from './dom.js';
 import { formulariosPublicos, eventosDelMes } from '../data/repositorio.js';
 import {
   PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal,
-  sedeValida, aliasValido, fotoValida,
+  categoriasDelAnio, sedeValida, aliasValido, fotoValida,
 } from '../data/portal.js';
+import { temporadaComoAnio } from '../data/categorias.js';
 import { resolverFormularios, separarFormularios } from '../data/formulariosPortal.js';
 import {
   eventosPorDia, proximosEventos, semanasDelMes, mesVecino, hoyEnRosario, tituloMes, fechaLarga,
-  TIPOS_AGENDA, NOMBRE_TIPO, enlaceAgregarGoogle, textoIcs, enlacesSuscripcion,
+  TIPOS_AGENDA, NOMBRE_TIPO, enlaceAgregarGoogle, textoIcs, enlacesSuscripcion, partesDeFecha, cuandoEs,
 } from '../data/agenda.js';
 import { destinoDeAuth } from '../data/entradaAuth.js';
 
 /*
  * Portal "Básquet Newell's": la página pública que se reparte a las familias
- * (public/portal.html). Arriba de todo, las dos cosas que busca un padre:
- * inscribir y mandar el comprobante. Lo que no tiene datos no se muestra.
+ * (public/portal.html). Tiene UNA acción principal, grande, en la banda roja y
+ * negra de arriba: inscribir si la inscripción está abierta y, si no, "Quiero
+ * jugar". Lo demás (comprobante, sponsors, coordinador) va en una lista
+ * compacta, para que la página no sea una fila de tarjetas iguales.
  *
  * De la base lee sólo la lista de formularios activos, por la función anónima
  * formularios_publicos (0058): nada de jugadores ni de familias, que están del
@@ -25,104 +28,91 @@ import { destinoDeAuth } from '../data/entradaAuth.js';
 
 const ABRE = '↗';
 
-/** Los íconos de los atajos: trazos simples en currentColor, decorativos. */
+/** Los íconos de los atajos y de la lista: trazos simples en currentColor, decorativos. */
 const ICONO = {
   jugar: html`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-3 3-3 15 0 18M12 3c3 3 3 15 0 18"/></svg>`,
   calendario: html`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`,
   categorias: html`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
   colaborar: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>`,
   ayuda: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19l1.4-4A8 8 0 1 1 9 18.6z"/></svg>`,
+  comprobante: html`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>`,
 };
 
 const botonExterno = (url, texto, clase = 'btn') => html`<a class="${clase}" href="${url}" target="_blank" rel="noopener">${texto} <span aria-hidden="true">${ABRE}</span></a>`;
 
 /**
- * El botón de una tarjeta cuyo formulario todavía no está activo: se ve, pero
- * no se toca, y dice cuándo se habilita. Así nunca falta el botón ni hay uno
- * que no lleva a ningún lado. `aria-disabled` además de `disabled` para que el
- * lector de pantalla lo anuncie dentro de la tarjeta.
+ * El botón de algo cuyo formulario todavía no está activo: se ve, pero no se
+ * toca, y dice cuándo se habilita. Así nunca falta el botón ni hay uno que no
+ * lleva a ningún lado. `aria-disabled` además de `disabled` para que el lector
+ * de pantalla lo anuncie.
  */
 const botonCerrado = (texto, clase = 'btn') => html`<button type="button" class="${clase}" disabled aria-disabled="true">${texto}</button>`;
 
 /**
- * La tarjeta "Inscribir a mi hijo o hija". Con el formulario de inscripción
- * activo (destino inscripcion, 0062) es un botón grande a Google; sin él, el
- * botón queda deshabilitado y, si hay formulario de consultas, se manda ahí a
- * quien viene por primera vez. Es independiente de la de pagos.
+ * La banda de arriba: la única acción principal. Con el formulario de
+ * inscripción activo (destino inscripcion, 0062) es "Inscribí a tu hijo o
+ * hija"; sin él, "¿Querés jugar en Newell's?" con el formulario de consultas
+ * (0061), o con el botón apagado si tampoco está.
  */
-export function htmlInscripcion(formulario, { temporada = null, hayConsultas = false, contacto = null } = {}) {
-  const url = formulario ? enlaceFormulario(formulario.enlace) : null;
-  const cab = html`<div class="portal-acc-cab">${url
-    ? html`<span class="portal-estado abierto">Inscripción abierta</span>`
-    : html`<span class="portal-estado">Abre con la temporada</span>`}</div>`;
-  if (url) {
-    return html`${cab}<h3>Inscribir a mi hijo o hija</h3>
-      <p>${formulario.texto}</p>
-      ${botonExterno(url, 'Abrir la inscripción')}
-      <span class="portal-mini">Se abre un formulario de Google. Se completa desde el celular.</span>`;
+export function htmlHeroe({ inscripcion = null, consultas = null, temporada = null } = {}) {
+  const ey = (estado) => html`<div class="portal-heroe-ey">${temporada ? html`Temporada ${temporada} · ` : ''}${estado}</div>`;
+  const ins = inscripcion ? enlaceFormulario(inscripcion.enlace) : null;
+  if (ins) {
+    return html`${ey('Inscripción abierta')}<h1>Inscribí a tu hijo o hija</h1>
+      <p>${inscripcion.texto}</p>
+      ${botonExterno(ins, 'Inscribir', 'portal-heroe-btn')}`;
   }
-  return html`${cab}<h3>Inscribir a mi hijo o hija</h3>
-    <p>La inscripción${temporada ? html` ${temporada}` : ''} todavía no abrió. Cuando abra, el botón se habilita acá mismo.</p>
-    ${botonCerrado('Se habilita cuando abra la inscripción')}
-    ${hayConsultas
-      ? html`<a class="btn sec" href="#jugar">¿Es la primera vez? Dejá tus datos</a>`
-      : enlaceContacto(contacto) && html`<a class="btn sec" href="${enlaceContacto(contacto)}" target="_blank" rel="noopener">Preguntale al coordinador</a>`}`;
+  // La línea del formulario de consultas es la del panel ("para qué es"): arriba va una invitación propia.
+  const jugar = consultas ? enlaceFormulario(consultas.enlace) : null;
+  return html`${ey('Inscripción cerrada')}<h1>¿Querés jugar en Newell's?</h1>
+    <p>Dejá tus datos y te contactamos para que vengas a probar.</p>
+    ${jugar ? botonExterno(jugar, 'Quiero jugar', 'portal-heroe-btn') : botonCerrado('Se habilita cuando abra el formulario', 'portal-heroe-btn')}`;
 }
 
-/** La tarjeta del comprobante (destino comprobante, 0062), con el alias para copiar si el club lo cargó. */
-export function htmlComprobante(formulario, alias = null) {
-  const url = formulario ? enlaceFormulario(formulario.enlace) : null;
-  const a = aliasValido(alias);
-  const caja = a && html`<div class="portal-alias">
-    <div><small>Alias para transferir</small><b>${a.alias}</b>${a.titular && html`<span>${a.titular}</span>`}</div>
-    <button type="button" class="portal-copiar" data-copiar="${a.alias}">Copiar</button>
-  </div>`;
-  const cab = (abierto) => html`<div class="portal-acc-cab">${abierto
-    ? html`<span class="portal-estado abierto">Pagos abiertos</span>`
-    : html`<span class="portal-estado">Sin pagos por ahora</span>`}</div>`;
-  if (url) {
-    return html`${cab(true)}<h3>Enviar comprobante</h3>
-      <p>${formulario.texto}</p>${caja}
-      ${botonExterno(url, 'Subir comprobante', 'btn portal-btn-claro')}`;
-  }
-  return html`${cab(false)}<h3>Enviar comprobante</h3>
-    <p>Cuando haya algo para pagar (una cuota, unas rifas), acá vas a subir la foto del comprobante.</p>${caja}
-    ${botonCerrado('Se habilita cuando haya un pago', 'btn portal-btn-claro')}`;
+/** Una fila de la lista "También podés": con enlace es tocable; sin él, se ve apagada y dice "Pronto". */
+function fila({ icono, titulo, detalle, url, accion = 'Abrir', externo = true }) {
+  const cuerpo = html`<i>${ICONO[icono]}</i><span><b>${titulo}</b><small>${detalle}</small></span>`;
+  if (!url) return html`<div class="portal-fila apagada" aria-disabled="true">${cuerpo}<em>Pronto</em></div>`;
+  return html`<a class="portal-fila" href="${url}"${externo && html` target="_blank" rel="noopener"`}>${cuerpo}<em>${accion}</em></a>`;
 }
 
 /**
- * Los atajos de abajo de las tarjetas: sólo a lo que existe en la página. Con
+ * Las acciones secundarias, compactas: comprobante, "Quiero jugar" (sólo si
+ * arriba está la inscripción), sponsors y el coordinador. El mail de quien
+ * colabora queda en la planilla de Google de "Quiero colaborar", no en Semillero.
+ */
+export function htmlMas({ comprobante = null, consultas = null, colaboradores = null, inscripcionAbierta = false, contacto = null } = {}) {
+  const url = (f) => (f ? enlaceFormulario(f.enlace) : null);
+  const comp = url(comprobante);
+  const jugar = url(consultas);
+  const colab = url(colaboradores);
+  const coordinador = enlaceContacto(contacto);
+  return html`${fila({ icono: 'comprobante', titulo: 'Enviar comprobante', url: comp, accion: 'Subir',
+    detalle: comp ? 'Subí la foto de la transferencia' : 'Se habilita cuando haya algo para pagar' })}
+    ${inscripcionAbierta && fila({ icono: 'jugar', titulo: 'Quiero jugar en Newell\'s', url: jugar,
+      detalle: jugar ? 'Dejá tus datos para venir a probar' : 'Se habilita cuando abra el formulario' })}
+    ${fila({ icono: 'colaborar', titulo: 'Sumate como sponsor o colaborador', url: colab, detalle: 'Dejanos tu mail y te avisamos de los eventos' })}
+    ${coordinador && fila({ icono: 'ayuda', titulo: 'Hablar con el coordinador', url: coordinador, accion: 'Escribir',
+      detalle: coordinador.startsWith('mailto:') ? 'Por mail' : 'Por WhatsApp' })}`;
+}
+
+/** El alias para transferir, con un botón para copiarlo. Sin un alias válido, nada. */
+export function htmlAlias(alias) {
+  const a = aliasValido(alias);
+  if (!a) return html``;
+  return html`<div class="portal-alias">
+    <div><small>Alias para transferir</small><b>${a.alias}</b>${a.titular && html`<span>${a.titular}</span>`}</div>
+    <button type="button" class="portal-copiar" data-copiar="${a.alias}">Copiar</button>
+  </div>`;
+}
+
+/**
+ * Los atajos de abajo de la banda: sólo a lo que existe en la página. Con
  * menos de dos no vale la fila: no devuelve nada.
  */
 export function htmlAtajos(atajos) {
   if (atajos.length < 2) return html``;
   return html`${atajos.map(({ clave, texto, href, externo }) => html`<a href="${href}"${externo && html` target="_blank" rel="noopener"`}><i>${ICONO[clave]}</i>${texto}</a>`)}`;
-}
-
-/**
- * El acceso destacado "Quiero jugar en Newell's": el formulario que la
- * coordinación marcó con el destino consultas. Sin formulario, o con un enlace
- * que no es de Google Forms, la tarjeta se ve igual con el botón deshabilitado.
- */
-export function htmlJugar(formulario) {
-  const url = formulario ? enlaceFormulario(formulario.enlace) : null;
-  if (!url) {
-    return html`<div class="portal-destacado">
-      <div class="t">Quiero jugar en Newell's</div>
-      <div class="d">Si querés probar el básquet o consultar por una categoría, vas a poder dejar tus datos acá.</div>
-      ${botonCerrado('Se habilita cuando abra el formulario')}
-    </div>`;
-  }
-  return html`<div class="portal-destacado">
-    <div class="t">Quiero jugar en Newell's</div>
-    <div class="d">${formulario.texto}</div>
-    <ol class="portal-ayuda">
-      <li>Tocá el botón de abajo.</li>
-      <li>Se abre un formulario de Google: completalo con los datos que te pida.</li>
-      <li>Mandalo: con eso ya quedó tu consulta.</li>
-    </ol>
-    <a class="btn" href="${url}" target="_blank" rel="noopener">Quiero jugar en Newell's</a>
-  </div>`;
 }
 
 /** Si la base no respondió se muestra una copia: mejor eso que nada, pero que se note. */
@@ -131,33 +121,7 @@ export function htmlAvisoRespaldo() {
 }
 
 /**
- * La tarjeta de "Sumate como sponsor o colaborador": el formulario que la
- * coordinación marcó con el destino colaboradores. Sin formulario se ve igual,
- * con el botón deshabilitado. El mail que dejan queda en Google (la planilla de
- * "Quiero colaborar"), no en Semillero.
- */
-export function htmlColaboradores(formulario) {
-  const url = formulario ? enlaceFormulario(formulario.enlace) : null;
-  const titulo = html`<div class="t">Dejanos tu mail y te avisamos de los eventos</div>`;
-  if (!url) {
-    return html`<div class="portal-tarjeta">${titulo}
-      <div class="d">Eventos donde podés dar una mano. Vas a poder dejar tu mail y cómo querés colaborar.</div>
-      ${botonCerrado('Se habilita cuando abra el formulario')}
-    </div>`;
-  }
-  return html`<div class="portal-tarjeta">${titulo}
-    <div class="d">${formulario.texto}</div>
-    <ol class="portal-ayuda">
-      <li>Tocá el botón de abajo.</li>
-      <li>Se abre un formulario de Google: contanos quién sos, dejá tu mail y cómo querés colaborar.</li>
-      <li>Mandalo: te escribimos cuando haya un evento donde podés dar una mano.</li>
-    </ol>
-    <a class="btn" href="${url}" target="_blank" rel="noopener">Quiero colaborar</a>
-  </div>`;
-}
-
-/**
- * La tarjeta chica de abajo del calendario: el aviso por mail de los eventos de
+ * La banda roja de debajo del calendario: el aviso por mail de los eventos de
  * recaudación del club (pizzas, rifas, comidas). Es el formulario con destino
  * recaudacion (0063), aparte del de sponsors: quien quiere comprar una pizza no
  * es una empresa que quiere ayudar. Su planilla de respuestas vive en Google.
@@ -165,12 +129,11 @@ export function htmlColaboradores(formulario) {
  */
 export function htmlRecaudacion(formulario) {
   const url = formulario ? enlaceFormulario(formulario.enlace) : null;
-  return html`<div class="portal-tarjeta"><div class="t">Enterate de los eventos de recaudación del club</div>
-    <div class="d">Pizzas, rifas, comidas: dejanos tu mail y te avisamos cuando haya uno.</div>
-    ${url
-      ? html`<a class="btn" href="${url}" target="_blank" rel="noopener">Quiero que me avisen</a>`
-      : botonCerrado('Se habilita cuando abra el formulario')}
-  </div>`;
+  return html`<img class="portal-banda-escudo" src="/public/escudo.png" alt="" width="44" height="44">
+    <div class="portal-banda-ey">Enterate de los eventos de recaudación del club</div>
+    <h2 id="t-recaudacion">Pizzas, rifas, comidas</h2>
+    <p>Dejanos tu mail y te avisamos cuando haya uno.</p>
+    ${url ? botonExterno(url, 'Quiero que me avisen', 'portal-banda-btn') : botonCerrado('Se habilita cuando abra el formulario', 'portal-banda-btn')}`;
 }
 
 /** La franja de logos de sponsors. Sin ninguno válido no devuelve nada. */
@@ -207,6 +170,36 @@ export function htmlCategorias(categorias) {
   </li>`)}</ul>`;
 }
 
+/** El selector de año del "¿En qué categoría juega?": − y + alrededor del año, y el lugar del resultado. */
+export function htmlBuscador(anio, { min, max }) {
+  return html`<span class="portal-anio-et" id="portal-anio-et">Año de nacimiento</span>
+    <div class="portal-anio" role="group" aria-labelledby="portal-anio-et">
+      <button type="button" data-anio="-1" aria-label="Un año antes"${anio <= min && html` disabled`}>−</button>
+      <output id="portal-anio">${anio}</output>
+      <button type="button" data-anio="1" aria-label="Un año después"${anio >= max && html` disabled`}>+</button>
+    </div>
+    <div id="portal-cat-res" aria-live="polite"></div>`;
+}
+
+/**
+ * Lo que le toca a quien nació en `anio`: la categoría grande, sus años y su
+ * horario. Puede ser más de una (las dos Primeras). Sin ninguna (más chico
+ * que la U9), lo dice y manda al coordinador si hay contacto.
+ */
+export function htmlCategoriaDelAnio(anio, categorias, contacto = null) {
+  const url = enlaceContacto(contacto);
+  if (!categorias.length) {
+    return html`<p class="portal-cat-nada">Para chicos nacidos en ${anio} todavía no hay categoría.${url && html` <a href="${url}" target="_blank" rel="noopener">Escribile al coordinador</a> y te cuenta.`}</p>`;
+  }
+  return html`${categorias.map(({ nombre, rama, anios, horario }) => html`<div class="portal-cat-res">
+    <div class="portal-cat-nombre"><b>${nombre}</b>${rama && html`<span>${rama}</span>`}</div>
+    <div class="portal-cat-anios">Nacidos ${anios}</div>
+    ${horario
+      ? html`<ul class="portal-cat-hora">${horario.split(' · ').map((h) => html`<li>${h}</li>`)}</ul>`
+      : html`<p class="portal-cat-sin">Horario a confirmar: preguntale al coordinador.</p>`}
+  </div>`)}`;
+}
+
 export function htmlSede(sede) {
   const s = sedeValida(sede);
   if (!s) return html``;
@@ -220,13 +213,6 @@ export function htmlFoto(foto) {
   const f = fotoValida(foto);
   if (!f) return html``;
   return html`<figure class="portal-foto"><img src="${f.src}" alt="${f.alt}" loading="lazy">${f.epigrafe && html`<figcaption>${f.epigrafe}</figcaption>`}</figure>`;
-}
-
-export function htmlContacto(contacto) {
-  const url = enlaceContacto(contacto);
-  if (!url) return html``;
-  const etiqueta = url.startsWith('mailto:') ? 'Escribirle por mail' : 'Escribirle por WhatsApp';
-  return html`<a class="btn" href="${url}" target="_blank" rel="noopener">${etiqueta}</a>`;
 }
 
 /* ---------- Calendario ---------- */
@@ -251,6 +237,35 @@ export function htmlEvento(e, fecha = null) {
       <button type="button" data-ics="${claveEvento(e)}">iPhone</button>
     </div>
   </li>`;
+}
+
+const UN_TIPO = { partido: 'Partido', evento: 'Evento', charla: 'Charla', entrenamiento: 'Entrenamiento' };
+
+/**
+ * "Lo que viene": el próximo evento, arriba del mes, como un tablero (fecha
+ * grande, el color del tipo en el filete). Sin ninguno por delante, nada.
+ * `proximo`: { fecha, evento } de proximosEventos.
+ */
+export function htmlProximo(proximo, hoy) {
+  if (!proximo) return html``;
+  const { fecha, evento: e } = proximo;
+  const f = partesDeFecha(fecha);
+  const cuando = cuandoEs(fecha, hoy);
+  return html`<div class="portal-prox tipo-${e.tipo}">
+    <div class="portal-prox-cab"><span>Lo que viene</span>${cuando && html`<b>${cuando}</b>`}</div>
+    <div class="portal-prox-ev">
+      <div class="portal-prox-fecha" aria-label="${fechaLarga(fecha)}"><small>${f.semana}</small><b>${f.dia}</b><small>${f.mes}</small></div>
+      <div>
+        <span class="portal-prox-tipo">${UN_TIPO[e.tipo]}</span>
+        <div class="portal-prox-t">${e.titulo}</div>
+        <div class="portal-prox-h">${e.hora ? `${e.hora} a ${e.horaFin}` : 'Todo el día'}${e.lugar && html` · ${e.lugar}`}</div>
+        <div class="portal-ev-agregar">Agendar:
+          <a href="${enlaceAgregarGoogle(e)}" target="_blank" rel="noopener">Google</a>
+          <button type="button" data-ics="${claveEvento(e)}">iPhone</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
 }
 
 /** Para tener el calendario entero en el celular, una vez, y que los eventos nuevos aparezcan solos. */
@@ -356,12 +371,18 @@ function iniciarCalendario(calendarios) {
     Object.assign(estado, cache.get(clave), { cargando: false });
     estado.elegido = diaInicial(anio, mes, hoy, estado.porDia);
     pintar();
+    // "Lo que viene" sale del mes de hoy y no cambia al pasar de mes.
+    if (clave === claveDeHoy) $('portal-proximo').innerHTML = htmlProximo(proximosEventos(estado.porDia, hoy, 1)[0], hoy);
   }
+  const claveDeHoy = `${estado.anio}-${estado.mes}`;
 
-  $('portal-calendario').addEventListener('click', (ev) => {
+  // En la sección entera: el "iPhone" de "Lo que viene" y los del mes. El
+  // evento se busca en todos los meses ya traídos, porque "Lo que viene" es
+  // del mes de hoy aunque la grilla muestre otro.
+  $('calendario').addEventListener('click', (ev) => {
     const ics = ev.target.closest('[data-ics]');
     if (ics) {
-      const evento = [...estado.porDia.values()].flat().find((e) => claveEvento(e) === ics.dataset.ics);
+      const evento = [...cache.values()].flatMap((c) => [...c.porDia.values()].flat()).find((e) => claveEvento(e) === ics.dataset.ics);
       if (evento) bajarIcs(evento);
       return;
     }
@@ -378,6 +399,35 @@ function iniciarCalendario(calendarios) {
     }
   });
   cargar(estado.anio, estado.mes);
+}
+
+/* ---------- ¿En qué categoría juega? ---------- */
+
+/**
+ * Arranca en un año de U13 (el del medio de las formativas) y deja moverse de
+ * a uno. Los topes cubren de Primera a unos años más chicos que la U9, para
+ * que quien busca a un nene de 4 vea que todavía no hay categoría.
+ */
+function iniciarBuscador(temporada) {
+  const rango = { min: temporada - 30, max: temporada - 4 };
+  let anio = temporada - 13;
+  const buscador = $('portal-buscador');
+  buscador.innerHTML = htmlBuscador(anio, rango);
+  // Se cambian el año, los topes y el resultado, no el selector entero: así el
+  // foco queda en el botón y el resultado (aria-live) se anuncia al cambiar.
+  const pintar = () => {
+    $('portal-anio').textContent = anio;
+    buscador.querySelector('[data-anio="-1"]').disabled = anio <= rango.min;
+    buscador.querySelector('[data-anio="1"]').disabled = anio >= rango.max;
+    $('portal-cat-res').innerHTML = htmlCategoriaDelAnio(anio, categoriasDelAnio(PORTAL.categorias, temporada, anio), PORTAL.contacto);
+  };
+  buscador.addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-anio]');
+    if (!b) return;
+    anio = Math.min(rango.max, Math.max(rango.min, anio + Number(b.dataset.anio)));
+    pintar();
+  });
+  pintar();
 }
 
 /* ---------- Armado de la página ---------- */
@@ -408,18 +458,29 @@ export async function iniciarPortal() {
     $('portal-ayuda').href = contacto;
     $('portal-ayuda').hidden = false;
   }
-  mostrar('dudas', htmlContacto(PORTAL.contacto), 'portal-contacto');
 
   const categorias = categoriasDelPortal(PORTAL.categorias, PORTAL.temporada);
   $('portal-categorias').innerHTML = htmlCategorias(categorias);
   $('portal-sede').innerHTML = htmlSede(PORTAL.sede);
   $('categorias').hidden = !categorias.length && !sedeValida(PORTAL.sede);
-  if (PORTAL.temporada) $('t-categorias-temp').textContent = ` ${PORTAL.temporada}`;
+  $('portal-categorias').closest('details').hidden = !categorias.length;
+  const temporada = temporadaComoAnio(PORTAL.temporada);
+  if (temporada) $('t-categorias-temp').textContent = ` ${temporada}`;
+  if (temporada && categorias.length) iniciarBuscador(temporada);
   mostrar('club', htmlFoto(PORTAL.foto), 'portal-foto');
+  mostrar('sponsors', htmlLogos(PORTAL.sponsors), 'portal-logos');
+  $('portal-alias').innerHTML = htmlAlias(PORTAL.alias);
 
   const calendarios = calendariosActivos(PORTAL.agenda);
   $('calendario').hidden = !calendarios.length;
   iniciarCopiar();
+
+  $('portal-atajos').innerHTML = htmlAtajos([
+    !$('calendario').hidden && { clave: 'calendario', texto: 'Calendario', href: '#calendario' },
+    !$('categorias').hidden && { clave: 'categorias', texto: 'Categorías', href: '#categorias' },
+    { clave: 'colaborar', texto: 'Colaborar', href: '#mas' },
+    contacto && { clave: 'ayuda', texto: 'Ayuda', href: contacto, externo: true },
+  ].filter(Boolean));
 
   // Si la URL es la vuelta de un login, portalEntrada.js ya está mandando a la
   // persona a /app. Acá no se consulta nada: el cliente de Supabase canjearía
@@ -430,29 +491,13 @@ export async function iniciarPortal() {
 
   const { estado, formularios } = await resolverFormularios(() => formulariosPublicos(PORTAL.clubId), PORTAL.formularios);
 
-  // Los que tienen lugar propio (las dos tarjetas, consultas, colaboradores) no se repiten en la lista.
+  // Los que tienen lugar propio (la banda, la lista, recaudación) no se repiten en "Otros formularios".
   const { inscripcion, comprobante, consultas, colaboradores, recaudacion, comunes } = separarFormularios(formularios);
-  // "Quiero jugar" y "Quiero colaborar" se ven siempre: sin formulario activo
-  // llevan el botón deshabilitado. Sólo el link "primera vez" de la inscripción
-  // necesita saber si el de consultas está de verdad abierto.
-  mostrar('jugar', htmlJugar(consultas));
-  const consultasAbierto = Boolean(consultas && enlaceFormulario(consultas.enlace));
-  $('portal-inscripcion').innerHTML = htmlInscripcion(inscripcion, { temporada: PORTAL.temporada, hayConsultas: consultasAbierto, contacto: PORTAL.contacto });
-  $('portal-comprobante').innerHTML = htmlComprobante(comprobante, PORTAL.alias);
-
-  mostrar('recaudacion', htmlRecaudacion(recaudacion));
-  $('portal-colaboradores').innerHTML = htmlColaboradores(colaboradores);
-  $('portal-logos').innerHTML = htmlLogos(PORTAL.sponsors);
-  $('sponsors').hidden = false;
+  const inscripcionAbierta = Boolean(inscripcion && enlaceFormulario(inscripcion.enlace));
+  $('portal-heroe').innerHTML = htmlHeroe({ inscripcion, consultas, temporada: PORTAL.temporada });
+  $('portal-mas').innerHTML = htmlMas({ comprobante, consultas, colaboradores, inscripcionAbierta, contacto: PORTAL.contacto });
+  $('portal-recaudacion').innerHTML = htmlRecaudacion(recaudacion);
 
   const lista = htmlFormularios(comunes);
   mostrar('formularios', lista.toString() ? html`${estado === 'respaldo' && htmlAvisoRespaldo()}${lista}` : lista);
-
-  $('portal-atajos').innerHTML = htmlAtajos([
-    !$('jugar').hidden && { clave: 'jugar', texto: 'Quiero jugar', href: '#jugar' },
-    !$('calendario').hidden && { clave: 'calendario', texto: 'Calendario', href: '#calendario' },
-    !$('categorias').hidden && { clave: 'categorias', texto: 'Categorías', href: '#categorias' },
-    !$('sponsors').hidden && { clave: 'colaborar', texto: 'Colaborar', href: '#sponsors' },
-    contacto && { clave: 'ayuda', texto: 'Ayuda', href: contacto, externo: true },
-  ].filter(Boolean));
 }

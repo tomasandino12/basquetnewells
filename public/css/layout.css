@@ -381,14 +381,11 @@
   .publico .beneficios{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4);padding-inline:var(--sp-6);max-width:64rem;margin-inline:auto}
   .publico .acciones-landing{flex-direction:row;justify-content:center;max-width:30rem}
   .publico .futuro{padding-inline:var(--sp-6)}
-  /* Portal: las dos tarjetas de arriba lado a lado, atajos en una fila,
+  /* Portal: las bandas con esquinas y más aire, atajos en una fila,
      formularios y categorías en dos columnas. */
-  .publico .portal-barra,.publico .portal-hero,.publico .portal-acciones,.publico .portal-atajos,.publico .portal-sec{padding-inline:var(--sp-6)}
+  .publico .portal-barra,.publico .portal-atajos,.publico .portal-sec{padding-inline:var(--sp-6)}
   .publico .portal-barra{padding-top:var(--sp-5)}
-  .publico .portal-hero{padding-top:var(--sp-8);padding-bottom:var(--sp-6);max-width:44rem}
-  .publico .portal-acciones{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4)}
-  .publico .portal-acc{padding:var(--sp-6);display:flex;flex-direction:column}
-  .publico .portal-acc p{flex:1 0 auto}
+  .publico .portal-heroe,.publico .portal-banda{margin-inline:var(--sp-6);border-radius:var(--r);padding:var(--sp-8)}
   .publico .portal-atajos{grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:var(--sp-3)}
   .publico .portal-atajos a{flex-direction:row;justify-content:center;font-size:var(--fs-145);padding:var(--sp-3)}
   .publico .portal-lista{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4)}
