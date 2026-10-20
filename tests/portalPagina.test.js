@@ -2,10 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlHeroe, htmlMas, htmlAlias, htmlBuscador, htmlCategoriaDelAnio,
+  htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlHeroe, htmlMas, htmlAlias, htmlBuscador, htmlCategoriaDelAnio, htmlProximo,
   htmlRecaudacion, htmlAtajos, htmlCalendario, htmlCategorias, htmlSede, htmlFoto, diaInicial, htmlSuscripcion,
 } from '../src/ui/portal.js';
-import { eventoDesdeGoogle, eventosPorDia } from '../src/data/agenda.js';
+import { eventoDesdeGoogle, eventosPorDia, proximosEventos } from '../src/data/agenda.js';
 
 /**
  * portal.html es HTML escrito a mano y no hay navegador en los tests: se lee
@@ -201,6 +201,23 @@ test('calendario: un día sin nada muestra lo que viene; si falló un calendario
   assert.match(out, /Lo que viene/);
   assert.match(out, /U17 visitante/);
   assert.match(out, /No pudimos traer una parte del calendario/);
+});
+
+test('"Lo que viene": fecha grande, tipo, título escapado, hora y lugar, y para agendarlo', () => {
+  const [prox] = proximosEventos(porDia, '2026-10-23', 1);
+  const out = htmlProximo(prox, '2026-10-23').toString();
+  assert.match(out, /<div class="portal-prox tipo-evento">/, 'el de todo el día va primero');
+  assert.match(out, /<small>sáb<\/small><b>24<\/b><small>oct<\/small>/);
+  assert.match(out, /<b>Mañana<\/b>/);
+  assert.match(out, /Hamburgueseada/);
+  assert.match(out, /Todo el día/);
+  assert.match(out, /data-ics="2\|2026-10-24"/);
+  const partido = htmlProximo(proximosEventos(porDia, '2026-10-25', 1)[0], '2026-10-25').toString();
+  assert.match(partido, /<span class="portal-prox-tipo">Partido<\/span>/);
+  assert.match(partido, /16:00 a /);
+  assert.doesNotMatch(partido, /Mañana|Hoy/);
+  assert.match(htmlProximo({ fecha: '2026-10-24', evento: porDia.get('2026-10-24')[1] }, '2026-10-24').toString(), /U15 vs\. &lt;Náutico&gt;[\s\S]*Microestadio/);
+  assert.equal(htmlProximo(undefined, '2026-10-20').toString(), '');
 });
 
 test('día inicial: hoy si es del mes; si no, el primero con algo, o el 1', () => {

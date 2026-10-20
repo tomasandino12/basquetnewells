@@ -9,7 +9,7 @@ import { temporadaComoAnio } from '../data/categorias.js';
 import { resolverFormularios, separarFormularios } from '../data/formulariosPortal.js';
 import {
   eventosPorDia, proximosEventos, semanasDelMes, mesVecino, hoyEnRosario, tituloMes, fechaLarga,
-  TIPOS_AGENDA, NOMBRE_TIPO, enlaceAgregarGoogle, textoIcs, enlacesSuscripcion,
+  TIPOS_AGENDA, NOMBRE_TIPO, enlaceAgregarGoogle, textoIcs, enlacesSuscripcion, partesDeFecha, cuandoEs,
 } from '../data/agenda.js';
 import { destinoDeAuth } from '../data/entradaAuth.js';
 
@@ -239,6 +239,35 @@ export function htmlEvento(e, fecha = null) {
   </li>`;
 }
 
+const UN_TIPO = { partido: 'Partido', evento: 'Evento', charla: 'Charla', entrenamiento: 'Entrenamiento' };
+
+/**
+ * "Lo que viene": el próximo evento, arriba del mes, como un tablero (fecha
+ * grande, el color del tipo en el filete). Sin ninguno por delante, nada.
+ * `proximo`: { fecha, evento } de proximosEventos.
+ */
+export function htmlProximo(proximo, hoy) {
+  if (!proximo) return html``;
+  const { fecha, evento: e } = proximo;
+  const f = partesDeFecha(fecha);
+  const cuando = cuandoEs(fecha, hoy);
+  return html`<div class="portal-prox tipo-${e.tipo}">
+    <div class="portal-prox-cab"><span>Lo que viene</span>${cuando && html`<b>${cuando}</b>`}</div>
+    <div class="portal-prox-ev">
+      <div class="portal-prox-fecha" aria-label="${fechaLarga(fecha)}"><small>${f.semana}</small><b>${f.dia}</b><small>${f.mes}</small></div>
+      <div>
+        <span class="portal-prox-tipo">${UN_TIPO[e.tipo]}</span>
+        <div class="portal-prox-t">${e.titulo}</div>
+        <div class="portal-prox-h">${e.hora ? `${e.hora} a ${e.horaFin}` : 'Todo el día'}${e.lugar && html` · ${e.lugar}`}</div>
+        <div class="portal-ev-agregar">Agendar:
+          <a href="${enlaceAgregarGoogle(e)}" target="_blank" rel="noopener">Google</a>
+          <button type="button" data-ics="${claveEvento(e)}">iPhone</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
 /** Para tener el calendario entero en el celular, una vez, y que los eventos nuevos aparezcan solos. */
 export function htmlSuscripcion(calendarios) {
   const enlaces = calendarios.map((c) => enlacesSuscripcion(c.id)).filter(Boolean);
@@ -342,12 +371,18 @@ function iniciarCalendario(calendarios) {
     Object.assign(estado, cache.get(clave), { cargando: false });
     estado.elegido = diaInicial(anio, mes, hoy, estado.porDia);
     pintar();
+    // "Lo que viene" sale del mes de hoy y no cambia al pasar de mes.
+    if (clave === claveDeHoy) $('portal-proximo').innerHTML = htmlProximo(proximosEventos(estado.porDia, hoy, 1)[0], hoy);
   }
+  const claveDeHoy = `${estado.anio}-${estado.mes}`;
 
-  $('portal-calendario').addEventListener('click', (ev) => {
+  // En la sección entera: el "iPhone" de "Lo que viene" y los del mes. El
+  // evento se busca en todos los meses ya traídos, porque "Lo que viene" es
+  // del mes de hoy aunque la grilla muestre otro.
+  $('calendario').addEventListener('click', (ev) => {
     const ics = ev.target.closest('[data-ics]');
     if (ics) {
-      const evento = [...estado.porDia.values()].flat().find((e) => claveEvento(e) === ics.dataset.ics);
+      const evento = [...cache.values()].flatMap((c) => [...c.porDia.values()].flat()).find((e) => claveEvento(e) === ics.dataset.ics);
       if (evento) bajarIcs(evento);
       return;
     }

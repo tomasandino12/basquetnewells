@@ -3,8 +3,19 @@ import assert from 'node:assert/strict';
 import {
   idCalendario, claveValida, rangoDelMes, urlEventos, eventoDesdeGoogle, eventosPorDia,
   proximosEventos, semanasDelMes, mesVecino, hoyEnRosario, tituloMes, fechaLarga,
-  TIPO_POR_COLOR, TIPOS_AGENDA, enlaceAgregarGoogle, textoIcs, enlacesSuscripcion,
+  TIPO_POR_COLOR, TIPOS_AGENDA, enlaceAgregarGoogle, textoIcs, enlacesSuscripcion, partesDeFecha, cuandoEs,
 } from '../src/data/agenda.js';
+
+test('partesDeFecha: día de la semana y mes cortos, y el número del día', () => {
+  assert.deepEqual(partesDeFecha('2026-10-21'), { semana: 'mié', dia: 21, mes: 'oct' });
+  assert.deepEqual(partesDeFecha('2027-01-03'), { semana: 'dom', dia: 3, mes: 'ene' });
+});
+
+test('cuandoEs: hoy, mañana (también al cambiar de mes) o nada', () => {
+  assert.equal(cuandoEs('2026-10-20', '2026-10-20'), 'Hoy');
+  assert.equal(cuandoEs('2026-11-01', '2026-10-31'), 'Mañana');
+  assert.equal(cuandoEs('2026-10-23', '2026-10-20'), null);
+});
 
 const ID = 'abc123@group.calendar.google.com';
 const CLAVE = `AIza${'x'.repeat(35)}`;
