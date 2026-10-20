@@ -129,3 +129,26 @@ export function linkFila(conexion, hoja, fila) {
   if (!conexion?.tableroUrl || gid == null || !Number.isInteger(fila)) return null;
   return `${conexion.tableroUrl}/edit#gid=${gid}&range=A${fila}:Z${fila}`;
 }
+
+const MIN = 60 * 1000;
+
+/** "hace 12 min" / "hace 3 h" / "hace 2 días". Sin fecha → null. */
+export function haceCuanto(iso, ahora = Date.now()) {
+  const t = Date.parse(iso ?? '');
+  if (!Number.isFinite(t)) return null;
+  const min = Math.max(0, Math.floor((ahora - t) / MIN));
+  if (min < 1) return 'hace instantes';
+  if (min < 60) return `hace ${min} min`;
+  if (min < 24 * 60) return `hace ${Math.floor(min / 60)} h`;
+  const dias = Math.floor(min / (24 * 60));
+  return `hace ${dias} ${dias === 1 ? 'día' : 'días'}`;
+}
+
+// El script manda cada 15 min: dos horas sin noticias ya es una falla, no una demora.
+const HORAS_SIN_ENVIO = 2;
+
+/** ¿Hace más de 2 h que el script no manda nada? Sin ningún envío también cuenta. */
+export function envioViejo(iso, ahora = Date.now()) {
+  const t = Date.parse(iso ?? '');
+  return !Number.isFinite(t) || ahora - t > HORAS_SIN_ENVIO * 60 * MIN;
+}

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   chicoDesdeFila, conexionDesdeFila, conceptosDe, debeAlgo, faltaDocumentacion, porVerificar,
-  categoriaDeChico, filtrar, contadores, resumenPanorama, linkFila, estadoDePago,
+  categoriaDeChico, filtrar, contadores, resumenPanorama, linkFila, estadoDePago, haceCuanto, envioViejo,
 } from '../src/data/estadoInscripcion.js';
 
 const chico = (extra) => chicoDesdeFila({
@@ -91,4 +91,22 @@ test('linkFila es null sin conexión o sin fila', () => {
   assert.equal(linkFila({ tableroUrl: null, gidTablero: 0 }, 'tablero', 4), null);
   assert.equal(linkFila({ tableroUrl: 'https://docs.google.com/spreadsheets/d/abc', gidTablero: 0 }, 'tablero', null), null);
   assert.equal(linkFila(undefined, 'tablero', 4), null);
+});
+
+test('haceCuanto cuenta en minutos, horas y días', () => {
+  const ahora = Date.parse('2026-10-19T12:00:00Z');
+  const antes = (min) => new Date(ahora - min * 60000).toISOString();
+  assert.equal(haceCuanto(antes(0), ahora), 'hace instantes');
+  assert.equal(haceCuanto(antes(12), ahora), 'hace 12 min');
+  assert.equal(haceCuanto(antes(180), ahora), 'hace 3 h');
+  assert.equal(haceCuanto(antes(24 * 60), ahora), 'hace 1 día');
+  assert.equal(haceCuanto(antes(48 * 60), ahora), 'hace 2 días');
+  assert.equal(haceCuanto(null, ahora), null);
+});
+
+test('envioViejo avisa pasadas 2 h y cuando nunca mandó', () => {
+  const ahora = Date.parse('2026-10-19T12:00:00Z');
+  assert.equal(envioViejo('2026-10-19T11:00:00Z', ahora), false);
+  assert.equal(envioViejo('2026-10-19T09:59:00Z', ahora), true);
+  assert.equal(envioViejo(null, ahora), true);
 });
