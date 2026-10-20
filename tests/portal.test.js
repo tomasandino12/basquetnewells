@@ -38,6 +38,8 @@ test('la configuración de la agenda: tipos conocidos, IDs válidos o null', () 
     assert.ok(c.id === null || idCalendario(c.id), `ID inválido en "${c.titulo}"`);
   }
   assert.ok(PORTAL.contacto === null || enlaceContacto(PORTAL.contacto), 'contacto inválido');
+  assert.ok(PORTAL.alias === null || aliasValido(PORTAL.alias), 'alias inválido');
+  assert.ok(PORTAL.sede === null || sedeValida(PORTAL.sede), 'sede sin nombre');
 });
 
 test('categorías del portal: años de la temporada, nombre propio opcional, horario opcional', () => {

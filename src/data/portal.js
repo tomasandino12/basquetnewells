@@ -63,8 +63,8 @@ export const PORTAL = Object.freeze({
   contacto: null,
 
   // Alias para transferir, en la tarjeta del comprobante con un botón Copiar.
-  // PENDIENTE: { alias: 'NOB.BASQUET', titular: 'Nombre del titular' }.
-  alias: null,
+  // PENDIENTE: confirmar que es el de las cuotas (hubo varios) y el titular.
+  alias: Object.freeze({ alias: 'pagosbasquetnob', titular: null }),
 
   // Foto del club. Sólo fotos con la autorización de imagen firmada por las
   // familias de todos los chicos que se reconozcan. El archivo va en
