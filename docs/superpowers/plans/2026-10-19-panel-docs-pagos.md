@@ -17,7 +17,7 @@
 | 2 Módulo puro | hecha |
 | 3 Repo | hecha (mapper en el módulo puro, como misiones) |
 | 4 Panel (lectura) | hecha (verificada en navegador con cliente simulado) |
-| 5 Conexión con Google (token) | pendiente |
+| 5 Conexión con Google (token) | hecha (probada en navegador con cliente simulado) |
 | 6 Script del club | bloqueada: esperar a inscripción |
 | 7 db push | bloqueada: avisar a la coordinadora + backup |
 

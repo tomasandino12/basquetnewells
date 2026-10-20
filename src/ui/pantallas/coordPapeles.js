@@ -1,13 +1,18 @@
-import { obtenerEstadoInscripcion, obtenerConexionGoogle, obtenerCatalogoDeCategorias } from '../../data/repositorio.js';
+import {
+  obtenerEstadoInscripcion, obtenerConexionGoogle, obtenerCatalogoDeCategorias,
+  rotarConexionGoogle, desconectarGoogle,
+} from '../../data/repositorio.js';
 import {
   conceptosDe, contadores, filtrar, categoriaDeChico, estadoDePago, debeAlgo, porVerificar,
   linkFila, haceCuanto, envioViejo, resumenPanorama,
 } from '../../data/estadoInscripcion.js';
 import { linkCarpetaEnDrive } from '../../data/enlacesGoogle.js';
 import { obtenerClubActual } from '../sesion.js';
-import { formatearFechaCorta } from '../nav.js';
+import { formatearFechaCorta, toast } from '../nav.js';
+import { abrirHoja, cerrarHoja } from '../componentes/hoja.js';
+import { confirmarEnHoja } from '../componentes/confirmar.js';
 import { html, crudo } from '../html.js';
-import { avisoDeError } from '../errores.js';
+import { avisoDeError, mensajeAlGuardar } from '../errores.js';
 import { $ } from '../dom.js';
 
 const destino = () => $('coord-papeles-contenido');
@@ -98,18 +103,30 @@ function filaHtml(c, conceptos) {
 }
 
 function cabeceraHtml(conexion) {
-  if (!conexion.conectado || !conexion.ultimoEnvioEn) {
+  if (!conexion.conectado) {
     return html`
       <div class="estado-vacio">
         <h2>Todavía no llegó nada de Google</h2>
         <div class="p">Cuando el script del club esté conectado, acá vas a ver quién tiene los papeles y quién pagó, sin pedir fotos por WhatsApp.</div>
+        <button type="button" class="btn" data-accion="conectar">Conectar con Google</button>
       </div>`;
+  }
+  const gestion = html`
+    <div class="papel-links">
+      <button type="button" class="btn sec chico" data-accion="cambiar">Cambiar el token</button>
+      <button type="button" class="btn sec chico" data-accion="desconectar">Desconectar</button>
+    </div>`;
+  if (!conexion.ultimoEnvioEn) {
+    return html`
+      <div class="al" role="status"><span class="ico">…</span><div class="tx">Token generado: falta el primer envío de Google. Si ya lo pegaste en el script, puede tardar unos minutos.</div></div>
+      ${gestion}`;
   }
   const viejo = envioViejo(conexion.ultimoEnvioEn);
   return html`
     <div class="eyebrow">Último envío <span class="der">${haceCuanto(conexion.ultimoEnvioEn)}</span></div>
     ${viejo ? html`<div class="al error" role="alert"><span class="ico">!</span><div class="tx">Hace más de 2 horas que Google no manda nada. Lo que ves puede estar desactualizado: revisá que el script siga andando.</div></div>` : ''}
-    ${conexion.tableroUrl ? html`<div class="papel-links"><a class="btn sec chico" href="${conexion.tableroUrl}" target="_blank" rel="noopener noreferrer">Abrir el tablero</a></div>` : ''}`;
+    ${conexion.tableroUrl ? html`<div class="papel-links"><a class="btn sec chico" href="${conexion.tableroUrl}" target="_blank" rel="noopener noreferrer">Abrir el tablero</a></div>` : ''}
+    ${gestion}`;
 }
 
 function contadoresHtml(chicos, conceptos) {
@@ -158,7 +175,94 @@ function pintar() {
     </div>`;
 }
 
+const REGLAS_CONEXION = [[/42501|Sólo coordinación/, 'Sólo coordinación puede conectar con Google.']];
+
+/**
+ * El token se ve una sola vez: en la base queda su hash. Se muestra en la hoja,
+ * con un botón para copiarlo, y se borra de la pantalla al cerrarla.
+ */
+function mostrarToken(token) {
+  abrirHoja({
+    titulo: 'Token del script de Google',
+    cuerpo: html`
+      <div class="p">Este token se ve <strong>una sola vez</strong>. Copialo ahora y pegalo en el script del club.</div>
+      <ol class="p">
+        <li>Tocá <strong>Copiar</strong>.</li>
+        <li>En el Apps Script del club: <em>Configuración del proyecto → Propiedades del script</em>, agregá <span class="mono">SEMILLERO_TOKEN</span> con este valor.</li>
+        <li>Seguí la guía del script (<span class="mono">google/GUIA.md</span>). En unos minutos el panel se llena solo.</li>
+      </ol>
+      <input class="campo mono" id="papeles-token" readonly value="${token}" aria-label="Token del script" />
+      <div class="acciones-hoja">
+        <button type="button" class="btn sec" id="papeles-token-cerrar">Ya lo pegué</button>
+        <button type="button" class="btn" id="papeles-token-copiar">Copiar</button>
+      </div>`.toString(),
+    // Se borra de la pantalla al cerrar, sea cual sea la forma de cerrarla.
+    alCerrar: () => { const t = $('papeles-token'); if (t) t.value = ''; },
+  });
+  $('papeles-token').addEventListener('focus', (e) => e.target.select());
+  $('papeles-token-copiar').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(token);
+      toast('Copiado.');
+    } catch {
+      $('papeles-token').select();
+      toast('No se pudo copiar solo: seleccionalo y copialo a mano.');
+    }
+  });
+  $('papeles-token-cerrar').addEventListener('click', () => {
+    cerrarHoja();
+  });
+}
+
+async function generarToken(clubId) {
+  try {
+    const token = await rotarConexionGoogle(clubId);
+    mostrarToken(token);
+  } catch (e) {
+    toast(mensajeAlGuardar(e, { reglas: REGLAS_CONEXION, generico: 'No se pudo generar el token. Probá de nuevo.' }));
+    throw e;
+  }
+}
+
+function accion(nombre) {
+  const club = obtenerClubActual();
+  if (nombre === 'conectar') generarToken(club.id).then(renderPapeles, () => {});
+  if (nombre === 'cambiar') {
+    confirmarEnHoja({
+      titulo: 'Cambiar el token',
+      texto: 'El token anterior deja de servir ahora mismo: el script no manda nada hasta que pegues el nuevo.',
+      verbo: 'Cambiar',
+      alConfirmar: async () => {
+        await generarToken(club.id);
+        renderPapeles();
+      },
+    });
+  }
+  if (nombre === 'desconectar') {
+    confirmarEnHoja({
+      titulo: 'Desconectar Google',
+      texto: 'Se borra el token y todo el estado de papeles y pagos que mandó el script. Los archivos de Drive no se tocan. Para volver a conectar hay que generar un token nuevo.',
+      verbo: 'Desconectar',
+      alConfirmar: async () => {
+        try {
+          await desconectarGoogle(club.id);
+        } catch (e) {
+          toast(mensajeAlGuardar(e, { reglas: REGLAS_CONEXION, generico: 'No se pudo desconectar. Probá de nuevo.' }));
+          throw e;
+        }
+        toast('Listo: Google quedó desconectado.');
+        renderPapeles();
+      },
+    });
+  }
+}
+
 function alTocar(e) {
+  const acc = e.target.closest('[data-accion]')?.dataset.accion;
+  if (acc) {
+    accion(acc);
+    return;
+  }
   const fila = e.target.closest('[data-fila]');
   if (fila) {
     const id = fila.dataset.fila;
