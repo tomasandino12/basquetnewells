@@ -355,7 +355,7 @@ Lo escribe `google/apps-script-tablero/` y se instala desde la planilla (*Extens
 
 ## 14. El script de envío a Semillero (el panel de papeles y pagos)
 
-Lo escribe `google/apps-script-semillero/` (instalación y permisos en `google/GUIA.md`, sección 5b). **Sólo lee**: el Tablero (columnas `B` a `D`, y `G` en adelante, **nunca la `A` ni la `N`**), `Pagos` (desde la `C`, nunca el DNI) y `Salida Semillero` (A a C y F). Para que el panel de Semillero funcione, esas hojas tienen que mantener:
+Lo escriben `estado.gs` y `semillero.gs` de `google/apps-script-tablero/`, en el mismo proyecto atado al Tablero que el del punto 13 (activación y permisos en `google/GUIA.md`, sección 5b). **Sólo lee**: el Tablero (columnas `B` a `D`, y `G` en adelante, **nunca la `A` ni la `N`**), `Pagos` (desde la `C`, nunca el DNI) y `Salida Semillero` (A a C y F). Para que el panel de Semillero funcione, esas hojas tienen que mantener:
 
 - **Filas alineadas**: la fila `n` de `Pagos` es la del mismo chico que la fila `n` del Tablero, y las primeras filas de `Salida Semillero` van en el mismo orden que las del Tablero (los de 2026 que no están en el padrón van **después**). Si no coinciden, el script no manda la fecha de nacimiento ni la rama de esa fila.
 - **Documentos**: las columnas de `G` en adelante cuyo contenido sea sólo ✅/❌ (también un documento de temporada a la derecha de `Carpeta`). `Completo` y `Carpeta` no son documentos.

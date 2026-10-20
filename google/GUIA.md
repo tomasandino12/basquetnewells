@@ -56,40 +56,32 @@ No pide Sheets ni Gmail. Si más adelante Google pide un permiso nuevo, no acept
 Es **otro proyecto**, atado a la planilla Tablero, así el de carpetas no gana permisos. Lee las respuestas del formulario 2026 y arma las hojas `Inscripción 2026`, `Semillero 2026`, `Emergencias 2026` y `Revisar 2026` (qué tiene cada una: `TABLERO.md`, punto 13).
 
 1. Abrir el **Tablero** → *Extensiones → Apps Script*. Tildar **"Mostrar el archivo de manifiesto appsscript.json"**.
-2. Pegar `config.gs`, `fila2026.gs` e `importar2026.gs` de `google/apps-script-tablero/` y el contenido de su `appsscript.json` en el manifiesto.
+2. Pegar `config.gs`, `fila2026.gs`, `importar2026.gs`, `estado.gs` y `semillero.gs` de `google/apps-script-tablero/` y el contenido de su `appsscript.json` en el manifiesto. (`estado.gs` y `semillero.gs` son el envío de la sección 5b: se pegan ahora para que Google pida todos los permisos juntos y una sola vez.)
 3. En `config.gs`, reemplazar `PEGAR_ID_DEL_FORMULARIO_2026` por el ID del formulario "Base de Datos Básquet NOB 2026": está en la URL del editor, entre `/forms/d/` y `/edit`. Para eso hace falta tener acceso de lectura al formulario (se lo da su dueño); **no hay que editarlo**.
 4. Elegir **`actualizar2026`** → **Ejecutar**. Google pide permisos; **los acepta Tomás**:
 
 | Permiso | Para qué |
 |---|---|
 | Ver y administrar tus formularios | Leer las respuestas del formulario 2026. Google no ofrece un permiso "sólo leer" para formularios; el código sólo lee y un test lo controla |
-| Ver y administrar **esta** hoja de cálculo | Escribir sólo en el Tablero. No puede abrir ninguna otra planilla |
+| Ver y administrar **esta** hoja de cálculo | Leer y escribir sólo en el Tablero. No puede abrir ninguna otra planilla de la cuenta |
+| Conectarse a un servicio externo | Para el envío de la sección 5b. El manifiesto (`urlFetchWhitelist`) hace que Google **bloquee cualquier otra dirección**: sólo puede llamar a la función de Semillero. `actualizar2026` no la usa |
+| Ejecutar cuando no estás | El disparador del envío (cada 15 minutos) |
 
-No usa Drive ni mail, y los datos no salen de la cuenta de la Comisión. Se corre **a mano**, sin disparador, las veces que haga falta.
+No usa Drive ni mail, y los datos no salen de la cuenta de la Comisión salvo el estado del envío (sección 5b). `actualizar2026` se corre **a mano**, las veces que haga falta.
 5. Mirar *Ejecuciones*: el registro dice sólo cantidades (respuestas, chicos, salteadas, con emergencias, a revisar), nunca nombres ni DNIs. Las filas con el apellido y el nombre dudosos aparecen en `Revisar 2026`; se corrigen en `Correcciones 2026` y se vuelve a correr.
 
-## 5b. Instalar el script de envío a Semillero (el panel de papeles y pagos)
+## 5b. Activar el envío a Semillero (el panel de papeles y pagos)
 
-Hace que el coordinador vea en Semillero (Coordinación → Familias → **Papeles y pagos**) quién tiene los documentos y quién pagó, sin abrir la planilla. Es un **tercer proyecto**, **propio** (no atado a la planilla: el Tablero ya tiene el script de la sección 5, y una planilla admite uno solo). Lee el Tablero y le manda a Semillero **sólo el estado**: documento ✅/❌, pago por concepto (falta / comprobante subido / verificado), el número de fila y la fecha en que cambió. **Nunca** DNIs, archivos, mails, links ni datos médicos: el script ni siquiera lee la columna DNI.
+Hace que el coordinador vea en Semillero (Coordinación → Familias → **Papeles y pagos**) quién tiene los documentos y quién pagó, sin abrir la planilla. **No es un proyecto nuevo**: son dos archivos más (`estado.gs` y `semillero.gs`) en el **mismo** proyecto atado al Tablero de la sección 5. Así el permiso de hojas sigue siendo "sólo esta planilla" y no "todas las planillas de la cuenta" (que incluyen fichas viejas). Lee el Tablero y le manda a Semillero **sólo el estado**: documento ✅/❌, pago por concepto (falta / comprobante subido / verificado), el número de fila y la fecha en que cambió. **Nunca** DNIs, archivos, mails, links ni datos médicos: el envío ni siquiera lee la columna DNI.
 
-**Quién hace qué.** El proyecto lo arma quien instala (puede ser Claude en el navegador). El **token** lo genera el coordinador en Semillero y lo pega **Tomás**: el agente del navegador nunca lo ve ni lo escribe.
+**Quién hace qué.** Los archivos los pega quien instala (puede ser Claude en el navegador). El **token** lo genera el coordinador en Semillero y lo pega **Tomás**: el agente del navegador nunca lo ve ni lo escribe.
 
-1. En script.google.com (con la cuenta de la Comisión): **Nuevo proyecto** `Enviar estado a Semillero`. Tildar "Mostrar el archivo de manifiesto appsscript.json".
-2. Pegar `config.gs`, `estado.gs` y `semillero.gs` de `google/apps-script-semillero/` y el contenido de su `appsscript.json`.
-3. En `config.gs`, reemplazar `PEGAR_ID_DEL_TABLERO` por el ID del Tablero (en su URL, entre `/d/` y `/edit`). **No cambiar nada más.** Los otros dos datos (`SEMILLERO_URL` y la clave pública) ya están puestos: son públicos y sin el token no sirven.
-4. **Token (lo hace Tomás con el coordinador).** En Semillero: *Coordinación → Familias → Papeles y pagos → Conectar con Google*. Aparece un token **una sola vez**: copiarlo. En el proyecto: *Configuración del proyecto → Propiedades del script → Agregar propiedad* `SEMILLERO_TOKEN` = el token. Cerrar la hoja de Semillero. Si el token se pierde o se filtra: *Cambiar el token* (el anterior deja de servir en el acto) o *Desconectar* (borra también todo el estado).
-5. Elegir **`instalarEnvio`** → **Ejecutar**. Google pide permisos; **los acepta Tomás**:
-
-| Permiso | Para qué |
-|---|---|
-| Ver tus hojas de cálculo | Leer el Tablero, `Pagos` y `Salida Semillero`. Es de **sólo lectura** pero de **todas** las planillas de la cuenta (Google no ofrece uno por planilla fuera de un script atado). El código abre una sola, por su ID, y un test lo controla |
-| Conectarse a un servicio externo | Mandar el estado a Semillero. El manifiesto (`urlFetchWhitelist`) hace que Google **bloquee cualquier otra dirección**: sólo puede llamar a la función de Semillero |
-| Ejecutar cuando no estás | El disparador, cada 15 minutos |
-
-No pide Drive, formularios ni mail. Si Google pide algo más, no aceptarlo sin revisar por qué.
-6. Elegir **`enviarEstadoAhora`** → Ejecutar. En *Ejecuciones* el registro dice sólo cantidades (`Enviado. filas: …`), nunca nombres ni el token. Si dice `TOKEN_INVALIDO`, el token no está bien pegado o ya se cambió. Si dice `El Tablero no tiene chicos legibles`, hay una fórmula rota y **no se manda nada** (a propósito: Semillero reemplaza todo el estado y borraría lo que tiene).
-7. En *Activadores* tiene que haber **un solo** disparador de `enviarEstado` (cada 15 minutos).
-8. Mirar el panel en Semillero (Coordinación → Familias → Papeles y pagos): "Último envío hace unos minutos" y los chicos del Tablero. Los chicos con ficha en Semillero que no están en el Tablero aparecen en "No figuran en el tablero"; los del Tablero sin ficha, en "En Google, no en Semillero".
+1. Con los cinco archivos y el manifiesto de la sección 5 ya pegados (y los permisos aceptados), no hay que tocar `config.gs`: la URL y la clave pública de Semillero ya están puestas (son públicas y sin el token no sirven). Si el proyecto de la sección 5 se armó antes de que existieran `estado.gs` y `semillero.gs`, pegarlos ahora junto con el `config.gs` y el `appsscript.json` nuevos y aceptar los permisos que Google vuelva a pedir.
+2. **Token (lo hace Tomás con el coordinador).** En Semillero: *Coordinación → Familias → Papeles y pagos → Conectar con Google*. Aparece un token **una sola vez**: copiarlo. En el proyecto: *Configuración del proyecto → Propiedades del script → Agregar propiedad* `SEMILLERO_TOKEN` = el token. Cerrar la hoja de Semillero. Si el token se pierde o se filtra: *Cambiar el token* (el anterior deja de servir en el acto) o *Desconectar* (borra también todo el estado).
+3. Elegir **`instalarEnvio`** → **Ejecutar** (crea el disparador cada 15 minutos, sin duplicarlo).
+4. Elegir **`enviarEstadoAhora`** → Ejecutar. En *Ejecuciones* el registro dice sólo cantidades (`Enviado. filas: …`), nunca nombres ni el token. Si dice `TOKEN_INVALIDO`, el token no está bien pegado o ya se cambió. Si dice `El Tablero no tiene chicos legibles`, hay una fórmula rota y **no se manda nada** (a propósito: Semillero reemplaza todo el estado y borraría lo que tiene).
+5. En *Activadores* tiene que haber **un solo** disparador de `enviarEstado` (cada 15 minutos).
+6. Mirar el panel en Semillero (Coordinación → Familias → Papeles y pagos): "Último envío hace unos minutos" y los chicos del Tablero. Los chicos con ficha en Semillero que no están en el Tablero aparecen en "No figuran en el tablero"; los del Tablero sin ficha, en "En Google, no en Semillero".
 
 Los **conceptos de pago nuevos** (un encabezado más en `Pagos`) aparecen solos en el panel en el siguiente envío. Si el panel dice que hace más de 2 horas que Google no manda nada, revisar *Ejecuciones* del proyecto.
 
@@ -132,7 +124,7 @@ Preparación: copiar los formularios Inscripción y Comprobante de pago como pru
 11. **Quiero jugar y Quiero colaborar sin login.** Abrir los dos con una ventana privada: se completan sin entrar con Google, y sus respuestas van a su propia planilla, no al Tablero.
 12. **Script del Tablero.** Correr `actualizar2026`: `Inscripción 2026` tiene una fila por DNI, sin duplicados. El formulario 2026 **no cambió** (sin respuestas nuevas ni preguntas modificadas).
 13. **Nada público.** Con la sesión cerrada (ventana privada), abrir el link de una carpeta, del Tablero y de las planillas de Semillero: tiene que pedir permiso, no mostrar nada.
-14. **Envío a Semillero.** Con el script de la sección 5b instalado: en el panel *Papeles y pagos*, `11111111` aparece con ✅ en los documentos que se subieron y el concepto `Arancel prueba` en 📎 o ✅ según el paso 6. Cambiar el token en Semillero: el siguiente envío falla con `TOKEN_INVALIDO` hasta pegar el nuevo. **Desconectar** al terminar la prueba, para que la fila de prueba no quede en el panel.
+14. **Envío a Semillero.** Con el envío de la sección 5b activado: en el panel *Papeles y pagos*, `11111111` aparece con ✅ en los documentos que se subieron y el concepto `Arancel prueba` en 📎 o ✅ según el paso 6. Cambiar el token en Semillero: el siguiente envío falla con `TOKEN_INVALIDO` hasta pegar el nuevo. **Desconectar** al terminar la prueba, para que la fila de prueba no quede en el panel.
 15. Si algo falló: *Ejecuciones* del script (errores) y el punto 12 de `TABLERO.md`.
 
 Al terminar: **borrar los formularios de prueba, las respuestas de prueba, las filas de prueba de `Inscripción 2026` y las carpetas `PRUEBA…` y `…Dos`** (vaciado manual, punto 10).

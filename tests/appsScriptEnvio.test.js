@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import vm from 'node:vm';
 
-const CARPETA = new URL('../google/apps-script-semillero/', import.meta.url);
+const CARPETA = new URL('../google/apps-script-tablero/', import.meta.url);
 const leer = (nombre) => readFileSync(new URL(nombre, CARPETA), 'utf8');
 
 /** Un contexto con los tres .gs y un Apps Script de mentira que anota lo que se le pide. */
@@ -28,7 +28,7 @@ function entorno({ hojas, token = 'T'.repeat(43), respuesta = { codigo: 200, cue
     Logger: { log: (t) => registro.push(String(t)) },
     PropertiesService: { getScriptProperties: () => ({ getProperty: () => token }) },
     LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock() {} }) },
-    SpreadsheetApp: { openById: () => ({ getSheetByName: hoja, getUrl: () => 'https://docs.google.com/spreadsheets/d/abcdefghijklmnopqrstuvwxyz012345/edit?gid=0' }) },
+    SpreadsheetApp: { getActiveSpreadsheet: () => ({ getSheetByName: hoja, getUrl: () => 'https://docs.google.com/spreadsheets/d/abcdefghijklmnopqrstuvwxyz012345/edit?gid=0' }) },
     UrlFetchApp: {
       fetch: (url, opciones) => {
         pedidos.push({ url, opciones });
@@ -74,13 +74,19 @@ const salida = () => ({
   ],
 });
 
-test('appsscript.json pide sólo leer planillas, llamadas externas y disparador, y limita a qué URL llama', () => {
+// El envío vive en el MISMO proyecto atado al Tablero que el importador de 2026 (una planilla admite un
+// solo script atado): así el permiso de hojas sigue siendo "sólo esta planilla" y no "todas las de la cuenta".
+const ARCHIVOS_DEL_ENVIO = ['estado.gs', 'semillero.gs'];
+
+test('appsscript.json: sólo esta planilla (no todas las de la cuenta), formularios, llamadas externas y disparador, y limita a qué URL llama', () => {
   const m = JSON.parse(leer('appsscript.json'));
   assert.deepEqual([...m.oauthScopes].sort(), [
+    'https://www.googleapis.com/auth/forms',
     'https://www.googleapis.com/auth/script.external_request',
     'https://www.googleapis.com/auth/script.scriptapp',
-    'https://www.googleapis.com/auth/spreadsheets.readonly',
+    'https://www.googleapis.com/auth/spreadsheets.currentonly',
   ]);
+  assert.ok(!m.oauthScopes.some((s) => /spreadsheets(\.readonly)?$/.test(s)), 'sin permiso sobre todas las planillas');
   assert.deepEqual(m.urlFetchWhitelist, ['https://lseqvbtdzebomxwtqhwu.supabase.co/rest/v1/rpc/empujar_estado_google']);
 });
 
@@ -90,18 +96,19 @@ test('la URL del código está dentro de la lista blanca del manifiesto', () => 
   assert.ok(m.urlFetchWhitelist.some((u) => `${g.SEMILLERO_URL}/rest/v1/rpc/empujar_estado_google` === u));
 });
 
-test('el script sólo lee: no escribe hojas, no toca Drive, Forms ni mail, y nunca guarda el token', () => {
-  const prohibidos = /setValue|setValues|clear\(|insertSheet|appendRow|deleteRow|deleteSheet|DriveApp|FormApp|MailApp|GmailApp|openByUrl|setProperty|setProperties/;
-  for (const nombre of readdirSync(CARPETA).filter((n) => n.endsWith('.gs'))) {
+test('el envío sólo lee: no escribe hojas, no toca Drive, Forms ni mail, y nunca guarda el token', () => {
+  const prohibidos = /setValue|setValues|clear\(|insertSheet|appendRow|deleteRow|deleteSheet|DriveApp|FormApp|MailApp|GmailApp|openByUrl|openById|setProperty|setProperties/;
+  for (const nombre of ARCHIVOS_DEL_ENVIO) {
     const sinComentarios = leer(nombre).replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
     assert.doesNotMatch(sinComentarios, prohibidos, nombre);
   }
 });
 
-test('abre una sola planilla, la del Tablero, por su ID', () => {
-  const usos = readdirSync(CARPETA).filter((n) => n.endsWith('.gs'))
-    .flatMap((n) => [...leer(n).replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '').matchAll(/(openById|getActiveSpreadsheet)\(([^)]*)\)/g)]);
-  assert.deepEqual(usos.map((m) => m[0]), ['openById(TABLERO_ID)']);
+test('el envío usa la planilla a la que está atado y la llamada de red está sólo en semillero.gs', () => {
+  const sinComentarios = (n) => leer(n).replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+  assert.match(sinComentarios('semillero.gs'), /SpreadsheetApp\.getActiveSpreadsheet\(\)/);
+  const conRed = readdirSync(CARPETA).filter((n) => n.endsWith('.gs') && /UrlFetchApp/.test(sinComentarios(n)));
+  assert.deepEqual(conRed, ['semillero.gs']);
 });
 
 test('todos los .gs compilan', () => {
@@ -265,4 +272,11 @@ test('instalarEnvio no duplica el disparador', () => {
   const e = entorno({ hojas: {} });
   e.g.instalarEnvio();
   assert.match(e.registro.join('\n'), /Disparador instalado/);
+});
+
+test('los archivos del proyecto no se pisan: ninguna función ni variable global está repetida', () => {
+  const nombres = readdirSync(CARPETA).filter((n) => n.endsWith('.gs'))
+    .flatMap((n) => [...leer(n).replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/^(?:function|var)\s+([A-Za-z0-9_]+)/gm)].map((m) => m[1]));
+  const repetidos = nombres.filter((n, i) => nombres.indexOf(n) !== i);
+  assert.deepEqual(repetidos, []);
 });

@@ -33,3 +33,23 @@ var TITULOS_2026 = {
   urgencia: 'EN CASO DE URGENCIA LLAMAR A',
   consentimiento: 'Consentimiento de Datos'
 };
+
+// ---- Envío del estado a Semillero (semillero.gs) ----
+// No manda DNIs, archivos ni datos médicos: sólo estado (documento ✅/❌, pago por concepto, fecha de cambio).
+// El token NO va acá: lo genera el coordinador en Semillero (Coordinación → Familias → Papeles y pagos →
+// Conectar con Google) y se pega en Configuración del proyecto → Propiedades del script → SEMILLERO_TOKEN.
+
+// Estos dos datos son públicos por diseño (están en la web de la app). Sin el token del club no sirven para nada.
+var SEMILLERO_URL = 'https://lseqvbtdzebomxwtqhwu.supabase.co';
+var SEMILLERO_CLAVE_PUBLICA = 'sb_publishable_nuPVo5yqsAFzY1uf6qcWBA_quRRgUFF';
+
+// Hojas de este Tablero que el envío LEE (no escribe nada, en ninguna).
+var HOJA_TABLERO = 'Tablero';
+var HOJA_PAGOS = 'Pagos';
+var HOJA_SALIDA = 'Salida Semillero';
+
+// Cada cuántos minutos se manda (Apps Script sólo admite 1, 5, 10, 15 o 30).
+var MINUTOS_ENTRE_ENVIOS = 15;
+
+// Hasta qué columna se mira en Tablero y Pagos (Z = 26): documentos y pagos de formularios propios.
+var ULTIMA_COLUMNA = 26;

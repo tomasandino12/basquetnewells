@@ -3,7 +3,7 @@
 **Para Tomás (esto no es parte del prompt).**
 
 1. Abrí Chrome con la sesión de la **cuenta de la Comisión Básquet** ("Club Atlético Newell's Old Boys Comisión Básquet") y abrí Claude en el navegador. Si hay otra cuenta abierta, cambiá a la de la Comisión antes de empezar.
-2. Tené a mano estos archivos de este repo para **pegárselos cuando te los pida** (no hace falta que se los des todos de entrada): `google/formularios/FORMULARIOS.md`, `google/sheets/TABLERO.md`, `google/GUIA.md`, y los de `google/apps-script/`, `google/apps-script-tablero/` y `google/apps-script-semillero/` (`.gs` y `appsscript.json`). Para la etapa 5b hace falta el **token** de Semillero: lo generás vos con el coordinador (*Coordinación → Familias → Papeles y pagos → Conectar con Google*) y lo pegás **vos** en las Propiedades del script; no se lo des a Claude. Tené también a mano: el **link del formulario "Base de Datos Básquet NOB 2026"**, los **mails de coordinación** con quienes se comparten las carpetas y las planillas, y una **foto cualquiera** (no de un chico real) para las pruebas.
+2. Tené a mano estos archivos de este repo para **pegárselos cuando te los pida** (no hace falta que se los des todos de entrada): `google/formularios/FORMULARIOS.md`, `google/sheets/TABLERO.md`, `google/GUIA.md`, y los de `google/apps-script/` y `google/apps-script-tablero/` (`.gs` y `appsscript.json`). Para la etapa 5b hace falta el **token** de Semillero: lo generás vos con el coordinador (*Coordinación → Familias → Papeles y pagos → Conectar con Google*) y lo pegás **vos** en las Propiedades del script; no se lo des a Claude. Tené también a mano: el **link del formulario "Base de Datos Básquet NOB 2026"**, los **mails de coordinación** con quienes se comparten las carpetas y las planillas, y una **foto cualquiera** (no de un chico real) para las pruebas.
 3. Copiá todo lo que está **debajo de la línea** y pegalo como primer mensaje. Claude va a ir por etapas y te va a pedir cosas. Los permisos de los scripts los aceptás **vos**.
 
 Qué hace cada pieza y por qué: `docs/superpowers/specs/2026-10-19-formularios-v2-design.md`.
@@ -89,10 +89,10 @@ Pedime los archivos de `google/apps-script/` (`nombres.gs`, `organizar.gs`, `con
 
 ## Etapa 5 — Script del Tablero (permisos: los acepto yo)
 
-Pedime los archivos de `google/apps-script-tablero/` (`config.gs`, `fila2026.gs`, `importar2026.gs`, `appsscript.json`) y el **link del formulario "Base de Datos Básquet NOB 2026"**.
-1. En el Tablero: *Extensiones → Apps Script*. Mostrá el manifiesto. Pegá los cuatro archivos tal cual.
+Pedime los archivos de `google/apps-script-tablero/` (`config.gs`, `fila2026.gs`, `importar2026.gs`, `estado.gs`, `semillero.gs`, `appsscript.json`) y el **link del formulario "Base de Datos Básquet NOB 2026"**.
+1. En el Tablero: *Extensiones → Apps Script*. Mostrá el manifiesto. Pegá los seis archivos tal cual. (`estado.gs` y `semillero.gs` son el envío a Semillero de la etapa 5b; van en **este mismo** proyecto, no en uno nuevo.)
 2. En `config.gs`, reemplazá `PEGAR_ID_DEL_FORMULARIO_2026` por el ID del formulario (lo que va entre `/forms/d/` y `/edit` del link que te dé). **No abras el formulario 2026 ni sus respuestas; sólo necesitás el ID.**
-3. Elegí `actualizar2026` → Ejecutar. Pará en la pantalla de permisos y avisame. Los permisos esperados son **dos**: formularios y "esta hoja de cálculo" (`spreadsheets.currentonly`). **Si pide Drive, Gmail u otra cosa, no sigas.** Yo los acepto.
+3. Elegí `actualizar2026` → Ejecutar. Pará en la pantalla de permisos y avisame. Los permisos esperados son **cuatro**: formularios, "esta hoja de cálculo" (`spreadsheets.currentonly`), conectarse a un servicio externo (`script.external_request`, sólo para el envío de la etapa 5b) y ejecutar cuando no estoy (`script.scriptapp`). **Si pide Drive, "todas tus hojas de cálculo" (`spreadsheets`), Gmail u otra cosa, no sigas.** Yo los acepto.
 4. Cuando termine, mirá *Ejecuciones*: el registro tiene que decir sólo cantidades. **Leeme los números (respuestas, chicos, salteadas, con emergencias, a revisar); no leas nombres ni DNIs.**
 5. Verificá que el Tablero ahora tiene las hojas `Inscripción 2026`, `Semillero 2026`, `Emergencias 2026` y `Revisar 2026`, con la cantidad de filas del registro. **No abras filas ni leas su contenido**: sólo contá.
 6. Ahora sí, creá y pegá las hojas que faltaban: `Faltan reinscribir`, `Revisar`, `Aux emergencias`, `Salida Semillero`, `Salida Emergencias`. Chequeo igual que en la etapa 3.
@@ -100,17 +100,16 @@ Pedime los archivos de `google/apps-script-tablero/` (`config.gs`, `fila2026.gs`
 
 **Chequeo:** los encabezados de las dos planillas son idénticos a los de `TABLERO.md` (6 y 9 columnas); no hay ninguna columna de DNI, domicilio, afiliado ni grupo sanguíneo; la columna de fecha tiene formato `dd/mm/aaaa`.
 
-## Etapa 5b — Script de envío a Semillero (permisos y token: los pongo yo)
+## Etapa 5b — Envío a Semillero (el token lo pongo yo)
 
-Pedime los archivos de `google/apps-script-semillero/` (`config.gs`, `estado.gs`, `semillero.gs`, `appsscript.json`) y el **link del Tablero**. Es un proyecto **aparte** de los otros dos (una planilla admite un solo script atado, y este no debe sumar permisos a los demás).
-1. En script.google.com, **Nuevo proyecto** `Enviar estado a Semillero`. Mostrá el manifiesto. Pegá los cuatro archivos tal cual.
-2. En `config.gs`, reemplazá `PEGAR_ID_DEL_TABLERO` por el ID del Tablero (lo que va entre `/d/` y `/edit`). **No cambies nada más**: la URL y la clave pública de Semillero ya están puestas.
-3. **El token no lo ves ni lo escribís vos.** Lo genera el coordinador en Semillero y lo pego yo en *Propiedades del script* (`SEMILLERO_TOKEN`). Si en algún momento ves un token en pantalla, no lo copies ni lo repitas. Avisame cuando el proyecto esté listo y esperá a que te diga que ya lo pegué.
-4. Elegí `instalarEnvio` → Ejecutar. Pará en la pantalla de permisos y avisame. Los permisos esperados son **tres**: ver tus hojas de cálculo (`spreadsheets.readonly`), conectarse a un servicio externo (`script.external_request`) y ejecutar cuando no estoy (`script.scriptapp`). **Si pide Drive, formularios, Gmail u otra cosa, no sigas.** Yo los acepto.
-5. Cuando yo te diga que el token está pegado, elegí `enviarEstadoAhora` → Ejecutar y mirá *Ejecuciones*: tiene que decir `Enviado. filas: …` con cantidades. **Leeme el resumen; no leas nombres ni DNIs.** Si dice `TOKEN_INVALIDO` o `Faltan hojas`, avisame y no lo arregles por tu cuenta.
-6. Abrí *Activadores* y confirmá que hay **un solo** disparador de `enviarEstado` (cada 15 minutos).
+No es un proyecto nuevo: `estado.gs` y `semillero.gs` ya quedaron pegados en el proyecto del Tablero (etapa 5) y los permisos ya están aceptados. Esta etapa sólo lo activa.
+1. **El token no lo ves ni lo escribís vos.** Lo genera el coordinador en Semillero y lo pego yo en *Configuración del proyecto → Propiedades del script* (`SEMILLERO_TOKEN`). Si en algún momento ves un token en pantalla, no lo copies ni lo repitas. Avisame que el proyecto está listo y esperá a que te diga que ya lo pegué.
+2. **No toques `config.gs`**: la URL y la clave pública de Semillero ya están puestas.
+3. Cuando yo te diga que el token está pegado, elegí `instalarEnvio` → Ejecutar (crea el disparador, sin duplicarlo). Si Google vuelve a mostrar una pantalla de permisos, pará y avisame: no tendría que pedir nada nuevo. **Si pide Drive, "todas tus hojas de cálculo", formularios de más, Gmail u otra cosa, no sigas.**
+4. Elegí `enviarEstadoAhora` → Ejecutar y mirá *Ejecuciones*: tiene que decir `Enviado. filas: …` con cantidades. **Leeme el resumen; no leas nombres ni DNIs.** Si dice `TOKEN_INVALIDO` o `Faltan hojas`, avisame y no lo arregles por tu cuenta.
+5. Abrí *Activadores* y confirmá que hay **un solo** disparador de `enviarEstado` (cada 15 minutos).
 
-**Chequeo:** el proyecto no tiene ninguna propiedad con el token escrita por vos, los permisos fueron los tres esperados y el registro de la primera ejecución sólo tiene cantidades.
+**Chequeo:** vos no escribiste ninguna propiedad con el token, y el registro de la primera ejecución sólo tiene cantidades.
 
 ## Etapa 6 — Prueba con DNIs inventados
 
@@ -128,8 +127,8 @@ Hacé una **lista exacta** de lo que creó la prueba y nada más: las filas con 
 ## Etapa 8 — Informe final
 
 Entregame **un mensaje** con:
-1. **Links** (solo links, ningún dato de chicos): cada uno de los cinco formularios (el link para que las familias respondan, el de edición aparte), el Tablero, "Para Semillero 2026", "Emergencias para Semillero 2026", las dos planillas de respuestas propias (Quiero jugar y Quiero colaborar), la carpeta `Inscripción y documentación`, `Formularios con archivos` y `Jugadores`, y los tres proyectos de Apps Script.
-2. **Los IDs** de las dos carpetas, del formulario 2026 y del Tablero que quedaron puestos en los `config.gs`.
+1. **Links** (solo links, ningún dato de chicos): cada uno de los cinco formularios (el link para que las familias respondan, el de edición aparte), el Tablero, "Para Semillero 2026", "Emergencias para Semillero 2026", las dos planillas de respuestas propias (Quiero jugar y Quiero colaborar), la carpeta `Inscripción y documentación`, `Formularios con archivos` y `Jugadores`, y los dos proyectos de Apps Script.
+2. **Los IDs** de las dos carpetas y del formulario 2026 que quedaron puestos en los `config.gs`.
 3. **Resultado de la prueba**: ✔/✘ por paso de la guía.
 4. **Pendientes**: los textos que quedaron en borrador (privacidad, recaudación), lo que no pudiste hacer y por qué.
 5. **Riesgos que viste en cosas existentes** y no tocaste (por ejemplo carpetas públicas), para que decida yo.

@@ -110,16 +110,19 @@ test('las correcciones a mano pisan apellido y nombre y sacan la marca de revisa
   assert.equal(dudoso.revisar, true, 'no muta el original');
 });
 
-test('appsscript.json pide sólo forms y spreadsheets.currentonly', () => {
+test('appsscript.json: forms, sólo esta planilla y, para el envío a Semillero (tests/appsScriptEnvio.test.js), llamadas externas y disparador', () => {
   const m = JSON.parse(leer(new URL('appsscript.json', CARPETA)));
   assert.deepEqual([...m.oauthScopes].sort(), [
     'https://www.googleapis.com/auth/forms',
+    'https://www.googleapis.com/auth/script.external_request',
+    'https://www.googleapis.com/auth/script.scriptapp',
     'https://www.googleapis.com/auth/spreadsheets.currentonly'
   ]);
 });
 
 test('el código no modifica el formulario, no sale de la planilla y no registra datos personales', () => {
-  const codigo = readdirSync(CARPETA).filter((f) => f.endsWith('.gs'))
+  // La llamada de red del envío a Semillero (semillero.gs) la cubre tests/appsScriptEnvio.test.js: acá, el resto no sale.
+  const codigo = readdirSync(CARPETA).filter((f) => f.endsWith('.gs') && f !== 'semillero.gs')
     .map((f) => leer(new URL(f, CARPETA))).join('\n');
   for (const prohibido of ['DriveApp', 'MailApp', 'GmailApp', 'UrlFetchApp', 'openByUrl', 'SpreadsheetApp.openById', 'setTrashed', 'deleteAllResponses', 'deleteResponse', 'createResponse', 'setTitle', 'addTextItem']) {
     assert.ok(!codigo.includes(prohibido), `no debería usar ${prohibido}`);
