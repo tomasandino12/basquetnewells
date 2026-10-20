@@ -14,7 +14,7 @@
 | Task | Estado |
 |---|---|
 | 1 Migración 0060 | hecha (local, en transacción) |
-| 2 Módulo puro | pendiente |
+| 2 Módulo puro | hecha |
 | 3 Repo | pendiente |
 | 4 Panel (lectura) | pendiente |
 | 5 Conexión con Google (token) | pendiente |
