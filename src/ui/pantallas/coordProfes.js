@@ -9,6 +9,7 @@ import { obtenerClubActual } from '../sesion.js';
 import { escaparHtml, toast, formatearFechaCorta } from '../nav.js';
 import { abrirHoja, cerrarHoja } from '../componentes/hoja.js';
 import { verDetallesHtml } from '../componentes/verDetalles.js';
+import { ir } from '../main.js';
 import { $ } from '../dom.js';
 import { html } from '../html.js';
 import { mensajeAlGuardar, textoDeError } from '../errores.js';
@@ -382,6 +383,10 @@ export async function renderProfes() {
         <div id="buscar-jugador-resultado"></div>
       </div>
 
+      <div class="campo">
+        <button class="btn sec" id="btn-cambio-temporada">Cambio de temporada</button>
+      </div>
+
       <div class="eyebrow">Categorías sin profe</div>
       ${sinProfeHtml(vista.sinProfe)}
 
@@ -394,6 +399,7 @@ export async function renderProfes() {
     </div>
   `;
 
+  $('btn-cambio-temporada').addEventListener('click', () => ir('p-coord-temporada', { push: true }));
   contenedor().querySelectorAll('[data-habilitar]').forEach((b) => b.addEventListener('click', () => {
     abrirHabilitar(vista.pendientes.find((u) => u.userId === b.dataset.habilitar));
   }));
