@@ -234,7 +234,7 @@ comprobantes) viven en Google y **nunca pasan por Semillero ni por la base**.
 Quién los recibe y cómo se organizan en Drive: ver la guía de inscripción en
 Google (rama `claude/inscripcion-google-41cf4e`).
 
-### Lugares especiales: Inscripción, Comprobante, "Quiero jugar" y sponsors
+### Lugares especiales: Inscripción, Comprobante, "Quiero jugar", sponsors y recaudación
 
 Al agregar o editar un formulario, el selector **"Cómo se muestra en la página"**
 tiene estas opciones:
@@ -242,20 +242,28 @@ tiene estas opciones:
 - **Común**: va en la lista "Otros formularios" (pase, rifas…).
 - **Inscripción (tarjeta de arriba del portal)** y **Comprobante de pago
   (tarjeta de arriba del portal)** (desde 0062): son las dos tarjetas grandes de
-  arriba. **Así se abre y se cierra la inscripción**: con el formulario marcado
+  arriba, **independientes entre sí** (se puede inscribir alguien sin pagar
+  nada). **Así se abre y se cierra la inscripción**: con el formulario marcado
   y visible, la tarjeta dice "Inscripción abierta" y tiene el botón; oculto o
-  sin marcar, dice "Abre con la temporada" y manda a "Quiero jugar" a quien
-  viene por primera vez. Lo mismo el comprobante.
+  sin marcar, el botón se ve apagado ("Se habilita cuando abra la inscripción")
+  y manda a "Quiero jugar" a quien viene por primera vez. Lo mismo el comprobante.
 - **Quiero jugar en Newell's (consultas)**: se muestra **destacado, arriba de todo**
-  en el portal, con la ayuda paso a paso, y es el formulario al que lleva el QR
+  en el portal (siempre visible: sin formulario activo, con el botón apagado), con la ayuda paso a paso, y es el formulario al que lleva el QR
   impreso (ver abajo).
-- **Sumate como sponsor o colaborador**: va en su propia sección del portal.
+- **Sumate como sponsor o colaborador**: va en su propia sección del portal
+  (siempre visible; sin formulario activo, con el botón apagado).
+- **Eventos de recaudación (aviso debajo del calendario)** (desde 0063): es otro
+  formulario que el de sponsors, para quien quiere comprar y colaborar (pizzas,
+  rifas, comidas) y deja su mail. Aparece como la tarjeta chica "Enterate de los
+  eventos de recaudación del club", debajo del calendario.
 
 Cada lugar especial es **único**: si marcás un formulario y otro ya lo tenía, la
 app te avisa ("Hoy lo tiene «X»: al guardar, ese formulario pasa a ser común") y
 se lo saca. Un formulario **oculto** no se muestra aunque conserve su lugar: la
-tarjeta queda cerrada (inscripción, comprobante) o la sección no se ve
-(consultas; sponsors si tampoco hay logos).
+tarjeta queda cerrada, con el botón apagado y visible (inscripción,
+comprobante, "Quiero jugar", "Quiero colaborar" y recaudación). El mail que dejan
+colaboradores y compradores lo piden esos formularios y queda en sus planillas
+de Google, no en Semillero.
 
 ### QR para imprimir: `/consultas`
 

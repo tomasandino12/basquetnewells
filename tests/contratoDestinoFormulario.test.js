@@ -26,16 +26,36 @@ test('0061 agrega la columna destino con un check de los destinos de entonces (y
   assert.match(plano(codigo), /alter table formulario_portal add column destino text, add constraint formulario_portal_destino_valido check \(destino in \('consultas', 'colaboradores'\)\);/);
 });
 
-// 0062 rehace el check con inscripción y comprobante. La lista de la app se
-// compara con la ÚLTIMA migración que lo define: 0061 queda como se aplicó.
-const sql62 = readFileSync('supabase/migrations/0062_destinos_inscripcion_comprobante.sql', 'utf8').replace(/\r\n/g, '\n').replace(/--.*$/gm, '');
+// 0062 rehace el check con inscripción y comprobante, y 0063 suma recaudación.
+// La lista de la app se compara con la ÚLTIMA migración que lo define: las
+// anteriores quedan como se aplicaron.
+const sinComentarios = (archivo) => readFileSync(`supabase/migrations/${archivo}`, 'utf8').replace(/\r\n/g, '\n').replace(/--.*$/gm, '');
+const sql62 = sinComentarios('0062_destinos_inscripcion_comprobante.sql');
+const sql63 = sinComentarios('0063_destino_recaudacion.sql');
+const destinosDelCheck = (s) => [...s.match(/check \(destino in \(([^)]*)\)\)/)[1].matchAll(/'(\w+)'/g)].map((m) => m[1]);
+const REHACE_EL_CHECK = /alter table formulario_portal drop constraint formulario_portal_destino_valido, add constraint formulario_portal_destino_valido check \(destino in \([^)]*\)\);/;
 
-test('0062: el check admite exactamente los destinos de la app, y sólo toca ese check', () => {
-  assert.match(plano(sql62), /alter table formulario_portal drop constraint formulario_portal_destino_valido, add constraint formulario_portal_destino_valido check \(destino in \([^)]*\)\);/);
-  const enSql = [...sql62.match(/check \(destino in \(([^)]*)\)\)/)[1].matchAll(/'(\w+)'/g)].map((m) => m[1]);
-  assert.deepEqual(enSql, DESTINOS.map((d) => d.clave));
+test('0062: el check admite los cuatro destinos de entonces, y sólo toca ese check', () => {
+  assert.match(plano(sql62), REHACE_EL_CHECK);
+  assert.deepEqual(destinosDelCheck(sql62), ['consultas', 'colaboradores', 'inscripcion', 'comprobante']);
   assert.doesNotMatch(sql62, /\b(grant|revoke|policy|function)\b/i);
   for (const m of sql62.matchAll(/alter\s+table\s+(\w+)/gi)) assert.equal(m[1], 'formulario_portal');
+});
+
+test('0063: el check admite exactamente los destinos de la app (con recaudación), y sólo toca ese check', () => {
+  assert.match(plano(sql63), REHACE_EL_CHECK);
+  assert.deepEqual(destinosDelCheck(sql63), DESTINOS.map((d) => d.clave));
+  assert.ok(destinosDelCheck(sql63).includes('recaudacion'));
+  assert.doesNotMatch(sql63, /\b(grant|revoke|policy|function)\b/i);
+  for (const m of sql63.matchAll(/alter\s+table\s+(\w+)/gi)) assert.equal(m[1], 'formulario_portal');
+});
+
+test('el rollback de 0063 desmarca recaudación antes de volver al check de 0062', () => {
+  const rollback = readFileSync('tests/rollback0063.sql', 'utf8').replace(/\r\n/g, '\n');
+  const desmarca = rollback.indexOf("update formulario_portal set destino = null where destino = 'recaudacion'");
+  const check = rollback.indexOf("check (destino in ('consultas', 'colaboradores', 'inscripcion', 'comprobante'))");
+  assert.ok(desmarca >= 0 && check > desmarca);
+  assert.match(rollback, /version = '0063'/);
 });
 
 test('el rollback de 0062 desmarca los dos destinos nuevos antes de volver al check de 0061', () => {

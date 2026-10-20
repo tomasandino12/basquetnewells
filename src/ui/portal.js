@@ -37,14 +37,22 @@ const ICONO = {
 const botonExterno = (url, texto, clase = 'btn') => html`<a class="${clase}" href="${url}" target="_blank" rel="noopener">${texto} <span aria-hidden="true">${ABRE}</span></a>`;
 
 /**
+ * El botón de una tarjeta cuyo formulario todavía no está activo: se ve, pero
+ * no se toca, y dice cuándo se habilita. Así nunca falta el botón ni hay uno
+ * que no lleva a ningún lado. `aria-disabled` además de `disabled` para que el
+ * lector de pantalla lo anuncie dentro de la tarjeta.
+ */
+const botonCerrado = (texto, clase = 'btn') => html`<button type="button" class="${clase}" disabled aria-disabled="true">${texto}</button>`;
+
+/**
  * La tarjeta "Inscribir a mi hijo o hija". Con el formulario de inscripción
- * activo (destino inscripcion, 0062) es un botón grande a Google; sin él, dice
- * que abre con la temporada y, si hay formulario de consultas, manda ahí a
- * quien viene por primera vez. Nunca un botón que no lleva a ningún lado.
+ * activo (destino inscripcion, 0062) es un botón grande a Google; sin él, el
+ * botón queda deshabilitado y, si hay formulario de consultas, se manda ahí a
+ * quien viene por primera vez. Es independiente de la de pagos.
  */
 export function htmlInscripcion(formulario, { temporada = null, hayConsultas = false, contacto = null } = {}) {
   const url = formulario ? enlaceFormulario(formulario.enlace) : null;
-  const cab = html`<div class="portal-acc-cab"><span class="portal-tag">Paso 1</span>${url
+  const cab = html`<div class="portal-acc-cab">${url
     ? html`<span class="portal-estado abierto">Inscripción abierta</span>`
     : html`<span class="portal-estado">Abre con la temporada</span>`}</div>`;
   if (url) {
@@ -54,7 +62,8 @@ export function htmlInscripcion(formulario, { temporada = null, hayConsultas = f
       <span class="portal-mini">Se abre un formulario de Google. Se completa desde el celular.</span>`;
   }
   return html`${cab}<h3>Inscribir a mi hijo o hija</h3>
-    <p>La inscripción${temporada ? html` ${temporada}` : ''} todavía no abrió. Cuando abra, el botón aparece acá mismo.</p>
+    <p>La inscripción${temporada ? html` ${temporada}` : ''} todavía no abrió. Cuando abra, el botón se habilita acá mismo.</p>
+    ${botonCerrado('Se habilita cuando abra la inscripción')}
     ${hayConsultas
       ? html`<a class="btn sec" href="#jugar">¿Es la primera vez? Dejá tus datos</a>`
       : enlaceContacto(contacto) && html`<a class="btn sec" href="${enlaceContacto(contacto)}" target="_blank" rel="noopener">Preguntale al coordinador</a>`}`;
@@ -68,14 +77,17 @@ export function htmlComprobante(formulario, alias = null) {
     <div><small>Alias para transferir</small><b>${a.alias}</b>${a.titular && html`<span>${a.titular}</span>`}</div>
     <button type="button" class="portal-copiar" data-copiar="${a.alias}">Copiar</button>
   </div>`;
-  const cab = html`<div class="portal-acc-cab"><span class="portal-tag claro">Paso 2 · Pagos</span></div>`;
+  const cab = (abierto) => html`<div class="portal-acc-cab">${abierto
+    ? html`<span class="portal-estado abierto">Pagos abiertos</span>`
+    : html`<span class="portal-estado">Sin pagos por ahora</span>`}</div>`;
   if (url) {
-    return html`${cab}<h3>Enviar comprobante</h3>
+    return html`${cab(true)}<h3>Enviar comprobante</h3>
       <p>${formulario.texto}</p>${caja}
       ${botonExterno(url, 'Subir comprobante', 'btn portal-btn-claro')}`;
   }
-  return html`${cab}<h3>Enviar comprobante</h3>
-    <p>Cuando haya algo para pagar (una cuota, unas rifas), acá vas a subir la foto del comprobante.</p>${caja}`;
+  return html`${cab(false)}<h3>Enviar comprobante</h3>
+    <p>Cuando haya algo para pagar (una cuota, unas rifas), acá vas a subir la foto del comprobante.</p>${caja}
+    ${botonCerrado('Se habilita cuando haya un pago', 'btn portal-btn-claro')}`;
 }
 
 /**
@@ -90,11 +102,17 @@ export function htmlAtajos(atajos) {
 /**
  * El acceso destacado "Quiero jugar en Newell's": el formulario que la
  * coordinación marcó con el destino consultas. Sin formulario, o con un enlace
- * que no es de Google Forms, no se muestra nada: la sección queda oculta.
+ * que no es de Google Forms, la tarjeta se ve igual con el botón deshabilitado.
  */
 export function htmlJugar(formulario) {
   const url = formulario ? enlaceFormulario(formulario.enlace) : null;
-  if (!url) return html``;
+  if (!url) {
+    return html`<div class="portal-destacado">
+      <div class="t">Quiero jugar en Newell's</div>
+      <div class="d">Si querés probar el básquet o consultar por una categoría, vas a poder dejar tus datos acá.</div>
+      ${botonCerrado('Se habilita cuando abra el formulario')}
+    </div>`;
+  }
   return html`<div class="portal-destacado">
     <div class="t">Quiero jugar en Newell's</div>
     <div class="d">${formulario.texto}</div>
@@ -113,21 +131,45 @@ export function htmlAvisoRespaldo() {
 }
 
 /**
- * El botón de "Sumate como sponsor o colaborador": el formulario que la
- * coordinación marcó con el destino colaboradores. Sin formulario no devuelve
- * nada (la sección se oculta si tampoco hay logos).
+ * La tarjeta de "Sumate como sponsor o colaborador": el formulario que la
+ * coordinación marcó con el destino colaboradores. Sin formulario se ve igual,
+ * con el botón deshabilitado. El mail que dejan queda en Google (la planilla de
+ * "Quiero colaborar"), no en Semillero.
  */
 export function htmlColaboradores(formulario) {
   const url = formulario ? enlaceFormulario(formulario.enlace) : null;
-  if (!url) return html``;
-  return html`<div class="portal-tarjeta">
+  const titulo = html`<div class="t">Dejanos tu mail y te avisamos de los eventos</div>`;
+  if (!url) {
+    return html`<div class="portal-tarjeta">${titulo}
+      <div class="d">Eventos donde podés dar una mano. Vas a poder dejar tu mail y cómo querés colaborar.</div>
+      ${botonCerrado('Se habilita cuando abra el formulario')}
+    </div>`;
+  }
+  return html`<div class="portal-tarjeta">${titulo}
     <div class="d">${formulario.texto}</div>
     <ol class="portal-ayuda">
       <li>Tocá el botón de abajo.</li>
-      <li>Se abre un formulario de Google: contanos quién sos y cómo querés colaborar.</li>
-      <li>Mandalo: con eso ya quedó tu propuesta.</li>
+      <li>Se abre un formulario de Google: contanos quién sos, dejá tu mail y cómo querés colaborar.</li>
+      <li>Mandalo: te escribimos cuando haya un evento donde podés dar una mano.</li>
     </ol>
     <a class="btn" href="${url}" target="_blank" rel="noopener">Quiero colaborar</a>
+  </div>`;
+}
+
+/**
+ * La tarjeta chica de abajo del calendario: el aviso por mail de los eventos de
+ * recaudación del club (pizzas, rifas, comidas). Es el formulario con destino
+ * recaudacion (0063), aparte del de sponsors: quien quiere comprar una pizza no
+ * es una empresa que quiere ayudar. Su planilla de respuestas vive en Google.
+ * Los partidos y charlas no van por mail: para eso está el "Seguilo" del calendario.
+ */
+export function htmlRecaudacion(formulario) {
+  const url = formulario ? enlaceFormulario(formulario.enlace) : null;
+  return html`<div class="portal-tarjeta"><div class="t">Enterate de los eventos de recaudación del club</div>
+    <div class="d">Pizzas, rifas, comidas: dejanos tu mail y te avisamos cuando haya uno.</div>
+    ${url
+      ? html`<a class="btn" href="${url}" target="_blank" rel="noopener">Quiero que me avisen</a>`
+      : botonCerrado('Se habilita cuando abra el formulario')}
   </div>`;
 }
 
@@ -389,17 +431,19 @@ export async function iniciarPortal() {
   const { estado, formularios } = await resolverFormularios(() => formulariosPublicos(PORTAL.clubId), PORTAL.formularios);
 
   // Los que tienen lugar propio (las dos tarjetas, consultas, colaboradores) no se repiten en la lista.
-  const { inscripcion, comprobante, consultas, colaboradores, comunes } = separarFormularios(formularios);
-  const jugar = htmlJugar(consultas);
-  mostrar('jugar', jugar);
-  $('portal-inscripcion').innerHTML = htmlInscripcion(inscripcion, { temporada: PORTAL.temporada, hayConsultas: Boolean(jugar.toString()), contacto: PORTAL.contacto });
+  const { inscripcion, comprobante, consultas, colaboradores, recaudacion, comunes } = separarFormularios(formularios);
+  // "Quiero jugar" y "Quiero colaborar" se ven siempre: sin formulario activo
+  // llevan el botón deshabilitado. Sólo el link "primera vez" de la inscripción
+  // necesita saber si el de consultas está de verdad abierto.
+  mostrar('jugar', htmlJugar(consultas));
+  const consultasAbierto = Boolean(consultas && enlaceFormulario(consultas.enlace));
+  $('portal-inscripcion').innerHTML = htmlInscripcion(inscripcion, { temporada: PORTAL.temporada, hayConsultas: consultasAbierto, contacto: PORTAL.contacto });
   $('portal-comprobante').innerHTML = htmlComprobante(comprobante, PORTAL.alias);
 
-  const colaborar = htmlColaboradores(colaboradores);
-  const logos = htmlLogos(PORTAL.sponsors);
-  $('portal-colaboradores').innerHTML = colaborar;
-  $('portal-logos').innerHTML = logos;
-  $('sponsors').hidden = !colaborar.toString() && !logos.toString();
+  mostrar('recaudacion', htmlRecaudacion(recaudacion));
+  $('portal-colaboradores').innerHTML = htmlColaboradores(colaboradores);
+  $('portal-logos').innerHTML = htmlLogos(PORTAL.sponsors);
+  $('sponsors').hidden = false;
 
   const lista = htmlFormularios(comunes);
   mostrar('formularios', lista.toString() ? html`${estado === 'respaldo' && htmlAvisoRespaldo()}${lista}` : lista);
