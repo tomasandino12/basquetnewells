@@ -24,12 +24,18 @@ test('el prompt cierra con una prueba de DNIs inventados, limpieza y el informe 
 });
 
 test('el prompt arma todo en el orden que exigen las dependencias', () => {
-  const orden = ['Etapa 1 — Carpetas', 'Etapa 2 — Formularios', 'Etapa 3 — Planillas y Tablero', 'Etapa 4 — Script de carpetas', 'Etapa 5 — Script del Tablero', 'Etapa 6'];
+  const orden = ['Etapa 1 — Carpetas', 'Etapa 2 — Formularios', 'Etapa 3 — Planillas y Tablero', 'Etapa 4 — Script de carpetas', 'Etapa 5 — Script del Tablero', 'Etapa 5b — Script de envío a Semillero', 'Etapa 6'];
   const posiciones = orden.map((t) => prompt.indexOf(t));
   assert.ok(posiciones.every((p) => p >= 0), 'falta una etapa');
   assert.deepEqual([...posiciones].sort((a, b) => a - b), posiciones);
 });
 
-test('el prompt no pide agregar el envío del estado a Semillero', () => {
-  assert.ok(!/UrlFetchApp|script\.external_request/i.test(prompt));
+test('el prompt instala el envío a Semillero y deja el token fuera del alcance del agente', () => {
+  const etapa = prompt.slice(prompt.indexOf('Etapa 5b'), prompt.indexOf('Etapa 6 — Prueba'));
+  assert.match(etapa, /script\.external_request/);
+  assert.match(etapa, /El token no lo ves ni lo escribís vos/);
+  assert.match(etapa, /google\/apps-script-semillero\//);
+  // Los permisos de Drive y formularios no los pide este script: se le dice que frene si aparecen.
+  assert.match(etapa, /Si pide Drive, formularios, Gmail u otra cosa, no sigas/);
+  assert.ok(!/SEMILLERO_TOKEN['"]?\s*[=:]\s*['"][A-Za-z0-9_-]{20,}/.test(prompt));
 });

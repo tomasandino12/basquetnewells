@@ -3,7 +3,7 @@
 **Para Tomás (esto no es parte del prompt).**
 
 1. Abrí Chrome con la sesión de la **cuenta de la Comisión Básquet** ("Club Atlético Newell's Old Boys Comisión Básquet") y abrí Claude en el navegador. Si hay otra cuenta abierta, cambiá a la de la Comisión antes de empezar.
-2. Tené a mano estos archivos de este repo para **pegárselos cuando te los pida** (no hace falta que se los des todos de entrada): `google/formularios/FORMULARIOS.md`, `google/sheets/TABLERO.md`, `google/GUIA.md`, y los de `google/apps-script/` y `google/apps-script-tablero/` (`.gs` y `appsscript.json`). Tené también a mano: el **link del formulario "Base de Datos Básquet NOB 2026"**, los **mails de coordinación** con quienes se comparten las carpetas y las planillas, y una **foto cualquiera** (no de un chico real) para las pruebas.
+2. Tené a mano estos archivos de este repo para **pegárselos cuando te los pida** (no hace falta que se los des todos de entrada): `google/formularios/FORMULARIOS.md`, `google/sheets/TABLERO.md`, `google/GUIA.md`, y los de `google/apps-script/`, `google/apps-script-tablero/` y `google/apps-script-semillero/` (`.gs` y `appsscript.json`). Para la etapa 5b hace falta el **token** de Semillero: lo generás vos con el coordinador (*Coordinación → Familias → Papeles y pagos → Conectar con Google*) y lo pegás **vos** en las Propiedades del script; no se lo des a Claude. Tené también a mano: el **link del formulario "Base de Datos Básquet NOB 2026"**, los **mails de coordinación** con quienes se comparten las carpetas y las planillas, y una **foto cualquiera** (no de un chico real) para las pruebas.
 3. Copiá todo lo que está **debajo de la línea** y pegalo como primer mensaje. Claude va a ir por etapas y te va a pedir cosas. Los permisos de los scripts los aceptás **vos**.
 
 Qué hace cada pieza y por qué: `docs/superpowers/specs/2026-10-19-formularios-v2-design.md`.
@@ -23,7 +23,7 @@ Sos mi asistente en el navegador. Vas a armar, **en Google**, el sistema de insc
 7. **Nada de borrar de verdad.** No vacíes papeleras ni elimines nada de forma definitiva. Para la limpieza final (etapa 7) me vas a pedir permiso por cada cosa.
 8. **Ante cualquier duda, pará y preguntame.** Eso incluye: algo que no existe en Google, una fórmula que da error y no sabés por qué, un permiso inesperado, un texto que no coincide con los archivos o cualquier cosa que no figure acá. No inventes una alternativa.
 9. **Los textos son los de los archivos, tal cual.** Los títulos de las preguntas tienen que ser **idénticos** a los de `FORMULARIOS.md` (mayúsculas, tildes, paréntesis y espacios). Un título distinto rompe las planillas y el script.
-10. **No copies al chat datos sensibles.** Cuando verifiques, mostrame cantidades y estados (✅/❌, "7 preguntas", "sin errores"), no contenido de respuestas.
+10. **No copies al chat datos sensibles.** Tampoco un token: si aparece alguno en pantalla, no lo repitas. Cuando verifiques, mostrame cantidades y estados (✅/❌, "7 preguntas", "sin errores"), no contenido de respuestas.
 
 ## Etapa 0 — Chequeo inicial
 
@@ -100,6 +100,18 @@ Pedime los archivos de `google/apps-script-tablero/` (`config.gs`, `fila2026.gs`
 
 **Chequeo:** los encabezados de las dos planillas son idénticos a los de `TABLERO.md` (6 y 9 columnas); no hay ninguna columna de DNI, domicilio, afiliado ni grupo sanguíneo; la columna de fecha tiene formato `dd/mm/aaaa`.
 
+## Etapa 5b — Script de envío a Semillero (permisos y token: los pongo yo)
+
+Pedime los archivos de `google/apps-script-semillero/` (`config.gs`, `estado.gs`, `semillero.gs`, `appsscript.json`) y el **link del Tablero**. Es un proyecto **aparte** de los otros dos (una planilla admite un solo script atado, y este no debe sumar permisos a los demás).
+1. En script.google.com, **Nuevo proyecto** `Enviar estado a Semillero`. Mostrá el manifiesto. Pegá los cuatro archivos tal cual.
+2. En `config.gs`, reemplazá `PEGAR_ID_DEL_TABLERO` por el ID del Tablero (lo que va entre `/d/` y `/edit`). **No cambies nada más**: la URL y la clave pública de Semillero ya están puestas.
+3. **El token no lo ves ni lo escribís vos.** Lo genera el coordinador en Semillero y lo pego yo en *Propiedades del script* (`SEMILLERO_TOKEN`). Si en algún momento ves un token en pantalla, no lo copies ni lo repitas. Avisame cuando el proyecto esté listo y esperá a que te diga que ya lo pegué.
+4. Elegí `instalarEnvio` → Ejecutar. Pará en la pantalla de permisos y avisame. Los permisos esperados son **tres**: ver tus hojas de cálculo (`spreadsheets.readonly`), conectarse a un servicio externo (`script.external_request`) y ejecutar cuando no estoy (`script.scriptapp`). **Si pide Drive, formularios, Gmail u otra cosa, no sigas.** Yo los acepto.
+5. Cuando yo te diga que el token está pegado, elegí `enviarEstadoAhora` → Ejecutar y mirá *Ejecuciones*: tiene que decir `Enviado. filas: …` con cantidades. **Leeme el resumen; no leas nombres ni DNIs.** Si dice `TOKEN_INVALIDO` o `Faltan hojas`, avisame y no lo arregles por tu cuenta.
+6. Abrí *Activadores* y confirmá que hay **un solo** disparador de `enviarEstado` (cada 15 minutos).
+
+**Chequeo:** el proyecto no tiene ninguna propiedad con el token escrita por vos, los permisos fueron los tres esperados y el registro de la primera ejecución sólo tiene cantidades.
+
 ## Etapa 6 — Prueba con DNIs inventados
 
 Pedime la sección 8 de `google/GUIA.md` ("Prueba manual") y seguila **paso por paso**, con estas condiciones:
@@ -116,8 +128,8 @@ Hacé una **lista exacta** de lo que creó la prueba y nada más: las filas con 
 ## Etapa 8 — Informe final
 
 Entregame **un mensaje** con:
-1. **Links** (solo links, ningún dato de chicos): cada uno de los cinco formularios (el link para que las familias respondan, el de edición aparte), el Tablero, "Para Semillero 2026", "Emergencias para Semillero 2026", las dos planillas de respuestas propias (Quiero jugar y Quiero colaborar), la carpeta `Inscripción y documentación`, `Formularios con archivos` y `Jugadores`, y los dos proyectos de Apps Script.
-2. **Los IDs** de las dos carpetas y del formulario 2026 que quedaron puestos en los `config.gs`.
+1. **Links** (solo links, ningún dato de chicos): cada uno de los cinco formularios (el link para que las familias respondan, el de edición aparte), el Tablero, "Para Semillero 2026", "Emergencias para Semillero 2026", las dos planillas de respuestas propias (Quiero jugar y Quiero colaborar), la carpeta `Inscripción y documentación`, `Formularios con archivos` y `Jugadores`, y los tres proyectos de Apps Script.
+2. **Los IDs** de las dos carpetas, del formulario 2026 y del Tablero que quedaron puestos en los `config.gs`.
 3. **Resultado de la prueba**: ✔/✘ por paso de la guía.
 4. **Pendientes**: los textos que quedaron en borrador (privacidad, recaudación), lo que no pudiste hacer y por qué.
 5. **Riesgos que viste en cosas existentes** y no tocaste (por ejemplo carpetas públicas), para que decida yo.
