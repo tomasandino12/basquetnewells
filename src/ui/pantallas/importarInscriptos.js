@@ -1,5 +1,6 @@
 import { parsearInscriptos } from '../../parser/parserInscriptos.js';
-import { obtenerJugadoresDelClub, importarInscriptos } from '../../data/repositorio.js';
+import { obtenerJugadoresDelClub, obtenerTemporadasDelClub, importarInscriptos } from '../../data/repositorio.js';
+import { temporadaComoAnio } from '../../data/categorias.js';
 import { inscriptosDelPlantel, cruzarConPadron, filasParaImportar } from '../../data/inscriptos.js';
 import { html, crudo } from '../html.js';
 import { toast } from '../nav.js';
@@ -62,7 +63,9 @@ async function leerArchivo(ctx, archivo) {
       aviso.innerHTML = avisoInline(parseo.errores[0].replace(/^\[[A-Z_]+\]\s*/, ''));
       return;
     }
-    const delPlantel = inscriptosDelPlantel(parseo.filas, ctx.plantel.categoriaCodigo);
+    const temporadas = await obtenerTemporadasDelClub(ctx.club.id);
+    const temporada = temporadas.find((t) => t.id === ctx.plantel.temporadaId);
+    const delPlantel = inscriptosDelPlantel(parseo.filas, ctx.plantel.categoriaCodigo, temporadaComoAnio(temporada?.nombre));
     salteadas = delPlantel.salteadas;
     advertencias = [...parseo.advertencias.map((a) => a.replace(/^\[[A-Z_]+\]\s*/, '')), ...delPlantel.advertencias];
     // La fecha sólo la conocemos de las fichas de este plantel; el resto del
@@ -99,10 +102,12 @@ function dibujarLista(ctx, cruzados, salteadas, advertencias) {
     <div class="p">Tildá los que querés sumar a ${ctx.plantel.categoria}. Los que ya están en el club sólo se agregan a esta categoría; no se duplican.</div>
     ${cruzados.map((c, i) => html`
       <label class="jug" style="gap:12px">
-        <input type="checkbox" data-fila="${i}" ${crudo(c.estado === 'conflicto' ? '' : 'checked')} style="width:24px;height:24px">
+        <input type="checkbox" data-fila="${i}" ${crudo(c.estado === 'conflicto' || c.sinRama ? '' : 'checked')} style="width:24px;height:24px">
         <div style="flex:1;text-align:left">
           <div class="nom">${c.nombreLimpio}</div>
           <div class="det">${ETIQUETA[c.estado]} · ${c.mails.length} mail${c.mails.length === 1 ? '' : 's'}</div>
+          ${c.sinRama ? html`<div class="det">Anotado en U13 mixto sin decir la rama. Tildalo sólo si juega en U13 masculino.</div>` : ''}
+          ${c.aviso ? html`<div class="det">${c.aviso}</div>` : ''}
           ${c.estado === 'conflicto' ? html`<div class="det">Ya hay un chico con ese nombre y otra fecha. Tildalo sólo si son dos chicos distintos.</div>` : ''}
         </div>
       </label>

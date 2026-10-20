@@ -39,6 +39,7 @@ import { avisoEstimaciones } from '../componentes/avisoEstimaciones.js';
 import { abrirProtocoloCorporal } from '../componentes/protocoloCorporal.js';
 import { html, crudo } from '../html.js';
 import { renderResponsables } from './responsablesJugador.js';
+import { abrirEmergencias } from './emergencias.js';
 import { $ } from '../dom.js';
 import { avisoDeError, textoDeError, mensajeAlGuardar, mostrarAviso, avisoInline } from '../errores.js';
 import { renderAccesoDeJugador } from './aprobarJugador.js';
@@ -420,6 +421,7 @@ export async function renderFicha() {
         </div>
         ${botonIcono({ id: 'btn-ficha-nacimiento', icono: ICONO.lapiz, etiqueta: 'Editar fecha de nacimiento' })}
       </div>
+      <button class="btn chico" id="btn-ficha-emergencia">Datos de emergencia</button>
       <button class="btn sec chico" id="btn-ficha-sacar">Sacar del plantel</button>
     </div>
     <div class="pad" id="ficha-acceso"></div>
@@ -429,6 +431,7 @@ export async function renderFicha() {
   iniciarPestanas();
 
   $('btn-ficha-nacimiento').addEventListener('click', () => abrirEditarNacimiento(jugador));
+  $('btn-ficha-emergencia').addEventListener('click', () => abrirEmergencias({ plantel, jugadorId: jugador.id }));
   $('btn-ficha-sacar').addEventListener('click', () => abrirSacarDelPlantel(club, plantel, jugador));
   renderAccesoDeJugador(jugador);
   renderResponsables($('ficha-familia'), club, jugador);

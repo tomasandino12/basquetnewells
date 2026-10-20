@@ -19,3 +19,5 @@ export * from './repos/errores.js';
 export * from './repos/finanzas.js';
 export * from './repos/misiones.js';
 export * from './repos/familia.js';
+export * from './repos/temporadas.js';
+export * from './repos/emergencias.js';

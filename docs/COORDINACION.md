@@ -21,6 +21,20 @@ guarda cómo estaba antes (`movimiento_cambio`). Verificación de permisos:
 `tests/verificarFinanzas.sql` en el SQL Editor (todo `OK`). No se publica a las
 familias: eso es otro módulo (ver la spec de finanzas).
 
+**Cambio de temporada (0059).** En Profes → *Cambio de temporada*: el
+coordinador abre la temporada nueva (se copian los planteles), asigna profes a
+los planteles nuevos y recién después pasa a los chicos, que el asistente
+propone según su año de nacimiento (Escuelita 2019+, U9 2017–18, U11 2015–16,
+U13 2013–14, U15 2011–12, U17 2009–10, U21 2005–08, Mayores antes; corre un año
+por temporada). Los que dejan el club pierden sus datos de emergencia; su
+historia queda. Los pases se pueden confirmar de a tandas.
+
+**Datos de emergencia (0059).** Teléfono, contacto de urgencia, alertas médicas,
+alergias, medicación, obra social. Los carga el profe (Plantel → *Importar
+emergencias*) desde la planilla "Emergencias para Semillero"; los ven el profe
+de la categoría (ficha y Plantel) y el coordinador (Profes → *Datos de
+emergencia*, sólo lectura). No se guardan en el celular.
+
 Lo que **no** se hace desde la app, a propósito:
 - Crear un coordinador.
 - Darle el rol de entrenador a alguien que ya es coordinador (ni a uno mismo).
