@@ -37,3 +37,24 @@ test('las fórmulas usan nombres de función en español', () => {
 test('nunca se manda a publicar en la web', () => {
   assert.match(tablero, /Nunca \*Archivo → Compartir → Publicar en la web\*/);
 });
+
+// Contrato con "Emergencias para Semillero" (google/PRECARGA-2026.md).
+const ENCABEZADOS_EMERGENCIAS = ['Apellido y nombre', 'Fecha de nacimiento', 'Teléfono del adulto', 'Contacto de urgencia', 'Afecciones', 'Alergias', 'Medicación', 'Indicación médica', 'Obra social'];
+
+test('los encabezados de Emergencias para Semillero son los 9 del contrato, en orden', () => {
+  const linea = bloqueTrasTitulo('### Encabezados exactos de emergencias').trim();
+  assert.deepEqual(linea.split(' | '), ENCABEZADOS_EMERGENCIAS);
+});
+
+test('Emergencias para Semillero no lleva DNI, afiliado, grupo sanguíneo ni domicilio', () => {
+  assert.ok(!/DNI|afiliado|sangu|domicilio/i.test(bloqueTrasTitulo('### Encabezados exactos de emergencias')));
+});
+
+test('el tablero ya no lee una pestaña Reinscripción ni Aranceles', () => {
+  assert.ok(!/'Reinscripción'!|\bAranceles!/.test(tablero));
+});
+
+test('Pagos suma las columnas de pago con formulario propio y Buscar las muestra todas', () => {
+  assert.match(tablero, /Pago con formulario propio/);
+  assert.match(tablero, /TRANSPONER\(Pagos!\$B\$1:\$Z\$1\)/);
+});
