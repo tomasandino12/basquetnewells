@@ -220,6 +220,16 @@ test('"Lo que viene": fecha grande, tipo, título escapado, hora y lugar, y para
   assert.equal(htmlProximo(undefined, '2026-10-20').toString(), '');
 });
 
+test('"Lo que viene" busca en el mes siguiente si en lo que queda del mes no hay nada', () => {
+  const desde = portal.indexOf('async function mostrarProximo()');
+  const cuerpo = portal.slice(desde, portal.indexOf('
+  }
+', desde));
+  assert.match(cuerpo, /mesVecino\(anio, mes, 1\)/);
+  assert.match(cuerpo, /Number\(hoy\.slice/, 'sale del mes de hoy, no del que muestra la grilla');
+  assert.match(portal, /cargar\(estado\.anio, estado\.mes\)\.then\(mostrarProximo\)/);
+});
+
 test('día inicial: hoy si es del mes; si no, el primero con algo, o el 1', () => {
   assert.equal(diaInicial(2026, 10, '2026-10-20', porDia), '2026-10-20');
   assert.equal(diaInicial(2026, 10, '2026-09-30', porDia), '2026-10-24');

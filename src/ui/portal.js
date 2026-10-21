@@ -356,6 +356,16 @@ function iniciarCalendario(calendarios) {
   const estado = { anio: Number(hoy.slice(0, 4)), mes: Number(hoy.slice(5, 7)), elegido: hoy, hoy, porDia: new Map(), fallidos: 0, cargando: true };
   const pintar = () => { $('portal-calendario').innerHTML = htmlCalendario(estado, calendarios); };
 
+  /** Los eventos de un mes, de la caché o de Google (y quedan en la caché). */
+  async function traer(anio, mes) {
+    const clave = `${anio}-${mes}`;
+    if (!cache.has(clave)) {
+      const { eventos, fallidos } = await eventosDelMes(calendarios, PORTAL.agenda.clave, anio, mes);
+      cache.set(clave, { porDia: eventosPorDia(eventos), fallidos });
+    }
+    return cache.get(clave);
+  }
+
   async function cargar(anio, mes) {
     const clave = `${anio}-${mes}`;
     Object.assign(estado, { anio, mes, cargando: !cache.has(clave) });
@@ -363,22 +373,34 @@ function iniciarCalendario(calendarios) {
       estado.porDia = new Map();
       estado.elegido = diaInicial(anio, mes, hoy, estado.porDia);
       pintar();
-      const { eventos, fallidos } = await eventosDelMes(calendarios, PORTAL.agenda.clave, anio, mes);
-      cache.set(clave, { porDia: eventosPorDia(eventos), fallidos });
+      await traer(anio, mes);
       // Si mientras tanto la persona pasó a otro mes, este resultado queda guardado y no se pinta.
       if (estado.anio !== anio || estado.mes !== mes) return;
     }
     Object.assign(estado, cache.get(clave), { cargando: false });
     estado.elegido = diaInicial(anio, mes, hoy, estado.porDia);
     pintar();
-    // "Lo que viene" sale del mes de hoy y no cambia al pasar de mes.
-    if (clave === claveDeHoy) $('portal-proximo').innerHTML = htmlProximo(proximosEventos(estado.porDia, hoy, 1)[0], hoy);
   }
-  const claveDeHoy = `${estado.anio}-${estado.mes}`;
+
+  /**
+   * "Lo que viene": el próximo desde hoy. Si en lo que queda del mes no hay
+   * nada, lo busca en el mes siguiente (a fin de mes, el próximo partido suele
+   * caer ahí). No cambia al pasar de mes en la grilla.
+   */
+  async function mostrarProximo() {
+    const anio = Number(hoy.slice(0, 4));
+    const mes = Number(hoy.slice(5, 7));
+    let [proximo] = proximosEventos((await traer(anio, mes)).porDia, hoy, 1);
+    if (!proximo) {
+      const sig = mesVecino(anio, mes, 1);
+      [proximo] = proximosEventos((await traer(sig.anio, sig.mes)).porDia, hoy, 1);
+    }
+    $('portal-proximo').innerHTML = htmlProximo(proximo, hoy);
+  }
 
   // En la sección entera: el "iPhone" de "Lo que viene" y los del mes. El
-  // evento se busca en todos los meses ya traídos, porque "Lo que viene" es
-  // del mes de hoy aunque la grilla muestre otro.
+  // evento se busca en todos los meses ya traídos, porque "Lo que viene"
+  // puede ser de otro mes que el de la grilla.
   $('calendario').addEventListener('click', (ev) => {
     const ics = ev.target.closest('[data-ics]');
     if (ics) {
@@ -398,7 +420,7 @@ function iniciarCalendario(calendarios) {
       cargar(anio, mes);
     }
   });
-  cargar(estado.anio, estado.mes);
+  cargar(estado.anio, estado.mes).then(mostrarProximo);
 }
 
 /* ---------- ¿En qué categoría juega? ---------- */
