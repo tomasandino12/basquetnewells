@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   idCalendario, claveValida, rangoDelMes, urlEventos, eventoDesdeGoogle, eventosPorDia,
   proximosEventos, semanasDelMes, mesVecino, hoyEnRosario, tituloMes, fechaLarga,
-  TIPO_POR_COLOR, TIPOS_AGENDA, enlaceAgregarGoogle, textoIcs, enlacesSuscripcion, partesDeFecha, cuandoEs,
+  TIPO_POR_COLOR, TIPOS_AGENDA, enlaceAgregarGoogle, textoIcs, enlacesSuscripcion, partesDeFecha, cuandoEs, tipoPorTitulo,
 } from '../src/data/agenda.js';
 
 test('partesDeFecha: día de la semana y mes cortos, y el número del día', () => {
@@ -134,15 +134,35 @@ test('el color del evento decide el tipo; sin color (o con otro) queda el del ca
   assert.match(new URL(urlEventos(ID, CLAVE, rangoDelMes(2026, 10))).searchParams.get('fields'), /colorId/);
 });
 
-test('sin color propio, un título con "vs" es un partido (en Google se ve con el color del calendario)', () => {
-  // Así llega "Clasico U21 vs Central" (21/10): en Google se veía Tomate, pero sin colorId.
+test('sin color propio, el título decide: los dos eventos reales del calendario público (21/10)', () => {
+  // Los dos llegan sin colorId: en Google se veían Tomate porque es el color del calendario.
   const tipo = (summary, colorId) => eventoDesdeGoogle({ id: 'v', summary, colorId, start: { date: '2026-10-21' } }, 'evento')?.tipo;
   assert.equal(tipo('Clasico U21 vs Central'), 'partido');
-  assert.equal(tipo("Newell's vs. Náutico"), 'partido');
-  assert.equal(tipo('VS Rosario'), 'partido');
-  assert.equal(tipo('Pollada para el viaje'), 'evento');
-  assert.equal(tipo('Revisión de videos'), 'evento', '"vs" dentro de una palabra no cuenta');
-  assert.equal(tipo('U21 vs Central', '5'), 'evento', 'el color elegido manda');
+  assert.equal(tipo('Torneo Minibasquet SSR'), 'partido');
+  assert.equal(tipo('U21 vs Central', '5'), 'evento', 'el color elegido manda sobre el título');
+  assert.equal(tipo('Jornada en el club'), 'evento', 'sin palabra conocida ni color: el tipo del calendario');
+  assert.equal(tipo('Partido U17'), 'partido');
+});
+
+test('tipoPorTitulo: palabra entera, sin tildes ni mayúsculas; gana la primera que aparece', () => {
+  assert.equal(tipoPorTitulo("Newell's vs. Náutico"), 'partido');
+  assert.equal(tipoPorTitulo('U13 contra Talleres'), 'partido');
+  for (const t of ['AMISTOSO con Provincial', 'Cuadrangular U15', 'Triangular', 'Final del Clausura', 'Liga Rosarina, fecha 5']) {
+    assert.equal(tipoPorTitulo(t), 'partido', t);
+  }
+  for (const t of ['Charla de nutrición', 'Reunión de padres', 'Capacitación para profes', 'Clínica de tiro']) {
+    assert.equal(tipoPorTitulo(t), 'charla', t);
+  }
+  assert.equal(tipoPorTitulo('Entrenamiento especial U21'), 'entrenamiento');
+  assert.equal(tipoPorTitulo('Práctica abierta'), 'entrenamiento');
+  for (const t of ['Pollada para el viaje', 'Rifa del día del niño', 'Cena de fin de año', 'Venta de pizzas', 'Recaudación', 'Fiesta del club']) {
+    assert.equal(tipoPorTitulo(t), 'evento', t);
+  }
+  assert.equal(tipoPorTitulo('Cena: cambio de fecha'), 'evento', 'gana la primera palabra');
+  assert.equal(tipoPorTitulo('Revisión de videos'), null, '"vs" dentro de una palabra no cuenta');
+  assert.equal(tipoPorTitulo('Contrato de sponsor'), null, '"contra" dentro de una palabra no cuenta');
+  assert.equal(tipoPorTitulo(''), null);
+  assert.equal(tipoPorTitulo(undefined), null);
 });
 
 // ---- Agregar a mi calendario ----

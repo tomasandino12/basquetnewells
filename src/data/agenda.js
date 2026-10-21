@@ -118,20 +118,42 @@ function sumarDias(fecha, n) {
 }
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
-// "U21 vs Central", "Newell's vs. Náutico": así se nombra un partido.
-const PARECE_PARTIDO = /(^|\s)vs\.?(\s|$)/i;
 const texto = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
 /**
+ * Las palabras que dicen el tipo de un evento sin color propio. Casi nadie
+ * elige el color a mano: el "predeterminado" es el del calendario, que es
+ * personal de cada usuario y no viaja en la API. Van sin tildes ni mayúsculas
+ * (el título se normaliza igual) y cuentan sólo como palabra entera.
+ */
+const PALABRAS_TIPO = Object.freeze({
+  partido: ['partido', 'partidos', 'vs', 'contra', 'torneo', 'torneos', 'amistoso', 'amistosos', 'cuadrangular', 'triangular', 'final', 'finales', 'liga', 'fecha'],
+  charla: ['charla', 'charlas', 'reunion', 'reuniones', 'capacitacion', 'capacitaciones', 'clinica', 'clinicas'],
+  entrenamiento: ['entrenamiento', 'entrenamientos', 'practica', 'practicas'],
+  evento: ['rifa', 'rifas', 'pollada', 'polladas', 'cena', 'cenas', 'venta', 'ventas', 'recaudacion', 'fiesta', 'fiestas'],
+});
+const TIPO_DE_PALABRA = new Map(Object.entries(PALABRAS_TIPO).flatMap(([tipo, palabras]) => palabras.map((p) => [p, tipo])));
+
+/**
+ * El tipo que dice el título, o null. Gana la PRIMERA palabra conocida, porque
+ * el título suele arrancar por lo que es: "Torneo Minibasquet SSR" es un
+ * partido y "Cena: cambio de fecha" es un evento.
+ */
+export function tipoPorTitulo(titulo) {
+  const palabras = String(titulo ?? '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().split(/[^a-z0-9]+/);
+  for (const p of palabras) if (TIPO_DE_PALABRA.has(p)) return TIPO_DE_PALABRA.get(p);
+  return null;
+}
+
+/**
  * Un evento de la API → { id, tipo, titulo, lugar, dia, hasta, hora, horaFin }.
- * El tipo sale del color del evento (TIPO_POR_COLOR). Sin color propio (en
- * Google se ve con el color del calendario, pero la API no manda colorId), un
- * título con "vs" es un partido; si no, toma el tipo del calendario. Los de todo el día traen hora null y pueden
- * durar varios (un torneo): `hasta` es su último día (Google da el fin
- * exclusivo). Cancelados o sin fecha → null.
+ * El tipo sale, en este orden, del color elegido en el evento (TIPO_POR_COLOR),
+ * de las palabras del título (tipoPorTitulo) o del tipo del calendario. Los de
+ * todo el día traen hora null y pueden durar varios (un torneo): `hasta` es su
+ * último día (Google da el fin exclusivo). Cancelados o sin fecha → null.
  */
 export function eventoDesdeGoogle(item, tipoPorDefecto) {
-  const tipo = TIPO_POR_COLOR[item?.colorId] ?? (PARECE_PARTIDO.test(item?.summary ?? '') ? 'partido' : tipoPorDefecto);
+  const tipo = TIPO_POR_COLOR[item?.colorId] ?? tipoPorTitulo(item?.summary) ?? tipoPorDefecto;
   if (!item || item.status === 'cancelled' || !TIPOS_AGENDA.includes(tipo)) return null;
   const base = { id: String(item.id ?? ''), tipo, titulo: texto(item.summary, 120) || 'Evento', lugar: texto(item.location, 160) || null };
   if (typeof item.start?.date === 'string' && FECHA.test(item.start.date)) {
