@@ -53,41 +53,43 @@ const botonExterno = (url, texto, clase = 'btn') => html`<a class="${clase}" hre
 const botonCerrado = (texto, clase = 'btn') => html`<button type="button" class="${clase}" disabled aria-disabled="true">${texto}</button>`;
 
 /**
- * Una de las dos acciones de arriba: un botón grande con ícono, título y una
- * línea. Sin formulario activo se ve igual de grande pero apagada, con la
- * línea que dice cuándo se habilita.
+ * Una de las dos tarjetas de arriba: ícono, título, una línea y su botón.
+ * Sin formulario activo la tarjeta se ve igual y el botón queda apagado,
+ * diciendo cuándo se habilita. `extra`: lo que va entre el texto y el botón
+ * (el alias, en la de comprobante).
  */
-function accion({ clase, icono, titulo, detalle, url, cerrado }) {
-  const cuerpo = html`<i>${ICONO[icono]}</i><span><b>${titulo}</b><small>${url ? detalle : cerrado}</small></span>`;
-  if (!url) return html`<div class="portal-accion ${clase} apagada" aria-disabled="true">${cuerpo}</div>`;
-  return html`<a class="portal-accion ${clase}" href="${url}" target="_blank" rel="noopener">${cuerpo}<em aria-hidden="true">${ABRE}</em></a>`;
+function tarjeta({ clase, icono, titulo, detalle, url, boton, cerrado, extra = '' }) {
+  return html`<article class="portal-accion ${clase}">
+    <div class="portal-accion-cab"><i>${ICONO[icono]}</i><div><b>${titulo}</b><small>${detalle}</small></div></div>
+    ${extra}
+    ${url ? botonExterno(url, boton) : botonCerrado(cerrado)}
+  </article>`;
 }
 
 /**
- * La banda de arriba, con las dos acciones protagonistas. La primera es
- * "Inscribir a mi hijo o hija" si el formulario de inscripción está activo
- * (destino inscripcion, 0062) y, si no, "Quiero jugar en Newell's" (destino
- * consultas, 0061). La segunda, "Enviar comprobante" (destino comprobante),
- * con el alias para copiar debajo. Son independientes: alguien se puede
- * inscribir sin pagar nada.
+ * Arriba de todo: la banda roja y negra con el título y, debajo, las dos
+ * tarjetas protagonistas. La primera es "Inscribir a mi hijo o hija" si el
+ * formulario de inscripción está activo (destino inscripcion, 0062) y, si no,
+ * "Quiero jugar en Newell's" (destino consultas, 0061). La segunda, "Enviar
+ * comprobante" (destino comprobante), con el alias para copiar. Son
+ * independientes: alguien se puede inscribir sin pagar nada.
  */
 export function htmlHeroe({ inscripcion = null, consultas = null, comprobante = null, temporada = null, alias = null } = {}) {
   const url = (f) => (f ? enlaceFormulario(f.enlace) : null);
   const ins = url(inscripcion);
   const estado = ins ? 'Inscripción abierta' : 'Inscripción cerrada';
   const primera = ins
-    ? accion({ clase: 'principal', icono: 'inscribir', titulo: 'Inscribir a mi hijo o hija', url: ins, detalle: 'Formulario de Google, desde el celular' })
-    : accion({ clase: 'principal', icono: 'jugar', titulo: 'Quiero jugar en Newell\'s', url: url(consultas),
-      detalle: 'Dejá tus datos y te contactamos para venir a probar', cerrado: 'Se habilita cuando abra el formulario' });
-  return html`<div class="portal-heroe-ey">${temporada ? html`Temporada ${temporada} · ` : ''}${estado}</div>
-    <h1>¿Qué necesitás hacer?</h1>
+    ? tarjeta({ clase: 'principal', icono: 'inscribir', titulo: 'Inscribir a mi hijo o hija', detalle: 'Formulario de Google, desde el celular', url: ins, boton: 'Inscribir' })
+    : tarjeta({ clase: 'principal', icono: 'jugar', titulo: 'Quiero jugar en Newell\'s', detalle: 'Dejá tus datos y te contactamos para venir a probar',
+      url: url(consultas), boton: 'Quiero jugar', cerrado: 'Se habilita cuando abra el formulario' });
+  return html`<div class="portal-heroe-banda">
+      <div class="portal-heroe-ey">${temporada ? html`Temporada ${temporada} · ` : ''}${estado}</div>
+      <h1>¿Qué necesitás hacer?</h1>
+    </div>
     <div class="portal-acciones">
       ${primera}
-      <div class="portal-pago">
-        ${accion({ clase: 'pago', icono: 'comprobante', titulo: 'Enviar comprobante', url: url(comprobante),
-          detalle: 'Subí la foto de la transferencia', cerrado: 'Se habilita cuando haya algo para pagar' })}
-        ${htmlAlias(alias)}
-      </div>
+      ${tarjeta({ clase: 'pago', icono: 'comprobante', titulo: 'Enviar comprobante', detalle: 'Transferí al alias y subí la foto',
+        url: url(comprobante), boton: 'Subir comprobante', cerrado: 'Se habilita cuando haya algo para pagar', extra: htmlAlias(alias) })}
     </div>`;
 }
 

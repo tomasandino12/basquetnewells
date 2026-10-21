@@ -235,40 +235,31 @@
 .portal-sem-inst small{display:block;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc)}
 .portal-sem-inst p{margin:var(--sp-2) 0 0;color:var(--sobre-oscuro)}
 
-/* La banda de arriba: mitad roja, mitad negra en diagonal, como la camiseta,
-   con el escudo de marca de agua y las dos acciones protagonistas. */
-.portal-heroe{
-  position:relative;isolation:isolate;overflow:hidden;padding:var(--sp-5) var(--sp-4) var(--sp-6);
+/* Arriba: la banda roja y negra en diagonal (la camiseta), baja, con el
+   título y el escudo de marca de agua; debajo, las dos tarjetas
+   protagonistas, iguales. En el celular entran las dos en la primera
+   pantalla; en compu van lado a lado (layout.css). */
+.portal-heroe-banda{
+  position:relative;isolation:isolate;overflow:hidden;padding:var(--sp-4) var(--sp-4) var(--sp-6);
   background:linear-gradient(118deg,var(--primario) 0 62%,var(--pub-fondo) 62%);color:var(--sobre-club);
 }
-.portal-heroe::after{content:"";position:absolute;right:-3.5rem;bottom:-2.5rem;z-index:-1;width:13rem;height:13rem;background:url(/public/escudo.png) center/contain no-repeat;opacity:.16;pointer-events:none}
+.portal-heroe-banda::after{content:"";position:absolute;right:-3rem;top:-1.5rem;z-index:-1;width:11rem;height:11rem;background:url(/public/escudo.png) center/contain no-repeat;opacity:.16;pointer-events:none}
 .portal-heroe-ey{font-family:var(--ff-titulo);font-weight:700;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-115)}
-.portal-heroe h1{font-size:clamp(2.5rem,2rem + 3vw,3.75rem);line-height:.9;margin:var(--sp-2) 0 var(--sp-4);max-width:18rem}
-.portal-heroe > div > p{font-size:var(--fs-145);margin:0}
-.portal-acciones{display:grid;gap:var(--sp-3)}
-/* Cada acción: un botón grande con ícono, título y una línea. */
+.portal-heroe-banda h1{font-size:clamp(2.125rem,1.8rem + 2.5vw,3.5rem);line-height:.9;margin:var(--sp-2) 0 0;max-width:16rem}
+.portal-acciones{display:grid;gap:var(--sp-3);padding:0 var(--sp-4);margin-top:calc(-1 * var(--sp-3))}
+/* Cada tarjeta: ícono, título y una línea; abajo, su botón. Filete del club arriba. */
 .portal-accion{
-  display:grid;grid-template-columns:2.75rem 1fr auto;align-items:center;gap:var(--sp-3);min-height:4.5rem;padding:var(--sp-3) var(--sp-4);
-  border-radius:var(--r);text-decoration:none;transition:transform var(--dur-1) var(--ease-salida);
+  position:relative;display:grid;gap:var(--sp-3);min-width:0;padding:var(--sp-4);
+  background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-top:3px solid var(--primario);border-radius:var(--r);
 }
-a.portal-accion:active{transform:scale(.98)}
-.portal-accion i{display:grid;place-items:center;width:2.75rem;height:2.75rem;border-radius:50%}
-.portal-accion svg{width:1.375rem;height:1.375rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.portal-accion b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:var(--fs-230);line-height:1}
-.portal-accion small{display:block;font-size:var(--fs-125);line-height:1.35;margin-top:var(--sp-1)}
-.portal-accion em{font-style:normal;font-size:var(--fs-190)}
-.portal-accion.principal{background:var(--sobre-oscuro);color:var(--pub-fondo)}
-.portal-accion.principal i{background:var(--primario);color:var(--sobre-club)}
-.portal-accion.principal small{color:var(--gris)}
-.portal-accion.pago{background:var(--pub-tarjeta);color:var(--sobre-oscuro);border:1px solid var(--pub-borde)}
-.portal-accion.pago i{background:var(--pub-fondo);color:var(--primario)}
-.portal-accion.pago small{color:var(--gris-osc)}
-/* Sin formulario activo: igual de grande, pero apagada (borde punteado) y diciendo cuándo se habilita. */
-.portal-accion.apagada{background:transparent;color:var(--sobre-club);border:1px dashed currentColor}
-.portal-accion.apagada i{background:transparent;color:inherit;border:1px solid currentColor}
-.portal-accion.apagada small{color:inherit}
-.portal-pago{min-width:0}
-.portal-heroe .portal-alias{margin-top:var(--sp-2);background:var(--pub-fondo);border-style:solid}
+.portal-accion-cab{display:grid;grid-template-columns:2.5rem 1fr;align-items:center;gap:var(--sp-3)}
+.portal-accion i{display:grid;place-items:center;width:2.5rem;height:2.5rem;border-radius:50%;background:var(--pub-fondo);color:var(--primario)}
+.portal-accion svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.portal-accion-cab b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:var(--fs-230);line-height:1}
+.portal-accion-cab small{display:block;font-size:var(--fs-125);line-height:1.35;margin-top:var(--sp-1);color:var(--gris-osc)}
+.portal-accion .btn{min-height:2.75rem;padding:0 var(--sp-4);font-size:var(--fs-170);text-decoration:none}
+.portal-accion .portal-alias{margin:0;background:var(--pub-fondo);border-style:solid;padding:var(--sp-1) var(--sp-3)}
+.portal-accion .portal-copiar{min-height:2.25rem}
 
 /* Botón de una tarjeta sin formulario activo: visible pero claramente apagado
    (borde punteado y sin relleno), con el texto en una línea o dos legibles. */

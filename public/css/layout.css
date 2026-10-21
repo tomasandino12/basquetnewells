@@ -390,9 +390,13 @@
   .publico .portal-hoja{inset:0;margin:auto;width:min(40rem,calc(100vw - 4rem));max-height:80dvh;border-radius:var(--r);border:1px solid var(--pub-borde);animation:none}
   .publico .portal-hoja-cuerpo{max-height:80dvh;padding:var(--sp-6)}
   .publico .portal-sem-btn{max-width:none;white-space:nowrap}
-  .publico .portal-heroe,.publico .portal-banda{margin-inline:var(--sp-6);border-radius:var(--r);padding:var(--sp-8)}
-  .publico .portal-acciones{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
-  .publico .portal-heroe h1{max-width:none}
+  .publico .portal-heroe-banda,.publico .portal-banda{margin-inline:var(--sp-6);border-radius:var(--r);padding:var(--sp-8)}
+  .publico .portal-heroe-banda{padding-bottom:var(--sp-8)}
+  .publico .portal-heroe-banda h1{max-width:none}
+  /* Las dos tarjetas lado a lado, del mismo alto, con el botón abajo. */
+  .publico .portal-acciones{grid-template-columns:repeat(2,minmax(0,1fr));padding-inline:var(--sp-8);margin-top:calc(-1 * var(--sp-6))}
+  .publico .portal-accion{display:flex;flex-direction:column}
+  .publico .portal-accion > .btn{margin-top:auto}
   .publico .portal-formas{grid-template-columns:repeat(2,minmax(0,1fr))}
   /* La categoría: el año a la izquierda y el resultado al lado, ocupando todo el ancho. */
   .publico .portal-buscador{grid-template-columns:minmax(15rem,18rem) 1fr;align-items:end;gap:var(--sp-4)}
