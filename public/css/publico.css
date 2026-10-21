@@ -302,6 +302,8 @@
   overflow:hidden;animation:subir-hoja var(--dur-3) var(--ease-salida);
 }
 .portal-hoja::backdrop{background:var(--velo)}
+/* El foco va a la X y a las preguntas, que lo muestran; el contorno del diálogo entero sobra. */
+.portal-hoja:focus-visible{outline:none}
 .portal-hoja-cuerpo{max-height:88dvh;overflow-y:auto;overscroll-behavior:contain;padding:var(--sp-4) var(--sp-4) calc(var(--sp-6) + env(safe-area-inset-bottom))}
 .portal-hoja-cab{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sp-3);margin-bottom:var(--sp-3)}
 .portal-hoja-cab h2{font-size:var(--fs-260);line-height:1.05}
