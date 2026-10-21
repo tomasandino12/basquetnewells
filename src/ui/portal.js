@@ -226,12 +226,20 @@ export function htmlAyuda({ inscripcionAbierta = false, consultasAbierto = false
     : html`<p>La inscripción${temporada ? html` ${temporada}` : ''} todavía no abrió. ${consultasAbierto
       ? html`Mientras tanto, tocá <b>Quiero jugar en Newell's</b>, arriba de todo: dejás tus datos y te contactamos para que venga a probar.`
       : html`Cuando abra, el botón se habilita arriba de todo.`}</p>`;
+  const alCoordinador = coordinador ? 'escribile al coordinador (el botón de acá abajo)' : 'escribile al coordinador';
+  // Las preguntas van en la voz del padre y con sujeto: así las busca con la vista.
   return html`${pregunta('¿Cómo inscribo a mi hijo o hija?', comoInscribir)}
-    ${pregunta('¿Cómo pago una cuota o mando el comprobante?', html`<p>${a ? html`Transferí al alias <b>${a.alias}</b> (con <b>Copiar</b>, arriba de todo, lo pegás en tu banco). ` : ''}Después tocá <b>Enviar comprobante</b> y subí la foto o la captura de la transferencia. Si ese botón está apagado, es que ahora no hay nada para pagar.</p>`)}
-    ${pregunta('No tengo cuenta de Google, ¿puedo igual?', html`<p><b>Quiero jugar</b> y <b>Quiero colaborar</b> se completan sin cuenta. La inscripción y el comprobante piden entrar con Google porque llevan fotos: así sabemos quién mandó cada cosa. Crear una cuenta es gratis y te deja usar tu mail de siempre: <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">crear una cuenta de Google</a>.</p>`)}
-    ${pregunta('¿En qué categoría juega?', html`<p>Va por el año de nacimiento, como lo arma la CABB. En <a href="#categorias">¿En qué categoría juega?</a> elegís el año y te dice la categoría y los horarios.</p>`)}
-    ${pregunta('Me equivoqué en un dato del formulario', html`<p>Si todavía no lo mandaste, corregilo y listo. Si ya lo mandaste, no lo vuelvas a llenar: escribile al coordinador${coordinador ? ' (el botón de acá abajo)' : ''} contándole qué dato hay que cambiar.</p>`)}
-    ${pregunta('¿Dónde y cuándo entrena?', html`<p>Los días y los horarios dependen de la categoría: los ves en <a href="#categorias">¿En qué categoría juega?</a>.${s ? html` Se entrena en el <b>${s.nombre}</b>${s.direccion && html` (${s.direccion})`}.` : ''}</p>${s?.mapa && botonExterno(s.mapa, 'Cómo llegar', 'btn sec chico')}`)}
+    ${pregunta('¿Cómo pago la cuota o mando el comprobante?', html`<p>${a ? html`Transferí al alias <b>${a.alias}</b> (con <b>Copiar</b>, arriba de todo, lo pegás en tu banco). ` : ''}Después tocá <b>Enviar comprobante</b> y subí la foto o la captura de la transferencia. Si ese botón está apagado, es que ahora no hay nada para pagar.</p>`)}
+    ${pregunta('Me pide iniciar sesión con Google, ¿qué hago?', html`<p>La inscripción y el comprobante la piden porque se suben fotos (los DNI, la transferencia). Si no tenés Gmail, creá una cuenta de Google con el mail que ya usás, sin abrir uno nuevo:</p>
+      <ol class="portal-faq-pasos">
+        <li>Entrá a <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">accounts.google.com</a> y tocá <b>Crear cuenta</b> → <b>Para uso personal</b>.</li>
+        <li>Tocá <b>Usar mi dirección de correo electrónico actual</b> y escribí tu mail de siempre.</li>
+        <li>Pegá el código que te llega a ese mail y elegí una contraseña.</li>
+      </ol>
+      <p>Si no podés, ${alCoordinador} y te ayuda.</p>`)}
+    ${pregunta('¿En qué categoría juega mi hijo o hija?', html`<p>Va por el año de nacimiento, como lo arma la CABB. En <a href="#categorias">¿En qué categoría juega?</a> elegís el año y te dice la categoría y los horarios.</p>`)}
+    ${pregunta('Me equivoqué en un dato del formulario, ¿qué hago?', html`<p>Volvé a mandar el formulario con el dato bien: tomamos siempre el último que mandaste. Si te equivocaste en el DNI, ${alCoordinador.replace('escribile', 'avisale')}.</p>`)}
+    ${pregunta('¿Dónde y cuándo entrena mi hijo o hija?', html`<p>Los días y los horarios dependen de la categoría: los ves en <a href="#categorias">¿En qué categoría juega?</a>.${s ? html` Se entrena en el <b>${s.nombre}</b>${s.direccion && html` (${s.direccion})`}.` : ''}</p>${s?.mapa && botonExterno(s.mapa, 'Cómo llegar', 'btn sec chico')}`)}
     ${coordinador && html`<div class="portal-faq-fin">
       <b>¿No encontraste tu respuesta?</b>
       <span>Escribile al coordinador y te ayuda.</span>
