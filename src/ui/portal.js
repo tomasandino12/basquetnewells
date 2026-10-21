@@ -482,6 +482,30 @@ function iniciarBuscador(temporada) {
   pintar();
 }
 
+/* ---------- Ayuda: una hoja encima de la página ---------- */
+
+/**
+ * Todo link a #ayuda (el botón del encabezado, el atajo, "¿Dudas?") abre la
+ * hoja en vez de saltar a una sección. <dialog> con showModal da el foco
+ * atrapado, Escape y la vuelta del foco al botón que la abrió; acá se suman
+ * la X y el toque afuera (el fondo es el propio <dialog>, el contenido está
+ * en .portal-hoja-cuerpo). Un link de adentro a otra parte de la página
+ * (#categorias) cierra la hoja y deja que el navegador baje hasta ahí.
+ */
+function iniciarAyuda() {
+  const hoja = $('ayuda');
+  if (typeof hoja.showModal !== 'function') return; // Sin <dialog>: queda la página sin la hoja, nada se rompe.
+  document.addEventListener('click', (ev) => {
+    if (!ev.target.closest('a[href="#ayuda"]')) return;
+    ev.preventDefault();
+    if (!hoja.open) hoja.showModal();
+  });
+  hoja.addEventListener('click', (ev) => {
+    if (ev.target === hoja || ev.target.closest('[data-cerrar-ayuda]') || ev.target.closest('a[href^="#"]')) hoja.close();
+  });
+  if (window.location.hash === '#ayuda') hoja.showModal();
+}
+
 /* ---------- Armado de la página ---------- */
 
 function mostrar(id, contenido, contenedor = `portal-${id}`) {
@@ -526,6 +550,7 @@ export async function iniciarPortal() {
     });
   };
   pintarFormularios();
+  iniciarAyuda();
 
   const calendarios = calendariosActivos(PORTAL.agenda);
   $('calendario').hidden = !calendarios.length;

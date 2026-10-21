@@ -386,6 +386,9 @@
   .publico .portal-barra,.publico .portal-atajos,.publico .portal-sec{padding-inline:var(--sp-6)}
   .publico .portal-barra{padding-top:var(--sp-5)}
   .publico .portal-barra .s{display:block}
+  /* La hoja de Ayuda: un diálogo centrado. */
+  .publico .portal-hoja{inset:0;margin:auto;width:min(40rem,calc(100vw - 4rem));max-height:80dvh;border-radius:var(--r);border:1px solid var(--pub-borde);animation:none}
+  .publico .portal-hoja-cuerpo{max-height:80dvh;padding:var(--sp-6)}
   .publico .portal-sem-btn{max-width:none;white-space:nowrap}
   .publico .portal-heroe,.publico .portal-banda{margin-inline:var(--sp-6);border-radius:var(--r);padding:var(--sp-8)}
   .publico .portal-acciones{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}

@@ -141,15 +141,23 @@
       <div class="portal-logos" id="portal-logos"></div>
     </section>
 
-    <!-- Preguntas frecuentes, en acordeón. Al final, la única vez que aparece el coordinador. -->
-    <section class="portal-sec" id="ayuda" aria-labelledby="t-ayuda">
-      <div class="portal-st">Ayuda</div>
-      <h2 id="t-ayuda">Preguntas frecuentes</h2>
-      <div class="portal-faqs" id="portal-ayuda-lista"></div>
-    </section>
-
     <div class="pie-legal"><a href="/app">Entrar a Semillero</a> · <a href="/public/legal/privacidad.html">Política de privacidad</a> · <a href="/public/legal/terminos.html">Términos y condiciones</a></div>
   </main>
+
+  <!-- Ayuda: no ocupa lugar en la página. Todo link a #ayuda la abre encima
+       (src/ui/portal.js): en el celular, una hoja que sube desde abajo; en
+       compu, un diálogo. Preguntas frecuentes en acordeón y, al final, la
+       única vez que aparece el coordinador. Se cierra con la X, tocando
+       afuera o con Escape (lo da <dialog>). -->
+  <dialog class="portal-hoja" id="ayuda" aria-labelledby="t-ayuda">
+    <div class="portal-hoja-cuerpo">
+      <div class="portal-hoja-cab">
+        <div><div class="portal-st">Ayuda</div><h2 id="t-ayuda">Preguntas frecuentes</h2></div>
+        <button type="button" class="portal-hoja-x" data-cerrar-ayuda aria-label="Cerrar la ayuda">×</button>
+      </div>
+      <div class="portal-faqs" id="portal-ayuda-lista"></div>
+    </div>
+  </dialog>
 </div>
 
 <!-- Primero el reenvío: los mails de Supabase ya enviados apuntan a "/" y tienen

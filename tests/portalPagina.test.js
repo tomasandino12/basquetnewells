@@ -16,19 +16,19 @@ const pagina = readFileSync('public/portal.html', 'utf8');
 const portal = readFileSync('src/ui/portal.js', 'utf8');
 const seccion = (id) => pagina.match(new RegExp(`<section [^>]*id="${id}"[\\s\\S]*?</section>`))?.[0] ?? '';
 
-test('arriba de todo, la banda con las dos acciones; después el resto, en orden, y las preguntas frecuentes al final', () => {
-  const orden = ['heroe', 'calendario', 'recaudacion', 'colaborar', 'categorias', 'formularios', 'club', 'sponsors', 'ayuda'];
+test('arriba de todo, la banda con las dos acciones; después el resto, en orden', () => {
+  const orden = ['heroe', 'calendario', 'recaudacion', 'colaborar', 'categorias', 'formularios', 'club', 'sponsors'];
   const posiciones = orden.map((id) => pagina.search(new RegExp(`<section [^>]*id="${id}"`)));
   assert.ok(posiciones.every((p) => p > 0), `faltan secciones: ${posiciones}`);
   assert.deepEqual([...posiciones].sort((a, b) => a - b), posiciones, 'las secciones están desordenadas');
   assert.match(seccion('heroe'), /<h1>/, 'el h1 de la página está en la banda');
 });
 
-test('las secciones que dependen de datos arrancan ocultas; la banda, recaudación, colaborar y la ayuda se ven siempre', () => {
+test('las secciones que dependen de datos arrancan ocultas; la banda, recaudación y colaborar se ven siempre', () => {
   for (const id of ['calendario', 'categorias', 'formularios', 'club', 'sponsors']) {
     assert.match(seccion(id).split('>')[0], /\bhidden\b/, `#${id} tiene que arrancar oculta`);
   }
-  for (const id of ['heroe', 'recaudacion', 'colaborar', 'ayuda']) {
+  for (const id of ['heroe', 'recaudacion', 'colaborar']) {
     assert.doesNotMatch(seccion(id).split('>')[0], /\bhidden\b/, `#${id} se ve siempre`);
   }
 });
@@ -46,6 +46,22 @@ test('el encabezado tiene Ayuda (a las preguntas frecuentes) y Semillero, con c�
   assert.match(sem, /<a class="btn" href="\/app">Entrar a Semillero<\/a>/);
   assert.match(sem, /Instalar app/);
   assert.match(sem, /Agregar a inicio/);
+});
+
+test('Ayuda no ocupa lugar en la página: es una hoja (<dialog>) con la X, que abre todo link a #ayuda', () => {
+  assert.doesNotMatch(pagina, /<section [^>]*id="ayuda"/);
+  const hoja = pagina.match(/<dialog class="portal-hoja" id="ayuda" aria-labelledby="t-ayuda">[\s\S]*?<\/dialog>/)?.[0];
+  assert.ok(hoja, 'falta la hoja de Ayuda');
+  assert.match(hoja, /<h2 id="t-ayuda">Preguntas frecuentes<\/h2>/);
+  assert.match(hoja, /<button type="button" class="portal-hoja-x" data-cerrar-ayuda aria-label="Cerrar la ayuda">/);
+  assert.match(hoja, /id="portal-ayuda-lista"/);
+  const desde = portal.indexOf('function iniciarAyuda()');
+  const cuerpo = portal.slice(desde, portal.indexOf('\n}\n', desde));
+  assert.match(cuerpo, /closest\('a\[href="#ayuda"\]'\)/);
+  assert.match(cuerpo, /hoja\.showModal\(\)/, 'showModal: foco atrapado y Escape');
+  assert.match(cuerpo, /ev\.target === hoja/, 'tocar afuera la cierra');
+  assert.match(cuerpo, /\[data-cerrar-ayuda\]/);
+  assert.match(portal, /iniciarAyuda\(\);/);
 });
 
 test('el coordinador aparece una sola vez: al final de las preguntas frecuentes', () => {
