@@ -222,9 +222,7 @@ test('"Lo que viene": fecha grande, tipo, título escapado, hora y lugar, y para
 
 test('"Lo que viene" busca en el mes siguiente si en lo que queda del mes no hay nada', () => {
   const desde = portal.indexOf('async function mostrarProximo()');
-  const cuerpo = portal.slice(desde, portal.indexOf('
-  }
-', desde));
+  const cuerpo = portal.slice(desde, portal.indexOf('\n  }\n', desde));
   assert.match(cuerpo, /mesVecino\(anio, mes, 1\)/);
   assert.match(cuerpo, /Number\(hoy\.slice/, 'sale del mes de hoy, no del que muestra la grilla');
   assert.match(portal, /cargar\(estado\.anio, estado\.mes\)\.then\(mostrarProximo\)/);
