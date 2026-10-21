@@ -323,7 +323,23 @@ es**. Al cargar un evento en Google Calendar, se toca el color y se elige:
 | **Banana** (amarillo) | Evento de recaudación (rifas, pollada, cena) |
 | **Pavo real** (celeste) | Charla |
 | **Albahaca** (verde) | Entrenamiento especial |
-| Sin color, u otro | Evento |
+| Sin color, u otro | Lo que diga el título (abajo); si no dice nada, Evento |
+
+**Elegí el color en el evento** (Tomate partido, Banana evento, Pavo real charla),
+**o poné la palabra en el título**: "Torneo…", "Charla…". El color
+"predeterminado" no cuenta: es el del calendario, cada uno lo ve a su manera y
+no le llega a la página. Conviene poner el color del calendario en **Grafito**
+(gris): así un evento al que no le elegiste color se nota enseguida.
+
+Sin color elegido, la página mira la primera de estas palabras que aparezca en el
+título (da igual con tilde o mayúscula):
+
+| Si el título dice… | En el portal |
+|---|---|
+| partido, vs, contra, torneo, amistoso, cuadrangular, triangular, final, liga, fecha | Partido |
+| charla, reunión, capacitación, clínica | Charla |
+| entrenamiento, práctica | Entrenamiento |
+| rifa, pollada, cena, venta, recaudación, fiesta | Evento |
 
 Se muestra sólo el título, la hora y el lugar; la descripción nunca. Cada evento
 tiene **"Agregar a mi calendario"** (Google o iPhone), y abajo hay un botón para
