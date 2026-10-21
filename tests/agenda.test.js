@@ -134,6 +134,17 @@ test('el color del evento decide el tipo; sin color (o con otro) queda el del ca
   assert.match(new URL(urlEventos(ID, CLAVE, rangoDelMes(2026, 10))).searchParams.get('fields'), /colorId/);
 });
 
+test('sin color propio, un título con "vs" es un partido (en Google se ve con el color del calendario)', () => {
+  // Así llega "Clasico U21 vs Central" (21/10): en Google se veía Tomate, pero sin colorId.
+  const tipo = (summary, colorId) => eventoDesdeGoogle({ id: 'v', summary, colorId, start: { date: '2026-10-21' } }, 'evento')?.tipo;
+  assert.equal(tipo('Clasico U21 vs Central'), 'partido');
+  assert.equal(tipo("Newell's vs. Náutico"), 'partido');
+  assert.equal(tipo('VS Rosario'), 'partido');
+  assert.equal(tipo('Pollada para el viaje'), 'evento');
+  assert.equal(tipo('Revisión de videos'), 'evento', '"vs" dentro de una palabra no cuenta');
+  assert.equal(tipo('U21 vs Central', '5'), 'evento', 'el color elegido manda');
+});
+
 // ---- Agregar a mi calendario ----
 
 const partido = eventoDesdeGoogle({ id: 'p1', summary: 'U15, vs; Náutico', location: 'Microestadio', start: { dateTime: '2026-10-24T10:30:00-03:00' }, end: { dateTime: '2026-10-24T12:00:00-03:00' } }, 'partido');

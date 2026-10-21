@@ -118,17 +118,20 @@ function sumarDias(fecha, n) {
 }
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
+// "U21 vs Central", "Newell's vs. Náutico": así se nombra un partido.
+const PARECE_PARTIDO = /(^|\s)vs\.?(\s|$)/i;
 const texto = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
 /**
  * Un evento de la API → { id, tipo, titulo, lugar, dia, hasta, hora, horaFin }.
- * El tipo sale del color del evento (TIPO_POR_COLOR) o, si no tiene uno
- * conocido, del calendario. Los de todo el día traen hora null y pueden
+ * El tipo sale del color del evento (TIPO_POR_COLOR). Sin color propio (en
+ * Google se ve con el color del calendario, pero la API no manda colorId), un
+ * título con "vs" es un partido; si no, toma el tipo del calendario. Los de todo el día traen hora null y pueden
  * durar varios (un torneo): `hasta` es su último día (Google da el fin
  * exclusivo). Cancelados o sin fecha → null.
  */
 export function eventoDesdeGoogle(item, tipoPorDefecto) {
-  const tipo = TIPO_POR_COLOR[item?.colorId] ?? tipoPorDefecto;
+  const tipo = TIPO_POR_COLOR[item?.colorId] ?? (PARECE_PARTIDO.test(item?.summary ?? '') ? 'partido' : tipoPorDefecto);
   if (!item || item.status === 'cancelled' || !TIPOS_AGENDA.includes(tipo)) return null;
   const base = { id: String(item.id ?? ''), tipo, titulo: texto(item.summary, 120) || 'Evento', lugar: texto(item.location, 160) || null };
   if (typeof item.start?.date === 'string' && FECHA.test(item.start.date)) {
