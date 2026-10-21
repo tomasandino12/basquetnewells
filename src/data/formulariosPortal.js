@@ -18,10 +18,10 @@ import { enlaceFormulario } from './portal.js';
  */
 export const DESTINOS = Object.freeze([
   Object.freeze({ clave: 'consultas', rotulo: 'Quiero jugar en Newell\'s (botón de arriba con la inscripción cerrada; QR)', chip: 'Quiero jugar' }),
-  Object.freeze({ clave: 'colaboradores', rotulo: 'Sumate como sponsor o colaborador (lista "También podés")', chip: 'Sponsors' }),
-  // 0062: la inscripción es el botón grande de arriba; el comprobante va en la lista.
+  Object.freeze({ clave: 'colaboradores', rotulo: 'Sumate al básquet de Newell\'s (empresas y quien quiere dar una mano)', chip: 'Colaborar' }),
+  // 0062: los dos botones grandes de arriba del portal.
   Object.freeze({ clave: 'inscripcion', rotulo: 'Inscripción (botón grande de arriba)', chip: 'Inscripción' }),
-  Object.freeze({ clave: 'comprobante', rotulo: 'Comprobante de pago (lista "También podés")', chip: 'Comprobante' }),
+  Object.freeze({ clave: 'comprobante', rotulo: 'Comprobante de pago (botón grande de arriba)', chip: 'Comprobante' }),
   // 0063: el aviso por mail de pizzas, rifas y comidas, debajo del calendario. Es otro formulario que el de sponsors.
   Object.freeze({ clave: 'recaudacion', rotulo: 'Eventos de recaudación (banda roja debajo del calendario)', chip: 'Recaudación' }),
 ]);
