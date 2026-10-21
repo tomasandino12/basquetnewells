@@ -347,14 +347,38 @@ test('htmlColaborar: las dos formas (empresa, dar una mano) y el botón; no prom
 test('ayuda: seis preguntas en acordeón y, al final, el único botón al coordinador', () => {
   const out = htmlAyuda({ temporada: 2027, alias: { alias: 'NOB.BASQUET' }, sede: { nombre: 'Microestadio', mapa: 'https://maps.app.goo.gl/abc' }, contacto: 'https://wa.me/5493410000000' }).toString();
   assert.equal((out.match(/<details class="portal-faq"><summary>/g) ?? []).length, 6);
-  for (const p of ['¿Cómo inscribo a mi hijo o hija?', '¿Cómo pago una cuota o mando el comprobante?', 'No tengo cuenta de Google', '¿En qué categoría juega?', 'Me equivoqué en un dato', '¿Dónde y cuándo entrena?']) {
-    assert.ok(out.includes(p), p);
-  }
+  const preguntas = [...out.matchAll(/<summary>([^<]*)<\/summary>/g)].map((m) => m[1]);
+  assert.deepEqual(preguntas, [
+    '¿Cómo inscribo a mi hijo o hija?',
+    '¿Cómo pago la cuota o mando el comprobante?',
+    'Me pide iniciar sesión con Google, ¿qué hago?',
+    '¿En qué categoría juega mi hijo o hija?',
+    'Me equivoqué en un dato del formulario, ¿qué hago?',
+    '¿Dónde y cuándo entrena mi hijo o hija?',
+  ]);
   assert.match(out, /<b>NOB\.BASQUET<\/b>/);
   assert.match(out, /Microestadio/);
   assert.match(out, /href="https:\/\/maps\.app\.goo\.gl\/abc"/);
   assert.match(out, /¿No encontraste tu respuesta\?[\s\S]*<a class="btn" href="https:\/\/wa\.me\/5493410000000" target="_blank" rel="noopener">Escribirle por WhatsApp/);
   assert.equal((out.match(/wa\.me/g) ?? []).length, 1);
+});
+
+test('ayuda: el login de Google, desde donde se traba el padre: por qué lo pide, cuenta con su mail en 3 pasos, y si no, el coordinador', () => {
+  const out = htmlAyuda({ contacto: 'https://wa.me/5493410000000' }).toString();
+  const r = out.match(/Me pide iniciar sesión con Google[\s\S]*?<\/details>/)[0];
+  assert.match(r, /La inscripción y el comprobante la piden porque se suben fotos/);
+  assert.match(r, /sin abrir uno nuevo/);
+  assert.equal((r.match(/<li>/g) ?? []).length, 3);
+  assert.match(r, /<a href="https:\/\/accounts\.google\.com\/signup" target="_blank" rel="noopener">/);
+  assert.match(r, /Usar mi dirección de correo electrónico actual/);
+  assert.match(r, /Si no podés, escribile al coordinador \(el botón de acá abajo\)/);
+});
+
+test('ayuda: "me equivoqué en un dato" es volver a mandarlo (el Tablero toma la última respuesta por DNI); el DNI, al coordinador', () => {
+  const r = htmlAyuda({ contacto: 'https://wa.me/5493410000000' }).toString().match(/Me equivoqué en un dato[\s\S]*?<\/details>/)[0];
+  assert.match(r, /Volvé a mandar el formulario con el dato bien: tomamos siempre el último que mandaste\./);
+  assert.match(r, /Si te equivocaste en el DNI, avisale al coordinador \(el botón de acá abajo\)\./);
+  assert.match(htmlAyuda({}).toString(), /Si te equivocaste en el DNI, avisale al coordinador\./, 'sin contacto, no promete un botón');
 });
 
 test('ayuda: "¿cómo inscribo?" no manda a un botón apagado', () => {

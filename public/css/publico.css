@@ -340,6 +340,8 @@ a.portal-accion:active{transform:scale(.98)}
 .portal-faq[open] summary::after{transform:rotate(45deg)}
 .portal-faq-r{padding:0 var(--sp-4) var(--sp-4);color:var(--gris-osc);font-size:var(--fs-145);line-height:1.55}
 .portal-faq-r p{margin:0}
+.portal-faq-r p + p,.portal-faq-r ol + p{margin-top:var(--sp-2)}
+.portal-faq-pasos{margin:var(--sp-2) 0 0;padding-left:var(--sp-5);display:grid;gap:var(--sp-1)}
 .portal-faq-r b{color:var(--sobre-oscuro);font-weight:600}
 .portal-faq-r a{color:var(--sobre-oscuro);font-weight:600}
 .portal-faq-r .btn{display:inline-flex;width:auto;margin-top:var(--sp-3);min-height:var(--tap);padding:0 var(--sp-4);font-size:var(--fs-145);text-decoration:none}
