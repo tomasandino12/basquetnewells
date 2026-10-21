@@ -35,7 +35,7 @@ test('rechaza DNI de 6 y de 9 dígitos y con letras', () => {
 });
 
 test('arma nombre de carpeta con el apellido en mayúsculas', () => {
-  assert.equal(g.nombreCarpeta('  sánchez  ', 'pedro  ', '11111111'), 'SÁNCHEZ, pedro — 11111111');
+  assert.equal(g.nombreCarpeta('  sánchez  ', 'pedro  ', '11111111'), 'SÁNCHEZ, Pedro — 11111111');
   assert.equal(g.nombreCarpeta('de la Torre', 'Ana  María', '1234567'), 'DE LA TORRE, Ana María — 1234567');
 });
 
@@ -94,4 +94,15 @@ test('no confunde 1234567 con 11234567', () => {
 test('compara títulos sin importar mayúsculas ni espacios de más', () => {
   assert.equal(g.claveTitulo('  DNI del   Jugador (sin puntos) '), g.claveTitulo('dni del jugador (sin puntos)'));
   assert.notEqual(g.claveTitulo('Apellido del jugador'), g.claveTitulo('Nombre del jugador'));
+});
+
+test('la carpeta del chico lleva APELLIDO en mayúsculas y Nombre en nombre propio', () => {
+  assert.equal(g.nombreCarpeta('gonzález', 'JUAN  martín', '11111111'), 'GONZÁLEZ, Juan Martín — 11111111');
+});
+
+test('nombrePropio deja las partículas en minúscula salvo al principio', () => {
+  assert.equal(g.nombrePropio('maría DE los ángeles'), 'María de los Ángeles');
+  assert.equal(g.nombrePropio('de la torre'), 'De la Torre');
+  assert.equal(g.nombrePropio("o'brien-pérez"), "O'Brien-Pérez");
+  assert.equal(g.nombrePropio(null), '');
 });

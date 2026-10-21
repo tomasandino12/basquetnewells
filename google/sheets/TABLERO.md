@@ -78,7 +78,7 @@ Toma la pestaña `Inscripción` (una sola: ya no hay Reinscripción aparte) y la
 
 ```
 =SI.ERROR(ARRAYFORMULA(QUERY({
-'Inscripción'!A2:A \ 'Inscripción'!D2:D&"" \ 'Inscripción'!E2:E \ 'Inscripción'!F2:F \ 'Inscripción'!H2:H \ 'Inscripción'!I2:I \ 'Inscripción'!B2:B \ 'Inscripción'!G2:G \
+'Inscripción'!A2:A \ 'Inscripción'!D2:D&"" \ MAYUSC(ESPACIOS('Inscripción'!E2:E)) \ NOMPROPIO(ESPACIOS('Inscripción'!F2:F)) \ 'Inscripción'!H2:H \ 'Inscripción'!I2:I \ 'Inscripción'!B2:B \ 'Inscripción'!G2:G \
 SI('Inscripción'!A2:A=""; ""; SI('Inscripción'!C2:C="Sí"; "Reinscripción"; "Nueva")) \
 'Inscripción'!AQ2:AQ&"" \ SI('Inscripción'!AR2:AR=""; ""; 'Inscripción'!AR2:AR&" - "&'Inscripción'!AS2:AS&"") \ SI('Inscripción'!BB2:BB<>""; "Sí"; "") \
 'Inscripción'!AH2:AH \
@@ -89,6 +89,8 @@ SI('Inscripción'!AM2:AM=""; 'Inscripción'!AO2:AO; SI('Inscripción'!AO2:AO="";
 }; "select * where Col1 is not null order by Col1"; 0)); "")
 ```
 
+- **Nombres normalizados.** El apellido va en `MAYUSC` y el nombre en `NOMPROPIO`, los dos con `ESPACIOS` (sin espacios de más). Las respuestas crudas de la pestaña `Inscripción` no se tocan: la normalización vive sólo acá y se propaga al Tablero, a `Salida Semillero` y a `Salida Emergencias`. Limitación: `NOMPROPIO` pone mayúscula después de cualquier espacio (`De La Torre`); no lo arregla, es sólo estética.
+- **Reenvíos:** si una familia manda el formulario dos veces, vale **la última respuesta por DNI** (`BUSCARX` con `-1` busca de abajo hacia arriba). Las respuestas viejas quedan en la pestaña.
 - **Alta** sale de la primera pregunta: `Sí` ("ya completó la ficha en 2026") es `Reinscripción`; `No` es `Nueva`.
 - El DNI se guarda como texto (`&""`) para que todo compare igual aunque Forms lo haya guardado como número.
 - La fecha de nacimiento y la categoría vienen en **todas** las filas (también las de reinscripción). Las columnas de salud (`Afecciones` a `Obra social`) quedan vacías en las respuestas que no pasaron por la sección Salud: así se sabe cuál es la última con salud.
@@ -193,7 +195,7 @@ Para quien no pudo subir los archivos y los entregó en papel: el coordinador lo
   Para `C2` cambiar `'Inscripción 2026'!$B$2:$B` por `$C$2:$C` y `Base!$C$2:$C` por `Base!$D$2:$D`.
 - `D2` (el mail sólo está en `Base`; para los de 2026 queda vacío): `=ARRAYFORMULA(SI($A$2:$A=""; ""; SI.ERROR(BUSCARX($A$2:$A; Base!$B$2:$B; Base!$G$2:$G; ""; 0; -1); "")))`
 
-**`Revisar`** — tres listas:
+**`Revisar`** — cinco listas (cada una dice qué hacer):
 - `A1` `Dijeron que ya completaron la ficha, pero no aparecen en 2026 ni en una inscripción nueva (les tocaba la completa)`. `A2`:
   `=SI.ERROR(ARRAYFORMULA(FILTER('Inscripción'!$D$2:$D&""; 'Inscripción'!$C$2:$C="Sí"; CONTAR.SI('Inscripción 2026'!$A:$A; 'Inscripción'!$D$2:$D&"")=0; CONTAR.SI.CONJUNTO('Inscripción'!$D:$D; 'Inscripción'!$D$2:$D&""; 'Inscripción'!$C:$C; "No")=0)); "")`
   A esa familia la coordinación le pide que complete otra vez eligiendo "No".
@@ -201,7 +203,14 @@ Para quien no pudo subir los archivos y los entregó en papel: el coordinador lo
   `=SI.ERROR(ARRAYFORMULA(FILTER('Inscripción'!$D$2:$D&""; 'Inscripción'!$G$2:$G<>""; ESNUMERO(HALLAR("("; 'Inscripción'!$H$2:$H)); NO(ESNUMERO(HALLAR(AÑO('Inscripción'!$G$2:$G); 'Inscripción'!$H$2:$H))))); "")`
 - `E1` `Pagos de un DNI que no está en el padrón de esta temporada`. `E2`:
   `=SI.ERROR(ARRAYFORMULA(FILTER(Comprobantes!$C$2:$C&""; Comprobantes!$C$2:$C<>""; CONTAR.SI(Tablero!$A$2:$A; Comprobantes!$C$2:$C&"")=0)); "")`
-  Para cada formulario propio con DNI (rifa, pase) se suma una lista igual en la columna siguiente (`G`, `I`…), cambiando `Comprobantes` por su pestaña.
+  Para cada formulario propio con DNI (rifa, pase) se suma una lista igual en la columna `K`, `M`…, cambiando `Comprobantes` por su pestaña.
+  **Qué hacer:** probablemente el DNI está mal tipeado: avisarle a la familia y, si manda el comprobante de nuevo con el DNI correcto, listo.
+- `G1` `Posible nombre y apellido invertidos (el mismo DNI figura con los dos cruzados en 2026 o en una respuesta anterior)`. `G2` (compara sin importar mayúsculas ni cómo se parta el apellido; contra `Inscripción 2026` y contra la **primera** respuesta de ese DNI en `Base`):
+  `=SI.ERROR(ARRAYFORMULA(FILTER(Tablero!$A$2:$A&" — "&Tablero!$B$2:$B&", "&Tablero!$C$2:$C; Tablero!$A$2:$A<>""; (MAYUSC(Tablero!$C$2:$C&" "&Tablero!$B$2:$B)=SI.ERROR(BUSCARX(Tablero!$A$2:$A; 'Inscripción 2026'!$A$2:$A&""; MAYUSC('Inscripción 2026'!$B$2:$B&" "&'Inscripción 2026'!$C$2:$C)); "x")) + (MAYUSC(Tablero!$C$2:$C&" "&Tablero!$B$2:$B)=SI.ERROR(BUSCARX(Tablero!$A$2:$A; Base!$B$2:$B; MAYUSC(Base!$C$2:$C&" "&Base!$D$2:$D); "x"; 0; 1); "x")) > 0)); "")`
+  **Qué hacer:** mirar cuál está bien. Si la última respuesta es la equivocada, anotar el apellido y el nombre correctos en `Correcciones 2026` (`DNI`, `Apellido`, `Nombre`) —sirve para los de 2026— o pedirle a la familia que vuelva a mandar el formulario bien (vale el último envío).
+- `I1` `Posible chico duplicado (mismo apellido, nombre y fecha de nacimiento con otro DNI)`. Casi siempre es un DNI mal tipeado. `I2` (la fecha se muestra con `TEXTO`; si tu Sheets no reconoce `dd/mm/aaaa`, probar `dd/mm/yyyy`):
+  `=SI.ERROR(ARRAYFORMULA(UNIQUE(FILTER(Base!$C$2:$C&", "&Base!$D$2:$D&" — nac. "&TEXTO(Base!$H$2:$H; "dd/mm/aaaa")&" — DNI "&Base!$B$2:$B; Base!$B$2:$B<>""; Base!$H$2:$H<>""; CONTAR.SI.CONJUNTO(Base!$C$2:$C; Base!$C$2:$C; Base!$D$2:$D; Base!$D$2:$D; Base!$H$2:$H; Base!$H$2:$H; Base!$B$2:$B; "<>"&Base!$B$2:$B)>0))); "")`
+  **Qué hacer:** avisarle a la familia para confirmar el DNI correcto; si ya mandó dos formularios, el que tiene el DNI equivocado se deja como está y se borra a mano (vaciado manual, `google/GUIA.md`) cuando la familia confirme.
 
 ## 8. Buscar (pensada para el celular)
 

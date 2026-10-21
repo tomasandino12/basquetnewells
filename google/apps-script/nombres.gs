@@ -31,8 +31,24 @@ function limpiarParaNombre(texto) {
     .trim();
 }
 
+var PARTICULAS_NOMBRE = ['de', 'del', 'la', 'las', 'los', 'y', 'da', 'di', 'van', 'von'];
+
+/**
+ * "juan  MARTÍN" → "Juan Martín". Mayúscula al principio de cada palabra (y después de guion o
+ * apóstrofe); las partículas ("de", "la") quedan en minúscula salvo la primera palabra.
+ * Es la misma regla que src/data/nombres.js (la app no puede importar este archivo).
+ */
+function nombrePropio(texto) {
+  var palabras = String(texto == null ? '' : texto).replace(/\s+/g, ' ').trim().toLowerCase().split(' ');
+  return palabras.map(function (p, i) {
+    if (!p) return p;
+    if (i > 0 && PARTICULAS_NOMBRE.indexOf(p) >= 0) return p;
+    return p.replace(/(^|[-'])(\S)/g, function (m, pre, letra) { return pre + letra.toUpperCase(); });
+  }).join(' ');
+}
+
 function nombreCarpeta(apellido, nombre, dni) {
-  return limpiarParaNombre(apellido).toUpperCase() + ', ' + limpiarParaNombre(nombre) + ' — ' + dni;
+  return limpiarParaNombre(apellido).toUpperCase() + ', ' + nombrePropio(limpiarParaNombre(nombre)) + ' — ' + dni;
 }
 
 /** El DNI va al final, después de la raya: es lo único que identifica la carpeta. */

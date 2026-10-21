@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+import { nombrePropio } from '../data/nombres.js';
 
 // Planilla "Para Semillero" que arma inscripción (prompt 05): una fila por
 // chico, sin DNI. Tercer formato de planilla junto a la CABB y el plan
@@ -88,8 +89,8 @@ function llenar(salida, datos) {
     }
     salida.filas.push({
       fila: n,
-      apellido: texto(apellido),
-      nombre: texto(nombre),
+      apellido: nombrePropio(texto(apellido)),
+      nombre: nombrePropio(texto(nombre)),
       fechaNacimiento,
       categoriaTexto: texto(categoria),
       mail: texto(mail),
