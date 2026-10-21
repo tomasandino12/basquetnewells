@@ -55,6 +55,8 @@ Uno solo para todos. Título: **Inscripción Básquet Newell's**. Es un formular
 **Texto de privacidad (sección inicial) — `[VALIDAR CON COORDINACIÓN]`:**
 > Estos datos los ve **sólo la coordinación del básquet**. Se usan para fichar al chico en la CABB, para la ficha de emergencia y para cargarlo en la app del club (apellido, nombre, fecha de nacimiento, categoría y tu mail). Los documentos y fotos quedan guardados en la cuenta del club y **no se publican**. La ficha médica no sale de acá.
 
+**Mensaje de confirmación:** "Listo, recibimos la inscripción. La coordinación la revisa y, si falta algo, te avisa tu profe. ¿Te equivocaste en algo? Volvé a mandar el formulario: tomamos el último. Si fue el DNI, avisale al coordinador."
+
 **Los dos caminos.** Forms no deja repetir una pregunta en dos caminos (quedarían dos columnas con el mismo título), así que lo común va en secciones compartidas y cada camino sólo cambia lo propio:
 
 | Sección | Quién la ve | Salto al tocar *Siguiente* |
@@ -71,6 +73,8 @@ Uno solo para todos. Título: **Inscripción Básquet Newell's**. Es un formular
 
 Notas:
 - **Fotos en la reinscripción.** En 2026 nadie subió fotos, así que en esta primera temporada **a todos les faltan**: las 6 de S4 son **obligatorias**. Desde la temporada siguiente pasan a opcionales, con la ayuda "subilas sólo si cambió el DNI o si te lo pidió tu profe", y el tablero marca ❌ a quien le falte alguna. Los títulos de S4 llevan el sufijo ` (reinscripción)`; el script de carpetas las deja en la misma carpeta del chico y el tablero las suma a la misma columna que las de S3.
+- **Nombres.** Forms no transforma lo que se escribe: en Apellido y Nombre sólo se guía con la ayuda ("Ej.: GONZÁLEZ", "Ej.: Juan Martín (sin el apellido)") y una validación que rechaza números. El tablero normaliza (`MAYUSC`/`NOMPROPIO`) y marca en `Revisar` los apellidos y nombres cruzados y los posibles duplicados.
+- **Reenvíos.** Vale la **última** respuesta por DNI; el mensaje de confirmación se lo dice a la familia.
 - **Fecha de nacimiento** siempre. Las opciones de **Categoría** llevan sus años y **no llevan el año de temporada en el título**: coordinación las actualiza al empezar cada temporada. En `Revisar`, el tablero marca una categoría que no incluye el año de nacimiento.
 - **Consentimiento de datos obligatorio**, en los dos caminos. Uso de imagen y avisos de recaudación siguen opcionales y sin premarcar.
 - **Casilla "Emergencias en Semillero"**, al lado del consentimiento, en S9 (los dos caminos), opcional y sin premarcar. Texto de `docs/LEGAL-EMERGENCIAS.md`, que se pega tal cual.
@@ -83,8 +87,8 @@ Notas:
 | — | **Sección: Jugador (la ven todos)** | | | La primera pregunta tiene el salto: "No" va a **Datos que se piden una sola vez**; "Sí" va a **Documentación de reinscripción**. Forms lo aplica al tocar *Siguiente*. |
 | C | ¿Ya completó la ficha del básquet la temporada pasada (2026)? | Opción múltiple | sí | Sí / No. Ayuda: "Elegí **Sí** si ya completaste la ficha del básquet el año pasado (2026). Elegí **No** si es la primera vez o si no te acordás." |
 | D | DNI del jugador (sin puntos) | Respuesta corta | sí | Validación: expresión regular `^\d{7,8}$`, mensaje "Sólo números, sin puntos (7 u 8 dígitos)". Ayuda: "Escribilo sin puntos ni espacios. Si todavía no tiene DNI argentino, escribinos por WhatsApp." |
-| E | Apellido del jugador | Respuesta corta | sí |  |
-| F | Nombre del jugador | Respuesta corta | sí |  |
+| E | Apellido del jugador | Respuesta corta | sí | Ayuda: "Ej.: GONZÁLEZ". Validación: expresión regular `^[^0-9]+$`, mensaje "Escribí sólo letras, sin números". |
+| F | Nombre del jugador | Respuesta corta | sí | Ayuda: "Ej.: Juan Martín (sin el apellido)". Validación: expresión regular `^[^0-9]+$`, mensaje "Escribí sólo letras, sin números". |
 | G | Fecha de Nacimiento | Fecha | sí | Se pide siempre, también a los que ya jugaron. |
 | H | Categoría | Desplegable | sí | ESCUELITA - MIXTO / U9 - MIXTO (2017 y 2018) / U11 - MIXTO (2015 y 2016) / U13 - MIXTO (2014 y 2013) / U15 - MASCULINO (2012 y 2011) / U15 - FEMENINO (2012 y 2011) / U17 - MASCULINO (2010 y 2009) / U17 - FEMENINO (2010 y 2009) / U21 - MASCULINO (2008, 2007, 2006 y 2005) / U21 - FEMENINO (2008, 2007, 2006 y 2005) / MAYORES FEMENINO. Ayuda: "Elegí la que incluye el año en que nació." |
 | I | Rama | Opción múltiple | sí | Masculino / Femenino. Ayuda: "Si la categoría dice MASCULINO o FEMENINO, elegí la misma." |
@@ -149,6 +153,8 @@ Hoy los comprobantes llegan por WhatsApp. Acá quedan en la carpeta del chico, c
 
 **Un pago nuevo y simple** (ej. "Pantalón de entrenamiento") **no necesita formulario nuevo**: se suma como opción del desplegable `Concepto` y como fila en `Config` del tablero. Un formulario propio (Plantilla, abajo) sólo hace falta cuando el pago pide algo más: talle, cantidad de rifas.
 
+**Mensaje de confirmación:** "Listo, recibimos tu comprobante. La coordinación lo verifica. ¿Te equivocaste en algo? Volvé a mandar el formulario: tomamos el último. Si fue el DNI, avisale al coordinador."
+
 **Arranque:**
 > Con este formulario nos mandás el comprobante de lo que pagaste. Elegí qué estás pagando y sacale una foto al comprobante.
 > Lo tenés que completar **cada vez que pagás**. Si tenés dos chicos, completalo dos veces.
@@ -157,8 +163,8 @@ Hoy los comprobantes llegan por WhatsApp. Acá quedan en la carpeta del chico, c
 | Col | Título (exacto) | Tipo | Obligatoria | Ayuda / opciones |
 |---|---|---|---|---|
 | C | DNI del jugador (sin puntos) | Respuesta corta | sí | Validación: expresión regular `^\d{7,8}$`, mensaje "Sólo números, sin puntos (7 u 8 dígitos)". Ayuda: "Escribilo sin puntos ni espacios. Si todavía no tiene DNI argentino, escribinos por WhatsApp." |
-| D | Apellido del jugador | Respuesta corta | sí |  |
-| E | Nombre del jugador | Respuesta corta | sí |  |
+| D | Apellido del jugador | Respuesta corta | sí | Ayuda: "Ej.: GONZÁLEZ". Validación: expresión regular `^[^0-9]+$`, mensaje "Escribí sólo letras, sin números". |
+| E | Nombre del jugador | Respuesta corta | sí | Ayuda: "Ej.: Juan Martín (sin el apellido)". Validación: expresión regular `^[^0-9]+$`, mensaje "Escribí sólo letras, sin números". |
 | F | Concepto | Desplegable | sí | Opciones = los conceptos activos de la hoja Config del tablero (ej. "Arancel octubre 2026", "Cuota anual 2026"). Se actualiza cada mes. Ayuda: "Elegí qué estás pagando." |
 | G | Comprobante de pago | Subir archivo (1 archivo; imagen o PDF; 10 MB) | sí | Sacale una foto o una captura de pantalla al comprobante (la transferencia o el ticket), que se vea el monto y la fecha. Una sola foto o PDF, hasta 10 MB. |
 
@@ -170,8 +176,8 @@ Para un pago o trámite que pide algo más (rifa, pase, pantalón con talle): *H
 | Col | Título (exacto) | Tipo | Obligatoria | Ayuda / opciones |
 |---|---|---|---|---|
 | C | DNI del jugador (sin puntos) | Respuesta corta | sí | Validación: expresión regular `^\d{7,8}$`, mensaje "Sólo números, sin puntos (7 u 8 dígitos)". Ayuda: "Escribilo sin puntos ni espacios. Si todavía no tiene DNI argentino, escribinos por WhatsApp." |
-| D | Apellido del jugador | Respuesta corta | sí |  |
-| E | Nombre del jugador | Respuesta corta | sí |  |
+| D | Apellido del jugador | Respuesta corta | sí | Ayuda: "Ej.: GONZÁLEZ". Validación: expresión regular `^[^0-9]+$`, mensaje "Escribí sólo letras, sin números". |
+| E | Nombre del jugador | Respuesta corta | sí | Ayuda: "Ej.: Juan Martín (sin el apellido)". Validación: expresión regular `^[^0-9]+$`, mensaje "Escribí sólo letras, sin números". |
 
 Cada pregunta de archivo nueva lleva su ayuda corta, como las de arriba. El comprobante de ese pago se ve en la hoja `Pagos` del tablero como una columna "de formulario propio" (`google/sheets/TABLERO.md`, punto 5).
 

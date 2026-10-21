@@ -73,7 +73,7 @@ test('se queda con la última respuesta de cada DNI', () => {
   const otro = registro(cruda(1, '22222222'));
   const r = g.ultimaPorDni([nuevo, viejo, otro]);
   assert.equal(r.length, 2);
-  assert.equal(r.find((x) => x.dni === '11111111').apellido, 'Nuevo');
+  assert.equal(r.find((x) => x.dni === '11111111').apellido, 'NUEVO');
 });
 
 test('Para Semillero: 6 columnas exactas, mail vacío, rama de la categoría y sin DNI', () => {

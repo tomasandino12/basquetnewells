@@ -21,6 +21,18 @@ function claveTitulo(titulo) {
     .toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
+var PARTICULAS_NOMBRE = ['de', 'del', 'la', 'las', 'los', 'y', 'da', 'di', 'van', 'von'];
+
+/** Copia de nombres.gs: Nombre Propio con las partículas en minúscula. */
+function nombrePropio(texto) {
+  var palabras = String(texto == null ? '' : texto).replace(/\s+/g, ' ').trim().toLowerCase().split(' ');
+  return palabras.map(function (p, i) {
+    if (!p) return p;
+    if (i > 0 && PARTICULAS_NOMBRE.indexOf(p) >= 0) return p;
+    return p.replace(/(^|[-'])(\S)/g, function (m, pre, letra) { return pre + letra.toUpperCase(); });
+  }).join(' ');
+}
+
 var PARTICULAS_APELLIDO = ['de', 'del', 'di', 'da', 'la', 'las', 'los', 'van', 'san', 'mac', 'mc'];
 
 /**
@@ -80,8 +92,8 @@ function registroDeRespuesta(cruda, titulos) {
     dni: dni,
     momento: Number(cruda.momento),
     nombreCompleto: texto('nombreCompleto'),
-    apellido: nombre.apellido,
-    nombre: nombre.nombre,
+    apellido: nombre.apellido.toUpperCase(),
+    nombre: nombrePropio(nombre.nombre),
     revisar: nombre.revisar,
     fechaNacimiento: parsearFecha(v('fechaNacimiento')),
     categoria: texto('categoria'),
