@@ -195,49 +195,80 @@
 }
 
 /* ---- Portal "Básquet Newell's" (public/portal.html) ----
-   Jerarquía (21/10): arriba UNA acción principal en la banda roja y negra (la
-   camiseta); después atajos, calendario, la banda roja de recaudación, lo
-   secundario en una lista compacta y el buscador de categoría. Se alternan
-   bandas a todo el ancho y tarjetas para que no se lea como un formulario.
-   Sin animaciones de entrada: un texto de acá arriba puede ser el LCP. Una
-   columna en el celular; lo de compu vive en layout.css. Cada sección sin
-   datos queda con [hidden] (lo pone src/ui/portal.js). */
+   Ronda 2 (21/10): quien más la usa es un padre que viene a inscribir o a
+   mandar un comprobante. Esas dos acciones son las protagonistas de la banda
+   roja y negra de arriba (la camiseta); profes y jugadores tienen Semillero
+   en el encabezado; el coordinador aparece una vez, al final de las preguntas
+   frecuentes. Se alternan bandas a todo el ancho y tarjetas para que no se
+   lea como un formulario. Sin animaciones de entrada: un texto de acá arriba
+   puede ser el LCP. Una columna en el celular; lo de compu vive en
+   layout.css. Cada sección sin datos queda con [hidden] (lo pone src/ui/portal.js). */
 .portal-d::before{height:22rem;background:radial-gradient(ellipse 90% 90% at 85% 0,var(--club),transparent);opacity:.38}
 .portal{max-width:64rem;margin-inline:auto;width:100%;padding-bottom:var(--sp-4)}
 .portal [hidden]{display:none}
 
-.portal-barra{display:flex;align-items:center;gap:var(--sp-2);max-width:64rem;margin-inline:auto;width:100%;padding:var(--sp-3) var(--sp-4)}
+/* Encabezado: marca a la izquierda; Ayuda y "Soy profe o jugador" a la derecha. */
+.portal-barra{position:relative;z-index:3;display:flex;align-items:center;gap:var(--sp-2);max-width:64rem;margin-inline:auto;width:100%;padding:var(--sp-3) var(--sp-4)}
 .portal-barra img{width:2.25rem;height:2.25rem;flex:0 0 auto}
-.portal-barra .t{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:var(--fs-200);line-height:1}
+.portal-marca{min-width:0}
+.portal-barra .t{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:var(--fs-170);line-height:1}
 .portal-barra .t span{color:var(--primario)}
-.portal-barra .s{font-size:var(--fs-100);letter-spacing:.14em;text-transform:uppercase;color:var(--gris-osc);margin-top:.125rem}
-.portal-ayuda-btn{
-  margin-left:auto;display:inline-flex;align-items:center;gap:var(--sp-2);min-height:var(--tap);
-  font-size:var(--fs-135);font-weight:600;color:var(--sobre-oscuro);text-decoration:none;
-  background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r-full);padding:0 var(--sp-4);
+/* El subtítulo no entra junto a los dos botones en el celular: aparece desde 40rem (layout.css). */
+.portal-barra .s{display:none;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc);margin-top:.125rem}
+.portal-barra-acc{margin-left:auto;display:flex;align-items:center;gap:var(--sp-1)}
+.portal-barra-btn{
+  display:inline-flex;align-items:center;justify-content:center;min-height:var(--tap);padding:0 var(--sp-3);
+  font-size:var(--fs-125);font-weight:600;line-height:1.1;text-align:center;color:var(--sobre-oscuro);text-decoration:none;
+  background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r-full);cursor:pointer;white-space:nowrap;
 }
-.portal-ayuda-btn[hidden]{display:none}
-.portal-ayuda-btn i{width:.5rem;height:.5rem;border-radius:50%;background:var(--sube-osc)}
+.portal-sem-btn{list-style:none;white-space:normal;background:var(--primario);border-color:var(--primario);color:var(--sobre-club);max-width:7.5rem}
+.portal-sem-btn::-webkit-details-marker{display:none}
+.portal-sem[open] .portal-sem-btn{background:var(--primario-osc)}
+.portal-sem-panel{
+  position:absolute;right:var(--sp-4);top:calc(100% - var(--sp-1));width:min(22rem,calc(100vw - 2rem));
+  padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);
+}
+.portal-sem-panel > b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:var(--fs-230)}
+.portal-sem-panel p{color:var(--gris-osc);font-size:var(--fs-135);line-height:1.45;margin:var(--sp-1) 0 var(--sp-3)}
+.portal-sem-panel .btn{text-decoration:none}
+.portal-sem-inst{margin-top:var(--sp-3);padding-top:var(--sp-3);border-top:1px solid var(--pub-borde)}
+.portal-sem-inst small{display:block;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc)}
+.portal-sem-inst p{margin:var(--sp-2) 0 0;color:var(--sobre-oscuro)}
 
 /* La banda de arriba: mitad roja, mitad negra en diagonal, como la camiseta,
-   con el escudo de marca de agua. Lleva la única acción principal. */
+   con el escudo de marca de agua y las dos acciones protagonistas. */
 .portal-heroe{
-  position:relative;isolation:isolate;overflow:hidden;padding:var(--sp-6) var(--sp-4) var(--sp-8);
+  position:relative;isolation:isolate;overflow:hidden;padding:var(--sp-5) var(--sp-4) var(--sp-6);
   background:linear-gradient(118deg,var(--primario) 0 62%,var(--pub-fondo) 62%);color:var(--sobre-club);
 }
 .portal-heroe::after{content:"";position:absolute;right:-3.5rem;bottom:-2.5rem;z-index:-1;width:13rem;height:13rem;background:url(/public/escudo.png) center/contain no-repeat;opacity:.16;pointer-events:none}
 .portal-heroe-ey{font-family:var(--ff-titulo);font-weight:700;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-115)}
-.portal-heroe h1{font-size:clamp(2.75rem,2.2rem + 3vw,4rem);line-height:.9;margin:var(--sp-2) 0 var(--sp-3);max-width:16rem}
-.portal-heroe p{font-size:var(--fs-145);line-height:1.45;margin:0 0 var(--sp-5);max-width:18rem}
-.portal-heroe-btn{
-  display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);width:100%;max-width:24rem;min-height:3.5rem;padding:0 var(--sp-5);
-  background:var(--sobre-oscuro);color:var(--pub-fondo);text-decoration:none;border:0;border-radius:var(--r-btn);
-  font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-230);letter-spacing:.06em;text-transform:uppercase;
-  transition:transform var(--dur-1) var(--ease-salida);
+.portal-heroe h1{font-size:clamp(2.5rem,2rem + 3vw,3.75rem);line-height:.9;margin:var(--sp-2) 0 var(--sp-4);max-width:18rem}
+.portal-heroe > div > p{font-size:var(--fs-145);margin:0}
+.portal-acciones{display:grid;gap:var(--sp-3)}
+/* Cada acción: un botón grande con ícono, título y una línea. */
+.portal-accion{
+  display:grid;grid-template-columns:2.75rem 1fr auto;align-items:center;gap:var(--sp-3);min-height:4.5rem;padding:var(--sp-3) var(--sp-4);
+  border-radius:var(--r);text-decoration:none;transition:transform var(--dur-1) var(--ease-salida);
 }
-.portal-heroe-btn:active{transform:scale(.97)}
-/* Sin formulario activo: el botón se ve, apagado (borde punteado), y dice cuándo se habilita. */
-.portal-heroe-btn:disabled{background:transparent;color:var(--sobre-club);border:1px dashed currentColor;justify-content:center;font-size:var(--fs-145);cursor:not-allowed;transform:none}
+a.portal-accion:active{transform:scale(.98)}
+.portal-accion i{display:grid;place-items:center;width:2.75rem;height:2.75rem;border-radius:50%}
+.portal-accion svg{width:1.375rem;height:1.375rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.portal-accion b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:var(--fs-230);line-height:1}
+.portal-accion small{display:block;font-size:var(--fs-125);line-height:1.35;margin-top:var(--sp-1)}
+.portal-accion em{font-style:normal;font-size:var(--fs-190)}
+.portal-accion.principal{background:var(--sobre-oscuro);color:var(--pub-fondo)}
+.portal-accion.principal i{background:var(--primario);color:var(--sobre-club)}
+.portal-accion.principal small{color:var(--gris)}
+.portal-accion.pago{background:var(--pub-tarjeta);color:var(--sobre-oscuro);border:1px solid var(--pub-borde)}
+.portal-accion.pago i{background:var(--pub-fondo);color:var(--primario)}
+.portal-accion.pago small{color:var(--gris-osc)}
+/* Sin formulario activo: igual de grande, pero apagada (borde punteado) y diciendo cuándo se habilita. */
+.portal-accion.apagada{background:transparent;color:var(--sobre-club);border:1px dashed currentColor}
+.portal-accion.apagada i{background:transparent;color:inherit;border:1px solid currentColor}
+.portal-accion.apagada small{color:inherit}
+.portal-pago{min-width:0}
+.portal-heroe .portal-alias{margin-top:var(--sp-2);background:var(--pub-fondo);border-style:solid}
 
 /* Botón de una tarjeta sin formulario activo: visible pero claramente apagado
    (borde punteado y sin relleno), con el texto en una línea o dos legibles. */
@@ -246,25 +277,13 @@
   font-size:var(--fs-135);letter-spacing:.06em;line-height:1.25;text-align:center;cursor:not-allowed;
 }
 
-/* "También podés": lo secundario, en filas compactas con ícono y estado. */
-.portal-filas{margin-top:var(--sp-2);border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden}
-.portal-fila{display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:var(--sp-3);min-height:3.75rem;padding:var(--sp-3) var(--sp-4);background:var(--pub-tarjeta);color:var(--sobre-oscuro);text-decoration:none}
-.portal-fila + .portal-fila{border-top:1px solid var(--pub-borde)}
-a.portal-fila:active{background:var(--presion-osc)}
-.portal-fila i{display:grid;place-items:center;width:2.5rem;height:2.5rem;border-radius:50%;background:var(--pub-fondo);color:var(--primario)}
-.portal-fila svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.portal-fila b{display:block;font-size:var(--fs-145);font-weight:600;line-height:1.25}
-.portal-fila small{display:block;font-size:var(--fs-115);color:var(--gris-osc);margin-top:.125rem;line-height:1.35}
-.portal-fila em{font-style:normal;font-family:var(--ff-titulo);font-size:var(--fs-115);font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:var(--sp-1) var(--sp-3);border-radius:var(--r-btn);background:var(--primario);color:var(--sobre-club)}
-.portal-fila.apagada i{color:var(--gris-osc)}
-.portal-fila.apagada em{background:transparent;color:var(--gris-osc);border:1px dashed var(--gris-osc)}
-
-/* La banda roja a todo el ancho de recaudación, con el escudo chico y a color en la esquina. */
+/* La banda roja a todo el ancho de recaudación: el título grande, los
+   ejemplos chicos y el escudo chico y a color en la esquina. */
 .portal-banda{position:relative;margin-top:var(--sp-8);padding:var(--sp-6) var(--sp-4);background:var(--primario);color:var(--sobre-club);scroll-margin-top:var(--sp-4)}
 .portal-banda-escudo{position:absolute;top:var(--sp-4);right:var(--sp-4);width:2.75rem;height:2.75rem}
-.portal-banda-ey{font-family:var(--ff-titulo);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-115);max-width:calc(100% - 3.5rem)}
-.portal-banda h2{font-size:clamp(2.25rem,1.8rem + 2vw,3rem);line-height:.95;margin:var(--sp-2) 0}
-.portal-banda p{font-size:var(--fs-145);line-height:1.45;margin:0 0 var(--sp-4);max-width:22rem}
+.portal-banda h2{font-size:clamp(1.75rem,1.4rem + 2vw,2.75rem);line-height:.95;margin:0 0 var(--sp-2);max-width:calc(100% - 3.5rem)}
+.portal-banda-ej{font-family:var(--ff-titulo);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-125)}
+.portal-banda p{font-size:var(--fs-145);line-height:1.45;margin:var(--sp-2) 0 var(--sp-4);max-width:22rem}
 .portal-banda-btn{
   display:inline-flex;align-items:center;gap:var(--sp-2);min-height:var(--tap);padding:0 var(--sp-5);
   background:var(--pub-fondo);color:var(--sobre-oscuro);text-decoration:none;border:0;border-radius:var(--r-btn);
@@ -273,6 +292,35 @@ a.portal-fila:active{background:var(--presion-osc)}
 }
 .portal-banda-btn:active{transform:scale(.97)}
 .portal-banda-btn:disabled{background:transparent;color:var(--sobre-club);border:1px dashed currentColor;font-size:var(--fs-125);cursor:not-allowed;transform:none}
+
+/* "Sumate al básquet de Newell's": las dos formas de colaborar y un botón. */
+.portal-colaborar h2{font-size:clamp(2rem,1.6rem + 2vw,2.75rem);line-height:.95;margin-bottom:var(--sp-4)}
+.portal-formas{list-style:none;margin:0 0 var(--sp-4);padding:0;display:grid;gap:var(--sp-3)}
+.portal-formas li{display:grid;grid-template-columns:2.75rem 1fr;gap:var(--sp-3);align-items:start;padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);color:var(--gris-osc);font-size:var(--fs-135);line-height:1.45}
+.portal-formas i{display:grid;place-items:center;width:2.75rem;height:2.75rem;border-radius:50%;background:var(--pub-fondo);color:var(--primario)}
+.portal-formas svg{width:1.375rem;height:1.375rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.portal-formas b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:var(--fs-200);line-height:1.1;color:var(--sobre-oscuro);margin-bottom:var(--sp-1)}
+.portal-colaborar .btn{text-decoration:none}
+
+/* Preguntas frecuentes en acordeón: tocás la pregunta y se abre la respuesta. */
+.portal-faqs{border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden;background:var(--pub-tarjeta)}
+.portal-faq + .portal-faq{border-top:1px solid var(--pub-borde)}
+.portal-faq summary{
+  display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);min-height:3.5rem;padding:var(--sp-3) var(--sp-4);
+  list-style:none;cursor:pointer;font-weight:600;font-size:var(--fs-145);line-height:1.3;
+}
+.portal-faq summary::-webkit-details-marker{display:none}
+.portal-faq summary::after{content:"+";flex:0 0 auto;font-size:var(--fs-230);font-weight:400;color:var(--primario);transition:transform var(--dur-2) var(--ease-salida)}
+.portal-faq[open] summary::after{transform:rotate(45deg)}
+.portal-faq-r{padding:0 var(--sp-4) var(--sp-4);color:var(--gris-osc);font-size:var(--fs-145);line-height:1.55}
+.portal-faq-r p{margin:0}
+.portal-faq-r b{color:var(--sobre-oscuro);font-weight:600}
+.portal-faq-r a{color:var(--sobre-oscuro);font-weight:600}
+.portal-faq-r .btn{display:inline-flex;width:auto;margin-top:var(--sp-3);min-height:var(--tap);padding:0 var(--sp-4);font-size:var(--fs-145);text-decoration:none}
+.portal-faq-fin{display:grid;gap:var(--sp-1);padding:var(--sp-5) var(--sp-4);border-top:1px solid var(--pub-borde);background:var(--pub-fondo)}
+.portal-faq-fin b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:var(--fs-230)}
+.portal-faq-fin span{color:var(--gris-osc);font-size:var(--fs-145);margin-bottom:var(--sp-3)}
+.portal-faq-fin .btn{text-decoration:none}
 
 .portal-alias{
   display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);
@@ -403,34 +451,34 @@ a.portal-fila:active{background:var(--presion-osc)}
 .portal-seguir .btn{text-decoration:none;font-size:var(--fs-135);padding:var(--sp-2);letter-spacing:.08em}
 
 /* ---- categorías y sede ---- */
-/* "¿En qué categoría juega?": una banda a todo el ancho con un filete del club.
-   Elegís el año con − y + y la categoría aparece grande, en rojo. */
-.portal-sec.portal-cat{margin-top:var(--sp-8);padding-top:var(--sp-6);padding-bottom:var(--sp-6);background:var(--pub-tarjeta);border-top:3px solid var(--primario)}
-.portal-cat h2{font-size:clamp(2rem,1.6rem + 2vw,2.75rem);line-height:.95}
+/* "¿En qué categoría juega?": compacto. En el celular, el año arriba y la
+   categoría abajo; en compu, lado a lado y ocupando todo el ancho (layout.css). */
+.portal-sec.portal-cat{margin-top:var(--sp-8);padding-top:var(--sp-6);padding-bottom:var(--sp-5);background:var(--pub-tarjeta);border-top:3px solid var(--primario)}
+.portal-buscador{display:grid;gap:var(--sp-3);margin-top:var(--sp-2)}
 .portal-anio-et{display:block;font-size:var(--fs-115);color:var(--gris-osc);margin-bottom:var(--sp-1)}
-.portal-anio{display:grid;grid-template-columns:3.5rem 1fr 3.5rem;align-items:center;max-width:24rem;background:var(--pub-fondo);border:1px solid var(--pub-borde);border-radius:var(--r)}
+.portal-anio{display:grid;grid-template-columns:3.25rem 1fr 3.25rem;align-items:center;background:var(--pub-fondo);border:1px solid var(--pub-borde);border-radius:var(--r)}
 .portal-anio button{
-  min-height:3.5rem;font:inherit;font-size:var(--fs-260);line-height:1;color:var(--sobre-oscuro);background:none;border:0;cursor:pointer;
+  min-height:3.25rem;font:inherit;font-size:var(--fs-260);line-height:1;color:var(--sobre-oscuro);background:none;border:0;cursor:pointer;
   transition:transform var(--dur-1) var(--ease-salida);
 }
 .portal-anio button:active{transform:scale(.9)}
 .portal-anio button:disabled{color:var(--gris-osc);cursor:default;transform:none}
-.portal-anio output{text-align:center;font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-300)}
-.portal-cat-res{margin-top:var(--sp-3);max-width:24rem;padding:var(--sp-4);border-radius:var(--r);background:var(--primario);color:var(--sobre-club)}
-.portal-cat-res + .portal-cat-res{margin-top:var(--sp-2)}
-.portal-cat-nombre{display:flex;align-items:baseline;gap:var(--sp-2)}
-.portal-cat-nombre b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:clamp(2.5rem,2.2rem + 1.5vw,3rem);line-height:1}
+.portal-anio output{text-align:center;font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-260)}
+.portal-cat-resultado{display:grid;gap:var(--sp-2);align-content:start}
+.portal-cat-res{padding:var(--sp-3) var(--sp-4);border-radius:var(--r);background:var(--primario);color:var(--sobre-club)}
+.portal-cat-nombre{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 var(--sp-2)}
+.portal-cat-nombre b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-300);line-height:1}
 .portal-cat-nombre span{font-family:var(--ff-titulo);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:var(--fs-125)}
-.portal-cat-anios{font-size:var(--fs-125);margin-top:var(--sp-1)}
-.portal-cat-hora{list-style:none;margin:var(--sp-3) 0 0;padding:0;display:grid;gap:var(--sp-1);font-size:var(--fs-135);font-weight:600}
-.portal-cat-sin{margin:var(--sp-3) 0 0;font-size:var(--fs-135)}
-.portal-cat-nada{margin:var(--sp-3) 0 0;max-width:24rem;color:var(--gris-osc);font-size:var(--fs-145);line-height:1.45}
+.portal-cat-nombre small{margin-left:auto;font-size:var(--fs-125)}
+.portal-cat-hora{list-style:none;margin:var(--sp-2) 0 0;padding:0;display:grid;gap:.125rem;font-size:var(--fs-135);font-weight:600}
+.portal-cat-sin{margin:var(--sp-2) 0 0;font-size:var(--fs-135)}
+.portal-cat-nada{margin:0;color:var(--gris-osc);font-size:var(--fs-145);line-height:1.45}
 .portal-cat-nada a{color:var(--sobre-oscuro);font-weight:600}
-.portal-todas{margin-top:var(--sp-5);border-top:1px solid var(--pub-borde);padding-top:var(--sp-2)}
+.portal-todas{margin-top:var(--sp-4);border-top:1px solid var(--pub-borde);padding-top:var(--sp-1)}
 .portal-todas summary{display:flex;align-items:center;min-height:var(--tap);font-weight:600;font-size:var(--fs-145);cursor:pointer}
 .portal-todas[open] summary{margin-bottom:var(--sp-2)}
-/* Dentro de la banda, la lista y la sede van sobre el fondo, para que se despeguen. */
-.portal-cat .portal-cats,.portal-cat .portal-sede{background:var(--pub-fondo)}
+/* Dentro de la banda, la lista va sobre el fondo, para que se despegue. */
+.portal-cat .portal-cats{background:var(--pub-fondo)}
 .portal-cats{list-style:none;margin:0;padding:0;background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r)}
 .portal-cats li{display:grid;grid-template-columns:1fr auto;gap:0 var(--sp-3);align-items:baseline;padding:var(--sp-3) var(--sp-4)}
 .portal-cats li + li{border-top:1px solid var(--pub-borde)}
@@ -440,11 +488,6 @@ a.portal-fila:active{background:var(--presion-osc)}
 .portal-cats-hora{grid-column:1 / -1;font-size:var(--fs-125);color:var(--gris-osc);margin-top:var(--sp-1)}
 /* Un día por renglón ("Mar 18 a 19 h (Estadio Cubierto)"): partido a la mitad no se lee. */
 .portal-cats-hora span{display:block}
-.portal-sede{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-top:var(--sp-3);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);padding:var(--sp-4)}
-.portal-sede small{display:block;font-size:var(--fs-100);color:var(--gris-osc);text-transform:uppercase;letter-spacing:.1em}
-.portal-sede b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-190)}
-.portal-sede span{display:block;font-size:var(--fs-135);color:var(--gris-osc)}
-.portal-sede .btn{width:auto;min-height:var(--tap);padding:0 var(--sp-4);font-size:var(--fs-145);text-decoration:none}
 
 .portal-foto{margin:0;border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden;background:var(--pub-tarjeta)}
 .portal-foto img{display:block;width:100%;height:auto;aspect-ratio:3 / 2;object-fit:cover}

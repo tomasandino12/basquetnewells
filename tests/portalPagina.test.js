@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlHeroe, htmlMas, htmlAlias, htmlBuscador, htmlCategoriaDelAnio, htmlProximo,
-  htmlRecaudacion, htmlAtajos, htmlCalendario, htmlCategorias, htmlSede, htmlFoto, diaInicial, htmlSuscripcion,
+  htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlHeroe, htmlAlias, htmlBuscador, htmlCategoriaDelAnio, htmlProximo,
+  htmlRecaudacion, htmlColaborar, htmlAyuda, htmlAtajos, htmlCalendario, htmlCategorias, htmlFoto, diaInicial, htmlSuscripcion,
 } from '../src/ui/portal.js';
 import { eventoDesdeGoogle, eventosPorDia, proximosEventos } from '../src/data/agenda.js';
 
@@ -16,19 +16,19 @@ const pagina = readFileSync('public/portal.html', 'utf8');
 const portal = readFileSync('src/ui/portal.js', 'utf8');
 const seccion = (id) => pagina.match(new RegExp(`<section [^>]*id="${id}"[\\s\\S]*?</section>`))?.[0] ?? '';
 
-test('arriba de todo, la banda con la acción principal; después el resto, en orden', () => {
-  const orden = ['heroe', 'calendario', 'recaudacion', 'mas', 'categorias', 'formularios', 'club', 'sponsors', 'semillero'];
+test('arriba de todo, la banda con las dos acciones; después el resto, en orden, y las preguntas frecuentes al final', () => {
+  const orden = ['heroe', 'calendario', 'recaudacion', 'colaborar', 'categorias', 'formularios', 'club', 'sponsors', 'ayuda'];
   const posiciones = orden.map((id) => pagina.search(new RegExp(`<section [^>]*id="${id}"`)));
   assert.ok(posiciones.every((p) => p > 0), `faltan secciones: ${posiciones}`);
   assert.deepEqual([...posiciones].sort((a, b) => a - b), posiciones, 'las secciones están desordenadas');
   assert.match(seccion('heroe'), /<h1>/, 'el h1 de la página está en la banda');
 });
 
-test('las secciones que dependen de datos arrancan ocultas; la banda, recaudación y la lista se ven siempre', () => {
+test('las secciones que dependen de datos arrancan ocultas; la banda, recaudación, colaborar y la ayuda se ven siempre', () => {
   for (const id of ['calendario', 'categorias', 'formularios', 'club', 'sponsors']) {
     assert.match(seccion(id).split('>')[0], /\bhidden\b/, `#${id} tiene que arrancar oculta`);
   }
-  for (const id of ['heroe', 'recaudacion', 'mas']) {
+  for (const id of ['heroe', 'recaudacion', 'colaborar', 'ayuda']) {
     assert.doesNotMatch(seccion(id).split('>')[0], /\bhidden\b/, `#${id} se ve siempre`);
   }
 });
@@ -38,11 +38,21 @@ test('ni la página ni su código dicen "Próximamente"', () => {
   assert.doesNotMatch(portal, /Próximamente/i);
 });
 
-test('el botón a Semillero lleva a /app e incluye cómo instalarla', () => {
-  const sec = seccion('semillero');
-  assert.match(sec, /<a class="btn sec" href="\/app">/);
-  assert.match(sec, /Agregar a inicio/);
-  assert.match(sec, /Instalar/);
+test('el encabezado tiene Ayuda (a las preguntas frecuentes) y Semillero, con cómo instalarla', () => {
+  const barra = pagina.match(/<header class="portal-barra">[\s\S]*?<\/header>/)[0];
+  assert.match(barra, /<a class="portal-barra-btn" href="#ayuda">Ayuda<\/a>/);
+  const sem = barra.match(/<details class="portal-sem" id="semillero">[\s\S]*?<\/details>/)[0];
+  assert.match(sem, /<summary[^>]*>Soy profe o jugador<\/summary>/);
+  assert.match(sem, /<a class="btn" href="\/app">Entrar a Semillero<\/a>/);
+  assert.match(sem, /Instalar app/);
+  assert.match(sem, /Agregar a inicio/);
+});
+
+test('el coordinador aparece una sola vez: al final de las preguntas frecuentes', () => {
+  assert.doesNotMatch(pagina.replace(/<!--[\s\S]*?-->/g, ''), /wa\.me|coordinador/i, 'el HTML no lo nombra: sale de htmlAyuda');
+  assert.equal((portal.match(/enlaceContacto\(/g) ?? []).length, 1, 'sólo htmlAyuda arma el enlace al coordinador');
+  const desde = portal.indexOf('export function htmlAyuda(');
+  assert.ok(portal.indexOf('enlaceContacto(') > desde, 'y es el de htmlAyuda');
 });
 
 const importMapDe = (html) => html.replace(/\r\n/g, '\n').match(/<script type="importmap">([\s\S]*?)<\/script>/)?.[1];
@@ -86,69 +96,49 @@ test('el portal no consulta nada si la URL es la vuelta de un login: esos links 
   assert.ok(guarda < portal.lastIndexOf('iniciarCalendario(calendarios)'), 'y antes de pedir el calendario');
 });
 
-// ---- La banda de arriba: una sola acción principal ----
+// ---- La banda de arriba: las dos acciones protagonistas ----
 
 const FORM = (texto, enlace = 'https://forms.gle/Abc1') => ({ titulo: 'x', texto, enlace });
 const MALO = FORM('x', 'https://evil.com/forms/x');
+const acciones = (out) => out.match(/class="portal-accion [^"]*"/g) ?? [];
 
-test('banda con la inscripción abierta: "Inscribí a tu hijo o hija", la línea escapada y el botón a Google', () => {
-  const out = htmlHeroe({ inscripcion: FORM('Tené a mano el DNI <b>'), consultas: FORM('y', 'https://forms.gle/Jug1'), temporada: 2027 }).toString();
-  assert.match(out, /Temporada 2027 · Inscripción abierta/);
-  assert.match(out, /<h1>Inscribí a tu hijo o hija<\/h1>/);
-  assert.match(out, /Tené a mano el DNI &lt;b&gt;/);
-  assert.match(out, /<a class="portal-heroe-btn" href="https:\/\/forms\.gle\/Abc1" target="_blank" rel="noopener">Inscribir/);
-  assert.doesNotMatch(out, /Jug1/, 'con la inscripción abierta, "Quiero jugar" no va arriba');
-});
-
-test('banda con la inscripción cerrada: "¿Querés jugar en Newell\'s?" al formulario de consultas', () => {
-  for (const inscripcion of [null, MALO]) {
-    const out = htmlHeroe({ inscripcion, consultas: FORM('Para chicos de 8 a 18 <años>', 'https://forms.gle/Jug1') }).toString();
-    assert.match(out, /Inscripción cerrada/);
-    assert.match(out, /<h1>¿Querés jugar en Newell's\?<\/h1>/);
-    assert.match(out, /Dejá tus datos y te contactamos para que vengas a probar\./);
-    assert.doesNotMatch(out, /Para chicos/, 'la línea del panel no va en la banda');
-    assert.match(out, /<a class="portal-heroe-btn" href="https:\/\/forms\.gle\/Jug1" target="_blank" rel="noopener">Quiero jugar/);
-  }
-});
-
-test('banda sin ningún formulario: el botón se ve apagado y no lleva a ningún lado; no anuncia qué botón vendrá', () => {
-  for (const consultas of [null, MALO]) {
-    const out = htmlHeroe({ consultas }).toString();
-    assert.match(out, /<button type="button" class="portal-heroe-btn" disabled aria-disabled="true">Se habilita cuando abra el formulario<\/button>/);
-    assert.doesNotMatch(out, /<a |evil/);
-    assert.doesNotMatch(out, /pasa a ser/);
-  }
-});
-
-// ---- "También podés": lo secundario, en una lista compacta ----
-
-test('lista: comprobante, sponsors y coordinador; lo que no tiene formulario se ve apagado y dice "Pronto"', () => {
-  const out = htmlMas({ contacto: 'https://wa.me/5493410000000' }).toString();
-  assert.match(out, /<div class="portal-fila apagada" aria-disabled="true">[\s\S]*Enviar comprobante[\s\S]*Se habilita cuando haya algo para pagar[\s\S]*<em>Pronto<\/em><\/div>/);
-  assert.match(out, /Sumate como sponsor o colaborador[\s\S]*Dejanos tu mail y te avisamos de los eventos/);
-  assert.match(out, /<a class="portal-fila" href="https:\/\/wa\.me\/5493410000000" target="_blank" rel="noopener">[\s\S]*Hablar con el coordinador[\s\S]*Por WhatsApp/);
-  assert.doesNotMatch(out, /Quiero jugar/, 'con la inscripción cerrada, "Quiero jugar" está arriba');
-  assert.equal((out.match(/class="portal-fila/g) ?? []).length, 3);
-});
-
-test('lista: con formularios activos, filas tocables; "Quiero jugar" baja a la lista si arriba está la inscripción', () => {
-  const out = htmlMas({
-    comprobante: FORM('x', 'https://forms.gle/Com1'), colaboradores: FORM('x', 'https://forms.gle/Col1'),
-    consultas: FORM('x', 'https://forms.gle/Jug1'), inscripcionAbierta: true, contacto: 'mailto:coord@club.com',
+test('banda con la inscripción abierta: "Inscribir a mi hijo o hija" y "Enviar comprobante", con el alias', () => {
+  const out = htmlHeroe({
+    inscripcion: FORM('x'), consultas: FORM('y', 'https://forms.gle/Jug1'), comprobante: FORM('z', 'https://forms.gle/Com1'),
+    temporada: 2027, alias: { alias: 'NOB.BASQUET', titular: 'Club <x>' },
   }).toString();
-  assert.match(out, /<a class="portal-fila" href="https:\/\/forms\.gle\/Com1" target="_blank" rel="noopener">[\s\S]*Enviar comprobante[\s\S]*<em>Subir<\/em>/);
-  assert.match(out, /href="https:\/\/forms\.gle\/Jug1"[\s\S]*Quiero jugar en Newell&#39;s/);
-  assert.match(out, /href="https:\/\/forms\.gle\/Col1"/);
-  assert.match(out, /Por mail/);
-  assert.doesNotMatch(htmlMas({ comprobante: MALO }).toString(), /evil/);
-  assert.doesNotMatch(htmlMas({ contacto: 'javascript:alert(1)' }).toString(), /coordinador|javascript/);
+  assert.match(out, /Temporada 2027 · Inscripción abierta/);
+  assert.match(out, /<h1>¿Qué necesitás hacer\?<\/h1>/);
+  assert.match(out, /<a class="portal-accion principal" href="https:\/\/forms\.gle\/Abc1" target="_blank" rel="noopener">[\s\S]*Inscribir a mi hijo o hija/);
+  assert.match(out, /<a class="portal-accion pago" href="https:\/\/forms\.gle\/Com1" target="_blank" rel="noopener">[\s\S]*Enviar comprobante/);
+  assert.match(out, /data-copiar="NOB\.BASQUET"/);
+  assert.match(out, /Club &lt;x&gt;/);
+  assert.doesNotMatch(out, /Jug1/, 'con la inscripción abierta, "Quiero jugar" no va arriba');
+  assert.equal(acciones(out).length, 2, 'dos acciones, ni una más');
+});
+
+test('banda con la inscripción cerrada: "Quiero jugar en Newell\'s" al formulario de consultas', () => {
+  for (const inscripcion of [null, MALO]) {
+    const out = htmlHeroe({ inscripcion, consultas: FORM('Para chicos <x>', 'https://forms.gle/Jug1') }).toString();
+    assert.match(out, /Inscripción cerrada/);
+    assert.match(out, /<a class="portal-accion principal" href="https:\/\/forms\.gle\/Jug1"[\s\S]*Quiero jugar en Newell&#39;s/);
+    assert.match(out, /Dejá tus datos y te contactamos para venir a probar/);
+    assert.doesNotMatch(out, /Para chicos/, 'la línea del panel no va en la banda');
+  }
+});
+
+test('banda sin formularios: las dos acciones se ven igual de grandes, apagadas, y dicen cuándo se habilitan', () => {
+  const out = htmlHeroe({ consultas: MALO, comprobante: MALO }).toString();
+  assert.match(out, /<div class="portal-accion principal apagada" aria-disabled="true">[\s\S]*Se habilita cuando abra el formulario/);
+  assert.match(out, /<div class="portal-accion pago apagada" aria-disabled="true">[\s\S]*Se habilita cuando haya algo para pagar/);
+  assert.doesNotMatch(out, /<a |evil/);
+  assert.equal(acciones(out).length, 2);
 });
 
 test('alias: escapado y con botón para copiarlo; uno inválido no se muestra', () => {
   const out = htmlAlias({ alias: 'NOB.BASQUET', titular: 'Club <x>' }).toString();
   assert.match(out, /<b>NOB\.BASQUET<\/b>/);
   assert.match(out, /data-copiar="NOB\.BASQUET"/);
-  assert.match(out, /Club &lt;x&gt;/);
   assert.equal(htmlAlias({ alias: 'mal alias' }).toString(), '');
 });
 
@@ -238,7 +228,6 @@ test('día inicial: hoy si es del mes; si no, el primero con algo, o el 1', () =
 
 test('sin datos, cada parte no devuelve nada (la sección queda oculta)', () => {
   assert.equal(htmlCategorias([]).toString(), '');
-  assert.equal(htmlSede(null).toString(), '');
   assert.equal(htmlFoto(null).toString(), '');
   assert.equal(htmlFormularios([]).toString(), '');
 });
@@ -247,29 +236,29 @@ test('buscador: − y + alrededor del año, apagados en los topes, y el resultad
   const out = htmlBuscador(2014, { min: 1997, max: 2023 }).toString();
   assert.match(out, /<button type="button" data-anio="-1" aria-label="Un año antes">−<\/button>/);
   assert.match(out, /<output id="portal-anio">2014<\/output>/);
-  assert.match(out, /<div id="portal-cat-res" aria-live="polite">/);
+  assert.match(out, /<div class="portal-cat-resultado" id="portal-cat-res" aria-live="polite">/);
   assert.match(htmlBuscador(1997, { min: 1997, max: 2023 }).toString(), /data-anio="-1" aria-label="Un año antes" disabled/);
   assert.match(htmlBuscador(2023, { min: 1997, max: 2023 }).toString(), /data-anio="1" aria-label="Un año después" disabled/);
 });
 
-test('categoría del año: grande, con sus años y su horario; sin horario, lo dice; escapado', () => {
+test('categoría del año: el nombre, sus años y su horario; sin horario, lo dice; escapado', () => {
   const out = htmlCategoriaDelAnio(2014, [{ nombre: 'U13', rama: 'Mixto', anios: '2014 y 2015', horario: 'Lun <18 h> · Mié 18 h' }]).toString();
-  assert.match(out, /<b>U13<\/b><span>Mixto<\/span>/);
-  assert.match(out, /Nacidos 2014 y 2015/);
+  assert.match(out, /<b>U13<\/b><span>Mixto<\/span><small>Nacidos 2014 y 2015<\/small>/);
   assert.match(out, /<li>Lun &lt;18 h&gt;<\/li><li>Mié 18 h<\/li>/);
   const primeras = htmlCategoriaDelAnio(1990, [
     { nombre: 'Primera', rama: 'Masculino', anios: '2005 y antes', horario: null },
     { nombre: 'Primera', rama: 'Femenino', anios: '2005 y antes', horario: null },
   ]).toString();
   assert.equal((primeras.match(/class="portal-cat-res"/g) ?? []).length, 2);
-  assert.match(primeras, /Horario a confirmar/);
+  assert.match(primeras, /Horario a confirmar\./);
+  assert.doesNotMatch(primeras, /coordinador/);
 });
 
-test('categoría del año: sin ninguna, lo dice y manda al coordinador sólo si el contacto es válido', () => {
-  const out = htmlCategoriaDelAnio(2021, [], 'https://wa.me/5493410000000').toString();
+test('categoría del año: sin ninguna, lo dice y manda a las preguntas frecuentes, no al coordinador', () => {
+  const out = htmlCategoriaDelAnio(2021, []).toString();
   assert.match(out, /Para chicos nacidos en 2021 todavía no hay categoría\./);
-  assert.match(out, /<a href="https:\/\/wa\.me\/5493410000000" target="_blank" rel="noopener">Escribile al coordinador<\/a>/);
-  assert.doesNotMatch(htmlCategoriaDelAnio(2021, [], 'javascript:alert(1)').toString(), /<a /);
+  assert.match(out, /<a href="#ayuda">/);
+  assert.doesNotMatch(out, /wa\.me|coordinador/);
 });
 
 test('categorías: nombre, rama, años y horario, escapados', () => {
@@ -281,9 +270,7 @@ test('categorías: nombre, rama, años y horario, escapados', () => {
   assert.match(dos, /<span>Lun 18 h<\/span><span>Mié 19 h<\/span>/);
 });
 
-test('sede con "Cómo llegar" sólo si el mapa es de Google Maps; foto con su alt', () => {
-  assert.match(htmlSede({ nombre: 'Microestadio', mapa: 'https://maps.app.goo.gl/abc' }).toString(), /href="https:\/\/maps\.app\.goo\.gl\/abc"[^>]*>Cómo llegar/);
-  assert.doesNotMatch(htmlSede({ nombre: 'Microestadio', mapa: 'https://evil.com' }).toString(), /<a /);
+test('foto con su alt', () => {
   assert.match(htmlFoto({ src: '/public/portal/club.jpg', alt: 'La cancha' }).toString(), /<img src="\/public\/portal\/club\.jpg" alt="La cancha" loading="lazy">/);
 });
 
@@ -302,25 +289,59 @@ test('cada formulario muestra su línea de ayuda y abre en otra pestaña; uno co
 
 test('el portal aparta los formularios con lugar propio: no aparecen dos veces', () => {
   assert.match(portal, /const \{ inscripcion, comprobante, consultas, colaboradores, recaudacion, comunes \} = separarFormularios\(formularios\);/);
-  assert.match(portal, /htmlHeroe\(\{ inscripcion, consultas,/);
-  assert.match(portal, /htmlMas\(\{ comprobante, consultas, colaboradores,/);
+  assert.match(portal, /htmlHeroe\(\{ inscripcion, consultas, comprobante,/);
+  assert.match(portal, /htmlColaborar\(colaboradores\)/);
   assert.match(portal, /htmlRecaudacion\(recaudacion\)/);
   assert.match(portal, /htmlFormularios\(comunes\)/);
 });
 
 // ---- Recaudación: banda roja con su propio formulario (destino recaudacion, 0063) ----
 
-test('htmlRecaudacion: la banda con el escudo chico, su formulario y, sin él, el botón apagado', () => {
+test('htmlRecaudacion: grande "Enterate…", chico los ejemplos, y sin formulario el botón apagado', () => {
   const abierta = htmlRecaudacion(FORM('x', 'https://forms.gle/Rec1')).toString();
   assert.match(abierta, /<img class="portal-banda-escudo" src="\/public\/escudo\.png" alt=""/);
-  assert.match(abierta, /Enterate de los eventos de recaudación del club/);
-  assert.match(abierta, /<h2 id="t-recaudacion">Pizzas, rifas, comidas<\/h2>/);
+  assert.match(abierta, /<h2 id="t-recaudacion">Enterate de los eventos de recaudación del club<\/h2>/);
+  assert.match(abierta, /<div class="portal-banda-ej">Pizzas, rifas, comidas…<\/div>/);
   assert.match(abierta, /<a class="portal-banda-btn" href="https:\/\/forms\.gle\/Rec1" target="_blank" rel="noopener">Quiero que me avisen/);
   for (const f of [null, MALO]) {
     const cerrada = htmlRecaudacion(f).toString();
     assert.match(cerrada, /<button type="button" class="portal-banda-btn" disabled aria-disabled="true">Se habilita cuando abra el formulario<\/button>/);
     assert.doesNotMatch(cerrada, /<a |evil/);
   }
+});
+
+// ---- Colaborar: empresas que se asocian o quien da una mano (destino colaboradores) ----
+
+test('htmlColaborar: las dos formas (empresa, dar una mano) y el botón; no promete avisos de eventos', () => {
+  const out = htmlColaborar(FORM('x', 'https://forms.gle/Col1')).toString();
+  assert.match(out, /Tengo una empresa o un comercio/);
+  assert.match(out, /Quiero dar una mano/);
+  assert.match(out, /hacer el pollo/);
+  assert.match(out, /<a class="btn" href="https:\/\/forms\.gle\/Col1" target="_blank" rel="noopener">Quiero colaborar/);
+  assert.doesNotMatch(out, /te avisamos/i);
+  assert.match(htmlColaborar(null).toString(), /<button type="button" class="btn" disabled aria-disabled="true">Se habilita cuando abra el formulario<\/button>/);
+});
+
+// ---- Preguntas frecuentes ----
+
+test('ayuda: seis preguntas en acordeón y, al final, el único botón al coordinador', () => {
+  const out = htmlAyuda({ temporada: 2027, alias: { alias: 'NOB.BASQUET' }, sede: { nombre: 'Microestadio', mapa: 'https://maps.app.goo.gl/abc' }, contacto: 'https://wa.me/5493410000000' }).toString();
+  assert.equal((out.match(/<details class="portal-faq"><summary>/g) ?? []).length, 6);
+  for (const p of ['¿Cómo inscribo a mi hijo o hija?', '¿Cómo pago una cuota o mando el comprobante?', 'No tengo cuenta de Google', '¿En qué categoría juega?', 'Me equivoqué en un dato', '¿Dónde y cuándo entrena?']) {
+    assert.ok(out.includes(p), p);
+  }
+  assert.match(out, /<b>NOB\.BASQUET<\/b>/);
+  assert.match(out, /Microestadio/);
+  assert.match(out, /href="https:\/\/maps\.app\.goo\.gl\/abc"/);
+  assert.match(out, /¿No encontraste tu respuesta\?[\s\S]*<a class="btn" href="https:\/\/wa\.me\/5493410000000" target="_blank" rel="noopener">Escribirle por WhatsApp/);
+  assert.equal((out.match(/wa\.me/g) ?? []).length, 1);
+});
+
+test('ayuda: "¿cómo inscribo?" no manda a un botón apagado', () => {
+  assert.match(htmlAyuda({ inscripcionAbierta: true }).toString(), /Tocá <b>Inscribir a mi hijo o hija<\/b>/);
+  assert.match(htmlAyuda({ consultasAbierto: true, temporada: 2027 }).toString(), /La inscripción 2027 todavía no abrió\. Mientras tanto, tocá <b>Quiero jugar en Newell's<\/b>/);
+  assert.match(htmlAyuda({}).toString(), /Cuando abra, el botón se habilita arriba de todo/);
+  assert.doesNotMatch(htmlAyuda({ contacto: 'javascript:alert(1)' }).toString(), /javascript|No encontraste/);
 });
 
 test('htmlLogos: sin sponsors no muestra nada; con sponsors, una imagen con su nombre, escapado', () => {

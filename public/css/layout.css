@@ -385,7 +385,14 @@
      formularios y categorías en dos columnas. */
   .publico .portal-barra,.publico .portal-atajos,.publico .portal-sec{padding-inline:var(--sp-6)}
   .publico .portal-barra{padding-top:var(--sp-5)}
+  .publico .portal-barra .s{display:block}
+  .publico .portal-sem-btn{max-width:none;white-space:nowrap}
   .publico .portal-heroe,.publico .portal-banda{margin-inline:var(--sp-6);border-radius:var(--r);padding:var(--sp-8)}
+  .publico .portal-acciones{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+  .publico .portal-heroe h1{max-width:none}
+  .publico .portal-formas{grid-template-columns:repeat(2,minmax(0,1fr))}
+  /* La categoría: el año a la izquierda y el resultado al lado, ocupando todo el ancho. */
+  .publico .portal-buscador{grid-template-columns:minmax(15rem,18rem) 1fr;align-items:end;gap:var(--sp-4)}
   .publico .portal-atajos{grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:var(--sp-3)}
   .publico .portal-atajos a{flex-direction:row;justify-content:center;font-size:var(--fs-145);padding:var(--sp-3)}
   .publico .portal-lista{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4)}

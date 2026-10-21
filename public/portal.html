@@ -51,28 +51,45 @@
 
 <!-- =====================================================================
      PORTAL "BÁSQUET NEWELL'S": la puerta pública para las familias.
-     Sin sesión y sin service worker (la app instalable es /app). Arriba de
-     todo, UNA acción principal (inscribir o "Quiero jugar"); lo secundario va
-     en una lista compacta. Las secciones que dependen de datos arrancan
-     ocultas y src/ui/portal.js las muestra sólo si los tienen. De la base lee sólo la lista de
-     formularios activos (formularios_publicos); los eventos, de Google
-     Calendar; el resto, de src/data/portal.js.
-     Textos en voseo y sin suponer que saben de computadoras.
+     Sin sesión y sin service worker (la app instalable es /app). Quien más
+     la usa es un padre que viene a inscribir o a mandar un comprobante: esas
+     dos acciones son las protagonistas de la banda de arriba. Profes y
+     jugadores tienen "Semillero" en el encabezado. Las secciones que
+     dependen de datos arrancan ocultas y src/ui/portal.js las muestra sólo si
+     los tienen. De la base lee sólo la lista de formularios activos
+     (formularios_publicos); los eventos, de Google Calendar; el resto, de
+     src/data/portal.js. Textos en voseo y sin suponer que saben de computadoras.
      ===================================================================== -->
 <div class="publico portal-d" id="publico">
   <header class="portal-barra">
     <img src="/public/escudo.png" alt="" width="36" height="36">
-    <div><div class="t">Newell&#39;s <span>Básquet</span></div><div class="s">Formativas · Familias</div></div>
-    <a class="portal-ayuda-btn" id="portal-ayuda" href="#mas" target="_blank" rel="noopener" hidden><i aria-hidden="true"></i>Ayuda</a>
+    <div class="portal-marca"><div class="t">Newell&#39;s <span>Básquet</span></div><div class="s">Formativas · Familias</div></div>
+    <nav class="portal-barra-acc" aria-label="Accesos">
+      <a class="portal-barra-btn" href="#ayuda">Ayuda</a>
+      <!-- Para profes y jugadores: la entrada a Semillero y cómo instalarla, sin buscarla en el portal de padres. -->
+      <details class="portal-sem" id="semillero">
+        <summary class="portal-barra-btn portal-sem-btn">Soy profe o jugador</summary>
+        <div class="portal-sem-panel">
+          <b>Semillero</b>
+          <p>La aplicación del cuerpo técnico y de los jugadores. Las familias no la necesitan: todo lo suyo está en esta página.</p>
+          <a class="btn" href="/app">Entrar a Semillero</a>
+          <div class="portal-sem-inst">
+            <small>Tenela como una app en el celular</small>
+            <p><b>Android:</b> abrila con Chrome, tocá el menú (los tres puntitos) → <b>Instalar app</b>.</p>
+            <p><b>iPhone:</b> abrila con Safari, tocá <b>Compartir</b> → <b>Agregar a inicio</b>.</p>
+          </div>
+        </div>
+      </details>
+    </nav>
   </header>
 
   <main class="portal">
-    <!-- La única acción principal: inscribir si está abierta y, si no, "Quiero
-         jugar" (src/ui/portal.js, htmlHeroe). La banda roja y negra es la
-         camiseta. Arranca con el texto de la inscripción cerrada para que la
-         página nunca se vea vacía mientras carga la base. -->
-    <section class="portal-heroe" id="heroe" aria-label="Inscripción">
-      <div id="portal-heroe"><div class="portal-heroe-ey">Básquet formativo</div><h1>¿Querés jugar en Newell&#39;s?</h1><p>Cargando…</p></div>
+    <!-- Las dos acciones protagonistas (src/ui/portal.js, htmlHeroe): inscribir
+         (o "Quiero jugar" si la inscripción está cerrada) y enviar el
+         comprobante, con el alias. La banda roja y negra es la camiseta.
+         Arranca con todo cerrado hasta que responde la base. -->
+    <section class="portal-heroe" id="heroe" aria-label="Inscripción y pagos">
+      <div id="portal-heroe"><div class="portal-heroe-ey">Básquet formativo</div><h1>¿Qué necesitás hacer?</h1><p>Cargando…</p></div>
     </section>
 
     <nav class="portal-atajos" id="portal-atajos" aria-label="Atajos"></nav>
@@ -87,25 +104,23 @@
 
     <!-- Banda roja a todo el ancho: aviso de los eventos de recaudación (destino recaudacion, 0063). -->
     <section class="portal-banda" id="recaudacion" aria-labelledby="t-recaudacion">
-      <div id="portal-recaudacion"><h2 id="t-recaudacion">Pizzas, rifas, comidas</h2></div>
+      <div id="portal-recaudacion"><h2 id="t-recaudacion">Enterate de los eventos de recaudación del club</h2></div>
     </section>
 
-    <!-- Lo secundario, compacto: comprobante (con el alias), sponsors y el coordinador. -->
-    <section class="portal-sec" id="mas" aria-labelledby="t-mas">
-      <div class="portal-st" id="t-mas">También podés</div>
-      <div class="portal-filas" id="portal-mas"></div>
-      <div id="portal-alias"></div>
+    <!-- Para una empresa que quiere asociarse o alguien que quiere dar una mano (destino colaboradores, 0061). -->
+    <section class="portal-sec portal-colaborar" id="colaborar" aria-labelledby="t-colaborar">
+      <div class="portal-st">Colaborá con el club</div>
+      <h2 id="t-colaborar">Sumate al básquet de Newell&#39;s</h2>
+      <div id="portal-colaborar"></div>
     </section>
 
-    <!-- Banda: elegís el año de nacimiento y te dice la categoría y el horario.
-         La lista completa queda plegada abajo. -->
+    <!-- Elegís el año de nacimiento y al lado te dice la categoría y el
+         horario. La lista completa queda plegada abajo. -->
     <section class="portal-sec portal-cat" id="categorias" aria-labelledby="t-categorias" hidden>
       <div class="portal-st">Categorías<span id="t-categorias-temp"></span></div>
       <h2 id="t-categorias">¿En qué categoría juega?</h2>
-      <p class="intro">Elegí el año en que nació. Va como lo arma la CABB.</p>
-      <div id="portal-buscador"></div>
+      <div class="portal-buscador" id="portal-buscador"></div>
       <details class="portal-todas"><summary>Ver todas las categorías</summary><div id="portal-categorias"></div></details>
-      <div id="portal-sede"></div>
     </section>
 
     <section class="portal-sec" id="formularios" aria-labelledby="t-formularios" hidden>
@@ -126,14 +141,14 @@
       <div class="portal-logos" id="portal-logos"></div>
     </section>
 
-    <section class="portal-sec portal-semillero" id="semillero" aria-labelledby="t-semillero">
-      <h2 id="t-semillero">¿Sos profe, jugador o coordinador?</h2>
-      <p class="intro">Semillero es la aplicación del cuerpo técnico y de los jugadores. Las familias no la necesitan: todo lo suyo está en esta página.</p>
-      <a class="btn sec" href="/app">Entrar a Semillero</a>
-      <p class="portal-nota">Para tenerla como una app en el celular: en Android, abrila con Chrome y tocá el menú (los tres puntitos) → <b>Instalar app</b>. En iPhone, abrila con Safari, tocá el botón <b>Compartir</b> → <b>Agregar a inicio</b>.</p>
+    <!-- Preguntas frecuentes, en acordeón. Al final, la única vez que aparece el coordinador. -->
+    <section class="portal-sec" id="ayuda" aria-labelledby="t-ayuda">
+      <div class="portal-st">Ayuda</div>
+      <h2 id="t-ayuda">Preguntas frecuentes</h2>
+      <div class="portal-faqs" id="portal-ayuda-lista"></div>
     </section>
 
-    <div class="pie-legal"><a href="/public/legal/privacidad.html">Política de privacidad</a> · <a href="/public/legal/terminos.html">Términos y condiciones</a></div>
+    <div class="pie-legal"><a href="/app">Entrar a Semillero</a> · <a href="/public/legal/privacidad.html">Política de privacidad</a> · <a href="/public/legal/terminos.html">Términos y condiciones</a></div>
   </main>
 </div>
 

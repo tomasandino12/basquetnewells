@@ -15,10 +15,11 @@ import { destinoDeAuth } from '../data/entradaAuth.js';
 
 /*
  * Portal "Básquet Newell's": la página pública que se reparte a las familias
- * (public/portal.html). Tiene UNA acción principal, grande, en la banda roja y
- * negra de arriba: inscribir si la inscripción está abierta y, si no, "Quiero
- * jugar". Lo demás (comprobante, sponsors, coordinador) va en una lista
- * compacta, para que la página no sea una fila de tarjetas iguales.
+ * (public/portal.html). Quien más la usa es un padre que entra a hacer en cinco
+ * minutos lo que le dijeron: inscribir o mandar un comprobante. Por eso esas
+ * dos acciones son las protagonistas de la banda de arriba, con el alias para
+ * copiar a mano; lo demás va más abajo, y el coordinador aparece UNA vez, al
+ * final de las preguntas frecuentes.
  *
  * De la base lee sólo la lista de formularios activos, por la función anónima
  * formularios_publicos (0058): nada de jugadores ni de familias, que están del
@@ -28,14 +29,17 @@ import { destinoDeAuth } from '../data/entradaAuth.js';
 
 const ABRE = '↗';
 
-/** Los íconos de los atajos y de la lista: trazos simples en currentColor, decorativos. */
+/** Los íconos de los atajos y de las acciones: trazos simples en currentColor, decorativos. */
 const ICONO = {
   jugar: html`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-3 3-3 15 0 18M12 3c3 3 3 15 0 18"/></svg>`,
   calendario: html`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`,
   categorias: html`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
   colaborar: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>`,
-  ayuda: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19l1.4-4A8 8 0 1 1 9 18.6z"/></svg>`,
+  ayuda: html`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/></svg>`,
   comprobante: html`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>`,
+  inscribir: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 14h6M9 17h4"/></svg>`,
+  empresa: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>`,
+  mano: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V12M16 9.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L4.3 14a1.5 1.5 0 0 1 2.4-1.8L8 14"/></svg>`,
 };
 
 const botonExterno = (url, texto, clase = 'btn') => html`<a class="${clase}" href="${url}" target="_blank" rel="noopener">${texto} <span aria-hidden="true">${ABRE}</span></a>`;
@@ -49,51 +53,42 @@ const botonExterno = (url, texto, clase = 'btn') => html`<a class="${clase}" hre
 const botonCerrado = (texto, clase = 'btn') => html`<button type="button" class="${clase}" disabled aria-disabled="true">${texto}</button>`;
 
 /**
- * La banda de arriba: la única acción principal. Con el formulario de
- * inscripción activo (destino inscripcion, 0062) es "Inscribí a tu hijo o
- * hija"; sin él, "¿Querés jugar en Newell's?" con el formulario de consultas
- * (0061), o con el botón apagado si tampoco está.
+ * Una de las dos acciones de arriba: un botón grande con ícono, título y una
+ * línea. Sin formulario activo se ve igual de grande pero apagada, con la
+ * línea que dice cuándo se habilita.
  */
-export function htmlHeroe({ inscripcion = null, consultas = null, temporada = null } = {}) {
-  const ey = (estado) => html`<div class="portal-heroe-ey">${temporada ? html`Temporada ${temporada} · ` : ''}${estado}</div>`;
-  const ins = inscripcion ? enlaceFormulario(inscripcion.enlace) : null;
-  if (ins) {
-    return html`${ey('Inscripción abierta')}<h1>Inscribí a tu hijo o hija</h1>
-      <p>${inscripcion.texto}</p>
-      ${botonExterno(ins, 'Inscribir', 'portal-heroe-btn')}`;
-  }
-  // La línea del formulario de consultas es la del panel ("para qué es"): arriba va una invitación propia.
-  const jugar = consultas ? enlaceFormulario(consultas.enlace) : null;
-  return html`${ey('Inscripción cerrada')}<h1>¿Querés jugar en Newell's?</h1>
-    <p>Dejá tus datos y te contactamos para que vengas a probar.</p>
-    ${jugar ? botonExterno(jugar, 'Quiero jugar', 'portal-heroe-btn') : botonCerrado('Se habilita cuando abra el formulario', 'portal-heroe-btn')}`;
-}
-
-/** Una fila de la lista "También podés": con enlace es tocable; sin él, se ve apagada y dice "Pronto". */
-function fila({ icono, titulo, detalle, url, accion = 'Abrir', externo = true }) {
-  const cuerpo = html`<i>${ICONO[icono]}</i><span><b>${titulo}</b><small>${detalle}</small></span>`;
-  if (!url) return html`<div class="portal-fila apagada" aria-disabled="true">${cuerpo}<em>Pronto</em></div>`;
-  return html`<a class="portal-fila" href="${url}"${externo && html` target="_blank" rel="noopener"`}>${cuerpo}<em>${accion}</em></a>`;
+function accion({ clase, icono, titulo, detalle, url, cerrado }) {
+  const cuerpo = html`<i>${ICONO[icono]}</i><span><b>${titulo}</b><small>${url ? detalle : cerrado}</small></span>`;
+  if (!url) return html`<div class="portal-accion ${clase} apagada" aria-disabled="true">${cuerpo}</div>`;
+  return html`<a class="portal-accion ${clase}" href="${url}" target="_blank" rel="noopener">${cuerpo}<em aria-hidden="true">${ABRE}</em></a>`;
 }
 
 /**
- * Las acciones secundarias, compactas: comprobante, "Quiero jugar" (sólo si
- * arriba está la inscripción), sponsors y el coordinador. El mail de quien
- * colabora queda en la planilla de Google de "Quiero colaborar", no en Semillero.
+ * La banda de arriba, con las dos acciones protagonistas. La primera es
+ * "Inscribir a mi hijo o hija" si el formulario de inscripción está activo
+ * (destino inscripcion, 0062) y, si no, "Quiero jugar en Newell's" (destino
+ * consultas, 0061). La segunda, "Enviar comprobante" (destino comprobante),
+ * con el alias para copiar debajo. Son independientes: alguien se puede
+ * inscribir sin pagar nada.
  */
-export function htmlMas({ comprobante = null, consultas = null, colaboradores = null, inscripcionAbierta = false, contacto = null } = {}) {
+export function htmlHeroe({ inscripcion = null, consultas = null, comprobante = null, temporada = null, alias = null } = {}) {
   const url = (f) => (f ? enlaceFormulario(f.enlace) : null);
-  const comp = url(comprobante);
-  const jugar = url(consultas);
-  const colab = url(colaboradores);
-  const coordinador = enlaceContacto(contacto);
-  return html`${fila({ icono: 'comprobante', titulo: 'Enviar comprobante', url: comp, accion: 'Subir',
-    detalle: comp ? 'Subí la foto de la transferencia' : 'Se habilita cuando haya algo para pagar' })}
-    ${inscripcionAbierta && fila({ icono: 'jugar', titulo: 'Quiero jugar en Newell\'s', url: jugar,
-      detalle: jugar ? 'Dejá tus datos para venir a probar' : 'Se habilita cuando abra el formulario' })}
-    ${fila({ icono: 'colaborar', titulo: 'Sumate como sponsor o colaborador', url: colab, detalle: 'Dejanos tu mail y te avisamos de los eventos' })}
-    ${coordinador && fila({ icono: 'ayuda', titulo: 'Hablar con el coordinador', url: coordinador, accion: 'Escribir',
-      detalle: coordinador.startsWith('mailto:') ? 'Por mail' : 'Por WhatsApp' })}`;
+  const ins = url(inscripcion);
+  const estado = ins ? 'Inscripción abierta' : 'Inscripción cerrada';
+  const primera = ins
+    ? accion({ clase: 'principal', icono: 'inscribir', titulo: 'Inscribir a mi hijo o hija', url: ins, detalle: 'Formulario de Google, desde el celular' })
+    : accion({ clase: 'principal', icono: 'jugar', titulo: 'Quiero jugar en Newell\'s', url: url(consultas),
+      detalle: 'Dejá tus datos y te contactamos para venir a probar', cerrado: 'Se habilita cuando abra el formulario' });
+  return html`<div class="portal-heroe-ey">${temporada ? html`Temporada ${temporada} · ` : ''}${estado}</div>
+    <h1>¿Qué necesitás hacer?</h1>
+    <div class="portal-acciones">
+      ${primera}
+      <div class="portal-pago">
+        ${accion({ clase: 'pago', icono: 'comprobante', titulo: 'Enviar comprobante', url: url(comprobante),
+          detalle: 'Subí la foto de la transferencia', cerrado: 'Se habilita cuando haya algo para pagar' })}
+        ${htmlAlias(alias)}
+      </div>
+    </div>`;
 }
 
 /** El alias para transferir, con un botón para copiarlo. Sin un alias válido, nada. */
@@ -122,18 +117,33 @@ export function htmlAvisoRespaldo() {
 
 /**
  * La banda roja de debajo del calendario: el aviso por mail de los eventos de
- * recaudación del club (pizzas, rifas, comidas). Es el formulario con destino
- * recaudacion (0063), aparte del de sponsors: quien quiere comprar una pizza no
- * es una empresa que quiere ayudar. Su planilla de respuestas vive en Google.
- * Los partidos y charlas no van por mail: para eso está el "Seguilo" del calendario.
+ * recaudación del club. Es el formulario con destino recaudacion (0063), aparte
+ * del de colaborar: quien quiere comprar una pizza no es una empresa que quiere
+ * asociarse. Su planilla de respuestas vive en Google. Los partidos y charlas
+ * no van por mail: para eso está el "Seguilo" del calendario.
  */
 export function htmlRecaudacion(formulario) {
   const url = formulario ? enlaceFormulario(formulario.enlace) : null;
   return html`<img class="portal-banda-escudo" src="/public/escudo.png" alt="" width="44" height="44">
-    <div class="portal-banda-ey">Enterate de los eventos de recaudación del club</div>
-    <h2 id="t-recaudacion">Pizzas, rifas, comidas</h2>
+    <h2 id="t-recaudacion">Enterate de los eventos de recaudación del club</h2>
+    <div class="portal-banda-ej">Pizzas, rifas, comidas…</div>
     <p>Dejanos tu mail y te avisamos cuando haya uno.</p>
     ${url ? botonExterno(url, 'Quiero que me avisen', 'portal-banda-btn') : botonCerrado('Se habilita cuando abra el formulario', 'portal-banda-btn')}`;
+}
+
+/**
+ * "Sumate al básquet de Newell's": el formulario con destino colaboradores
+ * (0061). Es para dos cosas: una empresa o comercio que quiere asociarse con
+ * el básquet, o alguien que quiere dar una mano en los eventos. Lo que deja
+ * queda en la planilla de Google de "Quiero colaborar", no en Semillero.
+ */
+export function htmlColaborar(formulario) {
+  const url = formulario ? enlaceFormulario(formulario.enlace) : null;
+  return html`<ul class="portal-formas">
+      <li><i>${ICONO.empresa}</i><span><b>Tengo una empresa o un comercio</b>Asociate con el básquet de Newell's y acompañá a las formativas.</span></li>
+      <li><i>${ICONO.mano}</i><span><b>Quiero dar una mano</b>En los eventos del club: hacer el pollo, armar, servir, ayudar a organizar.</span></li>
+    </ul>
+    ${url ? botonExterno(url, 'Quiero colaborar') : botonCerrado('Se habilita cuando abra el formulario')}`;
 }
 
 /** La franja de logos de sponsors. Sin ninguno válido no devuelve nada. */
@@ -170,43 +180,63 @@ export function htmlCategorias(categorias) {
   </li>`)}</ul>`;
 }
 
-/** El selector de año del "¿En qué categoría juega?": − y + alrededor del año, y el lugar del resultado. */
+/** El selector de año del "¿En qué categoría juega?": − y + alrededor del año, y el lugar del resultado al lado. */
 export function htmlBuscador(anio, { min, max }) {
-  return html`<span class="portal-anio-et" id="portal-anio-et">Año de nacimiento</span>
-    <div class="portal-anio" role="group" aria-labelledby="portal-anio-et">
-      <button type="button" data-anio="-1" aria-label="Un año antes"${anio <= min && html` disabled`}>−</button>
-      <output id="portal-anio">${anio}</output>
-      <button type="button" data-anio="1" aria-label="Un año después"${anio >= max && html` disabled`}>+</button>
+  return html`<div class="portal-anio-caja">
+      <span class="portal-anio-et" id="portal-anio-et">Año de nacimiento</span>
+      <div class="portal-anio" role="group" aria-labelledby="portal-anio-et">
+        <button type="button" data-anio="-1" aria-label="Un año antes"${anio <= min && html` disabled`}>−</button>
+        <output id="portal-anio">${anio}</output>
+        <button type="button" data-anio="1" aria-label="Un año después"${anio >= max && html` disabled`}>+</button>
+      </div>
     </div>
-    <div id="portal-cat-res" aria-live="polite"></div>`;
+    <div class="portal-cat-resultado" id="portal-cat-res" aria-live="polite"></div>`;
 }
 
 /**
- * Lo que le toca a quien nació en `anio`: la categoría grande, sus años y su
+ * Lo que le toca a quien nació en `anio`: la categoría, sus años y su
  * horario. Puede ser más de una (las dos Primeras). Sin ninguna (más chico
- * que la U9), lo dice y manda al coordinador si hay contacto.
+ * que la U9), lo dice y manda a las preguntas frecuentes.
  */
-export function htmlCategoriaDelAnio(anio, categorias, contacto = null) {
-  const url = enlaceContacto(contacto);
+export function htmlCategoriaDelAnio(anio, categorias) {
   if (!categorias.length) {
-    return html`<p class="portal-cat-nada">Para chicos nacidos en ${anio} todavía no hay categoría.${url && html` <a href="${url}" target="_blank" rel="noopener">Escribile al coordinador</a> y te cuenta.`}</p>`;
+    return html`<p class="portal-cat-nada">Para chicos nacidos en ${anio} todavía no hay categoría. <a href="#ayuda">¿Dudas? Mirá las preguntas frecuentes</a>.</p>`;
   }
   return html`${categorias.map(({ nombre, rama, anios, horario }) => html`<div class="portal-cat-res">
-    <div class="portal-cat-nombre"><b>${nombre}</b>${rama && html`<span>${rama}</span>`}</div>
-    <div class="portal-cat-anios">Nacidos ${anios}</div>
+    <div class="portal-cat-nombre"><b>${nombre}</b>${rama && html`<span>${rama}</span>`}<small>Nacidos ${anios}</small></div>
     ${horario
       ? html`<ul class="portal-cat-hora">${horario.split(' · ').map((h) => html`<li>${h}</li>`)}</ul>`
-      : html`<p class="portal-cat-sin">Horario a confirmar: preguntale al coordinador.</p>`}
+      : html`<p class="portal-cat-sin">Horario a confirmar.</p>`}
   </div>`)}`;
 }
 
-export function htmlSede(sede) {
+/**
+ * Las preguntas frecuentes, en acordeón: lo que un padre pregunta antes de
+ * escribirle al coordinador. Las respuestas cambian con lo que hay abierto
+ * (inscripción, "Quiero jugar") para no mandar a un botón apagado. Al final,
+ * la ÚNICA vez que aparece el WhatsApp del coordinador en la página.
+ */
+export function htmlAyuda({ inscripcionAbierta = false, consultasAbierto = false, temporada = null, alias = null, sede = null, contacto = null } = {}) {
+  const a = aliasValido(alias);
   const s = sedeValida(sede);
-  if (!s) return html``;
-  return html`<div class="portal-sede">
-    <div><small>Dónde se entrena</small><b>${s.nombre}</b>${s.direccion && html`<span>${s.direccion}</span>`}</div>
-    ${s.mapa && botonExterno(s.mapa, 'Cómo llegar', 'btn sec chico')}
-  </div>`;
+  const coordinador = enlaceContacto(contacto);
+  const pregunta = (titulo, respuesta) => html`<details class="portal-faq"><summary>${titulo}</summary><div class="portal-faq-r">${respuesta}</div></details>`;
+  const comoInscribir = inscripcionAbierta
+    ? html`<p>Tocá <b>Inscribir a mi hijo o hija</b>, arriba de todo. Se abre un formulario de Google: completalo desde el celular. Tené a mano el DNI del chico o la chica y el tuyo.</p>`
+    : html`<p>La inscripción${temporada ? html` ${temporada}` : ''} todavía no abrió. ${consultasAbierto
+      ? html`Mientras tanto, tocá <b>Quiero jugar en Newell's</b>, arriba de todo: dejás tus datos y te contactamos para que venga a probar.`
+      : html`Cuando abra, el botón se habilita arriba de todo.`}</p>`;
+  return html`${pregunta('¿Cómo inscribo a mi hijo o hija?', comoInscribir)}
+    ${pregunta('¿Cómo pago una cuota o mando el comprobante?', html`<p>${a ? html`Transferí al alias <b>${a.alias}</b> (con <b>Copiar</b>, arriba de todo, lo pegás en tu banco). ` : ''}Después tocá <b>Enviar comprobante</b> y subí la foto o la captura de la transferencia. Si ese botón está apagado, es que ahora no hay nada para pagar.</p>`)}
+    ${pregunta('No tengo cuenta de Google, ¿puedo igual?', html`<p><b>Quiero jugar</b> y <b>Quiero colaborar</b> se completan sin cuenta. La inscripción y el comprobante piden entrar con Google porque llevan fotos: así sabemos quién mandó cada cosa. Crear una cuenta es gratis y te deja usar tu mail de siempre: <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">crear una cuenta de Google</a>.</p>`)}
+    ${pregunta('¿En qué categoría juega?', html`<p>Va por el año de nacimiento, como lo arma la CABB. En <a href="#categorias">¿En qué categoría juega?</a> elegís el año y te dice la categoría y los horarios.</p>`)}
+    ${pregunta('Me equivoqué en un dato del formulario', html`<p>Si todavía no lo mandaste, corregilo y listo. Si ya lo mandaste, no lo vuelvas a llenar: escribile al coordinador${coordinador ? ' (el botón de acá abajo)' : ''} contándole qué dato hay que cambiar.</p>`)}
+    ${pregunta('¿Dónde y cuándo entrena?', html`<p>Los días y los horarios dependen de la categoría: los ves en <a href="#categorias">¿En qué categoría juega?</a>.${s ? html` Se entrena en el <b>${s.nombre}</b>${s.direccion && html` (${s.direccion})`}.` : ''}</p>${s?.mapa && botonExterno(s.mapa, 'Cómo llegar', 'btn sec chico')}`)}
+    ${coordinador && html`<div class="portal-faq-fin">
+      <b>¿No encontraste tu respuesta?</b>
+      <span>Escribile al coordinador y te ayuda.</span>
+      ${botonExterno(coordinador, coordinador.startsWith('mailto:') ? 'Escribirle por mail' : 'Escribirle por WhatsApp')}
+    </div>`}`;
 }
 
 export function htmlFoto(foto) {
@@ -441,7 +471,7 @@ function iniciarBuscador(temporada) {
     $('portal-anio').textContent = anio;
     buscador.querySelector('[data-anio="-1"]').disabled = anio <= rango.min;
     buscador.querySelector('[data-anio="1"]').disabled = anio >= rango.max;
-    $('portal-cat-res').innerHTML = htmlCategoriaDelAnio(anio, categoriasDelAnio(PORTAL.categorias, temporada, anio), PORTAL.contacto);
+    $('portal-cat-res').innerHTML = htmlCategoriaDelAnio(anio, categoriasDelAnio(PORTAL.categorias, temporada, anio));
   };
   buscador.addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-anio]');
@@ -475,23 +505,27 @@ function iniciarCopiar() {
 }
 
 export async function iniciarPortal() {
-  const contacto = enlaceContacto(PORTAL.contacto);
-  if (contacto) {
-    $('portal-ayuda').href = contacto;
-    $('portal-ayuda').hidden = false;
-  }
-
   const categorias = categoriasDelPortal(PORTAL.categorias, PORTAL.temporada);
   $('portal-categorias').innerHTML = htmlCategorias(categorias);
-  $('portal-sede').innerHTML = htmlSede(PORTAL.sede);
-  $('categorias').hidden = !categorias.length && !sedeValida(PORTAL.sede);
-  $('portal-categorias').closest('details').hidden = !categorias.length;
+  $('categorias').hidden = !categorias.length;
   const temporada = temporadaComoAnio(PORTAL.temporada);
   if (temporada) $('t-categorias-temp').textContent = ` ${temporada}`;
   if (temporada && categorias.length) iniciarBuscador(temporada);
   mostrar('club', htmlFoto(PORTAL.foto), 'portal-foto');
   mostrar('sponsors', htmlLogos(PORTAL.sponsors), 'portal-logos');
-  $('portal-alias').innerHTML = htmlAlias(PORTAL.alias);
+
+  // Hasta que responda la base, todo cerrado: nunca un botón a un formulario que quizá ya no está.
+  const pintarFormularios = ({ inscripcion = null, comprobante = null, consultas = null, colaboradores = null, recaudacion = null } = {}) => {
+    const abierto = (f) => Boolean(f && enlaceFormulario(f.enlace));
+    $('portal-heroe').innerHTML = htmlHeroe({ inscripcion, consultas, comprobante, temporada: PORTAL.temporada, alias: PORTAL.alias });
+    $('portal-recaudacion').innerHTML = htmlRecaudacion(recaudacion);
+    $('portal-colaborar').innerHTML = htmlColaborar(colaboradores);
+    $('portal-ayuda-lista').innerHTML = htmlAyuda({
+      inscripcionAbierta: abierto(inscripcion), consultasAbierto: abierto(consultas),
+      temporada: PORTAL.temporada, alias: PORTAL.alias, sede: PORTAL.sede, contacto: PORTAL.contacto,
+    });
+  };
+  pintarFormularios();
 
   const calendarios = calendariosActivos(PORTAL.agenda);
   $('calendario').hidden = !calendarios.length;
@@ -500,8 +534,8 @@ export async function iniciarPortal() {
   $('portal-atajos').innerHTML = htmlAtajos([
     !$('calendario').hidden && { clave: 'calendario', texto: 'Calendario', href: '#calendario' },
     !$('categorias').hidden && { clave: 'categorias', texto: 'Categorías', href: '#categorias' },
-    { clave: 'colaborar', texto: 'Colaborar', href: '#mas' },
-    contacto && { clave: 'ayuda', texto: 'Ayuda', href: contacto, externo: true },
+    { clave: 'colaborar', texto: 'Sumate', href: '#colaborar' },
+    { clave: 'ayuda', texto: 'Ayuda', href: '#ayuda' },
   ].filter(Boolean));
 
   // Si la URL es la vuelta de un login, portalEntrada.js ya está mandando a la
@@ -513,12 +547,9 @@ export async function iniciarPortal() {
 
   const { estado, formularios } = await resolverFormularios(() => formulariosPublicos(PORTAL.clubId), PORTAL.formularios);
 
-  // Los que tienen lugar propio (la banda, la lista, recaudación) no se repiten en "Otros formularios".
+  // Los que tienen lugar propio (la banda, recaudación, colaborar) no se repiten en "Otros formularios".
   const { inscripcion, comprobante, consultas, colaboradores, recaudacion, comunes } = separarFormularios(formularios);
-  const inscripcionAbierta = Boolean(inscripcion && enlaceFormulario(inscripcion.enlace));
-  $('portal-heroe').innerHTML = htmlHeroe({ inscripcion, consultas, temporada: PORTAL.temporada });
-  $('portal-mas').innerHTML = htmlMas({ comprobante, consultas, colaboradores, inscripcionAbierta, contacto: PORTAL.contacto });
-  $('portal-recaudacion').innerHTML = htmlRecaudacion(recaudacion);
+  pintarFormularios({ inscripcion, comprobante, consultas, colaboradores, recaudacion });
 
   const lista = htmlFormularios(comunes);
   mostrar('formularios', lista.toString() ? html`${estado === 'respaldo' && htmlAvisoRespaldo()}${lista}` : lista);
