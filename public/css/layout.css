@@ -399,6 +399,8 @@
   .publico .portal-formas{grid-template-columns:repeat(2,minmax(0,1fr))}
   /* La categoría: el año a la izquierda y el resultado al lado, ocupando todo el ancho. */
   .publico .portal-buscador{grid-template-columns:minmax(15rem,18rem) 1fr;align-items:end;gap:var(--sp-4)}
+  /* Dónde se entrena: el texto a la izquierda y el mapa a la derecha. */
+  .publico .portal-sede{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);align-items:center;gap:var(--sp-6)}
   .publico .portal-atajos{grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:var(--sp-3)}
   .publico .portal-atajos a{flex-direction:row;justify-content:center;font-size:var(--fs-145);padding:var(--sp-3)}
   .publico .portal-lista{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4)}

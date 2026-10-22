@@ -104,12 +104,14 @@ test('las fuentes se sirven desde el propio dominio, sin Google Fonts', () => {
 });
 
 // El calendario del portal ya no es un iframe de Google: lo arma la página con
-// los eventos que pide a la API (connect-src). frame-src queda sólo para YouTube.
-test('frame-src sólo deja YouTube sin cookies, sin comodines', () => {
+// los eventos que pide a la API (connect-src). frame-src deja YouTube sin
+// cookies y el mapa de "Dónde se entrena" (www.google.com/maps, que el portal
+// carga recién cuando la persona toca "Ver mapa").
+test('frame-src sólo deja YouTube sin cookies y el mapa de Google, sin comodines', () => {
   const f = directiva('frame-src');
   assert.ok(f, 'falta frame-src');
   assert.ok(!f.some((v) => v.includes('*') || v === 'https:'), f.join(' '));
-  assert.deepEqual([...f].sort(), ['https://www.youtube-nocookie.com']);
+  assert.deepEqual([...f].sort(), ['https://www.google.com', 'https://www.youtube-nocookie.com']);
 });
 
 // El portal (public/portal.html) también lee la base, así que lleva el mismo

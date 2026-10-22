@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlHeroe, htmlAlias, htmlBuscador, htmlCategoriaDelAnio, htmlProximo,
-  htmlRecaudacion, htmlColaborar, htmlAyuda, htmlAtajos, htmlCalendario, htmlCategorias, htmlFoto, diaInicial, htmlSuscripcion,
+  htmlRecaudacion, htmlColaborar, htmlAyuda, htmlAtajos, htmlCalendario, htmlCategorias, htmlFoto, htmlSede, diaInicial, htmlSuscripcion,
 } from '../src/ui/portal.js';
 import { eventoDesdeGoogle, eventosPorDia, proximosEventos } from '../src/data/agenda.js';
 
@@ -17,7 +17,7 @@ const portal = readFileSync('src/ui/portal.js', 'utf8');
 const seccion = (id) => pagina.match(new RegExp(`<section [^>]*id="${id}"[\\s\\S]*?</section>`))?.[0] ?? '';
 
 test('arriba de todo, la banda con las dos acciones; después el resto, en orden', () => {
-  const orden = ['heroe', 'calendario', 'recaudacion', 'colaborar', 'categorias', 'formularios', 'club', 'sponsors'];
+  const orden = ['heroe', 'calendario', 'recaudacion', 'colaborar', 'categorias', 'sede', 'formularios', 'club', 'sponsors'];
   const posiciones = orden.map((id) => pagina.search(new RegExp(`<section [^>]*id="${id}"`)));
   assert.ok(posiciones.every((p) => p > 0), `faltan secciones: ${posiciones}`);
   assert.deepEqual([...posiciones].sort((a, b) => a - b), posiciones, 'las secciones están desordenadas');
@@ -25,7 +25,7 @@ test('arriba de todo, la banda con las dos acciones; después el resto, en orden
 });
 
 test('las secciones que dependen de datos arrancan ocultas; la banda, recaudación y colaborar se ven siempre', () => {
-  for (const id of ['calendario', 'categorias', 'formularios', 'club', 'sponsors']) {
+  for (const id of ['calendario', 'categorias', 'sede', 'formularios', 'club', 'sponsors']) {
     assert.match(seccion(id).split('>')[0], /\bhidden\b/, `#${id} tiene que arrancar oculta`);
   }
   for (const id of ['heroe', 'recaudacion', 'colaborar']) {
@@ -288,6 +288,25 @@ test('categorías: nombre, rama, años y horario, escapados', () => {
   assert.match(out, /Lun &lt;18 h&gt;/);
   const dos = htmlCategorias([{ nombre: 'U13', rama: null, anios: 'x', horario: 'Lun 18 h · Mié 19 h' }]).toString();
   assert.match(dos, /<span>Lun 18 h<\/span><span>Mié 19 h<\/span>/);
+});
+
+test('dónde se entrena: los tres lugares, "Cómo llegar" y el mapa SIN cargar hasta tocar "Ver mapa"', () => {
+  const out = htmlSede({
+    nombre: 'Estadio <x>', direccion: 'Parque de la Independencia, Rosario', lugares: ['Estadio Cubierto "Claudio Newell"', 'Microestadio', 'Playón Deportivo'],
+    mapa: 'https://maps.app.goo.gl/abc', buscar: 'Estadio Cubierto Claudio Newell, Rosario',
+  }).toString();
+  assert.match(out, /<li>Estadio Cubierto &quot;Claudio Newell&quot;<\/li><li>Microestadio<\/li><li>Playón Deportivo<\/li>/);
+  assert.match(out, /href="https:\/\/maps\.app\.goo\.gl\/abc"[^>]*>Cómo llegar/);
+  assert.match(out, /<div class="portal-mapa" data-embed="https:\/\/www\.google\.com\/maps\?q=[^"]+&amp;output=embed" data-titulo="Mapa: Estadio &lt;x&gt;">/);
+  assert.match(out, /<button type="button" class="portal-mapa-ver">[\s\S]*Ver mapa/);
+  assert.doesNotMatch(out, /<iframe/, 'el iframe no está hasta que se toca');
+  assert.equal(htmlSede(null).toString(), '');
+  // El iframe lo arma el clic, y sólo con la dirección que armó sedeValida.
+  const desde = portal.indexOf('function iniciarMapa()');
+  const cuerpo = portal.slice(desde, portal.indexOf('\n}\n', desde));
+  assert.match(cuerpo, /closest\('\.portal-mapa-ver'\)/);
+  assert.match(cuerpo, /createElement\('iframe'\)/);
+  assert.match(cuerpo, /iframe\.src = caja\.dataset\.embed/);
 });
 
 test('foto con su alt', () => {
