@@ -507,6 +507,32 @@ a.portal-accion:active{transform:scale(.98)}
 .portal-todas[open] summary{margin-bottom:var(--sp-2)}
 /* Dentro de la banda, la lista va sobre el fondo, para que se despegue. */
 .portal-cat .portal-cats{background:var(--pub-fondo)}
+
+/* "Dónde se entrena": los lugares, "Cómo llegar" y el mapa 16:9. En el
+   celular, el texto arriba y el mapa abajo; en compu, lado a lado (layout.css).
+   El mapa es un cuadro propio hasta que se toca "Ver mapa". */
+.portal-sede{display:grid;gap:var(--sp-4)}
+.portal-sede-dir{margin:0;color:var(--gris-osc);font-size:var(--fs-145)}
+.portal-sede-lugares{list-style:none;margin:var(--sp-3) 0 var(--sp-4);padding:0;display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.portal-sede-lugares li{padding:var(--sp-1) var(--sp-3);border:1px solid var(--pub-borde);border-radius:var(--r-full);background:var(--pub-tarjeta);font-size:var(--fs-125);font-weight:600}
+.portal-sede-txt .btn{display:inline-flex;width:auto;min-height:var(--tap);padding:0 var(--sp-4);font-size:var(--fs-145);text-decoration:none}
+.portal-mapa{
+  position:relative;aspect-ratio:16 / 9;overflow:hidden;border:1px solid var(--pub-borde);border-radius:var(--r);
+  background:
+    repeating-linear-gradient(0deg,transparent 0 1.75rem,var(--pub-borde) 1.75rem calc(1.75rem + 1px)),
+    repeating-linear-gradient(90deg,transparent 0 1.75rem,var(--pub-borde) 1.75rem calc(1.75rem + 1px)),
+    var(--pub-tarjeta);
+}
+.portal-mapa iframe{display:block;width:100%;height:100%;border:0}
+.portal-mapa-ver{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-1);
+  font:inherit;color:var(--sobre-oscuro);background:transparent;border:0;cursor:pointer;
+}
+.portal-mapa-ver i{display:grid;place-items:center;width:3rem;height:3rem;border-radius:50%;background:var(--primario);color:var(--sobre-club);transition:transform var(--dur-1) var(--ease-salida)}
+.portal-mapa-ver:active i{transform:scale(.92)}
+.portal-mapa-ver svg{width:1.5rem;height:1.5rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.portal-mapa-ver b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:var(--fs-200)}
+.portal-mapa-ver small{font-size:var(--fs-115);color:var(--gris-osc)}
 .portal-cats{list-style:none;margin:0;padding:0;background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r)}
 .portal-cats li{display:grid;grid-template-columns:1fr auto;gap:0 var(--sp-3);align-items:baseline;padding:var(--sp-3) var(--sp-4)}
 .portal-cats li + li{border-top:1px solid var(--pub-borde)}

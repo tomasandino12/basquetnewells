@@ -66,8 +66,13 @@ export const PORTAL = Object.freeze({
   // búsqueda de Google Maps. Si el club pasa el link de "Compartir", va ese.
   sede: Object.freeze({
     nombre: 'Estadio Cubierto "Claudio Newell"',
-    direccion: 'Parque de la Independencia, Rosario. Algunos días se entrena en el Microestadio o en el Playón Deportivo.',
+    direccion: 'Parque de la Independencia, Rosario',
+    // Los tres lugares que aparecen en los horarios de las categorías.
+    lugares: Object.freeze(['Estadio Cubierto "Claudio Newell"', 'Microestadio', 'Playón Deportivo']),
     mapa: 'https://www.google.com/maps/search/?api=1&query=Estadio+Cubierto+Claudio+Newell+Rosario',
+    // Lo que busca el mapa embebido (sólo se carga si la persona lo toca).
+    // PENDIENTE: que Tomás confirme que el punto cae en el estadio.
+    buscar: 'Estadio Cubierto Claudio Newell, Rosario',
   }),
 
   // WhatsApp del coordinador (confirmado por Tomás, 20/10): el botón "Ayuda" de
@@ -141,11 +146,24 @@ export function categoriasDelAnio(lista, temporada, anio) {
 
 const MAPA = /^https:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps|www\.google\.com\/maps|maps\.google\.com)\/[^\s"<>]*$/;
 
-/** La sede si tiene nombre; el link al mapa sólo si es de Google Maps. */
+/**
+ * La sede si tiene nombre; el link al mapa sólo si es de Google Maps. `embed`
+ * es la dirección del mapa para el iframe (www.google.com, lo único que deja
+ * frame-src fuera de YouTube): la arma acá a partir de lo que se busca, así
+ * nunca termina en un iframe una URL pegada a mano.
+ */
 export function sedeValida(sede) {
   const nombre = texto(sede?.nombre);
   if (!nombre) return null;
-  return { nombre, direccion: texto(sede.direccion) || null, mapa: MAPA.test(sede.mapa ?? '') ? sede.mapa : null };
+  const lugares = (Array.isArray(sede.lugares) ? sede.lugares : []).map(texto).filter(Boolean).slice(0, 6);
+  const buscar = texto(sede.buscar).slice(0, 120);
+  return {
+    nombre,
+    direccion: texto(sede.direccion) || null,
+    lugares,
+    mapa: MAPA.test(sede.mapa ?? '') ? sede.mapa : null,
+    embed: buscar ? `https://www.google.com/maps?q=${encodeURIComponent(buscar)}&output=embed` : null,
+  };
 }
 
 // Alias de CBU/CVU: de 6 a 20 letras, números, puntos o guiones.

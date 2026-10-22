@@ -39,6 +39,7 @@ const ICONO = {
   comprobante: html`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>`,
   inscribir: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 14h6M9 17h4"/></svg>`,
   empresa: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>`,
+  lugar: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5a7 7 0 0 1 14 0C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>`,
   mano: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V12M16 9.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L4.3 14a1.5 1.5 0 0 1 2.4-1.8L8 14"/></svg>`,
 };
 
@@ -245,6 +246,38 @@ export function htmlAyuda({ inscripcionAbierta = false, consultasAbierto = false
       <span>Escribile al coordinador y te ayuda.</span>
       ${botonExterno(coordinador, coordinador.startsWith('mailto:') ? 'Escribirle por mail' : 'Escribirle por WhatsApp')}
     </div>`}`;
+}
+
+/**
+ * "Dónde se entrena": los lugares de los horarios, "Cómo llegar" y el mapa de
+ * Google. El mapa NO se carga solo: hasta que la persona toca "Ver mapa" es un
+ * cuadro propio, sin pedirle nada a Google (ni cookies) a quien no lo usa.
+ */
+export function htmlSede(sede) {
+  const s = sedeValida(sede);
+  if (!s) return html``;
+  return html`<div class="portal-sede-txt">
+      <p class="portal-sede-dir">Rosario. En cuál de los tres te toca lo dice el horario de tu categoría.</p>
+      ${s.lugares.length > 0 && html`<ul class="portal-sede-lugares">${s.lugares.map((l) => html`<li>${l}</li>`)}</ul>`}
+      ${s.mapa && botonExterno(s.mapa, 'Cómo llegar', 'btn sec chico')}
+    </div>
+    ${s.embed && html`<div class="portal-mapa" data-embed="${s.embed}" data-titulo="Mapa: ${s.nombre}">
+      <button type="button" class="portal-mapa-ver"><i aria-hidden="true">${ICONO.lugar}</i><b>Ver mapa</b><small>Se abre el mapa de Google</small></button>
+    </div>`}`;
+}
+
+/** Arma el iframe del mapa recién cuando la persona toca "Ver mapa". */
+function iniciarMapa() {
+  document.addEventListener('click', (ev) => {
+    const caja = ev.target.closest('.portal-mapa-ver')?.parentElement;
+    if (!caja) return;
+    const iframe = document.createElement('iframe');
+    iframe.src = caja.dataset.embed;
+    iframe.title = caja.dataset.titulo;
+    iframe.referrerPolicy = 'no-referrer';
+    caja.replaceChildren(iframe);
+    caja.classList.add('abierto');
+  });
 }
 
 export function htmlFoto(foto) {
@@ -543,6 +576,8 @@ export async function iniciarPortal() {
   const temporada = temporadaComoAnio(PORTAL.temporada);
   if (temporada) $('t-categorias-temp').textContent = ` ${temporada}`;
   if (temporada && categorias.length) iniciarBuscador(temporada);
+  mostrar('sede', htmlSede(PORTAL.sede));
+  iniciarMapa();
   mostrar('club', htmlFoto(PORTAL.foto), 'portal-foto');
   mostrar('sponsors', htmlLogos(PORTAL.sponsors), 'portal-logos');
 

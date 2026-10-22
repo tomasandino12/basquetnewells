@@ -91,9 +91,19 @@ test('sede: con nombre; el mapa sólo si es de Google Maps', () => {
   assert.equal(sedeValida(null), null);
   assert.equal(sedeValida({ nombre: '  ' }), null);
   assert.deepEqual(sedeValida({ nombre: 'Microestadio', direccion: 'Parque', mapa: 'https://maps.app.goo.gl/abc' }),
-    { nombre: 'Microestadio', direccion: 'Parque', mapa: 'https://maps.app.goo.gl/abc' });
+    { nombre: 'Microestadio', direccion: 'Parque', lugares: [], mapa: 'https://maps.app.goo.gl/abc', embed: null });
   assert.equal(sedeValida({ nombre: 'X', mapa: 'https://evil.com/maps' }).mapa, null);
   assert.equal(sedeValida({ nombre: 'X', mapa: 'javascript:alert(1)' }).mapa, null);
+});
+
+test('sede: el mapa embebido se arma desde lo que se busca, siempre en www.google.com/maps', () => {
+  const s = sedeValida({ nombre: 'X', buscar: ' Estadio Cubierto Claudio Newell, Rosario ', lugares: [' Microestadio ', '', 7] });
+  assert.equal(s.embed, 'https://www.google.com/maps?q=Estadio%20Cubierto%20Claudio%20Newell%2C%20Rosario&output=embed');
+  assert.deepEqual(s.lugares, ['Microestadio']);
+  assert.match(sedeValida({ nombre: 'X', buscar: '"><script>' }).embed, /^https:\/\/www\.google\.com\/maps\?q=%22%3E%3Cscript%3E&output=embed$/);
+  const real = sedeValida(PORTAL.sede);
+  assert.deepEqual(real.lugares, ['Estadio Cubierto "Claudio Newell"', 'Microestadio', 'Playón Deportivo']);
+  assert.match(real.embed, /^https:\/\/www\.google\.com\/maps\?q=[^&]+&output=embed$/);
 });
 
 test('alias: de 6 a 20 letras, números, puntos o guiones', () => {
