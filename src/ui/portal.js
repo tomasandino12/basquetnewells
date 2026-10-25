@@ -51,7 +51,6 @@ const ICONO = {
   pizza: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21L3.5 6.5a14 14 0 0 1 17 0z"/><path d="M5.6 10a10 10 0 0 1 12.8 0"/><circle cx="10" cy="12.5" r="1"/><circle cx="13.5" cy="15" r="1"/></svg>`,
   rifa: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8a2 2 0 0 0 0 4v0a2 2 0 0 0 0 4v2h18v-2a2 2 0 0 1 0-4 2 2 0 0 1 0-4V6H3z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>`,
   comida: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 21V3c-2 1.5-3 4-3 7h3"/></svg>`,
-  sumate: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l6 4V6L7 10z"/><path d="M17 9a4 4 0 0 1 0 6M19.5 6.5a7.5 7.5 0 0 1 0 11"/></svg>`,
 };
 
 /**

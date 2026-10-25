@@ -298,6 +298,26 @@
 .portal-accion.apagada small{color:var(--gris-osc)}
 .portal-accion.apagada em{font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-100);letter-spacing:.08em;text-transform:uppercase;color:var(--gris-osc);border:1px solid var(--pub-borde);border-radius:var(--r-btn);padding:.125rem var(--sp-2)}
 
+/* El sticker de sponsor: un círculo dorado (el rojo es del botón del hero) con
+   el pedido en un anillo que gira despacio y "Sumate" fijo al centro. Es el
+   único elemento del portal que gira (con el anillo del escudo de la landing,
+   del que reusa el keyframe y la duración): un observer le pone .quieto cuando
+   el hero sale de pantalla y, con prefers-reduced-motion, base.css lo apaga y
+   el texto queda legible. En el celu va arriba a la izquierda, sobre la foto (el
+   título y los botones están abajo); en compu, abajo a la derecha de la foto
+   (layout.css). */
+.portal-sponsor{
+  position:absolute;top:5rem;left:var(--sp-4);z-index:1;display:grid;place-items:center;width:6rem;height:6rem;
+  border-radius:50%;background:var(--dorado);color:var(--pub-fondo);text-decoration:none;
+  transition:transform var(--dur-1) var(--ease-salida);
+}
+.portal-sponsor:active{transform:scale(.94)}
+@media (hover:hover){.portal-sponsor:hover{transform:scale(1.06)}}
+.portal-sponsor-anillo{position:absolute;inset:0;width:100%;height:100%;animation:giro var(--dur-giro) linear infinite}
+.portal-sponsor-anillo.quieto{animation-play-state:paused}
+.portal-sponsor-anillo text{font-family:var(--ff-titulo);font-weight:700;letter-spacing:.04em;fill:currentColor}
+.portal-sponsor-centro{position:relative;font-family:var(--ff-titulo);font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:var(--fs-170);line-height:1}
+
 /* Entrada del hero, una sola vez al cargar: cada elemento sube escalonado
    (--i lo pone el HTML) y cada línea del título sube desde su máscara. Sólo
    con .js-anim: sin JS o con movimiento reducido, todo está ya en su lugar. */

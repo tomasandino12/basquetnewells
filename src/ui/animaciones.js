@@ -92,3 +92,16 @@ export function iniciarDock(idVigilado = 'portal-heroe', idDock = 'portal-dock')
     dock.toggleAttribute('inert', !visible);
   }).observe(vigilado);
 }
+
+/**
+ * El sticker de sponsor del hero gira sin parar: cuando el hero sale de
+ * pantalla se pausa (no gasta batería donde nadie lo ve). Sin
+ * IntersectionObserver gira siempre; con movimiento reducido no gira (base.css).
+ */
+export function iniciarGiroSponsor() {
+  const anillo = document.getElementById('anillo-sponsor');
+  if (!anillo || typeof IntersectionObserver === 'undefined') return;
+  new IntersectionObserver(([entrada]) => {
+    anillo.classList.toggle('quieto', !entrada.isIntersecting);
+  }).observe(anillo);
+}

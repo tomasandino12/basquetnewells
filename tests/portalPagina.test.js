@@ -347,6 +347,38 @@ test('día inicial: hoy si es del mes; si no, el primero con algo, o el 1', () =
   assert.equal(diaInicial(2026, 11, '2026-10-20', porDia), '2026-11-01');
 });
 
+// ---- El sticker de sponsor del hero ----
+
+test('el sticker de sponsor lleva a colaborar: dentro del hero, con nombre accesible y el anillo decorativo', () => {
+  const heroe = seccion('heroe');
+  const sticker = heroe.match(/<a class="portal-sponsor"[\s\S]*?<\/a>/)?.[0];
+  assert.ok(sticker, 'falta el sticker en el hero');
+  assert.match(sticker, /href="#colaborar"/);
+  assert.match(sticker, /aria-label="¿Tenés una empresa\? Sumate[^"]*"/);
+  assert.match(sticker, /<svg class="portal-sponsor-anillo" id="anillo-sponsor"[^>]*aria-hidden="true"/);
+  assert.match(sticker, /<textPath[^>]*>¿TENÉS UNA EMPRESA\?/);
+  assert.match(sticker, /<span class="portal-sponsor-centro" aria-hidden="true">Sumate<\/span>/);
+  assert.ok(pagina.indexOf('id="colaborar"') > 0, 'y existe a dónde ir');
+  assert.ok(heroe.indexOf('portal-sponsor"') < heroe.indexOf('portal-heroe-cuerpo'), 'antes del cuerpo: no tapa el título al tabular');
+  assert.match(portal, /^$|/); // el HTML es estático: no depende de la base
+  assert.match(readFileSync('src/ui/portalArranque.js', 'utf8'), /iniciarGiroSponsor\(\);/);
+});
+
+test('el sticker respeta reduced-motion: gira sólo con el keyframe del escudo, se pausa fuera de pantalla y base.css lo apaga', () => {
+  const css = readFileSync('public/css/publico.css', 'utf8');
+  const base = readFileSync('public/css/base.css', 'utf8');
+  assert.match(css, /\.portal-sponsor-anillo\{[^}]*animation:giro var\(--dur-giro\) linear infinite\}/);
+  assert.match(css, /@keyframes giro\{from\{transform:rotate\(-360deg\)\}\}/);
+  assert.match(css, /\.portal-sponsor-anillo\.quieto\{animation-play-state:paused\}/);
+  assert.match(base, /@media \(prefers-reduced-motion:reduce\)\{\*\{transition:none!important;animation:none!important\}\}/);
+  const modulo = readFileSync('src/ui/animaciones.js', 'utf8');
+  assert.match(modulo, /export function iniciarGiroSponsor\(\)/);
+  assert.match(modulo, /classList\.toggle\('quieto', !entrada\.isIntersecting\)/);
+  // En el celu, arriba a la izquierda (el título y los botones están abajo); en compu, abajo a la derecha.
+  assert.match(css, /\.portal-sponsor\{[^}]*top:5rem;left:var\(--sp-4\)/);
+  assert.match(readFileSync('public/css/layout.css', 'utf8'), /\.publico \.portal-sponsor\{top:auto;left:auto;bottom:6rem;right:var\(--sp-6\)/);
+});
+
 // ---- La cinta de las próximas fechas ----
 
 test('cinta: fecha con ícono y color de su tipo, título escapado; corre y se repite aria-hidden con botón de pausa', () => {

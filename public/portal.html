@@ -97,6 +97,15 @@
         <img src="/public/img/fotos/formativas-bandeja.webp" width="1080" height="720" fetchpriority="high"
           alt="Un jugador de Newell's sube a hacer una bandeja en un partido de las formativas">
       </picture>
+      <!-- El sticker de sponsor: único elemento que gira (DESIGN.md). Lleva a Sumate. El
+           anillo es decorativo (aria-hidden); el nombre accesible lo da aria-label. -->
+      <a class="portal-sponsor" href="#colaborar" aria-label="¿Tenés una empresa? Sumate: ver cómo sumar tu empresa como sponsor">
+        <svg class="portal-sponsor-anillo" id="anillo-sponsor" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+          <defs><path id="circulo-sponsor" d="M60,14 a46,46 0 1,1 0,92 a46,46 0 1,1 0,-92"/></defs>
+          <text font-size="12"><textPath href="#circulo-sponsor" textLength="284" lengthAdjust="spacing">¿TENÉS UNA EMPRESA?&#8195;·&#8195;¿TENÉS UNA EMPRESA?&#8195;·&#8195;</textPath></text>
+        </svg>
+        <span class="portal-sponsor-centro" aria-hidden="true">Sumate</span>
+      </a>
       <div class="portal-heroe-cuerpo">
         <p class="portal-heroe-ey entra" style="--i:0"><span aria-hidden="true"></span><span id="portal-heroe-ey">Formativas</span></p>
         <div class="portal-titulo">
