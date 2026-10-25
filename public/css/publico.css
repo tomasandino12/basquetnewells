@@ -305,7 +305,6 @@
 .js-anim .portal-heroe .linea > span{animation:subir-linea var(--dur-linea) var(--ease-salida) backwards;animation-delay:calc(var(--retardo-entrada) + var(--i) * var(--paso-entrada))}
 @keyframes subir{from{opacity:0;transform:translateY(1.5rem)}}
 @keyframes subir-linea{from{transform:translateY(105%)}}
-@keyframes pegar{from{opacity:0;transform:rotate(-14deg) scale(.9)}}
 
 /* Parallax suave de la foto: baja hasta un 18% mientras se scrollea el hero.
    Va con la línea de tiempo del scroll donde el navegador la tiene; en los
@@ -447,26 +446,92 @@
 .portal-logos-lista a{display:flex;align-items:center;justify-content:center;min-height:var(--tap);width:100%}
 .portal-logos-lista img{display:block;max-width:100%;max-height:4rem;width:auto;height:auto;object-fit:contain}
 
-/* "Lo que viene": el próximo evento como un tablero, arriba del mes. El color
-   del tipo va en el filete de la fecha y en el puntito de la etiqueta (este,
-   junto a los del mes, en el bloque de colores por tipo). */
-.portal-prox{margin-bottom:var(--sp-3);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden}
-.portal-prox-cab{display:flex;justify-content:space-between;align-items:center;padding:var(--sp-2) var(--sp-4);border-bottom:1px solid var(--pub-borde);font-family:var(--ff-titulo);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-115);color:var(--gris-osc)}
+/* "Lo que viene": el próximo evento como una ENTRADA. A la izquierda el talón,
+   en el color de su tipo, con SÁB / 24 / OCT en grande; a la derecha el
+   cuerpo, separado por la línea punteada y las dos muescas, con el título, el
+   horario, el lugar y cómo agendarlo. Está levemente girado y "se pega" al
+   aparecer (.sticker). El fondo de las muescas es el de la página. */
+.portal-prox{margin-bottom:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden}
+.portal-prox-cab{display:flex;justify-content:space-between;align-items:center;padding:var(--sp-2) var(--sp-4);border-bottom:1px solid var(--pub-borde);font-family:var(--ff-titulo);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-125);color:var(--gris-osc)}
 .portal-prox-cab span::before{content:"";display:inline-block;width:.4375rem;height:.4375rem;margin-right:var(--sp-2);border-radius:50%;background:var(--primario);vertical-align:middle}
 .portal-prox-cab b{color:var(--sobre-oscuro)}
-.portal-prox-ev{display:grid;grid-template-columns:4.75rem 1fr;gap:var(--sp-4);padding:var(--sp-4)}
-.portal-prox-fecha{align-self:start;text-align:center;padding:var(--sp-2) 0;background:var(--pub-fondo);border-top:4px solid;border-radius:0 0 var(--r-s) var(--r-s)}
-.portal-prox-fecha small{display:block;font-family:var(--ff-titulo);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-115);color:var(--gris-osc)}
-.portal-prox-fecha b{display:block;font-family:var(--ff-mono);font-weight:600;font-size:2.5rem;line-height:1}
-.portal-prox-tipo{display:inline-flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-115);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris-osc)}
-.portal-prox-tipo::before{content:"";width:.5rem;height:.5rem;border-radius:50%}
+.portal-prox-ev{position:relative;display:grid;grid-template-columns:5.5rem minmax(0,1fr)}
+.portal-prox-ev::before,.portal-prox-ev::after{content:"";position:absolute;left:calc(5.5rem - .6875rem);width:1.375rem;height:1.375rem;border-radius:50%;background:var(--pub-fondo);z-index:1}
+.portal-prox-ev::before{top:-.6875rem}
+.portal-prox-ev::after{bottom:-.6875rem}
+.portal-prox-fecha{display:grid;align-content:center;justify-items:center;gap:.125rem;padding:var(--sp-4) var(--sp-2);text-align:center;color:var(--pub-fondo)}
+.portal-prox-fecha small{display:block;font-family:var(--ff-titulo);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-170);line-height:1}
+.portal-prox-fecha b{display:block;font-family:var(--ff-titulo);font-weight:700;font-size:3.5rem;line-height:.9}
+.portal-prox-cuerpo{min-width:0;padding:var(--sp-4);border-left:2px dashed var(--linea-osc)}
+.portal-prox-tipo{display:inline-block;vertical-align:middle;font-size:var(--fs-125);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris-osc)}
 .portal-prox-t{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-260);line-height:1;margin:var(--sp-1) 0;overflow-wrap:anywhere}
-.portal-prox-h{color:var(--gris-osc);font-size:var(--fs-135)}
-.portal-prox .portal-ev-agregar{margin-top:var(--sp-2)}
-.portal-prox.tipo-partido .portal-prox-fecha{border-top-color:var(--agenda-partido)}
-.portal-prox.tipo-evento .portal-prox-fecha{border-top-color:var(--agenda-evento)}
-.portal-prox.tipo-charla .portal-prox-fecha{border-top-color:var(--agenda-charla)}
-.portal-prox.tipo-entrenamiento .portal-prox-fecha{border-top-color:var(--agenda-entrenamiento)}
+.portal-prox-h{color:var(--gris-osc);font-size:var(--fs-145)}
+/* "Agendar": dos botones de verdad (48 px), no dos links chicos. */
+.portal-prox .portal-ev-agregar{gap:var(--sp-2);margin-top:var(--sp-3)}
+.portal-prox .portal-ev-agregar > span{font-size:var(--fs-135);width:100%}
+.portal-prox .portal-ev-agregar a,.portal-prox .portal-ev-agregar button{
+  min-height:3rem;padding:0 var(--sp-4);border:1px solid var(--gris-osc);border-radius:var(--r-btn);text-decoration:none;
+  font-family:var(--ff-titulo);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:var(--fs-170);
+  transition:transform var(--dur-1) var(--ease-salida);
+}
+.portal-prox .portal-ev-agregar a:active,.portal-prox .portal-ev-agregar button:active{transform:scale(.97)}
+.portal-prox.tipo-partido .portal-prox-fecha{background:var(--agenda-partido);color:var(--sobre-club)}
+.portal-prox.tipo-evento .portal-prox-fecha{background:var(--agenda-evento)}
+.portal-prox.tipo-charla .portal-prox-fecha{background:var(--agenda-charla)}
+.portal-prox.tipo-entrenamiento .portal-prox-fecha{background:var(--agenda-entrenamiento)}
+
+/* El ícono del tipo (junto al texto del tipo): el tipo no se dice sólo con el color. */
+.portal-tipo-ico{display:inline-grid;vertical-align:middle;margin-right:var(--sp-1)}
+.portal-tipo-ico svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tipo-partido .portal-tipo-ico{color:var(--agenda-partido)}
+.tipo-evento .portal-tipo-ico{color:var(--agenda-evento)}
+.tipo-charla .portal-tipo-ico{color:var(--agenda-charla)}
+.tipo-entrenamiento .portal-tipo-ico{color:var(--agenda-entrenamiento)}
+/* Sobre el talón de color el ícono del tipo no se pinta con el mismo color. */
+.portal-prox .portal-tipo-ico{color:var(--gris-osc)}
+
+/* ---- cinta de las próximas fechas ----
+   Una banda levemente girada. La pista tiene dos copias de la fila y corre la
+   mitad: al terminar, vuelve a arrancar sin salto. Con .js-anim (o sea, sin
+   movimiento reducido) corre sola; sin él queda quieta y se desliza a mano.
+   Se pausa con el mouse y con el botón. */
+.portal-cinta{position:relative;overflow:hidden;padding:var(--sp-5) 0 var(--sp-2)}
+.portal-cinta-banda{margin-inline:-2rem;border-block:1px solid var(--pub-borde);background:var(--pub-tarjeta);transform:rotate(-1.5deg);overflow:hidden}
+html:not(.js-anim) .portal-cinta-banda{overflow-x:auto}
+.portal-cinta-pista{display:flex;width:max-content;padding-inline:2rem}
+.portal-cinta-fila{display:flex;align-items:center;list-style:none;margin:0;padding:0}
+html:not(.js-anim) .portal-cinta-fila[aria-hidden]{display:none}
+.portal-cinta-fila li{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) 0 var(--sp-3) var(--sp-6);white-space:nowrap}
+.portal-cinta-fila li > i{display:grid}
+.portal-cinta-fila svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.portal-cinta-fila b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:var(--fs-230);line-height:1}
+.portal-cinta-fila span{font-family:var(--ff-titulo);font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:var(--fs-230);line-height:1}
+.portal-cinta-fila em{width:.375rem;height:.375rem;margin-left:var(--sp-3);background:var(--gris-osc);transform:rotate(45deg)}
+.portal-cinta-fila .tipo-partido > i,.portal-cinta-fila .tipo-partido b{color:var(--agenda-partido)}
+.portal-cinta-fila .tipo-evento > i,.portal-cinta-fila .tipo-evento b{color:var(--agenda-evento)}
+.portal-cinta-fila .tipo-charla > i,.portal-cinta-fila .tipo-charla b{color:var(--agenda-charla)}
+.portal-cinta-fila .tipo-entrenamiento > i,.portal-cinta-fila .tipo-entrenamiento b{color:var(--agenda-entrenamiento)}
+.js-anim .portal-cinta-pista.anda{transform:translateX(-50%);animation:marcha var(--dur-cinta) linear infinite}
+@keyframes marcha{from{transform:translateX(0)}}
+.portal-cinta.pausada .portal-cinta-pista{animation-play-state:paused}
+@media (hover:hover){.portal-cinta:hover .portal-cinta-pista{animation-play-state:paused}}
+.portal-cinta-pausa{
+  position:absolute;right:var(--sp-3);bottom:var(--sp-1);z-index:2;display:grid;place-items:center;width:var(--tap);height:var(--tap);
+  color:var(--sobre-oscuro);background:var(--pub-fondo);border:1px solid var(--pub-borde);border-radius:50%;cursor:pointer;
+}
+.portal-cinta-pausa svg{width:1.125rem;height:1.125rem;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
+.portal-cinta-pausa .r{display:none;fill:currentColor;stroke-linejoin:round}
+.portal-cinta-pausa[aria-pressed="true"] .p{display:none}
+.portal-cinta-pausa[aria-pressed="true"] .r{display:block}
+html:not(.js-anim) .portal-cinta-pausa{display:none}
+
+/* ---- stickers: el ticket queda un poco girado y se "pega" al aparecer ---- */
+.sticker{transform:rotate(-2deg)}
+.js-anim .sticker{opacity:0;transform:rotate(-4deg) scale(.9);transition:opacity var(--dur-rise) var(--ease-salida),transform var(--dur-rise) var(--ease-salida)}
+.js-anim .sticker.visto{opacity:1;transform:rotate(-2deg)}
+@media (prefers-reduced-motion:reduce){
+  .js-anim .sticker{opacity:1;transform:rotate(-2deg)}
+}
 
 /* ---- calendario del mes ---- */
 /* El color de cada tipo pinta el puntito del día, el cuadradito de la leyenda y el filete del evento. */
@@ -474,6 +539,12 @@
 .portal-puntos i.tipo-evento,.portal-prox.tipo-evento .portal-prox-tipo::before,.portal-ley li.tipo-evento::before,.portal-ev.tipo-evento::before{background:var(--agenda-evento)}
 .portal-puntos i.tipo-charla,.portal-prox.tipo-charla .portal-prox-tipo::before,.portal-ley li.tipo-charla::before,.portal-ev.tipo-charla::before{background:var(--agenda-charla)}
 .portal-puntos i.tipo-entrenamiento,.portal-prox.tipo-entrenamiento .portal-prox-tipo::before,.portal-ley li.tipo-entrenamiento::before,.portal-ev.tipo-entrenamiento::before{background:var(--agenda-entrenamiento)}
+/* El tipo no se dice sólo con el color: cada uno tiene su forma (partido, círculo;
+   evento, rombo; charla, cuadrado; entrenamiento, triángulo), en el mes y en la leyenda. */
+.portal-ley li.tipo-partido::before{border-radius:50%}
+.portal-puntos i.tipo-evento,.portal-ley li.tipo-evento::before{transform:rotate(45deg);border-radius:1px}
+.portal-puntos i.tipo-charla,.portal-ley li.tipo-charla::before{border-radius:1px}
+.portal-puntos i.tipo-entrenamiento,.portal-ley li.tipo-entrenamiento::before{border-radius:0;clip-path:polygon(50% 0,100% 100%,0 100%)}
 .portal-cal{background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden;min-width:0}
 .portal-cal.cargando .portal-grilla{opacity:.55}
 .portal-cal-cab{display:flex;justify-content:space-between;align-items:center;padding:var(--sp-3) var(--sp-4);border-bottom:1px solid var(--pub-borde)}
@@ -487,7 +558,7 @@
 .portal-cal-nav:active{transform:scale(.94)}
 .portal-ley{list-style:none;margin:0;display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-3);padding:var(--sp-3) var(--sp-4) 0;font-size:var(--fs-115);color:var(--gris-osc)}
 .portal-ley li{display:flex;align-items:center;gap:var(--sp-1)}
-.portal-ley li::before{content:"";width:.5rem;height:.5rem;border-radius:2px}
+.portal-ley li::before{content:"";width:.625rem;height:.625rem}
 .portal-grilla{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;padding:var(--sp-2) var(--sp-2) var(--sp-3);transition:opacity var(--dur-2) var(--ease-salida)}
 .portal-dn{font-size:var(--fs-100);font-weight:600;color:var(--gris-osc);text-align:center;padding:var(--sp-2) 0}
 .portal-dia{
@@ -501,7 +572,7 @@
 .portal-dia.hoy{border-color:var(--sobre-oscuro)}
 .portal-dia.elegido{background:var(--primario);border-color:var(--primario);color:var(--sobre-club)}
 .portal-puntos{display:flex;gap:2px}
-.portal-puntos i{width:.375rem;height:.375rem;border-radius:50%}
+.portal-puntos i{width:.5rem;height:.5rem;border-radius:50%}
 /* Sobre el rojo del día elegido, un punto rojo de partido no se ve: se le pone aro. */
 .portal-dia.elegido .portal-puntos i{box-shadow:0 0 0 1px var(--sobre-club)}
 .portal-cal-dia{border-top:1px solid var(--pub-borde);padding:var(--sp-3) var(--sp-4) var(--sp-4)}
@@ -510,7 +581,7 @@
 .portal-evs{list-style:none;margin:0 0 var(--sp-3);padding:0;display:grid;gap:var(--sp-3)}
 .portal-ev{position:relative;padding-left:var(--sp-4)}
 .portal-ev::before{content:"";position:absolute;left:0;top:.125rem;bottom:.125rem;width:4px;border-radius:2px}
-.portal-ev small{display:block;font-size:var(--fs-115);font-weight:600;color:var(--gris-osc);letter-spacing:.04em}
+.portal-ev small{display:flex;align-items:center;font-size:var(--fs-125);font-weight:600;color:var(--gris-osc);letter-spacing:.04em}
 .portal-ev b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-190);letter-spacing:.02em;line-height:1.1;margin:.125rem 0}
 .portal-ev span{display:block;font-size:var(--fs-125);color:var(--gris-osc)}
 /* "Agregar a mi calendario": dos botones chicos pero de 44 px de alto para el pulgar. */

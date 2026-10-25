@@ -175,6 +175,7 @@
   --dur-2:200ms;          /* entrada de pantalla, toast, velo */
   --dur-3:280ms;          /* hoja y barras */
   --dur-demo:1400ms;       /* demos de la landing: una vez al entrar en pantalla */
+  --dur-cinta:38s;        /* la cinta de fechas: la mitad de la pista (portal.js la ajusta según cuántas haya) */
   --dur-giro:25s;         /* una vuelta del anillo del escudo (landing) */
   --dur-rise:700ms;       /* portal: texto y botones que suben al entrar */
   --dur-linea:900ms;      /* portal: cada línea del título sube de su máscara */

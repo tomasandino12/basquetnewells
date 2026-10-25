@@ -12,6 +12,7 @@ import {
   TIPOS_AGENDA, NOMBRE_TIPO, enlaceAgregarGoogle, textoIcs, enlacesSuscripcion, partesDeFecha, cuandoEs,
 } from '../data/agenda.js';
 import { destinoDeAuth } from '../data/entradaAuth.js';
+import { revelar } from './animaciones.js';
 
 /*
  * Portal "Básquet Newell's": la página pública que se reparte a las familias
@@ -43,6 +44,17 @@ const ICONO = {
   personaMas: html`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.6 3-5.5 6.5-5.5s6 1.9 6.5 5.5M19 8v6M16 11h6"/></svg>`,
   billetera: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><path d="M4 7.5V17a2 2 0 0 0 2 2h13a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H6.5A2.5 2.5 0 0 1 4 7.5z"/><circle cx="16" cy="13.5" r="1"/></svg>`,
   mano: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V12M16 9.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L4.3 14a1.5 1.5 0 0 1 2.4-1.8L8 14"/></svg>`,
+};
+
+/**
+ * Un ícono por tipo de evento, para que el tipo no se distinga sólo por el
+ * color (el color además lo pinta el CSS con --agenda-*).
+ */
+const ICONO_TIPO = {
+  partido: ICONO.jugar,
+  evento: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>`,
+  charla: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v10H9l-5 4z"/></svg>`,
+  entrenamiento: html`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="7"/><path d="M12 9v4l2.5 2M9.5 3h5"/></svg>`,
 };
 
 const botonExterno = (url, texto, clase = 'btn') => html`<a class="${clase}" href="${url}" target="_blank" rel="noopener">${texto} <span aria-hidden="true">${ABRE}</span></a>`;
@@ -328,7 +340,7 @@ export const claveEvento = (e) => `${e.id}|${e.dia}`;
 export function htmlEvento(e, fecha = null) {
   const cuando = e.hora ? `${e.hora} a ${e.horaFin}` : 'Todo el día';
   return html`<li class="portal-ev tipo-${e.tipo}">
-    <small>${fecha ? fechaLarga(fecha) : NOMBRE_TIPO[e.tipo]} · ${cuando}</small>
+    <small><i class="portal-tipo-ico">${ICONO_TIPO[e.tipo]}</i>${fecha ? fechaLarga(fecha) : NOMBRE_TIPO[e.tipo]} · ${cuando}</small>
     <b>${e.titulo}</b>${e.lugar && html`<span>${e.lugar}</span>`}
     <div class="portal-ev-agregar">Agregar a mi calendario:
       <a href="${enlaceAgregarGoogle(e)}" target="_blank" rel="noopener">Google</a>
@@ -353,17 +365,41 @@ export function htmlProximo(proximo, hoy) {
     <div class="portal-prox-cab"><span>Lo que viene</span>${cuando && html`<b>${cuando}</b>`}</div>
     <div class="portal-prox-ev">
       <div class="portal-prox-fecha" aria-label="${fechaLarga(fecha)}"><small>${f.semana}</small><b>${f.dia}</b><small>${f.mes}</small></div>
-      <div>
-        <span class="portal-prox-tipo">${UN_TIPO[e.tipo]}</span>
+      <div class="portal-prox-cuerpo">
+        <i class="portal-tipo-ico">${ICONO_TIPO[e.tipo]}</i><span class="portal-prox-tipo">${UN_TIPO[e.tipo]}</span>
         <div class="portal-prox-t">${e.titulo}</div>
         <div class="portal-prox-h">${e.hora ? `${e.hora} a ${e.horaFin}` : 'Todo el día'}${e.lugar && html` · ${e.lugar}`}</div>
-        <div class="portal-ev-agregar">Agendar:
+        <div class="portal-ev-agregar"><span>Agendar:</span>
           <a href="${enlaceAgregarGoogle(e)}" target="_blank" rel="noopener">Google</a>
           <button type="button" data-ics="${claveEvento(e)}">iPhone</button>
         </div>
       </div>
     </div>
   </div>`;
+}
+
+/**
+ * La cinta de las próximas fechas: fecha (con el ícono y el color de su tipo),
+ * título y un rombo entre una y otra. `proximos`: [{ fecha, evento }] de
+ * proximosEventos. Con tres o más corre sola (la fila se repite, la copia
+ * aria-hidden, y arrancar de nuevo parece infinito) y trae un botón para
+ * pausarla; con menos se queda quieta, porque un cartel que se mueve para
+ * mostrar dos cosas no aporta. Sin eventos, nada.
+ */
+export function htmlCinta(proximos) {
+  if (!proximos.length) return html``;
+  const anda = proximos.length >= 3;
+  const fila = (oculta) => html`<ul class="portal-cinta-fila"${oculta && html` aria-hidden="true"`}>${proximos.map(({ fecha, evento: e }) => {
+    const f = partesDeFecha(fecha);
+    return html`<li class="tipo-${e.tipo}"><i>${ICONO_TIPO[e.tipo]}</i><b>${f.semana} ${f.dia} ${f.mes}</b><span>${e.titulo}</span><em aria-hidden="true"></em></li>`;
+  })}</ul>`;
+  return html`<div class="portal-cinta-banda">
+      <div class="portal-cinta-pista${anda ? ' anda' : ''}"${anda && html` style="--dur-cinta:${proximos.length * 7}s"`}>${fila(false)}${anda && fila(true)}</div>
+    </div>
+    ${anda && html`<button type="button" class="portal-cinta-pausa" data-cinta-pausa aria-pressed="false" aria-label="Pausar la cinta de fechas">
+      <svg class="p" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
+      <svg class="r" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg>
+    </button>`}`;
 }
 
 /** Para tener el calendario entero en el celular, una vez, y que los eventos nuevos aparezcan solos. */
@@ -481,19 +517,21 @@ function iniciarCalendario(calendarios) {
   }
 
   /**
-   * "Lo que viene": el próximo desde hoy. Si en lo que queda del mes no hay
-   * nada, lo busca en el mes siguiente (a fin de mes, el próximo partido suele
-   * caer ahí). No cambia al pasar de mes en la grilla.
+   * "Lo que viene" y la cinta: lo próximo desde hoy, mirando este mes y el
+   * siguiente (a fin de mes, el próximo partido suele caer ahí). No cambian al
+   * pasar de mes en la grilla.
    */
   async function mostrarProximo() {
     const anio = Number(hoy.slice(0, 4));
     const mes = Number(hoy.slice(5, 7));
-    let [proximo] = proximosEventos((await traer(anio, mes)).porDia, hoy, 1);
-    if (!proximo) {
-      const sig = mesVecino(anio, mes, 1);
-      [proximo] = proximosEventos((await traer(sig.anio, sig.mes)).porDia, hoy, 1);
-    }
-    $('portal-proximo').innerHTML = htmlProximo(proximo, hoy);
+    const sig = mesVecino(anio, mes, 1);
+    const [actual, siguiente] = await Promise.all([traer(anio, mes), traer(sig.anio, sig.mes)]);
+    // Un torneo que cruza el fin de mes está en los dos: proximosEventos lo cuenta una vez.
+    const proximos = proximosEventos(new Map([...actual.porDia, ...siguiente.porDia]), hoy, 6);
+    $('portal-proximo').innerHTML = htmlProximo(proximos[0], hoy);
+    $('portal-cinta').innerHTML = htmlCinta(proximos);
+    $('cinta').hidden = !proximos.length;
+    revelar($('portal-proximo'));
   }
 
   // En la sección entera: el "iPhone" de "Lo que viene" y los del mes. El

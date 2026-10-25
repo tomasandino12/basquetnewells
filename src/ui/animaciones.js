@@ -27,28 +27,54 @@ export function iniciarParallax() {
   }, { passive: true });
 }
 
+const REVELABLES = '.rise, .sticker';
+let observador = null;
+
 /**
- * Cada .rise arranca oculto y desplazado (publico.css, sólo bajo .js-anim) y
- * entra una sola vez al aparecer en pantalla. `data-anim-lista` le avisa a
- * anim.js que este módulo corrió: sin ese aviso, a los 3 s apaga las animaciones.
+ * Cada .rise y cada .sticker arrancan ocultos (publico.css, sólo bajo
+ * .js-anim) y entran una sola vez al aparecer en pantalla: el .rise sube, el
+ * .sticker se "pega" (escala y giro). Con lo que se arma después de cargar
+ * (el ticket, la cinta) hay que volver a llamar a `revelar`.
+ * `data-anim-lista` le avisa a anim.js que este módulo corrió: sin ese aviso,
+ * a los 3 s apaga las animaciones.
  */
 export function iniciarRise(raiz = document) {
   const html = document.documentElement;
-  const elementos = raiz.querySelectorAll('.rise');
-  if (!html.classList.contains('js-anim') || typeof IntersectionObserver === 'undefined') {
-    elementos.forEach((e) => e.classList.add('visto'));
-    html.setAttribute('data-anim-lista', '');
-    return;
+  if (html.classList.contains('js-anim') && typeof IntersectionObserver !== 'undefined') {
+    observador = new IntersectionObserver((entradas) => {
+      for (const entrada of entradas) {
+        if (!entrada.isIntersecting) continue;
+        entrada.target.classList.add('visto');
+        observador.unobserve(entrada.target);
+      }
+    }, { rootMargin: '0px 0px -8% 0px' });
   }
-  const observador = new IntersectionObserver((entradas) => {
-    for (const entrada of entradas) {
-      if (!entrada.isIntersecting) continue;
-      entrada.target.classList.add('visto');
-      observador.unobserve(entrada.target);
-    }
-  }, { rootMargin: '0px 0px -8% 0px' });
-  elementos.forEach((e) => observador.observe(e));
+  revelar(raiz);
   html.setAttribute('data-anim-lista', '');
+}
+
+/** Pone a observar lo revelable de `raiz` (y a ella misma). Sin animaciones, lo muestra ya. */
+export function revelar(raiz) {
+  const nodos = [...(raiz.matches?.(REVELABLES) ? [raiz] : []), ...raiz.querySelectorAll(REVELABLES)];
+  for (const nodo of nodos) {
+    if (observador) observador.observe(nodo);
+    else nodo.classList.add('visto');
+  }
+}
+
+/**
+ * El botón de pausa de la cinta de fechas: en el celular no hay hover, y una
+ * cinta que se mueve sola sin poder frenarla cansa (y para algunas personas
+ * es un problema). Pausa y reanuda; el estado va en `.pausada` y aria-pressed.
+ */
+export function iniciarCintaPausa() {
+  document.addEventListener('click', (ev) => {
+    const boton = ev.target.closest('[data-cinta-pausa]');
+    if (!boton) return;
+    const pausada = boton.closest('.portal-cinta').classList.toggle('pausada');
+    boton.setAttribute('aria-pressed', String(pausada));
+    boton.setAttribute('aria-label', pausada ? 'Reanudar la cinta de fechas' : 'Pausar la cinta de fechas');
+  });
 }
 
 /**

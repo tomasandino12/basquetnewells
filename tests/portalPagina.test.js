@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlAcciones, htmlDock, htmlPago, htmlAlias, htmlBuscador, htmlCategoriaDelAnio, htmlProximo,
+  htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlAcciones, htmlDock, htmlPago, htmlCinta, htmlAlias, htmlBuscador, htmlCategoriaDelAnio, htmlProximo,
   htmlRecaudacion, htmlColaborar, htmlAyuda, htmlAtajos, htmlCalendario, htmlCategorias, htmlFoto, htmlSede, diaInicial, htmlSuscripcion,
 } from '../src/ui/portal.js';
 import { eventoDesdeGoogle, eventosPorDia, proximosEventos } from '../src/data/agenda.js';
@@ -294,6 +294,46 @@ test('día inicial: hoy si es del mes; si no, el primero con algo, o el 1', () =
   assert.equal(diaInicial(2026, 10, '2026-10-20', porDia), '2026-10-20');
   assert.equal(diaInicial(2026, 10, '2026-09-30', porDia), '2026-10-24');
   assert.equal(diaInicial(2026, 11, '2026-10-20', porDia), '2026-11-01');
+});
+
+// ---- La cinta de las próximas fechas ----
+
+test('cinta: fecha con ícono y color de su tipo, título escapado; con tres o más corre y se repite aria-hidden con botón de pausa', () => {
+  const proximos = proximosEventos(porDia, '2026-10-20', 6);
+  const mas = [...proximos, ...proximos].slice(0, 3);
+  const out = htmlCinta(mas).toString();
+  assert.match(out, /<div class="portal-cinta-pista anda" style="--dur-cinta:21s">/);
+  assert.equal((out.match(/<ul class="portal-cinta-fila"/g) ?? []).length, 2, 'la fila se repite para el loop');
+  assert.equal((out.match(/<ul class="portal-cinta-fila" aria-hidden="true">/g) ?? []).length, 1, 'sólo la copia es aria-hidden');
+  assert.match(out, /<li class="tipo-evento"><i><svg[\s\S]*?<\/i><b>sáb 24 oct<\/b><span>Hamburgueseada<\/span>/);
+  assert.match(out, /U15 vs\. &lt;Náutico&gt;/);
+  assert.doesNotMatch(out, /<Náutico>/);
+  assert.match(out, /<button type="button" class="portal-cinta-pausa" data-cinta-pausa aria-pressed="false" aria-label="Pausar la cinta de fechas">/);
+});
+
+test('cinta: con menos de tres eventos queda quieta (una sola fila, sin pausa); sin eventos, nada', () => {
+  const dos = htmlCinta(proximosEventos(porDia, '2026-10-20', 2)).toString();
+  assert.doesNotMatch(dos, /pista anda|<ul class="portal-cinta-fila" aria-hidden|portal-cinta-pausa|--dur-cinta/);
+  assert.equal((dos.match(/<ul class="portal-cinta-fila"/g) ?? []).length, 1);
+  assert.equal(htmlCinta([]).toString(), '');
+});
+
+test('la cinta y "Lo que viene" salen de los mismos eventos: este mes y el siguiente, y se revelan al armarse', () => {
+  const desde = portal.indexOf('async function mostrarProximo()');
+  const cuerpo = portal.slice(desde, portal.indexOf('\n  }\n', desde));
+  assert.match(cuerpo, /proximosEventos\(new Map\(\[\.\.\.actual\.porDia, \.\.\.siguiente\.porDia\]\), hoy, 6\)/);
+  assert.match(cuerpo, /htmlCinta\(proximos\)/);
+  assert.match(cuerpo, /\$\('cinta'\)\.hidden = !proximos\.length/);
+  assert.match(cuerpo, /revelar\(\$\('portal-proximo'\)\)/);
+  assert.match(pagina, /<section class="portal-cinta" id="cinta" aria-label="Próximas fechas" hidden>/);
+  assert.ok(pagina.indexOf('id="cinta"') > pagina.indexOf('id="heroe"') && pagina.indexOf('id="cinta"') < pagina.indexOf('id="calendario"'), 'la cinta va entre el hero y el calendario');
+});
+
+test('cada tipo tiene su ícono en el detalle del día y en "Lo que viene"', () => {
+  const out = htmlCalendario(estado(), CALS).toString();
+  assert.match(out, /<small><i class="portal-tipo-ico"><svg[\s\S]*?<\/i>Eventos · Todo el día<\/small>/);
+  const [prox] = proximosEventos(porDia, '2026-10-25', 1);
+  assert.match(htmlProximo(prox, '2026-10-25').toString(), /<i class="portal-tipo-ico"><svg[\s\S]*?<\/i><span class="portal-prox-tipo">Partido<\/span>/);
 });
 
 // ---- Categorías, sede, foto, contacto: sin datos, nada ----

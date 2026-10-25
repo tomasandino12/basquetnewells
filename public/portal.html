@@ -111,6 +111,12 @@
       </div>
     </section>
 
+    <!-- La cinta de las próximas fechas (src/ui/portal.js, htmlCinta): sale de los
+         mismos eventos del calendario. Sin ninguno por delante, oculta. -->
+    <section class="portal-cinta" id="cinta" aria-label="Próximas fechas" hidden>
+      <div id="portal-cinta"></div>
+    </section>
+
     <div class="portal-cuerpo">
     <nav class="portal-atajos" id="portal-atajos" aria-label="Atajos"></nav>
 
@@ -118,8 +124,8 @@
       <div class="portal-st">Agenda del club</div>
       <h2 id="t-calendario">Calendario</h2>
       <p class="intro">Partidos, eventos y charlas. Tocá un día para ver qué hay.</p>
-      <div id="portal-proximo"></div>
-      <div id="portal-calendario"></div>
+      <div id="portal-proximo" class="sticker"></div>
+      <div id="portal-calendario" class="rise"></div>
     </section>
 
     <!-- Banda roja a todo el ancho: aviso de los eventos de recaudación (destino recaudacion, 0063). -->

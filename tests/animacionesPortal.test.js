@@ -29,10 +29,40 @@ test('lo oculto de entrada vive sólo bajo .js-anim y con reduced-motion queda v
   assert.match(css, /prefers-reduced-motion:reduce\)\{\s*\.js-anim \.rise\{opacity:1;transform:none\}/);
 });
 
-test('animaciones.js revela una sola vez y muestra todo si no hay IntersectionObserver', () => {
+test('animaciones.js revela una sola vez, vale para lo armado después (revelar) y muestra todo sin IntersectionObserver', () => {
   assert.match(modulo, /unobserve\(entrada\.target\)/);
-  assert.match(modulo, /typeof IntersectionObserver === 'undefined'/);
-  assert.match(modulo, /e\.classList\.add\('visto'\)/);
+  assert.match(modulo, /typeof IntersectionObserver !== 'undefined'/);
+  assert.match(modulo, /export function revelar\(raiz\)/);
+  assert.match(modulo, /else nodo\.classList\.add\('visto'\)/, 'sin observador, todo queda visible');
+  assert.match(modulo, /const REVELABLES = '\.rise, \.sticker'/);
+});
+
+test('la cinta corre sólo bajo .js-anim, con la mitad de la pista y pausable; sin animación se desliza a mano', () => {
+  assert.match(css, /\.js-anim \.portal-cinta-pista\.anda\{transform:translateX\(-50%\);animation:marcha var\(--dur-cinta\) linear infinite\}/);
+  assert.match(css, /@keyframes marcha\{from\{transform:translateX\(0\)\}\}/);
+  assert.match(css, /\.portal-cinta\.pausada \.portal-cinta-pista\{animation-play-state:paused\}/);
+  assert.match(css, /@media \(hover:hover\)\{\.portal-cinta:hover \.portal-cinta-pista\{animation-play-state:paused\}\}/);
+  assert.match(css, /html:not\(\.js-anim\) \.portal-cinta-banda\{overflow-x:auto\}/);
+  assert.match(css, /html:not\(\.js-anim\) \.portal-cinta-fila\[aria-hidden\]\{display:none\}/);
+  assert.match(css, /\.portal-cinta-pausa\{[^}]*width:var\(--tap\);height:var\(--tap\)/);
+  assert.match(modulo, /export function iniciarCintaPausa\(\)/);
+  assert.match(modulo, /toggle\('pausada'\)/);
+});
+
+test('el ticket se pega como sticker: gira un poco y, con .js-anim, entra con escala y giro', () => {
+  assert.match(css, /\.sticker\{transform:rotate\(-2deg\)\}/);
+  assert.match(css, /\.js-anim \.sticker\{opacity:0;transform:rotate\(-4deg\) scale\(\.9\);/);
+  assert.match(css, /\.js-anim \.sticker\.visto\{opacity:1;transform:rotate\(-2deg\)\}/);
+  assert.match(readFileSync('public/portal.html', 'utf8'), /<div id="portal-proximo" class="sticker">/);
+});
+
+test('el tipo de evento no se dice sólo con el color: cada uno tiene su forma en el mes y su ícono en el detalle', () => {
+  for (const tipo of ['evento', 'charla', 'entrenamiento']) {
+    assert.match(css, new RegExp(`\.portal-puntos i\.tipo-${tipo}`), tipo);
+  }
+  assert.match(css, /\.portal-ley li\.tipo-partido::before\{border-radius:50%\}/);
+  assert.match(css, /clip-path:polygon\(50% 0,100% 100%,0 100%\)/);
+  assert.match(css, /\.portal-tipo-ico svg\{width:1rem;height:1rem/);
 });
 
 test('parallax: con línea de tiempo de CSS lo hace el CSS; sin ella, el módulo, y sólo con .js-anim', () => {
