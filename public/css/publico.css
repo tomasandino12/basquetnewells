@@ -507,12 +507,12 @@
 .portal-prox .portal-tipo-ico{color:var(--gris-osc)}
 
 /* ---- cinta de las próximas fechas ----
-   Una banda levemente girada. La pista tiene dos copias de la fila y corre la
+   Una banda recta, sólo con fechas. La pista tiene dos copias de la fila y corre la
    mitad: al terminar, vuelve a arrancar sin salto. Con .js-anim (o sea, sin
    movimiento reducido) corre sola; sin él queda quieta y se desliza a mano.
    Se pausa con el mouse y con el botón. */
 .portal-cinta{position:relative;overflow:hidden;padding:var(--sp-5) 0 var(--sp-2)}
-.portal-cinta-banda{margin-inline:-2rem;border-block:1px solid var(--pub-borde);background:var(--pub-tarjeta);transform:rotate(-1.5deg);overflow:hidden}
+.portal-cinta-banda{border-block:1px solid var(--pub-borde);background:var(--pub-tarjeta);overflow:hidden}
 html:not(.js-anim) .portal-cinta-banda{overflow-x:auto}
 .portal-cinta-pista{display:flex;width:max-content;padding-inline:2rem}
 .portal-cinta-fila{display:flex;align-items:center;list-style:none;margin:0;padding:0}
@@ -527,9 +527,6 @@ html:not(.js-anim) .portal-cinta-fila[aria-hidden]{display:none}
 .portal-cinta-fila .tipo-evento > i,.portal-cinta-fila .tipo-evento b{color:var(--agenda-evento)}
 .portal-cinta-fila .tipo-charla > i,.portal-cinta-fila .tipo-charla b{color:var(--agenda-charla)}
 .portal-cinta-fila .tipo-entrenamiento > i,.portal-cinta-fila .tipo-entrenamiento b{color:var(--agenda-entrenamiento)}
-/* "Sumá tu empresa como sponsor": como el "Hacete socio" de la web del club, lleva a Sumate. */
-.portal-cinta-fila .cinta-sumate a{display:flex;align-items:center;gap:var(--sp-3);min-height:var(--tap);color:var(--sobre-oscuro);text-decoration:none}
-.portal-cinta-fila .cinta-sumate a > i{display:grid;color:var(--club-texto)}
 .js-anim .portal-cinta-pista.anda{transform:translateX(-50%);animation:marcha var(--dur-cinta) linear infinite}
 @keyframes marcha{from{transform:translateX(0)}}
 .portal-cinta.pausada .portal-cinta-pista{animation-play-state:paused}

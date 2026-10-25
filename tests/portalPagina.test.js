@@ -298,29 +298,45 @@ test('día inicial: hoy si es del mes; si no, el primero con algo, o el 1', () =
 
 // ---- La cinta de las próximas fechas ----
 
-test('cinta: fecha con ícono y color de su tipo, título escapado, y al final "Sumá tu empresa"; corre y se repite aria-hidden con botón de pausa', () => {
+test('cinta: fecha con ícono y color de su tipo, título escapado; corre y se repite aria-hidden con botón de pausa', () => {
   const proximos = proximosEventos(porDia, '2026-10-20', 6);
   const mas = [...proximos, ...proximos].slice(0, 3);
   const out = htmlCinta(mas).toString();
-  assert.match(out, /<div class="portal-cinta-pista anda" style="--dur-cinta:28s">/);
+  assert.match(out, /<div class="portal-cinta-pista anda" style="--dur-cinta:21s">/);
   assert.equal((out.match(/<ul class="portal-cinta-fila"/g) ?? []).length, 2, 'la fila se repite para el loop');
   assert.equal((out.match(/<ul class="portal-cinta-fila" aria-hidden="true">/g) ?? []).length, 1, 'sólo la copia es aria-hidden');
   assert.match(out, /<li class="tipo-evento"><i><svg[\s\S]*?<\/i><b>sáb 24 oct<\/b><span>Hamburgueseada<\/span>/);
   assert.match(out, /U15 vs\. &lt;Náutico&gt;/);
   assert.doesNotMatch(out, /<Náutico>/);
-  assert.match(out, /<span>U17 visitante<\/span><em aria-hidden="true"><\/em><\/li><li class="cinta-sumate"><a href="#colaborar"><i><svg[\s\S]*?<\/i><b>Sumá tu empresa como sponsor<\/b><\/a>/);
-  assert.match(out, /<a href="#colaborar" tabindex="-1">/, 'el link de la copia oculta no recibe foco');
   assert.match(out, /<button type="button" class="portal-cinta-pausa" data-cinta-pausa aria-pressed="false" aria-label="Pausar la cinta">/);
 });
 
-test('cinta: con un evento (dos cosas) queda quieta; sin eventos, sólo el pedido de sponsors y corre', () => {
+test('la cinta no ofrece sponsors: eso es del sticker del hero, y la banda ya no va girada', () => {
+  for (const proximos of [proximosEventos(porDia, '2026-10-20', 1), proximosEventos(porDia, '2026-10-20', 6), []]) {
+    assert.doesNotMatch(htmlCinta(proximos).toString(), /cinta-sumate|href="#colaborar"|sponsor|empresa/i);
+  }
+  assert.doesNotMatch(portal, /cinta-sumate/);
+  const css = readFileSync('public/css/publico.css', 'utf8');
+  const banda = css.match(/\.portal-cinta-banda\{[^}]*\}/)[0];
+  assert.doesNotMatch(banda, /rotate/);
+});
+
+test('cinta: con uno o dos eventos queda quieta', () => {
   const uno = htmlCinta(proximosEventos(porDia, '2026-10-20', 1)).toString();
   assert.doesNotMatch(uno, /pista anda|<ul class="portal-cinta-fila" aria-hidden|portal-cinta-pausa|--dur-cinta/);
   assert.equal((uno.match(/<ul class="portal-cinta-fila"/g) ?? []).length, 1);
-  const nada = htmlCinta([]).toString();
-  assert.match(nada, /pista anda/);
-  assert.doesNotMatch(nada, /tipo-/);
-  assert.match(nada, /Sumá tu empresa como sponsor[\s\S]*Sumate al básquet de Newell&#39;s/);
+  const dos = htmlCinta(proximosEventos(porDia, '2026-10-20', 2)).toString();
+  assert.doesNotMatch(dos, /pista anda|portal-cinta-pausa/);
+});
+
+test('sin fechas la cinta no se muestra: no devuelve nada y la sección queda oculta', () => {
+  assert.equal(htmlCinta([]).toString(), '');
+  assert.match(pagina, /<section class="portal-cinta" id="cinta" aria-label="Próximas fechas" hidden>/);
+  const desde = portal.indexOf('async function mostrarProximo()');
+  const cuerpo = portal.slice(desde, portal.indexOf('\n  }\n', desde));
+  assert.match(cuerpo, /\$\('cinta'\)\.hidden = !proximos\.length/);
+  const arranque = portal.slice(portal.indexOf('export async function iniciarPortal()'));
+  assert.doesNotMatch(arranque, /\$\('cinta'\)\.hidden = false/, 'no se prende antes de saber si hay fechas');
 });
 
 test('la cinta y "Lo que viene" salen de los mismos eventos: este mes y el siguiente, y se revelan al armarse', () => {
@@ -328,10 +344,7 @@ test('la cinta y "Lo que viene" salen de los mismos eventos: este mes y el sigui
   const cuerpo = portal.slice(desde, portal.indexOf('\n  }\n', desde));
   assert.match(cuerpo, /proximosEventos\(new Map\(\[\.\.\.actual\.porDia, \.\.\.siguiente\.porDia\]\), hoy, 6\)/);
   assert.match(cuerpo, /htmlCinta\(proximos\)/);
-  assert.match(cuerpo, /setAttribute\('aria-label', proximos\.length \? 'Próximas fechas' : 'Sumate como sponsor'\)/);
-  assert.match(portal, /\$\('portal-cinta'\)\.innerHTML = htmlCinta\(\[\]\);/, 'sin calendario, igual sale el pedido de sponsors');
   assert.match(cuerpo, /revelar\(\$\('portal-proximo'\)\)/);
-  assert.match(pagina, /<section class="portal-cinta" id="cinta" aria-label="Próximas fechas" hidden>/);
   assert.ok(pagina.indexOf('id="cinta"') > pagina.indexOf('id="heroe"') && pagina.indexOf('id="cinta"') < pagina.indexOf('id="calendario"'), 'la cinta va entre el hero y el calendario');
 });
 

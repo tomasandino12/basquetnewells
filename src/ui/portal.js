@@ -439,29 +439,24 @@ export function htmlProximo(proximo, hoy) {
 }
 
 /**
- * La cinta de abajo del hero: las próximas fechas (fecha con el ícono y el
- * color de su tipo, título y un rombo entre una y otra) y, al final, "Sumá tu
- * empresa como sponsor", que lleva a Sumate (como el "Hacete socio" de la web
- * del club). Sin fechas, sólo el pedido de sponsors, repetido para llenar el
- * ancho. `proximos`: [{ fecha, evento }] de proximosEventos. Con tres o más
- * cosas corre sola (la fila se repite, la copia aria-hidden y sin foco, y
+ * La cinta de abajo del hero: sólo las próximas fechas (fecha con el ícono y el
+ * color de su tipo, título y un rombo entre una y otra). Sin fechas no devuelve
+ * nada y la sección se oculta: pedir sponsors no es cosa de la cinta, para eso
+ * está el sticker del hero. `proximos`: [{ fecha, evento }] de proximosEventos.
+ * Con tres o más corre sola (la fila se repite, la copia aria-hidden, y
  * arrancar de nuevo parece infinito) y trae un botón para pausarla; con menos
  * se queda quieta, porque un cartel que se mueve para mostrar dos cosas no
  * aporta.
  */
 export function htmlCinta(proximos) {
-  const sumate = (texto) => ({ sumate: texto });
-  const cosas = proximos.length
-    ? [...proximos, sumate('Sumá tu empresa como sponsor')]
-    : [sumate('Sumá tu empresa como sponsor'), sumate('Sumate al básquet de Newell\'s'), sumate('Sumá tu empresa como sponsor'), sumate('Sumate al básquet de Newell\'s')];
-  const anda = cosas.length >= 3;
-  const fila = (oculta) => html`<ul class="portal-cinta-fila"${oculta && html` aria-hidden="true"`}>${cosas.map((c) => {
-    if (c.sumate) return html`<li class="cinta-sumate"><a href="#colaborar"${oculta && html` tabindex="-1"`}><i>${ICONO.sumate}</i><b>${c.sumate}</b></a><em aria-hidden="true"></em></li>`;
-    const f = partesDeFecha(c.fecha);
-    return html`<li class="tipo-${c.evento.tipo}"><i>${ICONO_TIPO[c.evento.tipo]}</i><b>${f.semana} ${f.dia} ${f.mes}</b><span>${c.evento.titulo}</span><em aria-hidden="true"></em></li>`;
+  if (!proximos.length) return html``;
+  const anda = proximos.length >= 3;
+  const fila = (oculta) => html`<ul class="portal-cinta-fila"${oculta && html` aria-hidden="true"`}>${proximos.map(({ fecha, evento }) => {
+    const f = partesDeFecha(fecha);
+    return html`<li class="tipo-${evento.tipo}"><i>${ICONO_TIPO[evento.tipo]}</i><b>${f.semana} ${f.dia} ${f.mes}</b><span>${evento.titulo}</span><em aria-hidden="true"></em></li>`;
   })}</ul>`;
   return html`<div class="portal-cinta-banda">
-      <div class="portal-cinta-pista${anda ? ' anda' : ''}"${anda && html` style="--dur-cinta:${cosas.length * 7}s"`}>${fila(false)}${anda && fila(true)}</div>
+      <div class="portal-cinta-pista${anda ? ' anda' : ''}"${anda && html` style="--dur-cinta:${proximos.length * 7}s"`}>${fila(false)}${anda && fila(true)}</div>
     </div>
     ${anda && html`<button type="button" class="portal-cinta-pausa" data-cinta-pausa aria-pressed="false" aria-label="Pausar la cinta">
       <svg class="p" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
@@ -597,7 +592,7 @@ function iniciarCalendario(calendarios) {
     const proximos = proximosEventos(new Map([...actual.porDia, ...siguiente.porDia]), hoy, 6);
     $('portal-proximo').innerHTML = htmlProximo(proximos[0], hoy);
     $('portal-cinta').innerHTML = htmlCinta(proximos);
-    $('cinta').setAttribute('aria-label', proximos.length ? 'Próximas fechas' : 'Sumate como sponsor');
+    $('cinta').hidden = !proximos.length;
     revelar($('portal-proximo'));
   }
 
@@ -741,10 +736,6 @@ export async function iniciarPortal() {
   const temporada = temporadaComoAnio(PORTAL.temporada);
   if (temporada) $('t-categorias-temp').textContent = ` ${temporada}`;
   if (temporada && categorias.length) iniciarBuscador(temporada, tarjetas);
-  // La cinta arranca con el "Sumá tu empresa": si hay fechas, mostrarProximo las suma.
-  $('portal-cinta').innerHTML = htmlCinta([]);
-  $('cinta').setAttribute('aria-label', 'Sumate como sponsor');
-  $('cinta').hidden = false;
   if (temporada) $('portal-heroe-ey').textContent = `Temporada ${temporada} · Formativas`;
   mostrar('sede', htmlSede(PORTAL.sede));
   iniciarMapa();
