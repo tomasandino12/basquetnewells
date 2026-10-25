@@ -281,7 +281,8 @@
    lejos del título) y los dos botones
    van lado a lado. El velo de la izquierda hace de costura con la foto. */
 @media (min-width:48rem){
-  .publico .portal-heroe{padding-top:6rem;padding-bottom:4rem}
+  /* En compu los botones van en una fila: lo que no es título ocupa menos (ver --fs-hero). */
+  .publico .portal-heroe{padding-top:6rem;padding-bottom:4rem;--fs-hero:clamp(3.25rem,calc((100svh - 25rem) / 2.7),9rem)}
   .publico .portal-heroe-foto{inset:0 0 0 22%}
   .publico .portal-heroe::before{
     background:

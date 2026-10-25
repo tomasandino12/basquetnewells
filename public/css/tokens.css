@@ -160,8 +160,13 @@
   --fs-titulo:clamp(1.5rem,1.25rem + 1.2vw,2rem);
   --fs-titulo-chico:clamp(1.5rem,1.3rem + 1vw,2rem);
   /* El título del hero del portal: se achica con el ancho Y el alto de la pantalla,
-     para que los dos botones entren sin scrollear (ver publico.css). */
-  --fs-hero:clamp(3.25rem,min(23vw,19svh),9rem);
+     para que el hero y la cinta entren justo en la primera pantalla (ver
+     publico.css). 29rem es lo que ocupa todo lo demás en el celular (barra,
+     bajada, los dos botones apilados, paddings y la cinta); 2.7 es el alto de
+     las tres líneas del título, en em. En compu, layout.css cambia el 29rem. */
+  --fs-hero:clamp(2.75rem,min(23vw,calc((100svh - 29rem) / 2.7)),9rem);
+  /* La cinta de fechas que va pegada abajo del hero: alto fijo para que el hero sepa cuánto dejarle. */
+  --alto-cinta:4.5rem;
 
   /* ---- espaciado ---- */
   --sp-1:0.25rem;

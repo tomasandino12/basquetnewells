@@ -85,7 +85,8 @@ test('el hero: botones de al menos 56px, título que se achica con el alto de la
   assert.match(tokens, /--fs-hero:clamp\([^;]*svh/, 'sin el alto, en una pantalla baja los botones quedan abajo del pliegue');
   assert.match(css, /\.portal-heroe h1\{font-size:var\(--fs-hero\)/);
   assert.match(css, /\.portal-heroe\{[^}]*clip-path:polygon\(0 0,100% 0,100% 100%,0 calc\(100% - 2\.5rem\)\)/);
-  assert.match(css, /\.portal-heroe\{[^}]*min-height:min\(100svh,/);
+  assert.match(css, /\.portal-heroe\{[^}]*min-height:calc\(100svh - var\(--alto-cinta\)\)/, 'el hero deja justo el lugar de la cinta en la primera pantalla');
+  assert.match(css, /\.portal-cinta\{[^}]*height:var\(--alto-cinta\)/, 'la cinta mide lo que el hero le deja');
 });
 
 test('la barra fija: aparece al pasar el hero POR ARRIBA, oculta es inert y no depende de .js-anim', () => {

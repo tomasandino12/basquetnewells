@@ -244,13 +244,15 @@
 
 /* El hero: foto a pantalla completa, velos para que se lea el texto, corte
    diagonal abajo, título gigante y los dos botones. El título se achica con
-   el ancho Y el alto de la pantalla (--fs-hero): así, con lo que sea que tenga
-   arriba, los dos botones entran sin scrollear en 360×640, 390×844 y
-   1366×768. El texto va abajo, sobre el degradé; el padding de abajo deja
+   el ancho Y el alto de la pantalla (--fs-hero). El hero mide la pantalla
+   menos la cinta, así la cinta queda pegada al borde de abajo de la primera
+   pantalla, en el celu y en compu. Se reserva el lugar de la cinta aunque
+   todavía no hayan llegado las fechas: si no, el hero se achicaría de golpe
+   al aparecer. El texto va abajo, sobre el degradé; el padding de abajo deja
    lugar al corte diagonal. */
 .portal-heroe{
   position:relative;isolation:isolate;overflow:hidden;color:var(--sobre-oscuro);
-  display:flex;flex-direction:column;justify-content:flex-end;min-height:min(100svh,50rem);
+  display:flex;flex-direction:column;justify-content:flex-end;min-height:calc(100svh - var(--alto-cinta));
   padding:5rem var(--sp-4) 3.5rem;
   clip-path:polygon(0 0,100% 0,100% 100%,0 calc(100% - 2.5rem));
 }
@@ -548,7 +550,7 @@
    mitad: al terminar, vuelve a arrancar sin salto. Con .js-anim (o sea, sin
    movimiento reducido) corre sola; sin él queda quieta y se desliza a mano.
    Se pausa con el mouse y con el botón. */
-.portal-cinta{position:relative;overflow:hidden;padding:var(--sp-5) 0 var(--sp-2)}
+.portal-cinta{position:relative;overflow:hidden;box-sizing:border-box;height:var(--alto-cinta);display:flex;flex-direction:column;justify-content:center}
 .portal-cinta-banda{border-block:1px solid var(--pub-borde);background:var(--pub-tarjeta);overflow:hidden}
 html:not(.js-anim) .portal-cinta-banda{overflow-x:auto}
 .portal-cinta-pista{display:flex;width:max-content;padding-inline:2rem}
@@ -569,7 +571,7 @@ html:not(.js-anim) .portal-cinta-fila[aria-hidden]{display:none}
 .portal-cinta.pausada .portal-cinta-pista{animation-play-state:paused}
 @media (hover:hover){.portal-cinta:hover .portal-cinta-pista{animation-play-state:paused}}
 .portal-cinta-pausa{
-  position:absolute;right:var(--sp-3);bottom:var(--sp-1);z-index:2;display:grid;place-items:center;width:var(--tap);height:var(--tap);
+  position:absolute;right:var(--sp-3);top:calc((var(--alto-cinta) - var(--tap)) / 2);z-index:2;display:grid;place-items:center;width:var(--tap);height:var(--tap);
   color:var(--sobre-oscuro);background:var(--pub-fondo);border:1px solid var(--pub-borde);border-radius:50%;cursor:pointer;
 }
 .portal-cinta-pausa svg{width:1.125rem;height:1.125rem;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
