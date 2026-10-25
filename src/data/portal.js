@@ -2,6 +2,23 @@ import { TIPOS_AGENDA, idCalendario, claveValida } from './agenda.js';
 import { aniosDeCategoria, textoAnios } from './categorias.js';
 
 /**
+ * Las fotos del club que usa el portal (public/img/fotos/): el nombre del
+ * archivo SIN extensión (de cada uno hay un `-640.webp` para el celular), qué se
+ * ve (texto alternativo: lo que pasa en la foto, nunca quiénes son) y hacia
+ * dónde mirar cuando la tarjeta la recorta (`posicion`, de object-position).
+ * Provisorias: del Instagram del básquet, hasta tener las del fotógrafo.
+ */
+const FOTOS = Object.freeze({
+  bandeja: Object.freeze({ archivo: 'formativas-bandeja', posicion: '50% 40%', alt: 'Un jugador de Newell\'s sube a hacer una bandeja en un partido' }),
+  bandejaDerecha: Object.freeze({ archivo: 'formativas-bandeja', posicion: '100% 40%', alt: 'Dos jugadores de Newell\'s durante un partido, uno sube a hacer una bandeja' }),
+  dribbling: Object.freeze({ archivo: 'formativas-dribbling', posicion: '48% 40%', alt: 'Un jugador de Newell\'s conduce la pelota en un partido' }),
+  entrenamiento30: Object.freeze({ archivo: 'formativas-entrenamiento', posicion: '30% 40%', alt: 'Un jugador de Newell\'s avanza con la pelota en un partido' }),
+  entrenamiento90: Object.freeze({ archivo: 'formativas-entrenamiento', posicion: '90% 40%', alt: 'Un jugador de Newell\'s se mueve sin la pelota en una jugada de ataque' }),
+  penetracion: Object.freeze({ archivo: 'primera-penetracion', posicion: '35% 40%', alt: 'Un jugador de Newell\'s entra a canasta marcado por un rival' }),
+  lanzamiento: Object.freeze({ archivo: 'primera-lanzamiento', posicion: '40% 30%', alt: 'Un jugador sube a lanzar al aro marcado por un rival' }),
+});
+
+/**
  * Lo que muestra la página pública del básquet y no sale de la base: los
  * calendarios, las categorías con sus horarios, la sede, el contacto, el alias
  * para transferir, la foto y los sponsors. Vive acá y no en el HTML para que
@@ -52,13 +69,14 @@ export const PORTAL = Object.freeze({
   // femenina es Primera. Las dos Primeras no figuran en ningún formulario y van
   // sin horario hasta que el club lo pase.
   categorias: Object.freeze([
-    Object.freeze({ grupo: 'U9', rama: 'Mixto', horario: 'Mar 18 a 19 h (Estadio Cubierto) · Jue 18 a 19 h (Playón Deportivo)' }),
-    Object.freeze({ grupo: 'U11', rama: 'Mixto', horario: 'Mar 19 a 20 h (Estadio Cubierto) · Jue 19 a 20 h (Playón Deportivo)' }),
-    Object.freeze({ grupo: 'U13', rama: 'Mixto', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)' }),
-    Object.freeze({ grupo: 'U15', rama: 'Masculino', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)' }),
-    Object.freeze({ grupo: 'U17', rama: 'Masculino', horario: 'Lun y Vie 19 a 20 h (Estadio Cubierto) · Mié 19 a 20 h (Microestadio)' }),
-    Object.freeze({ grupo: 'U21', rama: 'Masculino', horario: 'Lun y Vie 20 a 21 h (Estadio Cubierto) · Mié 20 a 21 h (Microestadio)' }),
-    Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Masculino', horario: null }),
+    Object.freeze({ grupo: 'U9', rama: 'Mixto', horario: 'Mar 18 a 19 h (Estadio Cubierto) · Jue 18 a 19 h (Playón Deportivo)', foto: FOTOS.entrenamiento30 }),
+    Object.freeze({ grupo: 'U11', rama: 'Mixto', horario: 'Mar 19 a 20 h (Estadio Cubierto) · Jue 19 a 20 h (Playón Deportivo)', foto: FOTOS.dribbling }),
+    Object.freeze({ grupo: 'U13', rama: 'Mixto', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)', foto: FOTOS.bandeja }),
+    Object.freeze({ grupo: 'U15', rama: 'Masculino', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)', foto: FOTOS.entrenamiento90 }),
+    Object.freeze({ grupo: 'U17', rama: 'Masculino', horario: 'Lun y Vie 19 a 20 h (Estadio Cubierto) · Mié 19 a 20 h (Microestadio)', foto: FOTOS.bandejaDerecha }),
+    Object.freeze({ grupo: 'U21', rama: 'Masculino', horario: 'Lun y Vie 20 a 21 h (Estadio Cubierto) · Mié 20 a 21 h (Microestadio)', foto: FOTOS.penetracion }),
+    Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Masculino', horario: null, foto: FOTOS.lanzamiento }),
+    // Sin foto a propósito: las que tenemos son de varones y no hay una de la Primera femenina.
     Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Femenino', horario: null }),
   ]),
 
@@ -128,6 +146,38 @@ export function categoriasDelPortal(lista, temporada) {
       anios: textoAnios(anios),
       horario: texto(c.horario) || null,
     }];
+  });
+}
+
+const ARCHIVO_FOTO = /^(?!.*-640$)[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const POSICION_FOTO = /^\d{1,3}% \d{1,3}%$/;
+
+/**
+ * La foto de una categoría: sólo un archivo de public/img/fotos/ (la CSP no
+ * deja otras imágenes y un nombre raro no tiene que poder salirse de ahí), con
+ * texto alternativo. Devuelve las dos rutas (celular y normal), o null.
+ */
+export function fotoDeCategoriaValida(foto) {
+  const archivo = texto(foto?.archivo);
+  const alt = texto(foto?.alt);
+  if (!ARCHIVO_FOTO.test(archivo) || !alt) return null;
+  return {
+    src: `/public/img/fotos/${archivo}.webp`,
+    src640: `/public/img/fotos/${archivo}-640.webp`,
+    alt,
+    posicion: POSICION_FOTO.test(texto(foto.posicion)) ? foto.posicion.trim() : '50% 50%',
+  };
+}
+
+/**
+ * Las tarjetas del carrusel de categorías: las mismas categorías de
+ * categoriasDelPortal, cada una con su foto (o null si no tiene o no es válida:
+ * la tarjeta sale igual, sin foto).
+ */
+export function tarjetasDeCategorias(lista, temporada) {
+  return (Array.isArray(lista) ? lista : []).flatMap((c) => {
+    const [categoria] = categoriasDelPortal([c], temporada);
+    return categoria ? [{ ...categoria, foto: fotoDeCategoriaValida(c.foto) }] : [];
   });
 }
 

@@ -98,3 +98,11 @@ test('la barra fija: aparece al pasar el hero POR ARRIBA, oculta es inert y no d
   assert.match(css, /\.portal\{width:100%;padding-bottom:calc\(5\.5rem \+ env\(safe-area-inset-bottom\)\)\}/, 'la barra no tapa el pie');
   assert.match(css, /\.portal-dock-btn\{[^}]*min-height:3rem/);
 });
+
+test('el carrusel: snap, duotono en CSS (grises + color del club multiplicado) y flechas sólo con mouse', () => {
+  assert.match(css, /\.portal-carrusel-pista\{[^}]*overflow-x:auto;scroll-snap-type:x mandatory/);
+  assert.match(css, /\.portal-card\{[^}]*scroll-snap-align:start/);
+  assert.match(css, /\.portal-card img\{[^}]*filter:grayscale\(1\) contrast\(1\.25\)/);
+  assert.match(css, /\.portal-card::before\{[^}]*background:var\(--club\);mix-blend-mode:multiply/);
+  assert.match(css, /@media \(hover:hover\)\{\.portal-carrusel-flechas\{display:flex\}\}/);
+});

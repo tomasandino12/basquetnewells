@@ -79,7 +79,7 @@ Lo que anda y hay que conservar tal cual: copiar alias, `data-ics` (iPhone) + `e
 | **1 · Header + hero** ✅ (hecho 25/10, incluye la hoja de Pagar) | Header, hero estático, `<picture>`, dos variantes de foto, diagonal, título, sello, botones, entrada, parallax. | Capturas A/B en 390×844 y 1366×768 (te las muestro); medición de botones en 360×640 / 390×844 / 1366×768; LCP; consola sin errores. |
 | **2 · Barra fija** ✅ (25/10) | Barra inferior (la hoja de Pagar y `htmlAcciones` ya entraron en la fase 1). | Barra al scrollear, se oculta con hoja abierta, no tapa el pie, safe-area. |
 | **3 · Cinta + ticket + calendario** ✅ (25/10; falta ver con eventos reales en el deploy) | Cinta, ticket, calendario restyle, formas por tipo. | Funciones con eventos de muestra; iPhone `.ics` y Google; navegación de mes; 0/1/6 eventos. |
-| **4 · Categorías** | Carrusel con fotos duotono. | Buscador intacto; snap en táctil; 8 tarjetas. |
+| **4 · Categorías** ✅ (25/10) | Carrusel con fotos duotono. | Buscador intacto; snap en táctil; 8 tarjetas. |
 | **5 · Recaudación, Sumate, Sede, bordes** | Tarjetas con foto, sede con foto, bordes rasgados, "rise" y sticker. | "Ver mapa" no carga hasta tocar; un solo rojo dominante por pantalla. |
 | **6 · Cierre** | Textos de Ayuda (nombres nuevos de botones), tests, DESIGN.md (sección portal), auditoría con ui-ux-pro-max (contraste, tap, foco), reduced-motion, JS bloqueado, 320 px. | `test:q` verde; revisión final; sugerir deploy de preview. |
 

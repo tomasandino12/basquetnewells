@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import {
   PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal, categoriasDelAnio,
-  sedeValida, aliasValido, fotoValida,
+  sedeValida, aliasValido, fotoValida, fotoDeCategoriaValida, tarjetasDeCategorias,
 } from '../src/data/portal.js';
 import { TIPOS_AGENDA, idCalendario } from '../src/data/agenda.js';
 
@@ -185,4 +185,37 @@ test('PORTAL.sponsors es una lista (hoy vacía) y cada logo cargado existe en pu
     assert.equal(sponsorsValidos([s]).length, 1, `sponsor inválido: ${s.nombre}`);
     assert.ok(existsSync(s.logo.slice(1)), `falta el archivo ${s.logo}`);
   }
+});
+
+// ---- Carrusel de categorías: una foto por tarjeta, sólo de public/img/fotos ----
+
+test('fotoDeCategoriaValida: un archivo de public/img/fotos con su alt; nada de rutas ni de variantes -640', () => {
+  const ok = fotoDeCategoriaValida({ archivo: 'formativas-bandeja', alt: ' Un jugador ', posicion: '50% 40%' });
+  assert.deepEqual(ok, { src: '/public/img/fotos/formativas-bandeja.webp', src640: '/public/img/fotos/formativas-bandeja-640.webp', alt: 'Un jugador', posicion: '50% 40%' });
+  assert.equal(fotoDeCategoriaValida({ archivo: 'x', alt: 'a', posicion: 'url(evil)' }).posicion, '50% 50%');
+  for (const malo of [null, {}, { archivo: 'x' }, { archivo: '../escudo', alt: 'a' }, { archivo: 'https://evil.com/x', alt: 'a' }, { archivo: 'foto-640', alt: 'a' }, { archivo: 'A B', alt: 'a' }, { archivo: 'x', alt: '  ' }]) {
+    assert.equal(fotoDeCategoriaValida(malo), null, JSON.stringify(malo));
+  }
+});
+
+test('tarjetasDeCategorias: las mismas categorías, cada una con su foto o sin ella; una inválida se descarta', () => {
+  const t = tarjetasDeCategorias([
+    { grupo: 'U9', rama: 'Mixto', foto: { archivo: 'formativas-dribbling', alt: 'a' } },
+    { grupo: 'U10' },
+    { grupo: 'U11', rama: 'Mixto' },
+    { grupo: 'U13', foto: { archivo: '../x', alt: 'a' } },
+  ], 2027);
+  assert.deepEqual(t.map((c) => [c.nombre, c.foto?.src ?? null]), [['U9', '/public/img/fotos/formativas-dribbling.webp'], ['U11', null], ['U13', null]]);
+  assert.equal(tarjetasDeCategorias(null, 2027).length, 0);
+});
+
+test('todas las categorías del club tienen tarjeta; las fotos existen en disco con su -640; la Primera femenina va sin foto de varones', async () => {
+  const { existsSync } = await import('node:fs');
+  const t = tarjetasDeCategorias(PORTAL.categorias, PORTAL.temporada);
+  assert.equal(t.length, PORTAL.categorias.length);
+  for (const { foto } of t.filter((c) => c.foto)) {
+    assert.ok(existsSync(foto.src.slice(1)) && existsSync(foto.src640.slice(1)), foto.src);
+  }
+  const femenina = t.find((c) => c.nombre === 'Primera' && c.rama === 'Femenino');
+  assert.equal(femenina.foto, null);
 });

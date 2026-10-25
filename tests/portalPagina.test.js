@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlAcciones, htmlDock, htmlPago, htmlCinta, htmlAlias, htmlBuscador, htmlCategoriaDelAnio, htmlProximo,
+  htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlAcciones, htmlDock, htmlPago, htmlCinta, htmlCarrusel, htmlAlias, htmlBuscador, htmlCategoriaDelAnio, htmlProximo,
   htmlRecaudacion, htmlColaborar, htmlAyuda, htmlAtajos, htmlCalendario, htmlCategorias, htmlFoto, htmlSede, diaInicial, htmlSuscripcion,
 } from '../src/ui/portal.js';
 import { eventoDesdeGoogle, eventosPorDia, proximosEventos } from '../src/data/agenda.js';
@@ -334,6 +334,27 @@ test('cada tipo tiene su ícono en el detalle del día y en "Lo que viene"', () 
   assert.match(out, /<small><i class="portal-tipo-ico"><svg[\s\S]*?<\/i>Eventos · Todo el día<\/small>/);
   const [prox] = proximosEventos(porDia, '2026-10-25', 1);
   assert.match(htmlProximo(prox, '2026-10-25').toString(), /<i class="portal-tipo-ico"><svg[\s\S]*?<\/i><span class="portal-prox-tipo">Partido<\/span>/);
+});
+
+// ---- Carrusel de categorías ----
+
+test('carrusel: pista enfocable con snap, una tarjeta por categoría con su foto lazy y escapada; sin foto, con pelota; sin categorías, nada', () => {
+  const foto = { src: '/public/img/fotos/a.webp', src640: '/public/img/fotos/a-640.webp', alt: 'Un <jugador>', posicion: '50% 40%' };
+  const out = htmlCarrusel([
+    { nombre: 'U13', rama: 'Mixto', anios: '2014 y 2015', foto },
+    { nombre: 'Primera', rama: 'Femenino', anios: '2009 y antes', foto: null },
+  ]).toString();
+  assert.match(out, /<ul class="portal-carrusel-pista" tabindex="0" aria-label="[^"]+">/);
+  assert.equal((out.match(/<li class="portal-card/g) ?? []).length, 2);
+  assert.match(out, /<img src="\/public\/img\/fotos\/a-640\.webp" srcset="\/public\/img\/fotos\/a-640\.webp 640w, \/public\/img\/fotos\/a\.webp 1080w"[^>]*width="640" height="427" alt="Un &lt;jugador&gt;" loading="lazy" style="object-position:50% 40%">/);
+  assert.match(out, /<b>U13<\/b><span>Mixto<\/span><small>Nacidos 2014 y 2015<\/small>/);
+  assert.match(out, /<li class="portal-card sin-foto">\s*<i aria-hidden="true"><svg/);
+  assert.equal((out.match(/<img /g) ?? []).length, 1, 'la que no tiene foto no lleva imagen');
+  assert.match(out, /data-carrusel="-1" aria-label="Ver las categorías anteriores"/);
+  assert.equal(htmlCarrusel([]).toString(), '');
+  assert.match(pagina, /<div class="portal-carrusel rise" id="portal-carrusel">/);
+  assert.ok(pagina.indexOf('id="portal-buscador"') < pagina.indexOf('id="portal-carrusel"') && pagina.indexOf('id="portal-carrusel"') < pagina.indexOf('class="portal-todas"'), 'va entre el buscador y la lista');
+  assert.match(portal, /htmlCarrusel\(tarjetasDeCategorias\(PORTAL\.categorias, PORTAL\.temporada\)\)/);
 });
 
 // ---- Categorías, sede, foto, contacto: sin datos, nada ----

@@ -3,7 +3,7 @@ import { $ } from './dom.js';
 import { formulariosPublicos, eventosDelMes } from '../data/repositorio.js';
 import {
   PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal,
-  categoriasDelAnio, sedeValida, aliasValido, fotoValida,
+  categoriasDelAnio, sedeValida, aliasValido, fotoValida, tarjetasDeCategorias,
 } from '../data/portal.js';
 import { temporadaComoAnio } from '../data/categorias.js';
 import { resolverFormularios, separarFormularios } from '../data/formulariosPortal.js';
@@ -218,6 +218,42 @@ export function htmlCategorias(categorias) {
     <div class="portal-cats-anios">${anios}</div>
     ${horario && html`<div class="portal-cats-hora">${horario.split(' · ').map((h) => html`<span>${h}</span>`)}</div>`}
   </li>`)}</ul>`;
+}
+
+/**
+ * El carrusel de categorías: una tarjeta por categoría, con su foto en duotono
+ * (grises + el color del club, en CSS) y el nombre grande. Es una pista que
+ * se desliza con el dedo (scroll-snap) y, para quien tiene mouse, dos flechas.
+ * La pista se puede enfocar para recorrerla con las flechas del teclado. Sin
+ * foto, la tarjeta lleva un fondo del club y una pelota. Sin categorías, nada.
+ * `tarjetas`: de tarjetasDeCategorias.
+ */
+export function htmlCarrusel(tarjetas) {
+  if (!tarjetas.length) return html``;
+  return html`<div class="portal-carrusel-cab">
+      <span>Las categorías del club</span>
+      <span class="portal-carrusel-flechas">
+        <button type="button" data-carrusel="-1" aria-label="Ver las categorías anteriores">‹</button>
+        <button type="button" data-carrusel="1" aria-label="Ver las categorías siguientes">›</button>
+      </span>
+    </div>
+    <ul class="portal-carrusel-pista" tabindex="0" aria-label="Categorías del club: deslizá para ver todas">${tarjetas.map(({ nombre, rama, anios, foto }) => html`<li class="portal-card${foto ? '' : ' sin-foto'}">
+      ${foto
+        ? html`<img src="${foto.src640}" srcset="${foto.src640} 640w, ${foto.src} 1080w" sizes="(min-width: 48rem) 15rem, 70vw" width="640" height="427" alt="${foto.alt}" loading="lazy" style="object-position:${foto.posicion}">`
+        : html`<i aria-hidden="true">${ICONO.jugar}</i>`}
+      <div class="portal-card-txt"><b>${nombre}</b>${rama && html`<span>${rama}</span>`}<small>Nacidos ${anios}</small></div>
+    </li>`)}</ul>`;
+}
+
+/** Las flechas del carrusel: corren la pista una tarjeta y media. Con movimiento reducido, sin deslizar. */
+function iniciarCarrusel() {
+  document.addEventListener('click', (ev) => {
+    const flecha = ev.target.closest('[data-carrusel]');
+    const pista = flecha?.closest('.portal-carrusel')?.querySelector('.portal-carrusel-pista');
+    if (!pista) return;
+    const reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    pista.scrollBy({ left: Number(flecha.dataset.carrusel) * pista.clientWidth * 0.8, behavior: reducido ? 'auto' : 'smooth' });
+  });
 }
 
 /** El selector de año del "¿En qué categoría juega?": − y + alrededor del año, y el lugar del resultado al lado. */
@@ -657,6 +693,8 @@ export async function iniciarPortal() {
   const categorias = categoriasDelPortal(PORTAL.categorias, PORTAL.temporada);
   $('portal-categorias').innerHTML = htmlCategorias(categorias);
   $('categorias').hidden = !categorias.length;
+  $('portal-carrusel').innerHTML = htmlCarrusel(tarjetasDeCategorias(PORTAL.categorias, PORTAL.temporada));
+  iniciarCarrusel();
   const temporada = temporadaComoAnio(PORTAL.temporada);
   if (temporada) $('t-categorias-temp').textContent = ` ${temporada}`;
   if (temporada && categorias.length) iniciarBuscador(temporada);
