@@ -177,8 +177,10 @@
       </div>
     </section>
 
-    <!-- La cinta (src/ui/portal.js, htmlCinta): sólo las próximas fechas, que
-         salen de los mismos eventos del calendario. Sin fechas (o sin JS), oculta. -->
+    <!-- La cinta (src/ui/portal.js, htmlCinta): las próximas fechas, que
+         salen de los mismos eventos del calendario, o, sin fechas, frases que invitan a
+         venir (PORTAL.cintaSinFechas). Se decide cuando termina de cargar el calendario;
+         sin JS, oculta. -->
     <section class="portal-cinta" id="cinta" aria-label="Próximas fechas" hidden>
       <div id="portal-cinta"></div>
     </section>

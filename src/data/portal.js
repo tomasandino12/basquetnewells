@@ -143,6 +143,17 @@ export const PORTAL = Object.freeze({
   // válida, va sólo el nombre, sin link (ver firmaValida).
   creador: Object.freeze({ nombre: 'Tomás Andino', linkedin: 'https://www.linkedin.com/in/tom%C3%A1s-andino-0758ab310/' }),
 
+  // Lo que dice la cinta cuando no hay ninguna fecha próxima (o el calendario
+  // no respondió): frases que invitan a venir, cada una con su ícono (una clave de
+  // ICONO en src/ui/portal.js) y el ancla de la sección a la que baja. La que
+  // apunta a una sección que no está en la página no se muestra (frasesDeCintaValidas).
+  cintaSinFechas: Object.freeze([
+    Object.freeze({ texto: 'Vení a probar · de 6 a 17 años', href: '#heroe', icono: 'jugar' }),
+    Object.freeze({ texto: '¿En qué categoría juega? Buscalo por el año', href: '#categorias', icono: 'categorias' }),
+    Object.freeze({ texto: 'Entrenamos en el Parque de la Independencia', href: '#sede', icono: 'lugar' }),
+    Object.freeze({ texto: 'Seguí la agenda del club', href: '#calendario', icono: 'calendario' }),
+  ]),
+
   // Respaldo de los formularios: lo que se muestra si la base no responde. La
   // lista de verdad la carga la coordinación desde su panel. Vacío a propósito
   // mientras la inscripción nueva no esté publicada: mejor la tarjeta cerrada
@@ -156,6 +167,25 @@ export function calendariosActivos(agenda) {
   return (agenda.calendarios ?? [])
     .filter((c) => TIPOS_AGENDA.includes(c?.tipo) && idCalendario(c.id))
     .map((c) => ({ tipo: c.tipo, titulo: String(c.titulo ?? '').trim() || c.tipo, id: idCalendario(c.id) }));
+}
+
+const ANCLA = /^#[a-z][a-z-]*$/;
+const CLAVE_ICONO = /^[a-zA-Z]+$/;
+
+/**
+ * Las frases de la cinta sin fechas que se pueden mostrar: con texto, un ancla
+ * interna (#seccion, nada de otras direcciones: termina en un <a href>), una
+ * clave de ícono, y cuya sección existe en la página (`existe(id)`; una sección
+ * oculta no cuenta: la frase llevaría a ningún lado).
+ */
+export function frasesDeCintaValidas(lista, existe) {
+  return (Array.isArray(lista) ? lista : []).flatMap((f) => {
+    const frase = texto(f?.texto).slice(0, 80);
+    const href = texto(f?.href);
+    const icono = texto(f?.icono);
+    if (!frase || !ANCLA.test(href) || !CLAVE_ICONO.test(icono) || !existe(href.slice(1))) return [];
+    return [{ texto: frase, href, icono }];
+  });
 }
 
 const NOMBRE_GRUPO = { ESCUELITA: 'Escuelita', MAYORES: 'Mayores' };

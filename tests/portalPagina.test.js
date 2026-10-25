@@ -6,7 +6,7 @@ import {
   htmlRecaudacion, htmlColaborar, htmlFirma, htmlAyuda, htmlAtajos, htmlCalendario, htmlFoto, htmlSede, diaInicial, htmlSuscripcion,
 } from '../src/ui/portal.js';
 import { eventoDesdeGoogle, eventosPorDia, proximosEventos } from '../src/data/agenda.js';
-import { PORTAL } from '../src/data/portal.js';
+import { PORTAL, frasesDeCintaValidas } from '../src/data/portal.js';
 
 /**
  * portal.html es HTML escrito a mano y no hay navegador en los tests: se lee
@@ -356,7 +356,7 @@ test('"Lo que viene" busca en el mes siguiente si en lo que queda del mes no hay
   const cuerpo = portal.slice(desde, portal.indexOf('\n  }\n', desde));
   assert.match(cuerpo, /mesVecino\(anio, mes, 1\)/);
   assert.match(cuerpo, /Number\(hoy\.slice/, 'sale del mes de hoy, no del que muestra la grilla');
-  assert.match(portal, /cargar\(estado\.anio, estado\.mes\)\.then\(mostrarProximo\)/);
+  assert.match(portal, /cargar\(estado\.anio, estado\.mes\)\.finally\(mostrarProximo\)/);
 });
 
 test('día inicial: hoy si es del mes; si no, el primero con algo, o el 1', () => {
@@ -539,12 +539,64 @@ test('tocar una fecha de la cinta lleva al calendario en ese día: link a #calen
   assert.match(readFileSync('public/css/publico.css', 'utf8'), /\.portal-cinta-fila a\{[^}]*min-height:var\(--tap\)/);
 });
 
+const fuente = (texto) => texto.replace(/\r\n/g, '\n');
+
+test('sin fechas la cinta invita a venir a probar: cuatro frases con su ícono y su ancla, que corren como la de fechas; con fechas, sólo fechas', () => {
+  const frases = frasesDeCintaValidas(PORTAL.cintaSinFechas, () => true);
+  assert.deepEqual(frases.map((f) => [f.texto, f.href]), [
+    ['Vení a probar · de 6 a 17 años', '#heroe'],
+    ['¿En qué categoría juega? Buscalo por el año', '#categorias'],
+    ['Entrenamos en el Parque de la Independencia', '#sede'],
+    ['Seguí la agenda del club', '#calendario'],
+  ]);
+  const out = htmlCinta([], frases).toString();
+  assert.match(out, /<div class="portal-cinta-pista anda" style="--dur-cinta:56s">/);
+  assert.match(out, /<button type="button" class="portal-cinta-pausa" data-cinta-pausa/);
+  const [visible, copia] = out.match(/<ul class="portal-cinta-fila"[^>]*>[\s\S]*?<\/ul>/g);
+  assert.equal((visible.match(/<li /g) ?? []).length, 8, 'las cuatro frases se repiten hasta llenar la mitad');
+  assert.match(visible, /<li class="frase"><a href="#heroe"><i><svg[\s\S]*?<\/i><b>Vení a probar · de 6 a 17 años<\/b><\/a><em aria-hidden="true"><\/em><\/li>/);
+  for (const ancla of ['#heroe', '#categorias', '#sede', '#calendario']) assert.match(visible, new RegExp(`<a href="${ancla}"( |>)`));
+  assert.doesNotMatch(out, /data-cinta-dia/, 'no son fechas: no eligen ningún día');
+  assert.equal((visible.match(/<a [^>]*>/g) ?? []).filter((a) => !/tabindex/.test(a)).length, 4, 'sólo la primera vuelta recibe foco');
+  assert.ok((copia.match(/<a [^>]*>/g) ?? []).every((a) => /tabindex="-1"/.test(a)));
+  // Con fechas, sólo fechas (aunque se le pasen frases); sin nada, nada.
+  assert.doesNotMatch(htmlCinta(proximosEventos(porDia, '2026-10-20', 1), frases).toString(), /class="frase"|Vení a probar/);
+  assert.equal(htmlCinta([], []).toString(), '');
+  // La cinta se decide cuando termina la carga del calendario (bien o mal), o enseguida si no hay calendario.
+  const f = fuente(portal);
+  assert.match(f, /const frases = proximos\.length \? \[\] : frasesDeCintaValidas\(PORTAL\.cintaSinFechas, hayAhi\);/);
+  assert.match(f, /\.finally\(mostrarProximo\)\.catch\(\(\) => \{\}\)/);
+  assert.match(f, /iniciarCalendario\(calendarios, pintarAtajos\);\n  else pintarCinta\(\[\]\);/);
+  assert.match(f, /try \{\s*const \[actual, siguiente\] = await Promise\.all[\s\S]*?\} catch \{/, 'si el calendario falla, también van las frases');
+  assert.doesNotMatch(f.replace(/\/\*[\s\S]*?\*\//g, ''), /Vení a probar ·|Entrenamos en el Parque/, 'las frases viven en src/data/portal.js, no en la UI');
+});
+
+test('una frase de la cinta no apunta a una sección oculta: sin su sección, esa frase no va', () => {
+  const sinSede = frasesDeCintaValidas(PORTAL.cintaSinFechas, (id) => id !== 'sede');
+  assert.deepEqual(sinSede.map((f) => f.href), ['#heroe', '#categorias', '#calendario']);
+  assert.deepEqual(frasesDeCintaValidas(PORTAL.cintaSinFechas, () => false), []);
+  // Sólo anclas internas, con texto y con una clave de ícono: nada de otras direcciones.
+  const malas = [{ texto: 'x', href: 'https://evil.com', icono: 'jugar' }, { texto: 'x', href: 'javascript:alert(1)', icono: 'jugar' }, { texto: 'x', href: '#a b', icono: 'jugar' },
+    { texto: '  ', href: '#heroe', icono: 'jugar' }, { texto: 'x', href: '#heroe', icono: '<svg>' }, { texto: 'x', href: '#heroe' }, null];
+  assert.deepEqual(frasesDeCintaValidas(malas, () => true), []);
+  assert.deepEqual(frasesDeCintaValidas(null, () => true), []);
+  // Cada ancla de PORTAL existe como sección en portal.html y cada ícono existe en ICONO.
+  const iconos = [...portal.matchAll(/^  ([a-zA-Z]+): html`<svg/gm)].map((m) => m[1]);
+  for (const { href, icono } of PORTAL.cintaSinFechas) {
+    assert.match(pagina, new RegExp(`id="${href.slice(1)}"`), href);
+    assert.ok(iconos.includes(icono), `falta el ícono ${icono}`);
+  }
+  // La UI sólo cuenta las secciones que están a la vista.
+  assert.match(fuente(portal), /const hayAhi = \(id\) => Boolean\(document\.getElementById\(id\)\) && !document\.getElementById\(id\)\.hidden;/);
+});
+
 test('sin fechas la cinta no se muestra: no devuelve nada y la sección queda oculta', () => {
   assert.equal(htmlCinta([]).toString(), '');
   assert.match(pagina, /<section class="portal-cinta" id="cinta" aria-label="Próximas fechas" hidden>/);
   const desde = portal.indexOf('async function mostrarProximo()');
   const cuerpo = portal.slice(desde, portal.indexOf('\n  }\n', desde));
-  assert.match(cuerpo, /\$\('cinta'\)\.hidden = !proximos\.length/);
+  assert.match(cuerpo, /pintarCinta\(proximos\)/, 'la cinta se decide acá, con las fechas ya a la vista');
+  assert.match(fuente(portal), /function pintarCinta\(proximos\) \{[\s\S]*?\$\('cinta'\)\.hidden = !\$\('portal-cinta'\)\.innerHTML\.trim\(\);/);
   const arranque = portal.slice(portal.indexOf('export async function iniciarPortal()'));
   assert.doesNotMatch(arranque, /\$\('cinta'\)\.hidden = false/, 'no se prende antes de saber si hay fechas');
 });
@@ -553,7 +605,7 @@ test('la cinta y "Lo que viene" salen de los mismos eventos: este mes y el sigui
   const desde = portal.indexOf('async function mostrarProximo()');
   const cuerpo = portal.slice(desde, portal.indexOf('\n  }\n', desde));
   assert.match(cuerpo, /proximosEventos\(new Map\(\[\.\.\.actual\.porDia, \.\.\.siguiente\.porDia\]\), hoy, 6\)/);
-  assert.match(cuerpo, /htmlCinta\(proximos\)/);
+  assert.match(cuerpo, /pintarCinta\(proximos\)/);
   assert.match(cuerpo, /revelar\(\$\('lo-que-viene'\)\)/);
   assert.ok(pagina.indexOf('id="cinta"') > pagina.indexOf('id="heroe"') && pagina.indexOf('id="cinta"') < pagina.indexOf('id="calendario"'), 'la cinta va entre el hero y el calendario');
 });

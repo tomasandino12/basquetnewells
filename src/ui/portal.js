@@ -4,7 +4,7 @@ import { formulariosPublicos, eventosDelMes } from '../data/repositorio.js';
 import {
   PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal,
   categoriasDelAnio, sedeValida, aliasValido, fotoValida, tarjetasDeCategorias, tarjetaDelAnio, turnosDeHorario,
-  fotoDeCategoriaValida, fotoDeEvento, firmaValida, FOTOS,
+  fotoDeCategoriaValida, fotoDeEvento, firmaValida, frasesDeCintaValidas, FOTOS,
 } from '../data/portal.js';
 import { temporadaComoAnio } from '../data/categorias.js';
 import { resolverFormularios, separarFormularios } from '../data/formulariosPortal.js';
@@ -459,27 +459,34 @@ const ITEMS_POR_MITAD = 8;
 const SEGUNDOS_POR_ITEM = 7;
 
 /**
- * La cinta de abajo del hero: sólo las próximas fechas (fecha con el ícono y el
- * color de su tipo, título y un rombo entre una y otra). Sin fechas no devuelve
- * nada y la sección se oculta: pedir sponsors no es cosa de la cinta, para eso
- * está el sticker del hero. `proximos`: [{ fecha, evento }] de proximosEventos.
- * Corre siempre que haya al menos una fecha: la lista se repite dentro de la
- * fila hasta tener ITEMS_POR_MITAD ítems (una sola fecha, repetida, llena el
- * ancho) y la pista son dos mitades idénticas, así arrancar de nuevo con
- * translateX(-50%) no se nota. Sólo la primera aparición de cada fecha es
- * accesible: las repeticiones y la mitad copia van aria-hidden (y sus links,
- * con tabindex -1). Cada fecha es un link a #calendario (sin JS, baja igual);
- * iniciarCalendario además lo deja en el mes y el día de esa fecha. Trae un
- * botón para pausarla. Con movimiento reducido el CSS la deja quieta y se desliza a
- * mano (ahí se ven sólo las fechas, sin repeticiones).
+ * La cinta de abajo del hero. Con fechas, sólo fechas: cada una con el ícono y
+ * el color de su tipo, el título y un rombo entre una y otra, y es un link a
+ * #calendario (sin JS, baja igual; iniciarCalendario además lo deja en el mes y
+ * el día de esa fecha). Sin fechas, las `frases` que invitan a venir (de
+ * PORTAL.cintaSinFechas, ya filtradas por frasesDeCintaValidas), cada una con su
+ * ícono y su ancla. Sin ninguna de las dos no devuelve nada y la sección se
+ * oculta: pedir sponsors no es cosa de la cinta, para eso está el sticker del
+ * hero. `proximos`: [{ fecha, evento }] de proximosEventos.
+ * Corre siempre que haya algo: la lista se repite dentro de la fila hasta tener
+ * ITEMS_POR_MITAD ítems (una sola entrada, repetida, llena el ancho) y la pista
+ * son dos mitades idénticas, así arrancar de nuevo con translateX(-50%) no se
+ * nota. Sólo la primera aparición de cada entrada es accesible: las repeticiones
+ * y la mitad copia van aria-hidden (y sus links, con tabindex -1). Trae un
+ * botón para pausarla. Con movimiento reducido el CSS la deja quieta y se
+ * desliza a mano (ahí se ven sólo las entradas, sin repeticiones).
  */
-export function htmlCinta(proximos) {
-  if (!proximos.length) return html``;
-  const items = Array.from({ length: Math.ceil(ITEMS_POR_MITAD / proximos.length) }, () => proximos).flat();
-  const fila = (copia) => html`<ul class="portal-cinta-fila"${copia && html` aria-hidden="true"`}>${items.map(({ fecha, evento }, i) => {
-    const f = partesDeFecha(fecha);
-    const repetido = copia || i >= proximos.length;
-    return html`<li class="tipo-${evento.tipo}"${i >= proximos.length && html` aria-hidden="true"`}><a href="#calendario" data-cinta-dia="${fecha}"${repetido && html` tabindex="-1"`}><i>${ICONO_TIPO[evento.tipo]}</i><b>${f.semana} ${f.dia} ${f.mes}</b><span>${evento.titulo}</span></a><em aria-hidden="true"></em></li>`;
+export function htmlCinta(proximos, frases = []) {
+  const entradas = proximos.length
+    ? proximos.map(({ fecha, evento }) => {
+      const f = partesDeFecha(fecha);
+      return { clase: `tipo-${evento.tipo}`, href: '#calendario', dia: fecha, icono: ICONO_TIPO[evento.tipo], cuerpo: html`<b>${f.semana} ${f.dia} ${f.mes}</b><span>${evento.titulo}</span>` };
+    })
+    : frases.map(({ texto, href, icono }) => ({ clase: 'frase', href, dia: null, icono: ICONO[icono] ?? null, cuerpo: html`<b>${texto}</b>` }));
+  if (!entradas.length) return html``;
+  const items = Array.from({ length: Math.ceil(ITEMS_POR_MITAD / entradas.length) }, () => entradas).flat();
+  const fila = (copia) => html`<ul class="portal-cinta-fila"${copia && html` aria-hidden="true"`}>${items.map(({ clase, href, dia, icono, cuerpo }, i) => {
+    const repetido = copia || i >= entradas.length;
+    return html`<li class="${clase}"${i >= entradas.length && html` aria-hidden="true"`}><a href="${href}"${dia && html` data-cinta-dia="${dia}"`}${repetido && html` tabindex="-1"`}><i>${icono}</i>${cuerpo}</a><em aria-hidden="true"></em></li>`;
   })}</ul>`;
   return html`<div class="portal-cinta-banda">
       <div class="portal-cinta-pista anda" style="--dur-cinta:${items.length * SEGUNDOS_POR_ITEM}s">${fila(false)}${fila(true)}</div>
@@ -488,6 +495,20 @@ export function htmlCinta(proximos) {
       <svg class="p" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
       <svg class="r" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg>
     </button>`;
+}
+
+/**
+ * Arma la cinta y decide si se muestra. Se llama UNA vez, cuando ya se sabe si
+ * hay fechas (terminó de cargar el calendario, salga bien o mal; o no hay
+ * calendario): nunca se prende antes. Con fechas, sólo fechas; sin fechas, las
+ * frases de PORTAL.cintaSinFechas cuya sección está a la vista; sin nada, oculta.
+ */
+function pintarCinta(proximos) {
+  const hayAhi = (id) => Boolean(document.getElementById(id)) && !document.getElementById(id).hidden;
+  const frases = proximos.length ? [] : frasesDeCintaValidas(PORTAL.cintaSinFechas, hayAhi);
+  $('portal-cinta').innerHTML = htmlCinta(proximos, frases);
+  $('cinta').hidden = !$('portal-cinta').innerHTML.trim();
+  $('cinta').setAttribute('aria-label', proximos.length ? 'Próximas fechas' : 'Para venir a probar');
 }
 
 /** Para tener el calendario entero en el celular, una vez, y que los eventos nuevos aparezcan solos. */
@@ -626,13 +647,17 @@ function iniciarCalendario(calendarios, alMostrarProximo) {
     const anio = Number(hoy.slice(0, 4));
     const mes = Number(hoy.slice(5, 7));
     const sig = mesVecino(anio, mes, 1);
-    const [actual, siguiente] = await Promise.all([traer(anio, mes), traer(sig.anio, sig.mes)]);
-    // Un torneo que cruza el fin de mes está en los dos: proximosEventos lo cuenta una vez.
-    const proximos = proximosEventos(new Map([...actual.porDia, ...siguiente.porDia]), hoy, 6);
+    let proximos = [];
+    try {
+      const [actual, siguiente] = await Promise.all([traer(anio, mes), traer(sig.anio, sig.mes)]);
+      // Un torneo que cruza el fin de mes está en los dos: proximosEventos lo cuenta una vez.
+      proximos = proximosEventos(new Map([...actual.porDia, ...siguiente.porDia]), hoy, 6);
+    } catch {
+      // Sin calendario no hay fechas: la cinta muestra las frases de siempre.
+    }
     $('portal-viene').innerHTML = htmlProximo(proximos[0], hoy);
     $('lo-que-viene').hidden = !proximos.length;
-    $('portal-cinta').innerHTML = htmlCinta(proximos);
-    $('cinta').hidden = !proximos.length;
+    pintarCinta(proximos);
     revelar($('lo-que-viene'));
     alMostrarProximo();
   }
@@ -664,7 +689,8 @@ function iniciarCalendario(calendarios, alMostrarProximo) {
       cargar(anio, mes);
     }
   });
-  cargar(estado.anio, estado.mes).then(mostrarProximo);
+  // `finally`: la cinta se decide cuando termina la carga, salga bien o mal.
+  cargar(estado.anio, estado.mes).finally(mostrarProximo).catch(() => {});
 }
 
 /* ---------- ¿En qué categoría juega? ---------- */
@@ -828,6 +854,7 @@ export async function iniciarPortal() {
   if (destinoDeAuth(window.location.search, window.location.hash)) return;
 
   if (calendarios.length) iniciarCalendario(calendarios, pintarAtajos);
+  else pintarCinta([]);
 
   const { estado, formularios } = await resolverFormularios(() => formulariosPublicos(PORTAL.clubId), PORTAL.formularios);
 
