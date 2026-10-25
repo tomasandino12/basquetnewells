@@ -8,13 +8,14 @@ import { aniosDeCategoria, textoAnios } from './categorias.js';
  * dónde mirar cuando la tarjeta la recorta (`posicion`, de object-position).
  * Provisorias: del Instagram del básquet, hasta tener las del fotógrafo.
  */
-const FOTOS = Object.freeze({
+export const FOTOS = Object.freeze({
   bandeja: Object.freeze({ archivo: 'formativas-bandeja', posicion: '50% 40%', alt: 'Un jugador de Newell\'s sube a hacer una bandeja en un partido' }),
   bandejaDerecha: Object.freeze({ archivo: 'formativas-bandeja', posicion: '100% 40%', alt: 'Dos jugadores de Newell\'s durante un partido, uno sube a hacer una bandeja' }),
   dribbling: Object.freeze({ archivo: 'formativas-dribbling', posicion: '48% 40%', alt: 'Un jugador de Newell\'s conduce la pelota en un partido' }),
   entrenamiento30: Object.freeze({ archivo: 'formativas-entrenamiento', posicion: '30% 40%', alt: 'Un jugador de Newell\'s avanza con la pelota en un partido' }),
   entrenamiento90: Object.freeze({ archivo: 'formativas-entrenamiento', posicion: '90% 40%', alt: 'Un jugador de Newell\'s se mueve sin la pelota en una jugada de ataque' }),
   penetracion: Object.freeze({ archivo: 'primera-penetracion', posicion: '35% 40%', alt: 'Un jugador de Newell\'s entra a canasta marcado por un rival' }),
+  sede: Object.freeze({ archivo: 'formativas-entrenamiento', posicion: '50% 35%', alt: 'El estadio cubierto durante un partido' }),
   lanzamiento: Object.freeze({ archivo: 'primera-lanzamiento', posicion: '40% 30%', alt: 'Un jugador sube a lanzar al aro marcado por un rival' }),
 });
 

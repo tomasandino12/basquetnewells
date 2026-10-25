@@ -413,6 +413,7 @@ test('dónde se entrena: los tres lugares, "Cómo llegar" y el mapa SIN cargar h
   assert.match(out, /<div class="portal-mapa" data-embed="https:\/\/www\.google\.com\/maps\?q=[^"]+&amp;output=embed" data-titulo="Mapa: Estadio &lt;x&gt;">/);
   assert.match(out, /<button type="button" class="portal-mapa-ver">[\s\S]*Ver mapa/);
   assert.doesNotMatch(out, /<iframe/, 'el iframe no está hasta que se toca');
+  assert.match(out, /<img class="portal-mapa-foto" src="\/public\/img\/fotos\/[\w-]+-640\.webp"[^>]*alt="[^"]+" loading="lazy"/, 'una foto en vez del recuadro vacío');
   assert.equal(htmlSede(null).toString(), '');
   // El iframe lo arma el clic, y sólo con la dirección que armó sedeValida.
   const desde = portal.indexOf('function iniciarMapa()');

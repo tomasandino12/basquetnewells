@@ -3,7 +3,7 @@ import { $ } from './dom.js';
 import { formulariosPublicos, eventosDelMes } from '../data/repositorio.js';
 import {
   PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal,
-  categoriasDelAnio, sedeValida, aliasValido, fotoValida, tarjetasDeCategorias,
+  categoriasDelAnio, sedeValida, aliasValido, fotoValida, tarjetasDeCategorias, fotoDeCategoriaValida, FOTOS,
 } from '../data/portal.js';
 import { temporadaComoAnio } from '../data/categorias.js';
 import { resolverFormularios, separarFormularios } from '../data/formulariosPortal.js';
@@ -331,12 +331,14 @@ export function htmlAyuda({ inscripcionAbierta = false, consultasAbierto = false
 export function htmlSede(sede) {
   const s = sedeValida(sede);
   if (!s) return html``;
+  const foto = fotoDeCategoriaValida(FOTOS.sede);
   return html`<div class="portal-sede-txt">
       <p class="portal-sede-dir">Rosario. En cuál de los tres te toca lo dice el horario de tu categoría.</p>
       ${s.lugares.length > 0 && html`<ul class="portal-sede-lugares">${s.lugares.map((l) => html`<li>${l}</li>`)}</ul>`}
       ${s.mapa && botonExterno(s.mapa, 'Cómo llegar', 'btn sec chico')}
     </div>
     ${s.embed && html`<div class="portal-mapa" data-embed="${s.embed}" data-titulo="Mapa: ${s.nombre}">
+      ${foto && html`<img class="portal-mapa-foto" src="${foto.src640}" srcset="${foto.src640} 640w, ${foto.src} 1080w" sizes="(min-width: 48rem) 36rem, 100vw" width="640" height="427" alt="${foto.alt}" loading="lazy" style="object-position:${foto.posicion}">`}
       <button type="button" class="portal-mapa-ver"><i aria-hidden="true">${ICONO.lugar}</i><b>Ver mapa</b><small>Se abre el mapa de Google</small></button>
     </div>`}`;
 }

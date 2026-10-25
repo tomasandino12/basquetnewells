@@ -128,21 +128,27 @@
       <div id="portal-calendario" class="rise"></div>
     </section>
 
-    <!-- Banda roja a todo el ancho: aviso de los eventos de recaudación (destino recaudacion, 0063). -->
-    <section class="portal-banda" id="recaudacion" aria-labelledby="t-recaudacion">
-      <div id="portal-recaudacion"><h2 id="t-recaudacion">Enterate de los eventos de recaudación del club</h2></div>
+    <!-- Tarjeta oscura con foto: aviso de los eventos de recaudación (destino recaudacion, 0063). Las fotos de las tarjetas son decorativas (alt vacío): el título y el botón dicen todo. -->
+    <section class="portal-sec" id="recaudacion" aria-labelledby="t-recaudacion">
+      <div class="portal-foto-card rise">
+        <img src="/public/img/fotos/primera-lanzamiento-640.webp" srcset="/public/img/fotos/primera-lanzamiento-640.webp 640w, /public/img/fotos/primera-lanzamiento.webp 1080w" sizes="(min-width: 64rem) 60rem, 100vw" width="640" height="427" alt="" loading="lazy" style="object-position:40% 30%">
+        <div id="portal-recaudacion"><h2 id="t-recaudacion">Enterate de los eventos de recaudación del club</h2></div>
+      </div>
     </section>
 
     <!-- Para una empresa que quiere asociarse o alguien que quiere dar una mano (destino colaboradores, 0061). -->
     <section class="portal-sec portal-colaborar" id="colaborar" aria-labelledby="t-colaborar">
-      <div class="portal-st">Colaborá con el club</div>
-      <h2 id="t-colaborar">Sumate al básquet de Newell&#39;s</h2>
-      <div id="portal-colaborar"></div>
+      <div class="portal-foto-card rise">
+        <img src="/public/img/fotos/primera-penetracion-640.webp" srcset="/public/img/fotos/primera-penetracion-640.webp 640w, /public/img/fotos/primera-penetracion.webp 1080w" sizes="(min-width: 64rem) 60rem, 100vw" width="640" height="427" alt="" loading="lazy" style="object-position:35% 40%">
+        <div class="portal-st">Colaborá con el club</div>
+        <h2 id="t-colaborar">Sumate al básquet de Newell&#39;s</h2>
+        <div id="portal-colaborar"></div>
+      </div>
     </section>
 
     <!-- Elegís el año de nacimiento y al lado te dice la categoría y el
          horario. La lista completa queda plegada abajo. -->
-    <section class="portal-sec portal-cat" id="categorias" aria-labelledby="t-categorias" hidden>
+    <section class="portal-sec portal-cat rise" id="categorias" aria-labelledby="t-categorias" hidden>
       <div class="portal-st">Categorías<span id="t-categorias-temp"></span></div>
       <h2 id="t-categorias">¿En qué categoría juega?</h2>
       <div class="portal-buscador" id="portal-buscador"></div>
@@ -152,25 +158,25 @@
 
     <!-- Al lado de los horarios: los lugares, "Cómo llegar" y el mapa de Google,
          que se carga recién al tocar "Ver mapa" (frame-src www.google.com). -->
-    <section class="portal-sec portal-sede-sec" id="sede" aria-labelledby="t-sede" hidden>
+    <section class="portal-sec portal-sede-sec rise" id="sede" aria-labelledby="t-sede" hidden>
       <div class="portal-st">Dónde se entrena</div>
       <h2 id="t-sede">Parque de la Independencia</h2>
       <div class="portal-sede" id="portal-sede"></div>
     </section>
 
-    <section class="portal-sec" id="formularios" aria-labelledby="t-formularios" hidden>
+    <section class="portal-sec rise" id="formularios" aria-labelledby="t-formularios" hidden>
       <h2 id="t-formularios">Otros formularios</h2>
       <p class="intro">Cada uno te cuenta para qué es y qué tenés que tener a mano antes de abrirlo.</p>
       <div class="portal-lista" id="portal-formularios"></div>
     </section>
 
     <!-- La foto del club (PORTAL.foto): sólo con la autorización de imagen de las familias. -->
-    <section class="portal-sec" id="club" aria-label="El club" hidden>
+    <section class="portal-sec rise" id="club" aria-label="El club" hidden>
       <div id="portal-foto"></div>
     </section>
 
     <!-- Los logos de sponsors y colaboradores (PORTAL.sponsors). Sin ninguno, oculta. -->
-    <section class="portal-sec" id="sponsors" aria-labelledby="t-sponsors" hidden>
+    <section class="portal-sec rise" id="sponsors" aria-labelledby="t-sponsors" hidden>
       <div class="portal-st">Gracias</div>
       <h2 id="t-sponsors">Nos acompañan</h2>
       <div class="portal-logos" id="portal-logos"></div>
@@ -178,8 +184,15 @@
 
     </div>
 
-    <div class="pie-legal"><a href="/app">Entrar a Semillero</a> · <a href="/public/legal/privacidad.html">Política de privacidad</a> · <a href="/public/legal/terminos.html">Términos y condiciones</a></div>
   </main>
+
+  <!-- El pie: lo legal, sobre una franja con el borde de arriba rasgado (el único
+       de la página: el hero ya tiene su corte en diagonal). Abajo deja lugar a
+       la barra fija. -->
+  <footer class="portal-pie">
+    <div class="portal-rasgado" aria-hidden="true"></div>
+    <div class="pie-legal"><a href="/app">Entrar a Semillero</a> · <a href="/public/legal/privacidad.html">Política de privacidad</a> · <a href="/public/legal/terminos.html">Términos y condiciones</a></div>
+  </footer>
 
   <!-- Ayuda: no ocupa lugar en la página. Todo link a #ayuda la abre encima
        (src/ui/portal.js): en el celular, una hoja que sube desde abajo; en

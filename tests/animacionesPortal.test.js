@@ -58,7 +58,7 @@ test('el ticket se pega como sticker: gira un poco y, con .js-anim, entra con es
 
 test('el tipo de evento no se dice sólo con el color: cada uno tiene su forma en el mes y su ícono en el detalle', () => {
   for (const tipo of ['evento', 'charla', 'entrenamiento']) {
-    assert.match(css, new RegExp(`\.portal-puntos i\.tipo-${tipo}`), tipo);
+    assert.match(css, new RegExp(`\\.portal-puntos i\\.tipo-${tipo}`), tipo);
   }
   assert.match(css, /\.portal-ley li\.tipo-partido::before\{border-radius:50%\}/);
   assert.match(css, /clip-path:polygon\(50% 0,100% 100%,0 100%\)/);
@@ -95,7 +95,7 @@ test('la barra fija: aparece al pasar el hero POR ARRIBA, oculta es inert y no d
   assert.doesNotMatch(cuerpo, /js-anim/, 'con movimiento reducido igual tiene que aparecer');
   assert.match(css, /\.portal-dock\{[^}]*env\(safe-area-inset-bottom\)[^}]*backdrop-filter:blur\(12px\)/);
   assert.match(css, /\.portal-dock\.visible\{transform:none\}/);
-  assert.match(css, /\.portal\{width:100%;padding-bottom:calc\(5\.5rem \+ env\(safe-area-inset-bottom\)\)\}/, 'la barra no tapa el pie');
+  assert.match(css, /\.portal-pie \.pie-legal\{[^}]*padding:[^;}]*calc\(5\.5rem \+ env\(safe-area-inset-bottom\)\)/, 'la barra no tapa el pie: el pie le deja lugar');
   assert.match(css, /\.portal-dock-btn\{[^}]*min-height:3rem/);
 });
 
@@ -105,4 +105,32 @@ test('el carrusel: snap, duotono en CSS (grises + color del club multiplicado) y
   assert.match(css, /\.portal-card img\{[^}]*filter:grayscale\(1\) contrast\(1\.25\)/);
   assert.match(css, /\.portal-card::before\{[^}]*background:var\(--club\);mix-blend-mode:multiply/);
   assert.match(css, /@media \(hover:hover\)\{\.portal-carrusel-flechas\{display:flex\}\}/);
+});
+
+test('recaudación y Sumate son tarjetas oscuras con foto (no bandas rojas); el rojo queda en los botones', () => {
+  const pagina = readFileSync('public/portal.html', 'utf8');
+  for (const id of ['recaudacion', 'colaborar']) {
+    const seccion = pagina.match(new RegExp(`<section [^>]*id="${id}"[\\s\\S]*?</section>`))[0];
+    assert.match(seccion, /<div class="portal-foto-card rise">\s*<img src="\/public\/img\/fotos\/[\w-]+-640\.webp"[^>]*alt=""[^>]*loading="lazy"/, id);
+    assert.match(seccion, /width="640" height="427"/, id);
+  }
+  assert.doesNotMatch(pagina, /class="portal-banda"/);
+  assert.doesNotMatch(css, /\.portal-banda\{/);
+  assert.match(css, /\.portal-foto-card > img\{[^}]*filter:grayscale\(1\)/);
+  assert.match(css, /\.portal-banda-btn\{[^}]*background:var\(--primario\)/);
+});
+
+test('el borde rasgado aparece una sola vez (arriba del pie) y es decorativo', () => {
+  const pagina = readFileSync('public/portal.html', 'utf8');
+  assert.equal((pagina.match(/class="portal-rasgado"/g) ?? []).length, 1);
+  assert.match(pagina, /<footer class="portal-pie">\s*<div class="portal-rasgado" aria-hidden="true"><\/div>\s*<div class="pie-legal">/);
+  assert.match(css, /\.portal-rasgado\{[^}]*clip-path:polygon\(/);
+});
+
+test('las secciones entran al scrollear: .rise en las que tienen contenido propio, y el calendario ya tenía el suyo', () => {
+  const pagina = readFileSync('public/portal.html', 'utf8');
+  for (const id of ['categorias', 'sede', 'formularios', 'club', 'sponsors']) {
+    assert.match(pagina, new RegExp(`<section class="[^"]*\\brise\\b[^"]*" id="${id}"`), id);
+  }
+  assert.match(pagina, /id="portal-calendario" class="rise"/);
 });
