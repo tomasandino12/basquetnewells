@@ -178,7 +178,8 @@ test('el texto de la landing llega a 4.5:1 sobre su tarjeta y su fondo', () => {
     // El color del club como texto chico (los títulos de sección del portal): --club solo llega a 3.8:1.
     ['--club-texto', '--pub-tarjeta'], ['--club-texto', '--pub-fondo'],
     // El dorado (ejemplos de recaudación) y el texto sobre el talón del ticket.
-    ['--dorado', '--pub-fondo'], ['--pub-fondo', '--dorado'], ['--pub-fondo', '--agenda-charla'], ['--pub-fondo', '--sube-osc'],
+    ['--dorado', '--pub-fondo'], ['--pub-fondo', '--dorado'],
+    ['--dorado', '--pub-oro-fondo'], ['--gris-osc', '--pub-oro-fondo'], ['--sobre-oscuro', '--pub-oro-fondo'], ['--pub-fondo', '--agenda-charla'], ['--pub-fondo', '--sube-osc'],
     ['--sobre-club', '--club'],
     // La línea de ayuda del botón "Pagar" (claro) y su texto.
     ['--gris', '--papel'], ['--tinta', '--papel'],

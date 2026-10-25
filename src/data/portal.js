@@ -6,17 +6,22 @@ import { aniosDeCategoria, textoAnios } from './categorias.js';
  * archivo SIN extensión (de cada uno hay un `-640.webp` para el celular), qué se
  * ve (texto alternativo: lo que pasa en la foto, nunca quiénes son) y hacia
  * dónde mirar cuando la tarjeta la recorta (`posicion`, de object-position).
- * Provisorias: del Instagram del básquet, hasta tener las del fotógrafo.
+ * Provisorias: del Instagram del básquet, hasta tener las del fotógrafo. Cada
+ * archivo se usa UNA vez en la página (la del hero, formativas-bandeja, va
+ * escrita en el HTML): una foto repetida con otro recorte se nota.
  */
 export const FOTOS = Object.freeze({
-  bandeja: Object.freeze({ archivo: 'formativas-bandeja', posicion: '50% 40%', alt: 'Un jugador de Newell\'s sube a hacer una bandeja en un partido' }),
-  bandejaDerecha: Object.freeze({ archivo: 'formativas-bandeja', posicion: '100% 40%', alt: 'Dos jugadores de Newell\'s durante un partido, uno sube a hacer una bandeja' }),
+  mini: Object.freeze({ archivo: 'formativas-mini', posicion: '50% 70%', alt: 'Chicos de mini de Newell\'s y de otro club posan juntos en la cancha después de un partido' }),
   dribbling: Object.freeze({ archivo: 'formativas-dribbling', posicion: '48% 40%', alt: 'Un jugador de Newell\'s conduce la pelota en un partido' }),
-  entrenamiento30: Object.freeze({ archivo: 'formativas-entrenamiento', posicion: '30% 40%', alt: 'Un jugador de Newell\'s avanza con la pelota en un partido' }),
-  entrenamiento90: Object.freeze({ archivo: 'formativas-entrenamiento', posicion: '90% 40%', alt: 'Un jugador de Newell\'s se mueve sin la pelota en una jugada de ataque' }),
+  grupo: Object.freeze({ archivo: 'escuelita-grupo', posicion: '45% 70%', alt: 'Chicas, chicos y grandes posan juntos en la cancha del Estadio Cubierto' }),
+  entrenamiento: Object.freeze({ archivo: 'formativas-entrenamiento', posicion: '30% 40%', alt: 'Un jugador de Newell\'s avanza con la pelota en un partido' }),
+  ataque: Object.freeze({ archivo: 'juego-ataque', posicion: '62% 40%', alt: 'Un jugador de Newell\'s protege la pelota con las dos manos frente a un rival' }),
   penetracion: Object.freeze({ archivo: 'primera-penetracion', posicion: '35% 40%', alt: 'Un jugador de Newell\'s entra a canasta marcado por un rival' }),
-  sede: Object.freeze({ archivo: 'formativas-entrenamiento', posicion: '50% 35%', alt: 'El estadio cubierto durante un partido' }),
   lanzamiento: Object.freeze({ archivo: 'primera-lanzamiento', posicion: '40% 30%', alt: 'Un jugador sube a lanzar al aro marcado por un rival' }),
+  femenino: Object.freeze({ archivo: 'femenino-equipo', posicion: '50% 45%', alt: 'Un equipo femenino de Newell\'s posa en la cancha con su entrenador' }),
+  sede: Object.freeze({ archivo: 'estadio-cubierto', posicion: '50% 30%', alt: 'El Estadio Cubierto Claudio Newell por dentro, con sus tribunas rojas' }),
+  // El afiche que el club subió a Instagram para buscar sponsors: el texto va en el alt.
+  sponsor: Object.freeze({ archivo: 'sponsor-camisetas', posicion: '50% 50%', alt: 'Afiche del club: Newell\'s Básquet 2026, nuevas camisetas. Sumá tu empresa como sponsor: 341 370-9161' }),
 });
 
 /**
@@ -70,15 +75,14 @@ export const PORTAL = Object.freeze({
   // femenina es Primera. Las dos Primeras no figuran en ningún formulario y van
   // sin horario hasta que el club lo pase.
   categorias: Object.freeze([
-    Object.freeze({ grupo: 'U9', rama: 'Mixto', horario: 'Mar 18 a 19 h (Estadio Cubierto) · Jue 18 a 19 h (Playón Deportivo)', foto: FOTOS.entrenamiento30 }),
+    Object.freeze({ grupo: 'U9', rama: 'Mixto', horario: 'Mar 18 a 19 h (Estadio Cubierto) · Jue 18 a 19 h (Playón Deportivo)', foto: FOTOS.mini }),
     Object.freeze({ grupo: 'U11', rama: 'Mixto', horario: 'Mar 19 a 20 h (Estadio Cubierto) · Jue 19 a 20 h (Playón Deportivo)', foto: FOTOS.dribbling }),
-    Object.freeze({ grupo: 'U13', rama: 'Mixto', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)', foto: FOTOS.bandeja }),
-    Object.freeze({ grupo: 'U15', rama: 'Masculino', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)', foto: FOTOS.entrenamiento90 }),
-    Object.freeze({ grupo: 'U17', rama: 'Masculino', horario: 'Lun y Vie 19 a 20 h (Estadio Cubierto) · Mié 19 a 20 h (Microestadio)', foto: FOTOS.bandejaDerecha }),
+    Object.freeze({ grupo: 'U13', rama: 'Mixto', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)', foto: FOTOS.grupo }),
+    Object.freeze({ grupo: 'U15', rama: 'Masculino', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)', foto: FOTOS.entrenamiento }),
+    Object.freeze({ grupo: 'U17', rama: 'Masculino', horario: 'Lun y Vie 19 a 20 h (Estadio Cubierto) · Mié 19 a 20 h (Microestadio)', foto: FOTOS.ataque }),
     Object.freeze({ grupo: 'U21', rama: 'Masculino', horario: 'Lun y Vie 20 a 21 h (Estadio Cubierto) · Mié 20 a 21 h (Microestadio)', foto: FOTOS.penetracion }),
     Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Masculino', horario: null, foto: FOTOS.lanzamiento }),
-    // Sin foto a propósito: las que tenemos son de varones y no hay una de la Primera femenina.
-    Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Femenino', horario: null }),
+    Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Femenino', horario: null, foto: FOTOS.femenino }),
   ]),
 
   // Dónde se entrena. Sin calle ni número en ningún formulario: el mapa es una
@@ -173,12 +177,33 @@ export function fotoDeCategoriaValida(foto) {
 /**
  * Las tarjetas del carrusel de categorías: las mismas categorías de
  * categoriasDelPortal, cada una con su foto (o null si no tiene o no es válida:
- * la tarjeta sale igual, sin foto).
+ * la tarjeta sale igual, sin foto). Con sus topes de años (`desde`/`hasta`,
+ * null si no tiene) para marcar la del año elegido, y `anio`: el año al que
+ * salta el buscador al tocarla (el más viejo; la Primera, el más nuevo).
  */
 export function tarjetasDeCategorias(lista, temporada) {
   return (Array.isArray(lista) ? lista : []).flatMap((c) => {
     const [categoria] = categoriasDelPortal([c], temporada);
-    return categoria ? [{ ...categoria, foto: fotoDeCategoriaValida(c.foto) }] : [];
+    if (!categoria) return [];
+    const { viejo, nuevo } = aniosDeCategoria(c.grupo, temporada);
+    return [{ ...categoria, foto: fotoDeCategoriaValida(c.foto), desde: viejo, hasta: nuevo, anio: viejo ?? nuevo }];
+  });
+}
+
+/** Si quien nació en `anio` entra en la tarjeta (de tarjetasDeCategorias). */
+export function tarjetaDelAnio(tarjeta, anio) {
+  return Number.isInteger(anio) && (tarjeta.desde == null || anio >= tarjeta.desde) && (tarjeta.hasta == null || anio <= tarjeta.hasta);
+}
+
+/**
+ * El horario de una categoría partido en turnos: "Lun y Vie 18 a 19 h
+ * (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)" → [{ cuando, lugar }].
+ * Un turno sin lugar entre paréntesis queda con lugar null. Sin horario, [].
+ */
+export function turnosDeHorario(horario) {
+  return texto(horario).split(' · ').map((t) => t.trim()).filter(Boolean).map((t) => {
+    const m = t.match(/^(.*\S)\s*\(([^()]+)\)$/);
+    return m ? { cuando: m[1], lugar: m[2].trim() } : { cuando: t, lugar: null };
   });
 }
 

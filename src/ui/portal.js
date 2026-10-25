@@ -3,7 +3,8 @@ import { $ } from './dom.js';
 import { formulariosPublicos, eventosDelMes } from '../data/repositorio.js';
 import {
   PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal,
-  categoriasDelAnio, sedeValida, aliasValido, fotoValida, tarjetasDeCategorias, fotoDeCategoriaValida, FOTOS,
+  categoriasDelAnio, sedeValida, aliasValido, fotoValida, tarjetasDeCategorias, tarjetaDelAnio, turnosDeHorario,
+  fotoDeCategoriaValida, FOTOS,
 } from '../data/portal.js';
 import { temporadaComoAnio } from '../data/categorias.js';
 import { resolverFormularios, separarFormularios } from '../data/formulariosPortal.js';
@@ -44,6 +45,11 @@ const ICONO = {
   personaMas: html`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.6 3-5.5 6.5-5.5s6 1.9 6.5 5.5M19 8v6M16 11h6"/></svg>`,
   billetera: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><path d="M4 7.5V17a2 2 0 0 0 2 2h13a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H6.5A2.5 2.5 0 0 1 4 7.5z"/><circle cx="16" cy="13.5" r="1"/></svg>`,
   mano: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V12M16 9.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L4.3 14a1.5 1.5 0 0 1 2.4-1.8L8 14"/></svg>`,
+  tilde: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`,
+  pizza: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21L3.5 6.5a14 14 0 0 1 17 0z"/><path d="M5.6 10a10 10 0 0 1 12.8 0"/><circle cx="10" cy="12.5" r="1"/><circle cx="13.5" cy="15" r="1"/></svg>`,
+  rifa: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8a2 2 0 0 0 0 4v0a2 2 0 0 0 0 4v2h18v-2a2 2 0 0 1 0-4 2 2 0 0 1 0-4V6H3z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>`,
+  comida: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 21V3c-2 1.5-3 4-3 7h3"/></svg>`,
+  sumate: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l6 4V6L7 10z"/><path d="M17 9a4 4 0 0 1 0 6M19.5 6.5a7.5 7.5 0 0 1 0 11"/></svg>`,
 };
 
 /**
@@ -156,34 +162,47 @@ export function htmlAvisoRespaldo() {
 }
 
 /**
- * La tarjeta con foto de Recaudación (debajo del calendario): el aviso por mail de los eventos de
- * recaudación del club. Es el formulario con destino recaudacion (0063), aparte
- * del de colaborar: quien quiere comprar una pizza no es una empresa que quiere
- * asociarse. Su planilla de respuestas vive en Google. Los partidos y charlas
- * no van por mail: para eso está el "Seguilo" del calendario.
+ * La franja de Recaudación: el aviso por mail de los eventos de recaudación
+ * del club. Sin foto y en dorado (como en la propuesta de v0): el botón es
+ * dorado para que el rojo quede en el hero. Es el formulario con destino
+ * recaudacion (0063), aparte del de colaborar: quien quiere comprar una pizza
+ * no es una empresa que quiere asociarse. Su planilla de respuestas vive en
+ * Google. Los partidos y charlas no van por mail: para eso está el "Seguilo"
+ * del calendario.
  */
 export function htmlRecaudacion(formulario) {
   const url = formulario ? enlaceFormulario(formulario.enlace) : null;
-  return html`<img class="portal-banda-escudo" src="/public/escudo.png" alt="" width="44" height="44">
-    <h2 id="t-recaudacion">Enterate de los eventos de recaudación del club</h2>
-    <div class="portal-banda-ej">Pizzas, rifas, comidas…</div>
-    <p>Dejanos tu mail y te avisamos cuando haya uno.</p>
-    ${url ? botonExterno(url, 'Quiero que me avisen', 'portal-banda-btn') : botonCerrado('Se habilita cuando abra el formulario', 'portal-banda-btn')}`;
+  return html`<div class="portal-rec-txt">
+      <div class="portal-st">Recaudación</div>
+      <h2 id="t-recaudacion">Enterate de los eventos de recaudación</h2>
+      <p>Dejanos tu mail y te avisamos cuando haya uno. Nada más.</p>
+      <ul class="portal-rec-ej" aria-label="Por ejemplo">
+        <li><i>${ICONO.pizza}</i>Noches de pizza</li><li><i>${ICONO.rifa}</i>Rifas</li><li><i>${ICONO.comida}</i>Comidas</li>
+      </ul>
+    </div>
+    <div class="portal-rec-accion">
+      ${url ? botonExterno(url, 'Quiero que me avisen', 'portal-rec-btn') : botonCerrado('Se habilita cuando abra el formulario', 'portal-rec-btn')}
+    </div>`;
 }
 
 /**
  * "Sumate al básquet de Newell's": el formulario con destino colaboradores
  * (0061). Es para dos cosas: una empresa o comercio que quiere asociarse con
  * el básquet, o alguien que quiere dar una mano en los eventos. Lo que deja
- * queda en la planilla de Google de "Quiero colaborar", no en Semillero.
+ * queda en la planilla de Google de "Quiero colaborar", no en Semillero. Al
+ * lado, el afiche que el club usa para buscar sponsors (el texto, en el alt).
  */
 export function htmlColaborar(formulario) {
   const url = formulario ? enlaceFormulario(formulario.enlace) : null;
-  return html`<ul class="portal-formas">
-      <li><i>${ICONO.empresa}</i><span><b>Tengo una empresa o un comercio</b>Asociate con el básquet de Newell's y acompañá a las formativas.</span></li>
-      <li><i>${ICONO.mano}</i><span><b>Quiero dar una mano</b>En los eventos del club: hacer el pollo, armar, servir, ayudar a organizar.</span></li>
-    </ul>
-    ${url ? botonExterno(url, 'Quiero colaborar') : botonCerrado('Se habilita cuando abra el formulario')}`;
+  const afiche = fotoDeCategoriaValida(FOTOS.sponsor);
+  return html`<div class="portal-colaborar-txt">
+      <ul class="portal-formas">
+        <li><i>${ICONO.empresa}</i><span><b>Tengo una empresa o un comercio</b>Poné tu marca en la camiseta y acompañá a las formativas.</span></li>
+        <li><i>${ICONO.mano}</i><span><b>Quiero dar una mano</b>En los eventos del club: hacer el pollo, armar, servir, ayudar a organizar.</span></li>
+      </ul>
+      ${url ? botonExterno(url, 'Quiero colaborar', 'btn sec') : botonCerrado('Se habilita cuando abra el formulario')}
+    </div>
+    ${afiche && html`<img class="portal-afiche" src="${afiche.src640}" srcset="${afiche.src640} 640w, ${afiche.src} 1080w" sizes="(min-width: 48rem) 22rem, 80vw" width="640" height="853" alt="${afiche.alt}" loading="lazy">`}`;
 }
 
 /** La franja de logos de sponsors. Sin ninguno válido no devuelve nada. */
@@ -210,39 +229,35 @@ export function htmlFormularios(formularios) {
   </div>`)}`;
 }
 
-/** Categorías con sus años de nacimiento y, si el club los pasó, sus horarios. Sin ninguna, nada. */
-export function htmlCategorias(categorias) {
-  if (!categorias.length) return html``;
-  return html`<ul class="portal-cats">${categorias.map(({ nombre, rama, anios, horario }) => html`<li>
-    <div><b>${nombre}</b>${rama && html`<span>${rama}</span>`}</div>
-    <div class="portal-cats-anios">${anios}</div>
-    ${horario && html`<div class="portal-cats-hora">${horario.split(' · ').map((h) => html`<span>${h}</span>`)}</div>`}
-  </li>`)}</ul>`;
-}
-
 /**
- * El carrusel de categorías: una tarjeta por categoría, con su foto en duotono
- * (grises + el color del club, en CSS) y el nombre grande. Es una pista que
- * se desliza con el dedo (scroll-snap) y, para quien tiene mouse, dos flechas.
- * La pista se puede enfocar para recorrerla con las flechas del teclado. Sin
- * foto, la tarjeta lleva un fondo del club y una pelota. Sin categorías, nada.
+ * La fila de categorías debajo del buscador (como en la propuesta de v0): una
+ * tarjeta por categoría, con su foto en duotono suave (grises + un poco del
+ * color del club, en CSS) y el nombre grande. Cada tarjeta es un botón: al
+ * tocarla, el buscador salta a su año; la del año elegido queda marcada con
+ * "Su categoría" (aria-pressed). La pista se desliza con el dedo
+ * (scroll-snap) y, para quien tiene mouse, con dos flechas. Sin foto, la
+ * tarjeta lleva un fondo del club y una pelota. Sin categorías, nada.
  * `tarjetas`: de tarjetasDeCategorias.
  */
 export function htmlCarrusel(tarjetas) {
   if (!tarjetas.length) return html``;
   return html`<div class="portal-carrusel-cab">
-      <span>Las categorías del club</span>
+      <h3>Todas las categorías</h3>
       <span class="portal-carrusel-flechas">
         <button type="button" data-carrusel="-1" aria-label="Ver las categorías anteriores">‹</button>
         <button type="button" data-carrusel="1" aria-label="Ver las categorías siguientes">›</button>
       </span>
     </div>
-    <ul class="portal-carrusel-pista" tabindex="0" aria-label="Categorías del club: deslizá para ver todas">${tarjetas.map(({ nombre, rama, anios, foto }) => html`<li class="portal-card${foto ? '' : ' sin-foto'}">
-      ${foto
-        ? html`<img src="${foto.src640}" srcset="${foto.src640} 640w, ${foto.src} 1080w" sizes="(min-width: 48rem) 15rem, 70vw" width="640" height="427" alt="${foto.alt}" loading="lazy" style="object-position:${foto.posicion}">`
-        : html`<i aria-hidden="true">${ICONO.jugar}</i>`}
-      <div class="portal-card-txt"><b>${nombre}</b>${rama && html`<span>${rama}</span>`}<small>Nacidos ${anios}</small></div>
-    </li>`)}</ul>`;
+    <ul class="portal-carrusel-pista">${tarjetas.map(({ nombre, rama, anios, foto, anio }) => html`<li class="portal-card${foto ? '' : ' sin-foto'}">
+      <button type="button" data-anio-cat="${anio}" aria-pressed="false">
+        ${foto
+          ? html`<img src="${foto.src640}" srcset="${foto.src640} 640w, ${foto.src} 1080w" sizes="(min-width: 64rem) 13rem, (min-width: 48rem) 15rem, 70vw" width="640" height="427" alt="${foto.alt}" loading="lazy" style="object-position:${foto.posicion}">`
+          : html`<i aria-hidden="true">${ICONO.jugar}</i>`}
+        <span class="portal-card-su"><i>${ICONO.tilde}</i>Su categoría</span>
+        <span class="portal-card-txt"><b>${nombre}</b>${rama && html`<span>${rama}</span>`}<small>Nacidos ${anios}</small></span>
+      </button>
+    </li>`)}</ul>
+    <p class="portal-carrusel-guia" aria-hidden="true">Deslizá para ver todas →</p>`;
 }
 
 /** Las flechas del carrusel: corren la pista una tarjeta y media. Con movimiento reducido, sin deslizar. */
@@ -256,7 +271,10 @@ function iniciarCarrusel() {
   });
 }
 
-/** El selector de año del "¿En qué categoría juega?": − y + alrededor del año, y el lugar del resultado al lado. */
+/**
+ * El selector de año del "¿En qué categoría juega?": una caja con − y +
+ * redondos alrededor del año grande y, al lado, otra caja con el resultado.
+ */
 export function htmlBuscador(anio, { min, max }) {
   return html`<div class="portal-anio-caja">
       <span class="portal-anio-et" id="portal-anio-et">Año de nacimiento</span>
@@ -270,20 +288,24 @@ export function htmlBuscador(anio, { min, max }) {
 }
 
 /**
- * Lo que le toca a quien nació en `anio`: la categoría, sus años y su
- * horario. Puede ser más de una (las dos Primeras). Sin ninguna (más chico
- * que la U9), lo dice y manda a las preguntas frecuentes.
+ * Lo que le toca a quien nació en `anio`: la categoría en grande, su rama y
+ * sus años, y un renglón por turno (cuándo y dónde). Puede ser más de una
+ * (las dos Primeras). Sin ninguna (más chico que la U9), lo dice y manda a
+ * las preguntas frecuentes.
  */
 export function htmlCategoriaDelAnio(anio, categorias) {
   if (!categorias.length) {
     return html`<p class="portal-cat-nada">Para chicos nacidos en ${anio} todavía no hay categoría. <a href="#ayuda">¿Dudas? Mirá las preguntas frecuentes</a>.</p>`;
   }
-  return html`${categorias.map(({ nombre, rama, anios, horario }) => html`<div class="portal-cat-res">
-    <div class="portal-cat-nombre"><b>${nombre}</b>${rama && html`<span>${rama}</span>`}<small>Nacidos ${anios}</small></div>
-    ${horario
-      ? html`<ul class="portal-cat-hora">${horario.split(' · ').map((h) => html`<li>${h}</li>`)}</ul>`
+  return html`${categorias.map(({ nombre, rama, anios, horario }) => {
+    const turnos = turnosDeHorario(horario);
+    return html`<div class="portal-cat-res">
+    <div class="portal-cat-nombre"><b>${nombre}</b><span>${rama && html`<em>${rama}</em>`}<small>Nacidos ${anios}</small></span></div>
+    ${turnos.length
+      ? html`<ul class="portal-cat-hora">${turnos.map(({ cuando, lugar }) => html`<li><span><i>${ICONO.categorias}</i>${cuando}</span>${lugar && html`<span class="lugar"><i>${ICONO.lugar}</i>${lugar}</span>`}</li>`)}</ul>`
       : html`<p class="portal-cat-sin">Horario a confirmar.</p>`}
-  </div>`)}`;
+  </div>`;
+  })}`;
 }
 
 /**
@@ -417,24 +439,31 @@ export function htmlProximo(proximo, hoy) {
 }
 
 /**
- * La cinta de las próximas fechas: fecha (con el ícono y el color de su tipo),
- * título y un rombo entre una y otra. `proximos`: [{ fecha, evento }] de
- * proximosEventos. Con tres o más corre sola (la fila se repite, la copia
- * aria-hidden, y arrancar de nuevo parece infinito) y trae un botón para
- * pausarla; con menos se queda quieta, porque un cartel que se mueve para
- * mostrar dos cosas no aporta. Sin eventos, nada.
+ * La cinta de abajo del hero: las próximas fechas (fecha con el ícono y el
+ * color de su tipo, título y un rombo entre una y otra) y, al final, "Sumá tu
+ * empresa como sponsor", que lleva a Sumate (como el "Hacete socio" de la web
+ * del club). Sin fechas, sólo el pedido de sponsors, repetido para llenar el
+ * ancho. `proximos`: [{ fecha, evento }] de proximosEventos. Con tres o más
+ * cosas corre sola (la fila se repite, la copia aria-hidden y sin foco, y
+ * arrancar de nuevo parece infinito) y trae un botón para pausarla; con menos
+ * se queda quieta, porque un cartel que se mueve para mostrar dos cosas no
+ * aporta.
  */
 export function htmlCinta(proximos) {
-  if (!proximos.length) return html``;
-  const anda = proximos.length >= 3;
-  const fila = (oculta) => html`<ul class="portal-cinta-fila"${oculta && html` aria-hidden="true"`}>${proximos.map(({ fecha, evento: e }) => {
-    const f = partesDeFecha(fecha);
-    return html`<li class="tipo-${e.tipo}"><i>${ICONO_TIPO[e.tipo]}</i><b>${f.semana} ${f.dia} ${f.mes}</b><span>${e.titulo}</span><em aria-hidden="true"></em></li>`;
+  const sumate = (texto) => ({ sumate: texto });
+  const cosas = proximos.length
+    ? [...proximos, sumate('Sumá tu empresa como sponsor')]
+    : [sumate('Sumá tu empresa como sponsor'), sumate('Sumate al básquet de Newell\'s'), sumate('Sumá tu empresa como sponsor'), sumate('Sumate al básquet de Newell\'s')];
+  const anda = cosas.length >= 3;
+  const fila = (oculta) => html`<ul class="portal-cinta-fila"${oculta && html` aria-hidden="true"`}>${cosas.map((c) => {
+    if (c.sumate) return html`<li class="cinta-sumate"><a href="#colaborar"${oculta && html` tabindex="-1"`}><i>${ICONO.sumate}</i><b>${c.sumate}</b></a><em aria-hidden="true"></em></li>`;
+    const f = partesDeFecha(c.fecha);
+    return html`<li class="tipo-${c.evento.tipo}"><i>${ICONO_TIPO[c.evento.tipo]}</i><b>${f.semana} ${f.dia} ${f.mes}</b><span>${c.evento.titulo}</span><em aria-hidden="true"></em></li>`;
   })}</ul>`;
   return html`<div class="portal-cinta-banda">
-      <div class="portal-cinta-pista${anda ? ' anda' : ''}"${anda && html` style="--dur-cinta:${proximos.length * 7}s"`}>${fila(false)}${anda && fila(true)}</div>
+      <div class="portal-cinta-pista${anda ? ' anda' : ''}"${anda && html` style="--dur-cinta:${cosas.length * 7}s"`}>${fila(false)}${anda && fila(true)}</div>
     </div>
-    ${anda && html`<button type="button" class="portal-cinta-pausa" data-cinta-pausa aria-pressed="false" aria-label="Pausar la cinta de fechas">
+    ${anda && html`<button type="button" class="portal-cinta-pausa" data-cinta-pausa aria-pressed="false" aria-label="Pausar la cinta">
       <svg class="p" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
       <svg class="r" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg>
     </button>`}`;
@@ -568,7 +597,7 @@ function iniciarCalendario(calendarios) {
     const proximos = proximosEventos(new Map([...actual.porDia, ...siguiente.porDia]), hoy, 6);
     $('portal-proximo').innerHTML = htmlProximo(proximos[0], hoy);
     $('portal-cinta').innerHTML = htmlCinta(proximos);
-    $('cinta').hidden = !proximos.length;
+    $('cinta').setAttribute('aria-label', proximos.length ? 'Próximas fechas' : 'Sumate como sponsor');
     revelar($('portal-proximo'));
   }
 
@@ -604,26 +633,38 @@ function iniciarCalendario(calendarios) {
  * a uno. Los topes cubren de Primera a unos años más chicos que la U9, para
  * que quien busca a un nene de 4 vea que todavía no hay categoría.
  */
-function iniciarBuscador(temporada) {
+function iniciarBuscador(temporada, tarjetas) {
   const rango = { min: temporada - 30, max: temporada - 4 };
   let anio = temporada - 13;
   const buscador = $('portal-buscador');
   buscador.innerHTML = htmlBuscador(anio, rango);
-  // Se cambian el año, los topes y el resultado, no el selector entero: así el
-  // foco queda en el botón y el resultado (aria-live) se anuncia al cambiar.
-  const pintar = () => {
+  const botones = [...document.querySelectorAll('#portal-carrusel [data-anio-cat]')];
+  const pista = document.querySelector('#portal-carrusel .portal-carrusel-pista');
+  // Se cambian el año, los topes, el resultado y la tarjeta marcada, no el
+  // selector entero: así el foco queda en el botón y el resultado (aria-live)
+  // se anuncia al cambiar. La pista corre hasta la marcada; al cargar, sin
+  // animar, y con movimiento reducido, nunca.
+  const pintar = (animar) => {
     $('portal-anio').textContent = anio;
     buscador.querySelector('[data-anio="-1"]').disabled = anio <= rango.min;
     buscador.querySelector('[data-anio="1"]').disabled = anio >= rango.max;
     $('portal-cat-res').innerHTML = htmlCategoriaDelAnio(anio, categoriasDelAnio(PORTAL.categorias, temporada, anio));
+    botones.forEach((b, i) => b.setAttribute('aria-pressed', String(tarjetaDelAnio(tarjetas[i], anio))));
+    const marcada = botones.find((b) => b.getAttribute('aria-pressed') === 'true')?.parentElement;
+    if (!marcada || !pista) return;
+    const reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    pista.scrollTo({ left: marcada.offsetLeft - pista.offsetLeft - parseFloat(getComputedStyle(pista).scrollPaddingLeft || 0), behavior: animar && !reducido ? 'smooth' : 'auto' });
+  };
+  const elegir = (nuevo) => {
+    anio = Math.min(rango.max, Math.max(rango.min, nuevo));
+    pintar(true);
   };
   buscador.addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-anio]');
-    if (!b) return;
-    anio = Math.min(rango.max, Math.max(rango.min, anio + Number(b.dataset.anio)));
-    pintar();
+    if (b) elegir(anio + Number(b.dataset.anio));
   });
-  pintar();
+  botones.forEach((b) => b.addEventListener('click', () => elegir(Number(b.dataset.anioCat))));
+  pintar(false);
 }
 
 /* ---------- Ayuda: una hoja encima de la página ---------- */
@@ -693,13 +734,17 @@ function iniciarCopiar() {
 
 export async function iniciarPortal() {
   const categorias = categoriasDelPortal(PORTAL.categorias, PORTAL.temporada);
-  $('portal-categorias').innerHTML = htmlCategorias(categorias);
   $('categorias').hidden = !categorias.length;
-  $('portal-carrusel').innerHTML = htmlCarrusel(tarjetasDeCategorias(PORTAL.categorias, PORTAL.temporada));
+  const tarjetas = tarjetasDeCategorias(PORTAL.categorias, PORTAL.temporada);
+  $('portal-carrusel').innerHTML = htmlCarrusel(tarjetas);
   iniciarCarrusel();
   const temporada = temporadaComoAnio(PORTAL.temporada);
   if (temporada) $('t-categorias-temp').textContent = ` ${temporada}`;
-  if (temporada && categorias.length) iniciarBuscador(temporada);
+  if (temporada && categorias.length) iniciarBuscador(temporada, tarjetas);
+  // La cinta arranca con el "Sumá tu empresa": si hay fechas, mostrarProximo las suma.
+  $('portal-cinta').innerHTML = htmlCinta([]);
+  $('cinta').setAttribute('aria-label', 'Sumate como sponsor');
+  $('cinta').hidden = false;
   if (temporada) $('portal-heroe-ey').textContent = `Temporada ${temporada} · Formativas`;
   mostrar('sede', htmlSede(PORTAL.sede));
   iniciarMapa();
@@ -728,8 +773,8 @@ export async function iniciarPortal() {
   iniciarCopiar();
 
   $('portal-atajos').innerHTML = htmlAtajos([
-    !$('calendario').hidden && { clave: 'calendario', texto: 'Calendario', href: '#calendario' },
     !$('categorias').hidden && { clave: 'categorias', texto: 'Categorías', href: '#categorias' },
+    !$('calendario').hidden && { clave: 'calendario', texto: 'Calendario', href: '#calendario' },
     { clave: 'colaborar', texto: 'Sumate', href: '#colaborar' },
     { clave: 'ayuda', texto: 'Ayuda', href: '#ayuda' },
   ].filter(Boolean));

@@ -257,7 +257,7 @@ tiene estas opciones:
   empresa que quiere asociarse o alguien que quiere dar una mano en los eventos.
 - **Eventos de recaudación** (desde 0063): es otro formulario que el de
   colaborar, para quien quiere comprar y colaborar (pizzas, rifas, comidas) y
-  deja su mail. Es la tarjeta con foto de debajo del calendario.
+  deja su mail. Es la franja dorada de debajo del calendario.
 
 El WhatsApp del coordinador aparece **una sola vez**, al final de las preguntas
 frecuentes (el atajo "Ayuda" de abajo del hero y los "¿Dudas?" llevan ahí). Profes y jugadores entran a

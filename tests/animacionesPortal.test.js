@@ -99,25 +99,29 @@ test('la barra fija: aparece al pasar el hero POR ARRIBA, oculta es inert y no d
   assert.match(css, /\.portal-dock-btn\{[^}]*min-height:3rem/);
 });
 
-test('el carrusel: snap, duotono en CSS (grises + color del club multiplicado) y flechas sólo con mouse', () => {
+test('el carrusel: snap, duotono suave en CSS (grises + un poco del color del club), flechas sólo con mouse y la marcada con aro y "Su categoría"', () => {
   assert.match(css, /\.portal-carrusel-pista\{[^}]*overflow-x:auto;scroll-snap-type:x mandatory/);
   assert.match(css, /\.portal-card\{[^}]*scroll-snap-align:start/);
   assert.match(css, /\.portal-card img\{[^}]*filter:grayscale\(1\) contrast\(1\.25\)/);
-  assert.match(css, /\.portal-card::before\{[^}]*background:var\(--club\);mix-blend-mode:multiply/);
+  assert.match(css, /\.portal-card::before\{[^}]*background:var\(--club\);mix-blend-mode:multiply;opacity:\.35/);
   assert.match(css, /@media \(hover:hover\)\{\.portal-carrusel-flechas\{display:flex\}\}/);
+  assert.match(css, /\.portal-card button\[aria-pressed="true"\]\{box-shadow:inset 0 0 0 3px var\(--sobre-oscuro\)\}/);
+  assert.match(css, /\[aria-pressed="true"\] > \.portal-card-su\{display:flex\}/);
+  assert.match(css, /\.portal-card-su\{[^}]*display:none/);
 });
 
-test('recaudación y Sumate son tarjetas oscuras con foto (no bandas rojas); el rojo queda en los botones', () => {
+test('recaudación es una franja dorada a todo el ancho y sin foto; Sumate tampoco lleva foto de fondo (el rojo queda en el hero)', () => {
   const pagina = readFileSync('public/portal.html', 'utf8');
   for (const id of ['recaudacion', 'colaborar']) {
     const seccion = pagina.match(new RegExp(`<section [^>]*id="${id}"[\\s\\S]*?</section>`))[0];
-    assert.match(seccion, /<div class="portal-foto-card rise">\s*<img src="\/public\/img\/fotos\/[\w-]+-640\.webp"[^>]*alt=""[^>]*loading="lazy"/, id);
-    assert.match(seccion, /width="640" height="427"/, id);
+    assert.doesNotMatch(seccion, /<img /, id);
   }
-  assert.doesNotMatch(pagina, /class="portal-banda"/);
-  assert.doesNotMatch(css, /\.portal-banda\{/);
-  assert.match(css, /\.portal-foto-card > img\{[^}]*filter:grayscale\(1\)/);
-  assert.match(css, /\.portal-banda-btn\{[^}]*background:var\(--primario\)/);
+  // Fuera de la columna central, para ir de borde a borde.
+  const antes = pagina.slice(0, pagina.indexOf('id="recaudacion"'));
+  assert.ok(antes.lastIndexOf('</div>') > antes.lastIndexOf('<div class="portal-cuerpo">'), 'recaudación va fuera de .portal-cuerpo');
+  assert.doesNotMatch(pagina, /portal-foto-card|class="portal-banda"/);
+  assert.match(css, /\.portal-rec\{[^}]*background:var\(--pub-oro-fondo\)/);
+  assert.match(css, /\.portal-rec-btn\{[^}]*background:var\(--dorado\);color:var\(--pub-fondo\)/);
 });
 
 test('el borde rasgado aparece una sola vez (arriba del pie) y es decorativo', () => {
@@ -129,7 +133,7 @@ test('el borde rasgado aparece una sola vez (arriba del pie) y es decorativo', (
 
 test('las secciones entran al scrollear: .rise en las que tienen contenido propio, y el calendario ya tenía el suyo', () => {
   const pagina = readFileSync('public/portal.html', 'utf8');
-  for (const id of ['categorias', 'sede', 'formularios', 'club', 'sponsors']) {
+  for (const id of ['categorias', 'colaborar', 'sede', 'formularios', 'club', 'sponsors']) {
     assert.match(pagina, new RegExp(`<section class="[^"]*\\brise\\b[^"]*" id="${id}"`), id);
   }
   assert.match(pagina, /id="portal-calendario" class="rise"/);

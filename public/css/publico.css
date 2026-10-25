@@ -322,30 +322,38 @@
   font-size:var(--fs-135);letter-spacing:.06em;line-height:1.25;text-align:center;cursor:not-allowed;
 }
 
-/* Recaudación y Sumate: tarjetas oscuras con una foto en grises detrás y un velo
-   para que se lea el texto. Así el rojo queda en los botones y la página no
-   tiene bloques rojos enteros (uno solo por pantalla, el del hero). */
-.portal-foto-card{position:relative;isolation:isolate;overflow:hidden;padding:var(--sp-6) var(--sp-4);border-radius:var(--r);background:var(--pub-tarjeta)}
-.portal-foto-card > img{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover;filter:grayscale(1)}
-.portal-foto-card::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(to bottom,var(--velo-pub-medio) 0,var(--velo-pub-fuerte) 70%)}
-.portal-banda-escudo{position:absolute;top:var(--sp-4);right:var(--sp-4);width:2.75rem;height:2.75rem}
-#recaudacion h2{font-size:clamp(1.75rem,1.4rem + 2vw,2.75rem);line-height:.95;margin:0 0 var(--sp-2);max-width:calc(100% - 3.5rem)}
-.portal-banda-ej{font-family:var(--ff-titulo);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-145);color:var(--dorado)}
-#recaudacion p{font-size:var(--fs-145);line-height:1.45;margin:var(--sp-2) 0 var(--sp-4);max-width:22rem}
-.portal-banda-btn{
-  display:inline-flex;align-items:center;gap:var(--sp-2);min-height:3rem;padding:0 var(--sp-5);
-  background:var(--primario);color:var(--sobre-club);text-decoration:none;border:0;border-radius:var(--r-btn);
-  font-family:var(--ff-titulo);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:var(--fs-170);
+/* Recaudación: una franja a todo el ancho en negro tibio, con filete y
+   detalles dorados y un cuadrado girado de adorno (como en la propuesta de
+   v0). Sin foto y con el botón dorado: el rojo queda para el hero (un solo
+   bloque rojo por pantalla). */
+.portal-rec{position:relative;overflow:hidden;margin-top:var(--sp-8);background:var(--pub-oro-fondo);border-block:1px solid var(--dorado-borde);scroll-margin-top:var(--sp-4)}
+.portal-rec::before{content:"";position:absolute;top:-6rem;right:-6rem;width:18rem;height:18rem;border:1.75rem solid var(--dorado-suave);transform:rotate(45deg)}
+.portal-rec-cuerpo{position:relative;max-width:64rem;margin-inline:auto;padding:var(--sp-8) var(--sp-4);display:grid;gap:var(--sp-6)}
+.portal-rec .portal-st{color:var(--dorado)}
+.portal-rec h2{font-size:clamp(2.25rem,1.5rem + 3.2vw,3.75rem);line-height:.92;margin:0 0 var(--sp-3);text-wrap:balance}
+.portal-rec p{margin:0;color:var(--gris-osc);font-size:var(--fs-170);line-height:1.5;max-width:30rem}
+.portal-rec-ej{list-style:none;margin:var(--sp-5) 0 0;padding:0;display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.portal-rec-ej li{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-3);border-radius:var(--r-full);background:var(--dorado-suave);font-size:var(--fs-160);font-weight:600}
+.portal-rec-ej i{display:grid;color:var(--dorado)}
+.portal-rec-ej svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.portal-rec-btn{
+  display:flex;align-items:center;justify-content:center;gap:var(--sp-2);width:100%;min-height:3.5rem;padding:0 var(--sp-5);
+  background:var(--dorado);color:var(--pub-fondo);text-decoration:none;border:0;border-radius:var(--r-btn);
+  font-family:var(--ff-titulo);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:var(--fs-230);
   transition:transform var(--dur-1) var(--ease-salida);
 }
-.portal-banda-btn:active{transform:scale(.97)}
-.portal-banda-btn:disabled{background:transparent;color:var(--sobre-oscuro);border:1px dashed currentColor;font-size:var(--fs-135);cursor:not-allowed;transform:none}
+.portal-rec-btn:active{transform:scale(.97)}
+.portal-rec-btn:disabled{background:transparent;color:var(--sobre-oscuro);border:1px dashed var(--dorado);font-size:var(--fs-145);letter-spacing:.04em;cursor:not-allowed;transform:none}
 
-/* "Sumate al básquet de Newell's": las dos formas de colaborar y un botón. */
+/* "Sumate al básquet de Newell's": las dos formas de colaborar y un botón y,
+   al lado (abajo en el celular), el afiche de sponsors del club. Sin fotos de
+   fondo: el afiche ya es la imagen de la sección. */
 .portal-colaborar .portal-st{color:var(--dorado)}
 .portal-colaborar h2{font-size:clamp(2rem,1.6rem + 2vw,2.75rem);line-height:.95;margin-bottom:var(--sp-4)}
+.portal-colaborar-cuerpo{display:grid;gap:var(--sp-6)}
+.portal-afiche{display:block;justify-self:center;width:min(100%,18rem);height:auto;border:1px solid var(--pub-borde);border-radius:var(--r)}
 .portal-formas{list-style:none;margin:0 0 var(--sp-4);padding:0;display:grid;gap:var(--sp-3)}
-.portal-formas li{display:grid;grid-template-columns:2.75rem 1fr;gap:var(--sp-3);align-items:start;padding:var(--sp-4);background:var(--velo-pub-fuerte);border:1px solid var(--pub-borde);border-radius:var(--r);color:var(--sobre-oscuro);font-size:var(--fs-145);line-height:1.45}
+.portal-formas li{display:grid;grid-template-columns:2.75rem 1fr;gap:var(--sp-3);align-items:start;padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);color:var(--sobre-oscuro);font-size:var(--fs-145);line-height:1.45}
 .portal-formas i{display:grid;place-items:center;width:2.75rem;height:2.75rem;border-radius:50%;background:var(--pub-fondo);color:var(--primario)}
 .portal-formas svg{width:1.375rem;height:1.375rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .portal-formas b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:var(--fs-200);line-height:1.1;color:var(--sobre-oscuro);margin-bottom:var(--sp-1)}
@@ -431,7 +439,8 @@
 
 .portal-sec{padding:var(--sp-8) var(--sp-4) 0;scroll-margin-top:var(--sp-4)}
 .portal-st{font-family:var(--ff-titulo);font-weight:600;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-115);color:var(--club-texto);margin-bottom:var(--sp-1)}
-.portal-sec h2{font-size:var(--fs-260);line-height:1.05;letter-spacing:.02em;margin-bottom:var(--sp-2)}
+/* Títulos de sección grandes y apretados, como en la propuesta de v0. */
+.portal-sec h2{font-size:clamp(2.25rem,1.5rem + 3.2vw,3.75rem);line-height:.92;letter-spacing:.01em;margin-bottom:var(--sp-3);text-wrap:balance}
 .portal-sec .intro{color:var(--gris-osc);font-size:var(--fs-145);line-height:1.5;margin-bottom:var(--sp-4)}
 .portal-sec .portal-nota{color:var(--gris-osc);font-size:var(--fs-135);line-height:1.55;margin-top:var(--sp-4)}
 .portal-sec .portal-nota b{color:var(--sobre-oscuro);font-weight:600}
@@ -518,6 +527,9 @@ html:not(.js-anim) .portal-cinta-fila[aria-hidden]{display:none}
 .portal-cinta-fila .tipo-evento > i,.portal-cinta-fila .tipo-evento b{color:var(--agenda-evento)}
 .portal-cinta-fila .tipo-charla > i,.portal-cinta-fila .tipo-charla b{color:var(--agenda-charla)}
 .portal-cinta-fila .tipo-entrenamiento > i,.portal-cinta-fila .tipo-entrenamiento b{color:var(--agenda-entrenamiento)}
+/* "Sumá tu empresa como sponsor": como el "Hacete socio" de la web del club, lleva a Sumate. */
+.portal-cinta-fila .cinta-sumate a{display:flex;align-items:center;gap:var(--sp-3);min-height:var(--tap);color:var(--sobre-oscuro);text-decoration:none}
+.portal-cinta-fila .cinta-sumate a > i{display:grid;color:var(--club-texto)}
 .js-anim .portal-cinta-pista.anda{transform:translateX(-50%);animation:marcha var(--dur-cinta) linear infinite}
 @keyframes marcha{from{transform:translateX(0)}}
 .portal-cinta.pausada .portal-cinta-pista{animation-play-state:paused}
@@ -605,37 +617,51 @@ html:not(.js-anim) .portal-cinta-pausa{display:none}
 .portal-seguir .btn{text-decoration:none;font-size:var(--fs-135);padding:var(--sp-2);letter-spacing:.08em}
 
 /* ---- categorías y sede ---- */
-/* "¿En qué categoría juega?": compacto. En el celular, el año arriba y la
-   categoría abajo; en compu, lado a lado y ocupando todo el ancho (layout.css). */
-.portal-sec.portal-cat{margin-top:var(--sp-8);padding-top:var(--sp-6);padding-bottom:var(--sp-5);background:var(--pub-tarjeta);border-top:3px solid var(--primario)}
-.portal-buscador{display:grid;gap:var(--sp-3);margin-top:var(--sp-2)}
-.portal-anio-et{display:block;font-size:var(--fs-115);color:var(--gris-osc);margin-bottom:var(--sp-1)}
-.portal-anio{display:grid;grid-template-columns:3.25rem 1fr 3.25rem;align-items:center;background:var(--pub-fondo);border:1px solid var(--pub-borde);border-radius:var(--r)}
+/* "¿En qué categoría juega?" (como en la propuesta de v0): la sección no es
+   una caja; adentro, una caja con el año y otra con la categoría. En el
+   celular, una arriba de la otra; en compu, lado a lado (layout.css). */
+.portal-buscador{display:grid;gap:var(--sp-3)}
+.portal-anio-caja,.portal-cat-resultado{padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r)}
+.portal-anio-et{display:block;font-size:var(--fs-160);font-weight:600;color:var(--gris-osc);margin-bottom:var(--sp-2)}
+.portal-anio{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3)}
 .portal-anio button{
-  min-height:3.25rem;font:inherit;font-size:var(--fs-260);line-height:1;color:var(--sobre-oscuro);background:none;border:0;cursor:pointer;
+  flex:none;width:4rem;height:4rem;display:grid;place-items:center;font:inherit;font-size:var(--fs-300);line-height:1;
+  color:var(--sobre-oscuro);background:var(--pub-fondo);border:1px solid var(--pub-borde);border-radius:50%;cursor:pointer;
   transition:transform var(--dur-1) var(--ease-salida);
 }
-.portal-anio button:active{transform:scale(.9)}
+.portal-anio button:active{transform:scale(.92)}
 .portal-anio button:disabled{color:var(--gris-osc);cursor:default;transform:none}
-.portal-anio output{text-align:center;font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-260)}
-.portal-cat-resultado{display:grid;gap:var(--sp-2);align-content:start}
-.portal-cat-res{padding:var(--sp-3) var(--sp-4);border-radius:var(--r);background:var(--primario);color:var(--sobre-club)}
-.portal-cat-nombre{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 var(--sp-2)}
-.portal-cat-nombre b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-300);line-height:1}
-.portal-cat-nombre span{font-family:var(--ff-titulo);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:var(--fs-125)}
-.portal-cat-nombre small{margin-left:auto;font-size:var(--fs-125)}
-.portal-cat-hora{list-style:none;margin:var(--sp-2) 0 0;padding:0;display:grid;gap:.125rem;font-size:var(--fs-135);font-weight:600}
-.portal-cat-sin{margin:var(--sp-2) 0 0;font-size:var(--fs-135)}
-.portal-cat-nada{margin:0;color:var(--gris-osc);font-size:var(--fs-145);line-height:1.45}
+.portal-anio output{font-family:var(--ff-titulo);font-weight:700;font-size:clamp(3.5rem,2.75rem + 3vw,4.5rem);line-height:1;font-variant-numeric:tabular-nums}
+.portal-cat-resultado{display:grid;gap:var(--sp-4);align-content:start}
+.portal-cat-res + .portal-cat-res{padding-top:var(--sp-4);border-top:1px solid var(--pub-borde)}
+.portal-cat-nombre{display:flex;align-items:flex-end;gap:var(--sp-3);margin-bottom:var(--sp-3)}
+/* El nombre en el rojo del club: es texto grande (≥ 24 px), ahí alcanza --primario. */
+.portal-cat-nombre b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:clamp(3.5rem,2.75rem + 3vw,4.5rem);line-height:.8;color:var(--primario)}
+.portal-cat-nombre span{display:grid;gap:var(--sp-1)}
+.portal-cat-nombre em{font-style:normal;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-230);line-height:1}
+.portal-cat-nombre small{font-size:var(--fs-160);color:var(--gris-osc)}
+.portal-cat-hora{list-style:none;margin:0;padding:0;border-top:1px solid var(--pub-borde)}
+.portal-cat-hora li{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-5);padding:var(--sp-3) 0}
+.portal-cat-hora li + li{border-top:1px solid var(--pub-borde)}
+.portal-cat-hora span{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-170);font-weight:600}
+.portal-cat-hora .lugar{font-size:var(--fs-160);font-weight:400;color:var(--gris-osc)}
+.portal-cat-hora i{display:grid;color:var(--gris-osc)}
+.portal-cat-hora svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.portal-cat-sin{margin:0;color:var(--gris-osc);font-size:var(--fs-160)}
+.portal-cat-nada{margin:0;color:var(--gris-osc);font-size:var(--fs-160);line-height:1.5}
 .portal-cat-nada a{color:var(--sobre-oscuro);font-weight:600}
-/* El carrusel de categorías: tarjetas con foto en duotono (grises + el color
-   del club, multiplicado) y un degradé abajo para el texto. Se desliza con
-   snap; en pantallas con mouse suma dos flechas. La pista sangra hasta el borde
-   en el celular, así se ve que hay más a la derecha. Sin foto, un fondo del
-   club y una pelota. */
-.portal-carrusel{margin-top:var(--sp-5);min-width:0}
+/* La fila de categorías: tarjetas con foto en duotono suave (grises + un poco
+   del color del club, multiplicado, como el tono "subtle" de v0) y un degradé
+   abajo para el texto. Cada una es un botón; la del año elegido lleva un aro y
+   "Su categoría". Se desliza con snap; con mouse suma dos flechas. La pista
+   sangra hasta el borde en el celular, así se ve que hay más a la derecha. Sin
+   foto, un fondo del club y una pelota. */
+.portal-carrusel{margin-top:var(--sp-6);min-width:0}
 .portal-carrusel:empty{display:none}
-.portal-carrusel-cab{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-2);font-family:var(--ff-titulo);font-weight:600;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-125);color:var(--gris-osc)}
+.portal-carrusel-cab{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-2)}
+.portal-carrusel-cab h3{margin:0;font-family:var(--ff-titulo);font-weight:600;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-125);color:var(--gris-osc)}
+.portal-carrusel-guia{margin:var(--sp-1) 0 0;font-size:var(--fs-135);color:var(--gris-osc)}
+@media (hover:hover){.portal-carrusel-guia{display:none}}
 .portal-carrusel-flechas{display:none;gap:var(--sp-2)}
 .portal-carrusel-flechas button{width:var(--tap);height:var(--tap);display:grid;place-items:center;font-size:var(--fs-200);color:var(--sobre-oscuro);background:transparent;border:1px solid var(--pub-borde);border-radius:var(--r-s)}
 .portal-carrusel-flechas button:active{transform:scale(.94)}
@@ -644,23 +670,27 @@ html:not(.js-anim) .portal-cinta-pausa{display:none}
   display:flex;gap:var(--sp-3);list-style:none;margin:0 calc(var(--sp-4) * -1);padding:0 var(--sp-4) var(--sp-2);
   overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:var(--sp-4);overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:var(--pub-borde) transparent;
 }
-.portal-card{position:relative;isolation:isolate;flex:0 0 min(15rem,70vw);aspect-ratio:4 / 5;scroll-snap-align:start;overflow:hidden;border-radius:var(--r);background:var(--pub-tarjeta)}
-.portal-card img{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.25)}
-.portal-card::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--club);mix-blend-mode:multiply;opacity:.8}
-.portal-card::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(to top,var(--velo-pub-fuerte) 0,var(--velo-pub-cero) 62%)}
+.portal-card{position:relative;isolation:isolate;flex:0 0 min(15rem,72vw);aspect-ratio:3 / 4;scroll-snap-align:start;overflow:hidden;border-radius:var(--r);background:var(--pub-tarjeta)}
+.portal-card button{position:absolute;inset:0;display:block;width:100%;padding:0;font:inherit;color:inherit;text-align:left;background:transparent;border:0;border-radius:inherit;cursor:pointer}
+.portal-card button[aria-pressed="true"]{box-shadow:inset 0 0 0 3px var(--sobre-oscuro)}
+.portal-card img{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.25);transition:transform var(--dur-3) var(--ease-salida)}
+@media (hover:hover){.portal-card button:hover img{transform:scale(1.05)}}
+.portal-card::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--club);mix-blend-mode:multiply;opacity:.35}
+.portal-card::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(to top,var(--velo-pub-fuerte) 0,var(--velo-pub-medio) 35%,var(--velo-pub-cero) 70%)}
 .portal-card.sin-foto{background:linear-gradient(160deg,var(--primario-osc),var(--pub-fondo))}
 .portal-card.sin-foto::before{display:none}
-.portal-card i{position:absolute;top:var(--sp-4);right:var(--sp-4);opacity:.35}
-.portal-card i svg{width:4rem;height:4rem;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-.portal-card-txt{position:absolute;inset:auto 0 0;padding:var(--sp-4)}
-.portal-card-txt b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:3.5rem;line-height:.9;letter-spacing:.01em}
+.portal-card button > i{position:absolute;top:var(--sp-4);right:var(--sp-4);opacity:.35}
+.portal-card button > i svg{width:4rem;height:4rem;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.portal-card-su{position:absolute;top:var(--sp-3);left:var(--sp-3);display:none;align-items:center;gap:var(--sp-1);padding:var(--sp-1) var(--sp-3);border-radius:var(--r-full);background:var(--sobre-oscuro);color:var(--pub-fondo);font-size:var(--fs-135);font-weight:600}
+[aria-pressed="true"] > .portal-card-su{display:flex}
+.portal-card-su i{display:grid}
+.portal-card-su svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.portal-card-txt{position:absolute;inset:auto 0 0;display:block;padding:var(--sp-4)}
+/* El nombre se achica con el ancho de la tarjeta: "Primera" en cinco columnas no entra a 3.5rem. */
+.portal-card{container-type:inline-size}
+.portal-card-txt b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:min(3.5rem,24cqi);line-height:.9;letter-spacing:.01em}
 .portal-card-txt span{display:block;margin-top:var(--sp-1);font-family:var(--ff-titulo);font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-145)}
 .portal-card-txt small{display:block;margin-top:var(--sp-1);font-size:var(--fs-135);color:var(--sobre-oscuro)}
-.portal-todas{margin-top:var(--sp-4);border-top:1px solid var(--pub-borde);padding-top:var(--sp-1)}
-.portal-todas summary{display:flex;align-items:center;min-height:var(--tap);font-weight:600;font-size:var(--fs-145);cursor:pointer}
-.portal-todas[open] summary{margin-bottom:var(--sp-2)}
-/* Dentro de la banda, la lista va sobre el fondo, para que se despegue. */
-.portal-cat .portal-cats{background:var(--pub-fondo)}
 
 /* "Dónde se entrena": los lugares, "Cómo llegar" y el mapa 16:9. En el
    celular, el texto arriba y el mapa abajo; en compu, lado a lado (layout.css).
@@ -689,15 +719,6 @@ html:not(.js-anim) .portal-cinta-pausa{display:none}
 .portal-mapa-ver svg{width:1.5rem;height:1.5rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .portal-mapa-ver b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:var(--fs-200)}
 .portal-mapa-ver small{font-size:var(--fs-125);color:var(--sobre-oscuro)}
-.portal-cats{list-style:none;margin:0;padding:0;background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r)}
-.portal-cats li{display:grid;grid-template-columns:1fr auto;gap:0 var(--sp-3);align-items:baseline;padding:var(--sp-3) var(--sp-4)}
-.portal-cats li + li{border-top:1px solid var(--pub-borde)}
-.portal-cats b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-190);letter-spacing:.03em}
-.portal-cats li > div:first-child span{margin-left:var(--sp-2);font-size:var(--fs-115);color:var(--gris-osc);text-transform:uppercase;letter-spacing:.08em}
-.portal-cats-anios{font-family:var(--ff-mono);font-size:var(--fs-135);color:var(--sobre-oscuro);text-align:right}
-.portal-cats-hora{grid-column:1 / -1;font-size:var(--fs-125);color:var(--gris-osc);margin-top:var(--sp-1)}
-/* Un día por renglón ("Mar 18 a 19 h (Estadio Cubierto)"): partido a la mitad no se lee. */
-.portal-cats-hora span{display:block}
 
 .portal-foto{margin:0;border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden;background:var(--pub-tarjeta)}
 .portal-foto img{display:block;width:100%;height:auto;aspect-ratio:3 / 2;object-fit:cover}

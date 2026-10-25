@@ -23,7 +23,7 @@ export const DESTINOS = Object.freeze([
   Object.freeze({ clave: 'inscripcion', rotulo: 'Inscripción (botón de arriba: Inscribirme)', chip: 'Inscripción' }),
   Object.freeze({ clave: 'comprobante', rotulo: 'Comprobante de pago (dentro de la hoja de Pagar)', chip: 'Comprobante' }),
   // 0063: el aviso por mail de pizzas, rifas y comidas, debajo del calendario. Es otro formulario que el de sponsors.
-  Object.freeze({ clave: 'recaudacion', rotulo: 'Eventos de recaudación (tarjeta con foto debajo del calendario)', chip: 'Recaudación' }),
+  Object.freeze({ clave: 'recaudacion', rotulo: 'Eventos de recaudación (franja dorada debajo del calendario)', chip: 'Recaudación' }),
 ]);
 
 export const MENSAJE_ENLACE_FORMULARIO = 'El enlace tiene que ser de Google Forms (empieza con https://docs.google.com/forms o https://forms.gle).';

@@ -111,14 +111,26 @@
       </div>
     </section>
 
-    <!-- La cinta de las próximas fechas (src/ui/portal.js, htmlCinta): sale de los
-         mismos eventos del calendario. Sin ninguno por delante, oculta. -->
+    <!-- La cinta (src/ui/portal.js, htmlCinta): las próximas fechas, que salen de
+         los mismos eventos del calendario, y "Sumá tu empresa como sponsor". Sin
+         fechas, sólo eso. Sin JS, oculta. -->
     <section class="portal-cinta" id="cinta" aria-label="Próximas fechas" hidden>
       <div id="portal-cinta"></div>
     </section>
 
     <div class="portal-cuerpo">
     <nav class="portal-atajos" id="portal-atajos" aria-label="Atajos"></nav>
+
+    <!-- Como en la propuesta de v0: elegís el año de nacimiento y al lado te dice
+         la categoría y el horario; abajo, una tarjeta con foto por categoría,
+         que al tocarla salta a su año. -->
+    <section class="portal-sec portal-cat rise" id="categorias" aria-labelledby="t-categorias" hidden>
+      <div class="portal-st">Categorías<span id="t-categorias-temp"></span></div>
+      <h2 id="t-categorias">¿En qué categoría juega?</h2>
+      <p class="intro">Tocá los botones hasta llegar al año en que nació.</p>
+      <div class="portal-buscador" id="portal-buscador"></div>
+      <div class="portal-carrusel" id="portal-carrusel"></div>
+    </section>
 
     <section class="portal-sec" id="calendario" aria-labelledby="t-calendario" hidden>
       <div class="portal-st">Agenda del club</div>
@@ -128,32 +140,22 @@
       <div id="portal-calendario" class="rise"></div>
     </section>
 
-    <!-- Tarjeta oscura con foto: aviso de los eventos de recaudación (destino recaudacion, 0063). Las fotos de las tarjetas son decorativas (alt vacío): el título y el botón dicen todo. -->
-    <section class="portal-sec" id="recaudacion" aria-labelledby="t-recaudacion">
-      <div class="portal-foto-card rise">
-        <img src="/public/img/fotos/primera-lanzamiento-640.webp" srcset="/public/img/fotos/primera-lanzamiento-640.webp 640w, /public/img/fotos/primera-lanzamiento.webp 1080w" sizes="(min-width: 64rem) 60rem, 100vw" width="640" height="427" alt="" loading="lazy" style="object-position:40% 30%">
-        <div id="portal-recaudacion"><h2 id="t-recaudacion">Enterate de los eventos de recaudación del club</h2></div>
-      </div>
+    </div>
+
+    <!-- Franja dorada sin foto, a todo el ancho (como en v0): aviso de los
+         eventos de recaudación (destino recaudacion, 0063). -->
+    <section class="portal-rec rise" id="recaudacion" aria-labelledby="t-recaudacion">
+      <div class="portal-rec-cuerpo" id="portal-recaudacion"><h2 id="t-recaudacion">Enterate de los eventos de recaudación</h2></div>
     </section>
 
-    <!-- Para una empresa que quiere asociarse o alguien que quiere dar una mano (destino colaboradores, 0061). -->
-    <section class="portal-sec portal-colaborar" id="colaborar" aria-labelledby="t-colaborar">
-      <div class="portal-foto-card rise">
-        <img src="/public/img/fotos/primera-penetracion-640.webp" srcset="/public/img/fotos/primera-penetracion-640.webp 640w, /public/img/fotos/primera-penetracion.webp 1080w" sizes="(min-width: 64rem) 60rem, 100vw" width="640" height="427" alt="" loading="lazy" style="object-position:35% 40%">
-        <div class="portal-st">Colaborá con el club</div>
-        <h2 id="t-colaborar">Sumate al básquet de Newell&#39;s</h2>
-        <div id="portal-colaborar"></div>
-      </div>
-    </section>
+    <div class="portal-cuerpo">
 
-    <!-- Elegís el año de nacimiento y al lado te dice la categoría y el
-         horario. La lista completa queda plegada abajo. -->
-    <section class="portal-sec portal-cat rise" id="categorias" aria-labelledby="t-categorias" hidden>
-      <div class="portal-st">Categorías<span id="t-categorias-temp"></span></div>
-      <h2 id="t-categorias">¿En qué categoría juega?</h2>
-      <div class="portal-buscador" id="portal-buscador"></div>
-      <div class="portal-carrusel rise" id="portal-carrusel"></div>
-      <details class="portal-todas"><summary>Ver todas las categorías</summary><div id="portal-categorias"></div></details>
+    <!-- Para una empresa que quiere asociarse o alguien que quiere dar una mano
+         (destino colaboradores, 0061). Al lado, el afiche de sponsors del club. -->
+    <section class="portal-sec portal-colaborar rise" id="colaborar" aria-labelledby="t-colaborar">
+      <div class="portal-st">Colaborá con el club</div>
+      <h2 id="t-colaborar">Sumate al básquet de Newell&#39;s</h2>
+      <div class="portal-colaborar-cuerpo" id="portal-colaborar"></div>
     </section>
 
     <!-- Al lado de los horarios: los lugares, "Cómo llegar" y el mapa de Google,

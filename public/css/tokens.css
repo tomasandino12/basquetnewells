@@ -69,6 +69,11 @@
   /* Dorado del portal (hoy, el tipo "evento" del calendario): sobre él va
      --pub-fondo, no blanco. */
   --dorado:#F2B33D;
+  /* La franja de recaudación: un negro tibio, con el dorado de filete y en los
+     detalles. Ahí el botón es dorado, no rojo (un solo bloque rojo por pantalla). */
+  --pub-oro-fondo:#15130F;
+  --dorado-borde:rgba(242,179,61,.25);
+  --dorado-suave:rgba(242,179,61,.1);
   /* Velos del hero del portal: el color de --pub-fondo con distinta opacidad.
      Cada uno lleva su propio cero (no "transparent") para que el degradé no
      pase por un gris. */

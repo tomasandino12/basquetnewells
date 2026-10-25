@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import {
   PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal, categoriasDelAnio,
-  sedeValida, aliasValido, fotoValida, fotoDeCategoriaValida, tarjetasDeCategorias,
+  sedeValida, aliasValido, fotoValida, fotoDeCategoriaValida, tarjetasDeCategorias, tarjetaDelAnio, turnosDeHorario, FOTOS,
 } from '../src/data/portal.js';
 import { TIPOS_AGENDA, idCalendario } from '../src/data/agenda.js';
 
@@ -209,13 +209,35 @@ test('tarjetasDeCategorias: las mismas categorías, cada una con su foto o sin e
   assert.equal(tarjetasDeCategorias(null, 2027).length, 0);
 });
 
-test('todas las categorías del club tienen tarjeta; las fotos existen en disco con su -640; la Primera femenina va sin foto de varones', async () => {
+test('tarjetasDeCategorias: los topes de años y el año al que salta el buscador (el más viejo; la Primera, el más nuevo)', () => {
+  const [u13, primera] = tarjetasDeCategorias([{ grupo: 'U13' }, { grupo: 'MAYORES', nombre: 'Primera' }], 2027);
+  assert.deepEqual([u13.desde, u13.hasta, u13.anio], [2014, 2015, 2014]);
+  assert.equal(primera.desde, null);
+  assert.equal(primera.anio, primera.hasta);
+  assert.ok(tarjetaDelAnio(u13, 2014) && tarjetaDelAnio(u13, 2015));
+  assert.ok(!tarjetaDelAnio(u13, 2013) && !tarjetaDelAnio(u13, 2016) && !tarjetaDelAnio(u13, '2014'));
+  assert.ok(tarjetaDelAnio(primera, 1980) && !tarjetaDelAnio(primera, primera.hasta + 1));
+});
+
+test('turnosDeHorario: un turno por " · ", con su lugar entre paréntesis o sin él', () => {
+  assert.deepEqual(turnosDeHorario('Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)'), [
+    { cuando: 'Lun y Vie 18 a 19 h', lugar: 'Estadio Cubierto' },
+    { cuando: 'Mié 18 a 19 h', lugar: 'Microestadio' },
+  ]);
+  assert.deepEqual(turnosDeHorario('Sáb 10 h'), [{ cuando: 'Sáb 10 h', lugar: null }]);
+  assert.deepEqual(turnosDeHorario(null), []);
+  assert.deepEqual(turnosDeHorario('  '), []);
+});
+
+test('todas las categorías del club tienen tarjeta con foto; las fotos existen en disco con su -640 y ningún archivo se repite', async () => {
   const { existsSync } = await import('node:fs');
   const t = tarjetasDeCategorias(PORTAL.categorias, PORTAL.temporada);
   assert.equal(t.length, PORTAL.categorias.length);
-  for (const { foto } of t.filter((c) => c.foto)) {
+  for (const { foto } of t) {
+    assert.ok(foto, 'cada categoría con su foto');
     assert.ok(existsSync(foto.src.slice(1)) && existsSync(foto.src640.slice(1)), foto.src);
   }
-  const femenina = t.find((c) => c.nombre === 'Primera' && c.rama === 'Femenino');
-  assert.equal(femenina.foto, null);
+  // Una foto repetida con otro recorte se nota: cada archivo, una vez (contando la del hero y la de la sede).
+  const archivos = [...t.map((c) => c.foto.src), fotoDeCategoriaValida(FOTOS.sede).src, '/public/img/fotos/formativas-bandeja.webp'];
+  assert.equal(new Set(archivos).size, archivos.length);
 });
