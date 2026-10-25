@@ -65,13 +65,16 @@
   --pub-fondo:#0D0D10;
   --pub-tarjeta:#17171C;
   --pub-borde:#2B2B34;
+  /* Dorado de los sellos del portal (el sticker "De U9 a U21"): sobre él va
+     --pub-fondo, no blanco. Es el mismo del tipo "evento" del calendario. */
+  --dorado:#F2B33D;
 
   /* ---- calendario del portal: un color por tipo de evento (un calendario de
      Google por tipo). Sólo pintan puntitos, filetes y cuadraditos de la
      leyenda: el texto del evento va en --sobre-oscuro / --gris-osc, porque
      el rojo del club no llega a 4.5:1 sobre --pub-tarjeta. */
   --agenda-partido:var(--club);
-  --agenda-evento:#F2B33D;
+  --agenda-evento:var(--dorado);
   --agenda-charla:#5AB4F0;
   --agenda-entrenamiento:var(--sube-osc);
 
@@ -164,6 +167,10 @@
   --dur-3:280ms;          /* hoja y barras */
   --dur-demo:1400ms;       /* demos de la landing: una vez al entrar en pantalla */
   --dur-giro:25s;         /* una vuelta del anillo del escudo (landing) */
+  --dur-rise:700ms;       /* portal: texto y botones que suben al entrar */
+  --dur-linea:900ms;      /* portal: cada línea del título sube de su máscara */
+  --paso-entrada:90ms;    /* portal: escalón entre elementos del hero */
+  --retardo-entrada:150ms;/* portal: espera antes del primer elemento */
   --ease-salida:cubic-bezier(.16,1,.3,1);   /* frena al llegar: entra */
   --ease-entrada:cubic-bezier(.3,0,.8,.15); /* acelera al irse: sale */
 

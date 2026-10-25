@@ -691,3 +691,14 @@ a.portal-accion:active{transform:scale(.98)}
   .enlaces button:hover b{color:var(--sobre-oscuro)}
   .quien-op:hover{background:var(--toque-osc)}
 }
+
+/* ---- Portal: entrada al scroll ----
+   Lo que lleva .rise arranca oculto y 1.5rem más abajo SÓLO si public/js/anim.js
+   prendió .js-anim (sin JS, o con movimiento reducido, no se prende y todo se
+   ve). src/ui/animaciones.js le pone .visto al aparecer, una sola vez. La
+   transición es de opacity y transform, como pide DESIGN.md. */
+.js-anim .rise{opacity:0;transform:translateY(1.5rem);transition:opacity var(--dur-rise) var(--ease-salida),transform var(--dur-rise) var(--ease-salida)}
+.js-anim .rise.visto{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .js-anim .rise{opacity:1;transform:none}
+}

@@ -25,3 +25,5 @@ package-lock.json
 .claude/
 graphify-out/
 .graphifyignore
+
+*.zip
