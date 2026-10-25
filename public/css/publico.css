@@ -200,30 +200,34 @@
    roja y negra de arriba (la camiseta); profes y jugadores tienen Semillero
    en el encabezado; el coordinador aparece una vez, al final de las preguntas
    frecuentes. Se alternan bandas a todo el ancho y tarjetas para que no se
-   lea como un formulario. Sin animaciones de entrada: un texto de acá arriba
-   puede ser el LCP. Una columna en el celular; lo de compu vive en
+   lea como un formulario. El LCP es la foto del hero (fetchpriority alto), no su
+   texto: por eso el hero sí anima su entrada. Una columna en el celular; lo de compu vive en
    layout.css. Cada sección sin datos queda con [hidden] (lo pone src/ui/portal.js). */
 .portal-d::before{height:22rem;background:radial-gradient(ellipse 90% 90% at 85% 0,var(--club),transparent);opacity:.38}
-.portal{max-width:64rem;margin-inline:auto;width:100%;padding-bottom:var(--sp-4)}
+.portal{width:100%;padding-bottom:var(--sp-4)}
+/* El hero va a todo el ancho; lo demás, en una columna centrada. */
+.portal-cuerpo{max-width:64rem;margin-inline:auto}
 .portal [hidden]{display:none}
 
-/* Encabezado: marca a la izquierda; Ayuda y "Soy profe o jugador" a la derecha. */
-.portal-barra{position:relative;z-index:3;display:flex;align-items:center;gap:var(--sp-2);max-width:64rem;margin-inline:auto;width:100%;padding:var(--sp-3) var(--sp-4)}
+/* Encabezado: flota sobre la foto del hero. Marca a la izquierda y, a la
+   derecha, un link de texto discreto para profes y jugadores. La ayuda ya no
+   está acá: se abre desde los atajos, el pie y los "¿Dudas?". */
+.portal-barra{position:absolute;inset:0 0 auto;z-index:5;display:flex;align-items:center;gap:var(--sp-2);max-width:64rem;margin-inline:auto;width:100%;padding:var(--sp-3) var(--sp-4)}
 .portal-barra img{width:2.25rem;height:2.25rem;flex:0 0 auto}
 .portal-marca{min-width:0}
-.portal-barra .t{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:var(--fs-170);line-height:1}
+.portal-barra .t{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:var(--fs-190);line-height:1}
 .portal-barra .t span{color:var(--primario)}
-/* El subtítulo no entra junto a los dos botones en el celular: aparece desde 40rem (layout.css). */
+/* El subtítulo no entra junto al link en el celular: aparece desde 40rem (layout.css). */
 .portal-barra .s{display:none;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc);margin-top:.125rem}
 .portal-barra-acc{margin-left:auto;display:flex;align-items:center;gap:var(--sp-1)}
 .portal-barra-btn{
   display:inline-flex;align-items:center;justify-content:center;min-height:var(--tap);padding:0 var(--sp-3);
-  font-size:var(--fs-125);font-weight:600;line-height:1.1;text-align:center;color:var(--sobre-oscuro);text-decoration:none;
-  background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r-full);cursor:pointer;white-space:nowrap;
+  font-size:var(--fs-135);font-weight:600;line-height:1.1;text-align:center;color:var(--sobre-oscuro);text-decoration:none;
+  cursor:pointer;
 }
-.portal-sem-btn{list-style:none;white-space:normal;background:var(--primario);border-color:var(--primario);color:var(--sobre-club);max-width:7.5rem}
+.portal-sem-btn{list-style:none;white-space:nowrap;text-decoration:underline;text-decoration-color:var(--gris-osc);text-underline-offset:.3em;padding:0 var(--sp-2)}
 .portal-sem-btn::-webkit-details-marker{display:none}
-.portal-sem[open] .portal-sem-btn{background:var(--primario-osc)}
+.portal-sem[open] .portal-sem-btn{text-decoration-color:var(--primario)}
 .portal-sem-panel{
   position:absolute;right:var(--sp-4);top:calc(100% - var(--sp-1));width:min(22rem,calc(100vw - 2rem));
   padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);
@@ -235,46 +239,97 @@
 .portal-sem-inst small{display:block;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc)}
 .portal-sem-inst p{margin:var(--sp-2) 0 0;color:var(--sobre-oscuro)}
 
-/* El hero: la banda roja y negra en diagonal (la camiseta) con el título de
-   la página, el escudo de marca de agua y, adentro, las dos tarjetas
-   protagonistas. En el celular entran las dos en la primera pantalla; en
-   compu van lado a lado (layout.css). */
+/* El hero: foto a pantalla completa, velos para que se lea el texto, corte
+   diagonal abajo, título gigante y los dos botones. El título se achica con
+   el ancho Y el alto de la pantalla (--fs-hero): así, con lo que sea que tenga
+   arriba, los dos botones entran sin scrollear en 360×640, 390×844 y
+   1366×768. El texto va abajo, sobre el degradé; el padding de abajo deja
+   lugar al corte diagonal. Las dos variantes de foto (.tratamiento-*) se
+   eligen con una clase. */
 .portal-heroe{
-  position:relative;isolation:isolate;overflow:hidden;padding:var(--sp-5) var(--sp-4) var(--sp-5);
-  background:linear-gradient(118deg,var(--primario) 0 62%,var(--pub-fondo) 62%);color:var(--sobre-club);
+  position:relative;isolation:isolate;overflow:hidden;color:var(--sobre-oscuro);
+  display:flex;flex-direction:column;justify-content:flex-end;min-height:min(100svh,50rem);
+  padding:5rem var(--sp-4) 3.5rem;
+  clip-path:polygon(0 0,100% 0,100% 100%,0 calc(100% - 2.5rem));
 }
-.portal-heroe::after{content:"";position:absolute;right:-3.5rem;bottom:-2.5rem;z-index:-1;width:13rem;height:13rem;background:url(/public/escudo.png) center/contain no-repeat;opacity:.16;pointer-events:none}
-.portal-heroe-ey{font-family:var(--ff-titulo);font-weight:700;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-115)}
-.portal-heroe h1{font-size:clamp(2.25rem,1.9rem + 2.5vw,3.75rem);line-height:.9;margin:var(--sp-2) 0 var(--sp-2);max-width:17rem}
-.portal-heroe-bajada{font-size:var(--fs-135);line-height:1.4;margin:0 0 var(--sp-4);max-width:19rem}
+.portal-heroe-foto{position:absolute;inset:0;z-index:-2;display:block}
+.portal-heroe-foto img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+.portal-heroe::before{
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:
+    linear-gradient(to top,var(--pub-fondo) 0,var(--velo-pub-fuerte) 28%,var(--velo-pub-cero) 72%),
+    linear-gradient(to bottom,var(--velo-pub-fuerte) 0,var(--velo-pub-cero) 8rem);
+}
+/* (a) Color real, un poco apagado: el piso azul no domina. */
+.tratamiento-color .portal-heroe-foto img{filter:saturate(.75)}
+/* (b) Duotono rojo y negro: la foto en grises y el color del club encima. */
+.tratamiento-duotono .portal-heroe-foto img{filter:grayscale(1) contrast(1.25)}
+.tratamiento-duotono .portal-heroe-foto::after{content:"";position:absolute;inset:0;background:var(--club);mix-blend-mode:multiply;opacity:.9}
+
+.portal-heroe-cuerpo{position:relative;width:100%;max-width:64rem;margin-inline:auto}
+.portal-heroe-ey{display:flex;align-items:center;gap:var(--sp-3);margin:0 0 var(--sp-2);font-family:var(--ff-titulo);font-weight:600;letter-spacing:.2em;text-transform:uppercase;font-size:var(--fs-145)}
+.portal-heroe-ey span:first-child{flex:0 0 2rem;height:.125rem;background:var(--primario)}
+.portal-titulo{position:relative}
+.portal-heroe h1{font-size:var(--fs-hero);line-height:.82;letter-spacing:-.01em}
+/* Cada línea sube desde su propia máscara (la entrada, más abajo). */
+.portal-heroe .linea{display:block;overflow:hidden;padding-bottom:.06em}
+.portal-heroe .linea > span{display:block}
+/* El rojo del club sobre el negro llega a 3.8:1: alcanza para texto de este tamaño, no para uno chico. */
+.portal-heroe .linea.rojo{color:var(--primario)}
+.portal-heroe-bajada{max-width:30rem;margin:var(--sp-3) 0 var(--sp-4);font-size:var(--fs-170);line-height:1.4}
+
+/* El sello dorado: un sticker rotado, con un aro punteado adentro. */
+.portal-sello{
+  position:absolute;right:0;top:0;z-index:2;display:grid;place-content:center;gap:.1em;
+  width:clamp(5.5rem,24vw,8rem);aspect-ratio:1;border-radius:50%;
+  background:var(--dorado);color:var(--pub-fondo);text-align:center;
+  font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;line-height:.95;font-size:clamp(1.25rem,6vw,1.9rem);
+  transform:rotate(-8deg);
+}
+.portal-sello::before{content:"";position:absolute;inset:.35rem;border:.125rem dashed currentColor;border-radius:50%;opacity:.55}
+
 .portal-acciones{display:grid;gap:var(--sp-2)}
-/* Cada tarjeta es el botón entero: ícono, título, una línea y la flecha (o "Pronto"). */
+/* Cada botón es la tarjeta entera: ícono, título, una línea y la flecha (o "Pronto"). */
 .portal-accion{
-  display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:var(--sp-3);min-height:3.75rem;padding:var(--sp-3);
-  border-radius:var(--r);text-decoration:none;transition:transform var(--dur-1) var(--ease-salida);
+  display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:var(--sp-3);width:100%;min-height:3.5rem;padding:var(--sp-2) var(--sp-3);
+  border:0;border-radius:var(--r-btn);text-decoration:none;font:inherit;text-align:left;cursor:pointer;
+  transition:transform var(--dur-1) var(--ease-salida);
 }
-a.portal-accion:active{transform:scale(.98)}
+.portal-accion:not(.apagada):active{transform:scale(.97)}
 .portal-accion i{display:grid;place-items:center;width:2.5rem;height:2.5rem;border-radius:50%}
 .portal-accion svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.portal-accion b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:var(--fs-200);line-height:1}
-.portal-accion small{display:block;font-size:var(--fs-125);line-height:1.35;margin-top:.125rem}
+.portal-accion b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:var(--fs-200);line-height:1}
+.portal-accion small{display:block;font-size:var(--fs-135);line-height:1.3;margin-top:.1875rem}
 .portal-accion em{font-style:normal;font-size:var(--fs-190)}
-.portal-accion.principal{background:var(--sobre-oscuro);color:var(--pub-fondo)}
-.portal-accion.principal i{background:var(--primario);color:var(--sobre-club)}
-.portal-accion.principal small{color:var(--gris)}
-.portal-accion.pago{background:var(--pub-tarjeta);color:var(--sobre-oscuro)}
-.portal-accion.pago i{background:var(--pub-fondo);color:var(--primario)}
-.portal-accion.pago small{color:var(--gris-osc)}
-/* Sin formulario activo: la misma tarjeta, oscura y maciza, con el ícono gris y "Pronto". */
-.portal-accion.apagada{background:var(--pub-tarjeta);color:var(--sobre-oscuro);border:1px solid var(--pub-borde)}
+.portal-accion.principal{background:var(--primario);color:var(--sobre-club)}
+.portal-accion.principal i{background:var(--presion-osc)}
+.portal-accion.pago{background:var(--papel);color:var(--tinta)}
+.portal-accion.pago i{background:var(--primario);color:var(--sobre-club)}
+.portal-accion.pago small{color:var(--gris)}
+/* Sin formulario activo (o todavía sin respuesta): oscura y maciza, con el ícono gris y, si corresponde, "Pronto". */
+.portal-accion.apagada{background:var(--pub-tarjeta);color:var(--sobre-oscuro);border:1px solid var(--pub-borde);cursor:default}
 .portal-accion.apagada i{background:var(--pub-fondo);color:var(--gris-osc)}
 .portal-accion.apagada small{color:var(--gris-osc)}
 .portal-accion.apagada em{font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-100);letter-spacing:.08em;text-transform:uppercase;color:var(--gris-osc);border:1px solid var(--pub-borde);border-radius:var(--r-btn);padding:.125rem var(--sp-2)}
-/* El comprobante y el alias forman una sola tarjeta. */
-.portal-pago{min-width:0;background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden}
-.portal-pago .portal-accion{border:0;border-radius:0}
-.portal-heroe .portal-alias{margin:0;border:0;border-top:1px solid var(--pub-borde);border-radius:0;background:var(--pub-tarjeta);padding:var(--sp-2) var(--sp-3)}
-.portal-heroe .portal-copiar{min-height:2.25rem}
+
+/* Entrada del hero, una sola vez al cargar: cada elemento sube escalonado
+   (--i lo pone el HTML) y cada línea del título sube desde su máscara. Sólo
+   con .js-anim: sin JS o con movimiento reducido, todo está ya en su lugar. */
+.js-anim .entra{animation:subir var(--dur-rise) var(--ease-salida) backwards;animation-delay:calc(var(--retardo-entrada) + var(--i) * var(--paso-entrada))}
+.js-anim .portal-heroe .linea > span{animation:subir-linea var(--dur-linea) var(--ease-salida) backwards;animation-delay:calc(var(--retardo-entrada) + var(--i) * var(--paso-entrada))}
+.js-anim .portal-sello{animation:pegar var(--dur-rise) var(--ease-salida) backwards;animation-delay:calc(var(--retardo-entrada) + 6 * var(--paso-entrada))}
+@keyframes subir{from{opacity:0;transform:translateY(1.5rem)}}
+@keyframes subir-linea{from{transform:translateY(105%)}}
+@keyframes pegar{from{opacity:0;transform:rotate(-14deg) scale(.9)}}
+
+/* Parallax suave de la foto: baja hasta un 18% mientras se scrollea el hero.
+   Va con la línea de tiempo del scroll donde el navegador la tiene; en los
+   demás (Safari anterior al 26) lo hace animaciones.js. El estado de
+   reposo es el FINAL; el keyframe define sólo el de partida. */
+@supports (animation-timeline:scroll()){
+  .js-anim .portal-heroe-foto{transform:translateY(18%) scale(1.1);animation:parallax-hero linear both;animation-timeline:scroll(root);animation-range:0 100svh}
+}
+@keyframes parallax-hero{from{transform:translateY(0) scale(1.1)}}
 
 /* Botón de una tarjeta sin formulario activo: visible pero claramente apagado
    (borde punteado y sin relleno), con el texto en una línea o dos legibles. */
@@ -363,6 +418,14 @@ a.portal-accion:active{transform:scale(.98)}
   transition:transform var(--dur-1) var(--ease-salida);
 }
 .portal-copiar:active{transform:scale(.96)}
+
+/* La hoja "Pagar": el alias grande, el botón de comprobante abajo. */
+.portal-hoja .portal-alias{margin:var(--sp-4) 0;padding:var(--sp-4);border-color:var(--gris-osc)}
+.portal-hoja .portal-alias b{font-size:var(--fs-230)}
+.portal-hoja .intro{margin:0;color:var(--gris-osc);font-size:var(--fs-145);line-height:1.5}
+.portal-pago-paso{margin:0 0 var(--sp-3);color:var(--gris-osc);font-size:var(--fs-145)}
+.portal-pago-nada{margin:0;color:var(--gris-osc);font-style:italic;font-size:var(--fs-145)}
+.portal-hoja-cuerpo .btn{text-decoration:none}
 
 /* Atajos: sólo a lo que existe en la página (src/ui/portal.js). */
 .portal-atajos{display:grid;grid-template-columns:repeat(auto-fit,minmax(4.5rem,1fr));gap:var(--sp-2);padding:var(--sp-5) var(--sp-4) 0}

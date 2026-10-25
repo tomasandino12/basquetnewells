@@ -3,7 +3,7 @@ import { $ } from './dom.js';
 import { formulariosPublicos, eventosDelMes } from '../data/repositorio.js';
 import {
   PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal,
-  categoriasDelAnio, sedeValida, aliasValido, fotoValida,
+  categoriasDelAnio, sedeValida, aliasValido, fotoValida, rangoDeCategorias,
 } from '../data/portal.js';
 import { temporadaComoAnio } from '../data/categorias.js';
 import { resolverFormularios, separarFormularios } from '../data/formulariosPortal.js';
@@ -40,6 +40,8 @@ const ICONO = {
   inscribir: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 14h6M9 17h4"/></svg>`,
   empresa: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>`,
   lugar: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5a7 7 0 0 1 14 0C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>`,
+  personaMas: html`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.6 3-5.5 6.5-5.5s6 1.9 6.5 5.5M19 8v6M16 11h6"/></svg>`,
+  billetera: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><path d="M4 7.5V17a2 2 0 0 0 2 2h13a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H6.5A2.5 2.5 0 0 1 4 7.5z"/><circle cx="16" cy="13.5" r="1"/></svg>`,
   mano: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V12M16 9.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L4.3 14a1.5 1.5 0 0 1 2.4-1.8L8 14"/></svg>`,
 };
 
@@ -54,42 +56,62 @@ const botonExterno = (url, texto, clase = 'btn') => html`<a class="${clase}" hre
 const botonCerrado = (texto, clase = 'btn') => html`<button type="button" class="${clase}" disabled aria-disabled="true">${texto}</button>`;
 
 /**
- * Una de las dos tarjetas de arriba: ícono, título y una línea; toda la
- * tarjeta es el botón. Sin formulario activo se ve igual de maciza, con la
- * línea que dice cuándo se habilita y un "Pronto" en lugar de la flecha.
+ * Uno de los dos botones del hero: ícono, título y una línea; todo el botón es
+ * el enlace. Sin formulario activo se ve igual de macizo, con la línea que dice
+ * cuándo se habilita y un "Pronto" en lugar de la flecha. `cargando`: la base
+ * todavía no respondió y no se puede saber si hay formulario; se ve apagado
+ * pero sin "Pronto", para no anunciar un cierre que quizá no es.
  */
-function accion({ clase, icono, titulo, detalle, url, cerrado }) {
+function accion({ clase, icono, titulo, detalle, url, cerrado, cargando }) {
   const cuerpo = html`<i>${ICONO[icono]}</i><span><b>${titulo}</b><small>${url ? detalle : cerrado}</small></span>`;
+  if (cargando) return html`<div class="portal-accion ${clase} apagada" aria-disabled="true" aria-busy="true">${cuerpo}</div>`;
   if (!url) return html`<div class="portal-accion ${clase} apagada" aria-disabled="true">${cuerpo}<em>Pronto</em></div>`;
   return html`<a class="portal-accion ${clase}" href="${url}" target="_blank" rel="noopener">${cuerpo}<em aria-hidden="true">${ABRE}</em></a>`;
 }
 
 /**
- * El hero: la banda roja y negra (la camiseta) con el título de la página y,
- * adentro, las dos tarjetas protagonistas. La primera es "Inscribir a mi hijo
- * o hija" si el formulario de inscripción está activo (destino inscripcion,
- * 0062) y, si no, "Quiero jugar en Newell's" (destino consultas, 0061). La
- * segunda, "Enviar comprobante" (destino comprobante), con el alias pegado
- * abajo. Son independientes: alguien se puede inscribir sin pagar nada.
+ * Los dos botones del hero. El primero depende de la inscripción: abierta
+ * (destino inscripcion, 0062), es "Inscribirme"; cerrada, es "Quiero que
+ * juegue" (destino consultas, 0061), el formulario para dejar los datos y
+ * venir a probar. El segundo, "Pagar", NUNCA está apagado: abre la hoja con el
+ * alias y, si hay, el comprobante (htmlPago). Son independientes: alguien se
+ * puede inscribir sin pagar nada.
  */
-export function htmlHeroe({ inscripcion = null, consultas = null, comprobante = null, temporada = null, alias = null } = {}) {
+export function htmlAcciones({ inscripcion = null, consultas = null, temporada = null, cargando = false } = {}) {
   const url = (f) => (f ? enlaceFormulario(f.enlace) : null);
   const ins = url(inscripcion);
   const primera = ins
-    ? accion({ clase: 'principal', icono: 'inscribir', titulo: 'Inscribir a mi hijo o hija', url: ins, detalle: `Inscripción${temporada ? ` ${temporada}` : ''} abierta: formulario de Google` })
-    : accion({ clase: 'principal', icono: 'jugar', titulo: 'Quiero jugar en Newell\'s', url: url(consultas),
-      detalle: 'Dejá tus datos y te contactamos para venir a probar', cerrado: 'Se habilita cuando abra el formulario' });
-  return html`<div class="portal-heroe-ey">Formativas · Rosario${temporada ? html` · Temporada ${temporada}` : ''}</div>
-    <h1>Básquet formativo de Newell's</h1>
-    <p class="portal-heroe-bajada">Inscripción, pagos, calendario y todo lo del básquet del club, en un solo lugar.</p>
-    <div class="portal-acciones">
-      ${primera}
-      <div class="portal-pago">
-        ${accion({ clase: 'pago', icono: 'comprobante', titulo: 'Enviar comprobante', url: url(comprobante),
-          detalle: 'Subí la foto de la transferencia', cerrado: 'Se habilita cuando haya algo para pagar' })}
-        ${htmlAlias(alias)}
-      </div>
-    </div>`;
+    ? accion({ clase: 'principal', icono: 'personaMas', titulo: 'Inscribirme', url: ins, detalle: `Inscripción${temporada ? ` ${temporada}` : ''} abierta` })
+    : accion({ clase: 'principal', icono: 'personaMas', titulo: 'Quiero que juegue', url: url(consultas), cargando,
+      detalle: 'Dejá tus datos y te avisamos', cerrado: 'Se habilita cuando abra el formulario' });
+  return html`${primera}
+    <button type="button" class="portal-accion pago" data-abrir-pago aria-haspopup="dialog">
+      <i>${ICONO.billetera}</i><span><b>Pagar</b><small>Alias y comprobante</small></span><em aria-hidden="true">›</em>
+    </button>`;
+}
+
+/**
+ * El sello dorado del hero, "De U9 a U21". `rango`: de rangoDeCategorias. Sin
+ * rango no devuelve nada y el sello queda oculto: nunca un número inventado.
+ */
+export function htmlSello(rango) {
+  if (!rango) return html``;
+  return html`<span>De ${rango.desde}</span><span>a ${rango.hasta}</span>`;
+}
+
+/**
+ * El contenido de la hoja "Pagar": el alias para copiar y el comprobante. Se
+ * paga más que cuotas, así que no promete nada en particular. Sin formulario
+ * de comprobante activo lo dice y deja el alias igual; sin alias válido, sólo
+ * el comprobante.
+ */
+export function htmlPago({ alias = null, comprobante = null } = {}) {
+  const url = comprobante ? enlaceFormulario(comprobante.enlace) : null;
+  return html`<p class="intro">Transferí al alias del club y, después, mandanos el comprobante.</p>
+    ${htmlAlias(alias)}
+    ${url
+      ? html`<p class="portal-pago-paso">¿Ya transferiste? Subí la foto o la captura.</p>${botonExterno(url, 'Enviar comprobante')}`
+      : html`<p class="portal-pago-nada">Por ahora no hay nada para pagar.</p>`}`;
 }
 
 /** El alias para transferir, con un botón para copiarlo. Sin un alias válido, nada. */
@@ -223,14 +245,14 @@ export function htmlAyuda({ inscripcionAbierta = false, consultasAbierto = false
   const coordinador = enlaceContacto(contacto);
   const pregunta = (titulo, respuesta) => html`<details class="portal-faq"><summary>${titulo}</summary><div class="portal-faq-r">${respuesta}</div></details>`;
   const comoInscribir = inscripcionAbierta
-    ? html`<p>Tocá <b>Inscribir a mi hijo o hija</b>, arriba de todo. Se abre un formulario de Google: completalo desde el celular. Tené a mano el DNI del chico o la chica y el tuyo.</p>`
+    ? html`<p>Tocá <b>Inscribirme</b>, arriba de todo. Se abre un formulario de Google: completalo desde el celular. Tené a mano el DNI del chico o la chica y el tuyo.</p>`
     : html`<p>La inscripción${temporada ? html` ${temporada}` : ''} todavía no abrió. ${consultasAbierto
-      ? html`Mientras tanto, tocá <b>Quiero jugar en Newell's</b>, arriba de todo: dejás tus datos y te contactamos para que venga a probar.`
+      ? html`Mientras tanto, tocá <b>Quiero que juegue</b>, arriba de todo: dejás tus datos y te avisamos para que venga a probar.`
       : html`Cuando abra, el botón se habilita arriba de todo.`}</p>`;
   const alCoordinador = coordinador ? 'escribile al coordinador (el botón de acá abajo)' : 'escribile al coordinador';
   // Las preguntas van en la voz del padre y con sujeto: así las busca con la vista.
   return html`${pregunta('¿Cómo inscribo a mi hijo o hija?', comoInscribir)}
-    ${pregunta('¿Cómo pago la cuota o mando el comprobante?', html`<p>${a ? html`Transferí al alias <b>${a.alias}</b> (con <b>Copiar</b>, arriba de todo, lo pegás en tu banco). ` : ''}Después tocá <b>Enviar comprobante</b> y subí la foto o la captura de la transferencia. Si ese botón está apagado, es que ahora no hay nada para pagar.</p>`)}
+    ${pregunta('¿Cómo pago o mando el comprobante?', html`<p>Tocá <b>Pagar</b>, arriba de todo. ${a ? html`Ahí está el alias <b>${a.alias}</b>, con un botón <b>Copiar</b> para pegarlo en tu banco. ` : ''}Después, en esa misma hoja, tocá <b>Enviar comprobante</b> y subí la foto o la captura de la transferencia. Sirve para cuotas y para cualquier otro pago del club. Si no aparece ese botón, es que ahora no hay nada para pagar.</p>`)}
     ${pregunta('Me pide iniciar sesión con Google, ¿qué hago?', html`<p>La inscripción y el comprobante la piden porque se suben fotos (los DNI, la transferencia). Si no tenés Gmail, creá una cuenta de Google con el mail que ya usás, sin abrir uno nuevo:</p>
       <ol class="portal-faq-pasos">
         <li>Entrá a <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">accounts.google.com</a> y tocá <b>Crear cuenta</b> → <b>Para uso personal</b>.</li>
@@ -547,6 +569,22 @@ function iniciarAyuda() {
   if (window.location.hash === '#ayuda') hoja.showModal();
 }
 
+/**
+ * "Pagar": abre su hoja desde el botón del hero. Mismo <dialog> que Ayuda
+ * (foco atrapado, Escape y vuelta del foco gratis); se cierra con la X o
+ * tocando afuera. Sin <dialog>, el botón queda sin efecto y nada se rompe.
+ */
+function iniciarPago() {
+  const hoja = $('pago');
+  if (typeof hoja.showModal !== 'function') return;
+  document.addEventListener('click', (ev) => {
+    if (ev.target.closest('[data-abrir-pago]') && !hoja.open) hoja.showModal();
+  });
+  hoja.addEventListener('click', (ev) => {
+    if (ev.target === hoja || ev.target.closest('[data-cerrar-pago]')) hoja.close();
+  });
+}
+
 /* ---------- Armado de la página ---------- */
 
 function mostrar(id, contenido, contenedor = `portal-${id}`) {
@@ -566,6 +604,9 @@ function iniciarCopiar() {
       // Sin permiso para el portapapeles: el alias queda a la vista para copiarlo a mano.
       b.textContent = 'Copialo a mano';
     }
+    // La hoja se reabre con el mismo botón: vuelve a decir "Copiar".
+    clearTimeout(Number(b.dataset.vuelta));
+    b.dataset.vuelta = String(setTimeout(() => { b.textContent = 'Copiar'; }, 2500));
   });
 }
 
@@ -576,15 +617,18 @@ export async function iniciarPortal() {
   const temporada = temporadaComoAnio(PORTAL.temporada);
   if (temporada) $('t-categorias-temp').textContent = ` ${temporada}`;
   if (temporada && categorias.length) iniciarBuscador(temporada);
+  if (temporada) $('portal-heroe-ey').textContent = `Temporada ${temporada} · Formativas`;
+  mostrar('portal-sello', htmlSello(rangoDeCategorias(PORTAL.categorias)), 'portal-sello');
   mostrar('sede', htmlSede(PORTAL.sede));
   iniciarMapa();
   mostrar('club', htmlFoto(PORTAL.foto), 'portal-foto');
   mostrar('sponsors', htmlLogos(PORTAL.sponsors), 'portal-logos');
 
   // Hasta que responda la base, todo cerrado: nunca un botón a un formulario que quizá ya no está.
-  const pintarFormularios = ({ inscripcion = null, comprobante = null, consultas = null, colaboradores = null, recaudacion = null } = {}) => {
+  const pintarFormularios = ({ inscripcion = null, comprobante = null, consultas = null, colaboradores = null, recaudacion = null } = {}, cargando = false) => {
     const abierto = (f) => Boolean(f && enlaceFormulario(f.enlace));
-    $('portal-heroe').innerHTML = htmlHeroe({ inscripcion, consultas, comprobante, temporada: PORTAL.temporada, alias: PORTAL.alias });
+    $('portal-heroe').innerHTML = htmlAcciones({ inscripcion, consultas, temporada: PORTAL.temporada, cargando });
+    $('portal-pago-cuerpo').innerHTML = htmlPago({ alias: PORTAL.alias, comprobante });
     $('portal-recaudacion').innerHTML = htmlRecaudacion(recaudacion);
     $('portal-colaborar').innerHTML = htmlColaborar(colaboradores);
     $('portal-ayuda-lista').innerHTML = htmlAyuda({
@@ -592,8 +636,9 @@ export async function iniciarPortal() {
       temporada: PORTAL.temporada, alias: PORTAL.alias, sede: PORTAL.sede, contacto: PORTAL.contacto,
     });
   };
-  pintarFormularios();
+  pintarFormularios({}, true);
   iniciarAyuda();
+  iniciarPago();
 
   const calendarios = calendariosActivos(PORTAL.agenda);
   $('calendario').hidden = !calendarios.length;

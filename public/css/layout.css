@@ -277,6 +277,24 @@
    ≥1024px — la navegación pasa a lateral fija, el contenido toma un
    ancho máximo legible y se centra. No es un celular estirado.
    ===================================================================== */
+/* Hero en pantallas anchas: la foto ocupa la derecha (el jugador queda
+   lejos del título), el sello flota arriba a la derecha y los dos botones
+   van lado a lado. El velo de la izquierda hace de costura con la foto. */
+@media (min-width:48rem){
+  .publico .portal-heroe{padding-top:6rem;padding-bottom:4rem}
+  .publico .portal-heroe-foto{inset:0 0 0 22%}
+  .publico .portal-heroe::before{
+    background:
+      linear-gradient(90deg,var(--pub-fondo) 0,var(--pub-fondo) 22%,var(--velo-pub-fuerte) 34%,var(--velo-pub-medio) 58%,var(--velo-pub-cero) 80%),
+      linear-gradient(to top,var(--pub-fondo) 0,var(--velo-pub-cero) 30%),
+      linear-gradient(to bottom,var(--velo-pub-fuerte) 0,var(--velo-pub-cero) 8rem);
+  }
+  .publico .portal-heroe-cuerpo,.publico .portal-titulo{position:static}
+  .publico .portal-heroe-cuerpo{max-width:64rem}
+  .publico .portal-heroe-cuerpo > *{max-width:38rem}
+  .publico .portal-sello{right:var(--sp-8);top:7rem}
+  .publico .portal-acciones{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3)}
+}
 @media (min-width:64rem){
   .app{
     grid-template-columns:var(--lateral-w) minmax(0,1fr);
@@ -390,12 +408,8 @@
   .publico .portal-hoja{inset:0;margin:auto;width:min(40rem,calc(100vw - 4rem));max-height:80dvh;border-radius:var(--r);border:1px solid var(--pub-borde);animation:none}
   .publico .portal-hoja-cuerpo{max-height:80dvh;padding:var(--sp-6)}
   .publico .portal-sem-btn{max-width:none;white-space:nowrap}
-  .publico .portal-heroe,.publico .portal-banda{margin-inline:var(--sp-6);border-radius:var(--r);padding:var(--sp-8)}
-  .publico .portal-heroe h1{max-width:none}
-  .publico .portal-heroe-bajada{max-width:32rem;margin-bottom:var(--sp-6)}
-  /* Las dos tarjetas lado a lado, del mismo alto. */
-  .publico .portal-acciones{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4);max-width:52rem}
-  .publico .portal-accion.principal{height:100%}
+  .publico .portal-banda{margin-inline:var(--sp-6);border-radius:var(--r);padding:var(--sp-8)}
+  .publico .portal-heroe{padding-inline:var(--sp-6)}
   .publico .portal-formas{grid-template-columns:repeat(2,minmax(0,1fr))}
   /* La categoría: el año a la izquierda y el resultado al lado, ocupando todo el ancho. */
   .publico .portal-buscador{grid-template-columns:minmax(15rem,18rem) 1fr;align-items:end;gap:var(--sp-4)}

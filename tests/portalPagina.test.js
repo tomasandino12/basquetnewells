@@ -2,10 +2,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlHeroe, htmlAlias, htmlBuscador, htmlCategoriaDelAnio, htmlProximo,
+  htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlAcciones, htmlSello, htmlPago, htmlAlias, htmlBuscador, htmlCategoriaDelAnio, htmlProximo,
   htmlRecaudacion, htmlColaborar, htmlAyuda, htmlAtajos, htmlCalendario, htmlCategorias, htmlFoto, htmlSede, diaInicial, htmlSuscripcion,
 } from '../src/ui/portal.js';
 import { eventoDesdeGoogle, eventosPorDia, proximosEventos } from '../src/data/agenda.js';
+import { PORTAL, rangoDeCategorias } from '../src/data/portal.js';
 
 /**
  * portal.html es HTML escrito a mano y no hay navegador en los tests: se lee
@@ -21,7 +22,7 @@ test('arriba de todo, la banda con las dos acciones; después el resto, en orden
   const posiciones = orden.map((id) => pagina.search(new RegExp(`<section [^>]*id="${id}"`)));
   assert.ok(posiciones.every((p) => p > 0), `faltan secciones: ${posiciones}`);
   assert.deepEqual([...posiciones].sort((a, b) => a - b), posiciones, 'las secciones están desordenadas');
-  assert.match(seccion('heroe'), /<h1>/, 'el h1 de la página está en la banda');
+  assert.match(seccion('heroe'), /<h1[ >]/, 'el h1 de la página está en el hero');
 });
 
 test('las secciones que dependen de datos arrancan ocultas; la banda, recaudación y colaborar se ven siempre', () => {
@@ -38,14 +39,15 @@ test('ni la página ni su código dicen "Próximamente"', () => {
   assert.doesNotMatch(portal, /Próximamente/i);
 });
 
-test('el encabezado tiene Ayuda (a las preguntas frecuentes) y Semillero, con cómo instalarla', () => {
+test('el encabezado sólo lleva a Semillero (con cómo instalarla); la Ayuda se abre desde los atajos', () => {
   const barra = pagina.match(/<header class="portal-barra">[\s\S]*?<\/header>/)[0];
-  assert.match(barra, /<a class="portal-barra-btn" href="#ayuda">Ayuda<\/a>/);
+  assert.doesNotMatch(barra, /#ayuda/, 'la Ayuda ya no está en el encabezado');
   const sem = barra.match(/<details class="portal-sem" id="semillero">[\s\S]*?<\/details>/)[0];
   assert.match(sem, /<summary[^>]*>Soy profe o jugador<\/summary>/);
   assert.match(sem, /<a class="btn" href="\/app">Entrar a Semillero<\/a>/);
   assert.match(sem, /Instalar app/);
   assert.match(sem, /Agregar a inicio/);
+  assert.match(portal, /\{ clave: 'ayuda', texto: 'Ayuda', href: '#ayuda' \}/, 'sigue habiendo un atajo a la Ayuda');
 });
 
 test('Ayuda no ocupa lugar en la página: es una hoja (<dialog>) con la X, que abre todo link a #ayuda', () => {
@@ -112,47 +114,94 @@ test('el portal no consulta nada si la URL es la vuelta de un login: esos links 
   assert.ok(guarda < portal.lastIndexOf('iniciarCalendario(calendarios)'), 'y antes de pedir el calendario');
 });
 
-// ---- El hero: el título de la página y las dos tarjetas protagonistas ----
+// ---- El hero: foto, título y los dos botones ----
 
 const FORM = (texto, enlace = 'https://forms.gle/Abc1') => ({ titulo: 'x', texto, enlace });
 const MALO = FORM('x', 'https://evil.com/forms/x');
 const acciones = (out) => out.match(/class="portal-accion [^"]*"/g) ?? [];
 
-test('el hero es el título de la página, no una pregunta', () => {
-  const out = htmlHeroe({ temporada: 2027 }).toString();
-  assert.match(out, /<div class="portal-heroe-ey">Formativas · Rosario · Temporada 2027<\/div>/);
-  assert.match(out, /<h1>Básquet formativo de Newell's<\/h1>/);
-  assert.match(out, /<p class="portal-heroe-bajada">/);
-  assert.doesNotMatch(out, /¿Qué (necesitás|querés) hacer\?/);
+test('el hero está escrito a mano en el HTML: foto en <picture>, título en tres líneas, sin esperar a la base', () => {
+  const heroe = seccion('heroe');
+  assert.match(heroe, /<picture class="portal-heroe-foto">[\s\S]*<source media="\(max-width:47\.99rem\)" srcset="\/public\/img\/fotos\/formativas-bandeja-vertical\.webp" width="576" height="720">/);
+  const img = heroe.match(/<img [^>]*formativas-bandeja\.webp[^>]*>/)?.[0] ?? '';
+  assert.match(img, /fetchpriority="high"/, 'la foto del hero es el LCP');
+  assert.match(img, /width="1080" height="720"/);
+  assert.match(img, /alt="[^"]{20,}"/, 'con un texto alternativo que cuenta qué se ve');
+  assert.doesNotMatch(img, /loading="lazy"/);
+  const lineas = [...heroe.matchAll(/<span class="linea[^"]*"><span[^>]*>([^<]+)<\/span><\/span>/g)].map((m) => m[1]);
+  assert.deepEqual(lineas, ['Acá se', 'forma', 'la Lepra']);
+  assert.match(heroe, /class="linea rojo"><span[^>]*>la Lepra/, 'la última línea va en rojo');
+  assert.match(heroe, /id="portal-heroe"/, 'acá se pintan los dos botones');
+  assert.match(pagina, /<dialog class="portal-hoja" id="pago" aria-labelledby="t-pago">/);
 });
 
-test('inscripción abierta: "Inscribir a mi hijo o hija" y "Enviar comprobante" con el alias pegado', () => {
-  const out = htmlHeroe({
-    inscripcion: FORM('x'), consultas: FORM('y', 'https://forms.gle/Jug1'), comprobante: FORM('z', 'https://forms.gle/Com1'),
-    temporada: 2027, alias: { alias: 'NOB.BASQUET', titular: 'Club <x>' },
-  }).toString();
-  assert.match(out, /<a class="portal-accion principal" href="https:\/\/forms\.gle\/Abc1" target="_blank" rel="noopener">[\s\S]*Inscribir a mi hijo o hija[\s\S]*Inscripción 2027 abierta/);
-  assert.match(out, /<div class="portal-pago">\s*<a class="portal-accion pago" href="https:\/\/forms\.gle\/Com1"[\s\S]*Enviar comprobante[\s\S]*data-copiar="NOB\.BASQUET"[\s\S]*<\/div>/);
-  assert.match(out, /Club &lt;x&gt;/);
-  assert.doesNotMatch(out, /Jug1/, 'con la inscripción abierta, "Quiero jugar" no va arriba');
-  assert.equal(acciones(out).length, 2, 'dos tarjetas, ni una más');
+test('inscripción abierta: "Inscribirme" como botón principal, y "Pagar", que no es un enlace', () => {
+  const out = htmlAcciones({ inscripcion: FORM('x'), consultas: FORM('y', 'https://forms.gle/Jug1'), temporada: 2027 }).toString();
+  assert.match(out, /<a class="portal-accion principal" href="https:\/\/forms\.gle\/Abc1" target="_blank" rel="noopener">[\s\S]*Inscribirme[\s\S]*Inscripción 2027 abierta/);
+  assert.doesNotMatch(out, /Jug1/, 'con la inscripción abierta, "Quiero que juegue" no va');
+  assert.equal(acciones(out).length, 2, 'dos botones, ni uno más');
+  assert.match(out, /<button type="button" class="portal-accion pago" data-abrir-pago[^>]*>[\s\S]*<b>Pagar<\/b><small>Alias y comprobante<\/small>/);
 });
 
-test('inscripción cerrada: la primera tarjeta es "Quiero jugar en Newell\'s" al formulario de consultas', () => {
+test('inscripción cerrada: el principal es "Quiero que juegue" y lleva al formulario para probarse', () => {
   for (const inscripcion of [null, MALO]) {
-    const out = htmlHeroe({ inscripcion, consultas: FORM('Para chicos <x>', 'https://forms.gle/Jug1') }).toString();
-    assert.match(out, /<a class="portal-accion principal" href="https:\/\/forms\.gle\/Jug1"[\s\S]*Quiero jugar en Newell&#39;s/);
-    assert.match(out, /Dejá tus datos y te contactamos para venir a probar/);
-    assert.doesNotMatch(out, /Para chicos/, 'la línea del panel no va en la tarjeta');
+    const out = htmlAcciones({ inscripcion, consultas: FORM('Para chicos <x>', 'https://forms.gle/Jug1') }).toString();
+    assert.match(out, /<a class="portal-accion principal" href="https:\/\/forms\.gle\/Jug1"[\s\S]*Quiero que juegue/);
+    assert.match(out, /Dejá tus datos y te avisamos/);
+    assert.doesNotMatch(out, /Para chicos/, 'la línea del panel no va en el botón');
   }
 });
 
-test('sin formularios: las dos tarjetas se ven macizas, con "Pronto" y cuándo se habilitan; ningún link', () => {
-  const out = htmlHeroe({ consultas: MALO, comprobante: MALO }).toString();
+test('sin formularios: el principal se ve macizo con "Pronto"; "Pagar" nunca se apaga', () => {
+  const out = htmlAcciones({ consultas: MALO }).toString();
   assert.match(out, /<div class="portal-accion principal apagada" aria-disabled="true">[\s\S]*Se habilita cuando abra el formulario[\s\S]*<em>Pronto<\/em>/);
-  assert.match(out, /<div class="portal-accion pago apagada" aria-disabled="true">[\s\S]*Se habilita cuando haya algo para pagar[\s\S]*<em>Pronto<\/em>/);
   assert.doesNotMatch(out, /<a |evil/);
-  assert.equal(acciones(out).length, 2);
+  assert.match(out, /<button type="button" class="portal-accion pago" data-abrir-pago/);
+  assert.doesNotMatch(out, /pago apagada|pago[^>]*disabled/);
+});
+
+test('mientras la base no responde: el principal está ocupado, no dice "Pronto"; "Pagar" ya funciona', () => {
+  const out = htmlAcciones({ cargando: true }).toString();
+  assert.match(out, /<div class="portal-accion principal apagada" aria-disabled="true" aria-busy="true">/);
+  assert.doesNotMatch(out, /Pronto/);
+  assert.match(out, /data-abrir-pago/);
+  assert.match(portal, /pintarFormularios\(\{\}, true\)/, 'se pinta cargando antes de pedir la lista');
+});
+
+test('el sello sale de las categorías: de la U más chica a la más grande, y sin rango no hay sello', () => {
+  assert.deepEqual(rangoDeCategorias(PORTAL.categorias), { desde: 'U9', hasta: 'U21' });
+  assert.deepEqual(rangoDeCategorias([{ grupo: 'U15' }, { grupo: 'MAYORES' }, { grupo: 'U9' }, { grupo: 'U11' }]), { desde: 'U9', hasta: 'U15' });
+  for (const poco of [[], [{ grupo: 'U9' }], [{ grupo: 'U9' }, { grupo: 'U9' }], [{ grupo: 'MAYORES' }], null]) {
+    assert.equal(rangoDeCategorias(poco), null);
+  }
+  assert.equal(htmlSello(null).toString(), '');
+  assert.match(htmlSello({ desde: 'U9', hasta: 'U21' }).toString(), /<span>De U9<\/span><span>a U21<\/span>/);
+});
+
+test('la hoja de pago: el alias y el comprobante; sin formulario lo dice y deja el alias; escapado', () => {
+  const con = htmlPago({ alias: { alias: 'NOB.BASQUET', titular: 'Club <x>' }, comprobante: FORM('z', 'https://forms.gle/Com1') }).toString();
+  assert.match(con, /<b>NOB\.BASQUET<\/b>/);
+  assert.match(con, /data-copiar="NOB\.BASQUET"/);
+  assert.match(con, /Club &lt;x&gt;/);
+  assert.match(con, /<a class="btn" href="https:\/\/forms\.gle\/Com1" target="_blank" rel="noopener">Enviar comprobante/);
+  assert.doesNotMatch(con, /cuota/i, 'se paga más que cuotas');
+  for (const comprobante of [null, MALO]) {
+    const sin = htmlPago({ alias: { alias: 'NOB.BASQUET' }, comprobante }).toString();
+    assert.match(sin, /Por ahora no hay nada para pagar\./);
+    assert.match(sin, /data-copiar="NOB\.BASQUET"/, 'el alias se ve igual');
+    assert.doesNotMatch(sin, /<a |evil/);
+  }
+  assert.doesNotMatch(htmlPago({ alias: { alias: 'mal alias' }, comprobante: null }).toString(), /data-copiar/);
+});
+
+test('"Pagar" abre su hoja con showModal y se cierra con la X o tocando afuera', () => {
+  const desde = portal.indexOf('function iniciarPago()');
+  const cuerpo = portal.slice(desde, portal.indexOf('\n}\n', desde));
+  assert.match(cuerpo, /closest\('\[data-abrir-pago\]'\)/);
+  assert.match(cuerpo, /hoja\.showModal\(\)/);
+  assert.match(cuerpo, /ev\.target === hoja/);
+  assert.match(cuerpo, /\[data-cerrar-pago\]/);
+  assert.match(portal, /iniciarPago\(\);/);
 });
 
 test('alias: escapado y con botón para copiarlo; uno inválido no se muestra', () => {
@@ -328,7 +377,8 @@ test('cada formulario muestra su línea de ayuda y abre en otra pestaña; uno co
 
 test('el portal aparta los formularios con lugar propio: no aparecen dos veces', () => {
   assert.match(portal, /const \{ inscripcion, comprobante, consultas, colaboradores, recaudacion, comunes \} = separarFormularios\(formularios\);/);
-  assert.match(portal, /htmlHeroe\(\{ inscripcion, consultas, comprobante,/);
+  assert.match(portal, /htmlAcciones\(\{ inscripcion, consultas,/);
+  assert.match(portal, /htmlPago\(\{ alias: PORTAL\.alias, comprobante \}\)/);
   assert.match(portal, /htmlColaborar\(colaboradores\)/);
   assert.match(portal, /htmlRecaudacion\(recaudacion\)/);
   assert.match(portal, /htmlFormularios\(comunes\)/);
@@ -369,7 +419,7 @@ test('ayuda: seis preguntas en acordeón y, al final, el único botón al coordi
   const preguntas = [...out.matchAll(/<summary>([^<]*)<\/summary>/g)].map((m) => m[1]);
   assert.deepEqual(preguntas, [
     '¿Cómo inscribo a mi hijo o hija?',
-    '¿Cómo pago la cuota o mando el comprobante?',
+    '¿Cómo pago o mando el comprobante?',
     'Me pide iniciar sesión con Google, ¿qué hago?',
     '¿En qué categoría juega mi hijo o hija?',
     'Me equivoqué en un dato del formulario, ¿qué hago?',
@@ -401,8 +451,8 @@ test('ayuda: "me equivoqué en un dato" es volver a mandarlo (el Tablero toma la
 });
 
 test('ayuda: "¿cómo inscribo?" no manda a un botón apagado', () => {
-  assert.match(htmlAyuda({ inscripcionAbierta: true }).toString(), /Tocá <b>Inscribir a mi hijo o hija<\/b>/);
-  assert.match(htmlAyuda({ consultasAbierto: true, temporada: 2027 }).toString(), /La inscripción 2027 todavía no abrió\. Mientras tanto, tocá <b>Quiero jugar en Newell's<\/b>/);
+  assert.match(htmlAyuda({ inscripcionAbierta: true }).toString(), /Tocá <b>Inscribirme<\/b>/);
+  assert.match(htmlAyuda({ consultasAbierto: true, temporada: 2027 }).toString(), /La inscripción 2027 todavía no abrió\. Mientras tanto, tocá <b>Quiero que juegue<\/b>/);
   assert.match(htmlAyuda({}).toString(), /Cuando abra, el botón se habilita arriba de todo/);
   assert.doesNotMatch(htmlAyuda({ contacto: 'javascript:alert(1)' }).toString(), /javascript|No encontraste/);
 });

@@ -34,3 +34,25 @@ test('animaciones.js revela una sola vez y muestra todo si no hay IntersectionOb
   assert.match(modulo, /typeof IntersectionObserver === 'undefined'/);
   assert.match(modulo, /e\.classList\.add\('visto'\)/);
 });
+
+test('parallax: con línea de tiempo de CSS lo hace el CSS; sin ella, el módulo, y sólo con .js-anim', () => {
+  assert.match(css, /@supports \(animation-timeline:scroll\(\)\)\{\s*\.js-anim \.portal-heroe-foto\{transform:translateY\(18%\) scale\(1\.1\)/);
+  assert.match(modulo, /export function iniciarParallax\(\)/);
+  assert.match(modulo, /CSS\?\.supports\?\.\('animation-timeline: scroll\(\)'\)/);
+  assert.match(modulo, /\{ passive: true \}/);
+});
+
+test('la entrada del hero sólo existe bajo .js-anim y usa los tiempos de tokens.css', () => {
+  assert.doesNotMatch(css, /(^|\})\s*\.entra\s*\{/, '.entra sin .js-anim animaría con JS apagado');
+  assert.match(css, /\.js-anim \.entra\{animation:subir var\(--dur-rise\) var\(--ease-salida\) backwards;animation-delay:calc\(var\(--retardo-entrada\) \+ var\(--i\) \* var\(--paso-entrada\)\)\}/);
+  assert.match(css, /\.js-anim \.portal-heroe \.linea > span\{animation:subir-linea var\(--dur-linea\)/);
+});
+
+test('el hero: botones de al menos 56px, título que se achica con el alto de la pantalla y corte diagonal de 2.5rem', () => {
+  const tokens = readFileSync('public/css/tokens.css', 'utf8');
+  assert.match(css, /\.portal-accion\{[^}]*min-height:3\.5rem/);
+  assert.match(tokens, /--fs-hero:clamp\([^;]*svh/, 'sin el alto, en una pantalla baja los botones quedan abajo del pliegue');
+  assert.match(css, /\.portal-heroe h1\{font-size:var\(--fs-hero\)/);
+  assert.match(css, /\.portal-heroe\{[^}]*clip-path:polygon\(0 0,100% 0,100% 100%,0 calc\(100% - 2\.5rem\)\)/);
+  assert.match(css, /\.portal-heroe\{[^}]*min-height:min\(100svh,/);
+});

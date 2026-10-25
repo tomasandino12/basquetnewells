@@ -67,7 +67,6 @@
     <img src="/public/escudo.png" alt="" width="36" height="36">
     <div class="portal-marca"><div class="t">Newell&#39;s <span>Básquet</span></div><div class="s">Formativas · Familias</div></div>
     <nav class="portal-barra-acc" aria-label="Accesos">
-      <a class="portal-barra-btn" href="#ayuda">Ayuda</a>
       <!-- Para profes y jugadores: la entrada a Semillero y cómo instalarla, sin buscarla en el portal de padres. -->
       <details class="portal-sem" id="semillero">
         <summary class="portal-barra-btn portal-sem-btn">Soy profe o jugador</summary>
@@ -86,15 +85,35 @@
   </header>
 
   <main class="portal">
-    <!-- El hero: la banda roja y negra (la camiseta) con el título de la
-         página y, adentro, las dos tarjetas protagonistas (src/ui/portal.js,
-         htmlHeroe): inscribir (o "Quiero jugar" si la inscripción está
-         cerrada) y enviar el comprobante, con el alias. Arranca con todo
-         cerrado hasta que responde la base. -->
-    <section class="portal-heroe" id="heroe" aria-label="Básquet formativo de Newell's">
-      <div id="portal-heroe"><div class="portal-heroe-ey">Formativas · Rosario</div><h1>Básquet formativo de Newell&#39;s</h1></div>
+    <!-- El hero: foto a pantalla completa, el título y los dos botones de las
+         familias. Todo lo que no depende de la base (la foto, el título, el
+         subtítulo) está acá, escrito a mano: se cambia tocando esta línea y
+         pinta sin esperar a nada. src/ui/portal.js completa la temporada, el
+         sello (sale de las categorías) y los dos botones, que dependen de qué
+         formularios están abiertos. El título son tres líneas: cada una sube
+         desde su máscara (.linea). -->
+    <section class="portal-heroe tratamiento-color" id="heroe" aria-labelledby="t-heroe">
+      <picture class="portal-heroe-foto">
+        <source media="(max-width:47.99rem)" srcset="/public/img/fotos/formativas-bandeja-vertical.webp" width="576" height="720">
+        <img src="/public/img/fotos/formativas-bandeja.webp" width="1080" height="720" fetchpriority="high"
+          alt="Un jugador de Newell's sube a hacer una bandeja en un partido de las formativas">
+      </picture>
+      <div class="portal-heroe-cuerpo">
+        <p class="portal-heroe-ey entra" style="--i:0"><span aria-hidden="true"></span><span id="portal-heroe-ey">Formativas</span></p>
+        <div class="portal-titulo">
+          <h1 id="t-heroe">
+            <span class="linea"><span style="--i:1">Acá se</span></span>
+            <span class="linea"><span style="--i:2">forma</span></span>
+            <span class="linea rojo"><span style="--i:3">la Lepra</span></span>
+          </h1>
+          <div class="portal-sello" id="portal-sello" aria-hidden="true" hidden></div>
+        </div>
+        <p class="portal-heroe-bajada entra" style="--i:4">El básquet formativo de Newell&#39;s Old Boys, en el Parque de la Independencia, Rosario.</p>
+        <div class="portal-acciones entra" style="--i:5" id="portal-heroe"></div>
+      </div>
     </section>
 
+    <div class="portal-cuerpo">
     <nav class="portal-atajos" id="portal-atajos" aria-label="Atajos"></nav>
 
     <section class="portal-sec" id="calendario" aria-labelledby="t-calendario" hidden>
@@ -152,6 +171,8 @@
       <div class="portal-logos" id="portal-logos"></div>
     </section>
 
+    </div>
+
     <div class="pie-legal"><a href="/app">Entrar a Semillero</a> · <a href="/public/legal/privacidad.html">Política de privacidad</a> · <a href="/public/legal/terminos.html">Términos y condiciones</a></div>
   </main>
 
@@ -160,6 +181,20 @@
        compu, un diálogo. Preguntas frecuentes en acordeón y, al final, la
        única vez que aparece el coordinador. Se cierra con la X, tocando
        afuera o con Escape (lo da <dialog>). -->
+  <!-- Pagar: la misma hoja que Ayuda (mobile: sube desde abajo; compu: diálogo).
+       Con el alias para copiar y, si hay formulario de comprobante activo, el
+       botón para enviarlo (src/ui/portal.js, htmlPago). Se paga más que
+       cuotas: no dice "cuota". -->
+  <dialog class="portal-hoja" id="pago" aria-labelledby="t-pago">
+    <div class="portal-hoja-cuerpo">
+      <div class="portal-hoja-cab">
+        <div><div class="portal-st">Pagos</div><h2 id="t-pago">Pagar</h2></div>
+        <button type="button" class="portal-hoja-x" data-cerrar-pago aria-label="Cerrar">×</button>
+      </div>
+      <div id="portal-pago-cuerpo"></div>
+    </div>
+  </dialog>
+
   <dialog class="portal-hoja" id="ayuda" aria-labelledby="t-ayuda">
     <div class="portal-hoja-cuerpo">
       <div class="portal-hoja-cab">

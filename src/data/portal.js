@@ -132,6 +132,21 @@ export function categoriasDelPortal(lista, temporada) {
 }
 
 /**
+ * El sello del hero ("De U9 a U21"): de la U más chica a la U más grande de la
+ * lista. Sale de los datos para no prometer una categoría que el club no
+ * tiene. Con menos de dos categorías U no hay rango y el sello no se muestra.
+ */
+export function rangoDeCategorias(lista) {
+  const numeros = (Array.isArray(lista) ? lista : [])
+    .map((c) => /^U(\d+)$/.exec(c?.grupo ?? '')?.[1])
+    .filter(Boolean)
+    .map(Number);
+  const desde = Math.min(...numeros);
+  const hasta = Math.max(...numeros);
+  return numeros.length > 1 && desde !== hasta ? { desde: `U${desde}`, hasta: `U${hasta}` } : null;
+}
+
+/**
  * "¿En qué categoría juega?": las categorías del portal que le tocan a quien
  * nació en `anio`, con la misma regla de la CABB que la lista. Puede ser más
  * de una (Primera masculino y femenino) o ninguna (más chico que la U9).
