@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import {
   PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal, categoriasDelAnio,
-  sedeValida, aliasValido, fotoValida, fotoDeCategoriaValida, tarjetasDeCategorias, tarjetaDelAnio, turnosDeHorario, FOTOS,
+  sedeValida, aliasValido, fotoValida, fotoDeCategoriaValida, fotoDeEvento, tarjetasDeCategorias, tarjetaDelAnio, turnosDeHorario, FOTOS,
 } from '../src/data/portal.js';
 import { TIPOS_AGENDA, idCalendario } from '../src/data/agenda.js';
 
@@ -240,4 +240,16 @@ test('todas las categorías del club tienen tarjeta con foto; las fotos existen 
   // Una foto repetida con otro recorte se nota: cada archivo, una vez (contando la del hero y la de la sede).
   const archivos = [...t.map((c) => c.foto.src), fotoDeCategoriaValida(FOTOS.sede).src, '/public/img/fotos/formativas-bandeja.webp'];
   assert.equal(new Set(archivos).size, archivos.length);
+});
+
+test('cada tipo de evento tiene foto válida, que existe en disco; uno desconocido usa la del hero', () => {
+  for (const tipo of TIPOS_AGENDA) {
+    const f = fotoDeEvento(tipo);
+    assert.ok(f, tipo);
+    assert.ok(existsSync(f.src.slice(1)) && existsSync(f.src640.slice(1)), `${tipo}: ${f.src}`);
+    assert.ok(f.alt.length > 20, 'con un texto que cuenta qué se ve');
+  }
+  assert.equal(new Set(TIPOS_AGENDA.map((t) => fotoDeEvento(t).src)).size, TIPOS_AGENDA.length, 'una foto distinta por tipo');
+  assert.equal(fotoDeEvento('otro').src, '/public/img/fotos/formativas-bandeja.webp');
+  assert.equal(fotoDeEvento(undefined).src, '/public/img/fotos/formativas-bandeja.webp');
 });

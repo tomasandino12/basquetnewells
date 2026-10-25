@@ -34,7 +34,7 @@ test('animaciones.js revela una sola vez, vale para lo armado después (revelar)
   assert.match(modulo, /typeof IntersectionObserver !== 'undefined'/);
   assert.match(modulo, /export function revelar\(raiz\)/);
   assert.match(modulo, /else nodo\.classList\.add\('visto'\)/, 'sin observador, todo queda visible');
-  assert.match(modulo, /const REVELABLES = '\.rise, \.sticker'/);
+  assert.match(modulo, /const REVELABLES = '\.rise'/);
 });
 
 test('la cinta corre sólo bajo .js-anim, con la mitad de la pista y pausable; sin animación se desliza a mano', () => {
@@ -49,11 +49,12 @@ test('la cinta corre sólo bajo .js-anim, con la mitad de la pista y pausable; s
   assert.match(modulo, /toggle\('pausada'\)/);
 });
 
-test('el ticket se pega como sticker: gira un poco y, con .js-anim, entra con escala y giro', () => {
-  assert.match(css, /\.sticker\{transform:rotate\(-2deg\)\}/);
-  assert.match(css, /\.js-anim \.sticker\{opacity:0;transform:rotate\(-4deg\) scale\(\.9\);/);
-  assert.match(css, /\.js-anim \.sticker\.visto\{opacity:1;transform:rotate\(-2deg\)\}/);
-  assert.match(readFileSync('public/portal.html', 'utf8'), /<div id="portal-proximo" class="sticker">/);
+test('"Lo que viene" es una sección con foto que entra con .rise, ya no un ticket girado', () => {
+  const pagina = readFileSync('public/portal.html', 'utf8');
+  assert.match(pagina, /<section class="[^"]*\brise\b[^"]*" id="lo-que-viene"/);
+  assert.doesNotMatch(css, /\.sticker/);
+  assert.match(css, /\.portal-prox-foto img\{[^}]*filter:grayscale\(1\) contrast\(1\.25\)/, 'duotono como las categorías');
+  assert.match(css, /\.portal-prox-foto::before\{[^}]*background:var\(--club\);mix-blend-mode:multiply;opacity:\.35/);
 });
 
 test('el tipo de evento no se dice sólo con el color: cada uno tiene su forma en el mes y su ícono en el detalle', () => {

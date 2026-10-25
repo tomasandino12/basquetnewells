@@ -415,6 +415,10 @@
   .publico .portal-colaborar-cuerpo{grid-template-columns:minmax(0,1fr) minmax(12rem,17rem);align-items:start}
   /* La categoría: el año a la izquierda y el resultado al lado, ocupando todo el ancho. */
   .publico .portal-buscador{grid-template-columns:minmax(0,22rem) 1fr;align-items:stretch;gap:var(--sp-4)}
+  /* Lo que viene: la foto a la izquierda y los datos a la derecha. */
+  .publico .portal-prox{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}
+  .publico .portal-prox-foto{aspect-ratio:auto;min-height:22rem}
+  .publico .portal-prox-cuerpo{padding:var(--sp-8) var(--sp-6)}
   /* Dónde se entrena: el texto a la izquierda y el mapa a la derecha. */
   .publico .portal-sede{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);align-items:center;gap:var(--sp-6)}
   .publico .portal-atajos{grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:var(--sp-3)}

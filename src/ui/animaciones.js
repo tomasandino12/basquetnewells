@@ -27,14 +27,13 @@ export function iniciarParallax() {
   }, { passive: true });
 }
 
-const REVELABLES = '.rise, .sticker';
+const REVELABLES = '.rise';
 let observador = null;
 
 /**
- * Cada .rise y cada .sticker arrancan ocultos (publico.css, sólo bajo
- * .js-anim) y entran una sola vez al aparecer en pantalla: el .rise sube, el
- * .sticker se "pega" (escala y giro). Con lo que se arma después de cargar
- * (el ticket, la cinta) hay que volver a llamar a `revelar`.
+ * Cada .rise arranca oculto (publico.css, sólo bajo .js-anim) y entra una
+ * sola vez, subiendo, al aparecer en pantalla. Con lo que se muestra después
+ * de cargar (la sección "Lo que viene") hay que volver a llamar a `revelar`.
  * `data-anim-lista` le avisa a anim.js que este módulo corrió: sin ese aviso,
  * a los 3 s apaga las animaciones.
  */
@@ -53,7 +52,7 @@ export function iniciarRise(raiz = document) {
   html.setAttribute('data-anim-lista', '');
 }
 
-/** Pone a observar lo revelable de `raiz` (y a ella misma). Sin animaciones, lo muestra ya. */
+/** Pone a observar lo revelable (.rise) de `raiz` (y a ella misma). Sin animaciones, lo muestra ya. */
 export function revelar(raiz) {
   const nodos = [...(raiz.matches?.(REVELABLES) ? [raiz] : []), ...raiz.querySelectorAll(REVELABLES)];
   for (const nodo of nodos) {

@@ -11,6 +11,8 @@ import { aniosDeCategoria, textoAnios } from './categorias.js';
  * escrita en el HTML): una foto repetida con otro recorte se nota.
  */
 export const FOTOS = Object.freeze({
+  // La del hero: va escrita en portal.html; acá está sólo como la foto general de "Lo que viene".
+  heroe: Object.freeze({ archivo: 'formativas-bandeja', posicion: '50% 30%', alt: 'Un jugador de Newell\'s sube a hacer una bandeja en un partido de las formativas' }),
   mini: Object.freeze({ archivo: 'formativas-mini', posicion: '50% 70%', alt: 'Chicos de mini de Newell\'s y de otro club posan juntos en la cancha después de un partido' }),
   dribbling: Object.freeze({ archivo: 'formativas-dribbling', posicion: '48% 40%', alt: 'Un jugador de Newell\'s conduce la pelota en un partido' }),
   grupo: Object.freeze({ archivo: 'escuelita-grupo', posicion: '45% 70%', alt: 'Chicas, chicos y grandes posan juntos en la cancha del Estadio Cubierto' }),
@@ -23,6 +25,24 @@ export const FOTOS = Object.freeze({
   // El afiche que el club subió a Instagram para buscar sponsors: el texto va en el alt.
   sponsor: Object.freeze({ archivo: 'sponsor-camisetas', posicion: '50% 50%', alt: 'Afiche del club: Newell\'s Básquet 2026, nuevas camisetas. Sumá tu empresa como sponsor: 341 370-9161' }),
 });
+
+/**
+ * La foto de "Lo que viene" según el tipo de evento: los eventos del calendario
+ * no traen foto propia. Reusa fotos de FOTOS (excepción a "una vez por página":
+ * se ve sólo si hay un evento de ese tipo, y en la tarjeta grande, no en la fila
+ * de categorías). Un tipo sin foto usa la general del hero.
+ */
+const FOTO_POR_TIPO = Object.freeze({
+  partido: FOTOS.ataque,
+  evento: FOTOS.grupo,
+  charla: FOTOS.mini,
+  entrenamiento: FOTOS.entrenamiento,
+});
+
+/** La foto válida de un tipo de evento (ver FOTO_POR_TIPO); si el tipo no tiene, la del hero. */
+export function fotoDeEvento(tipo) {
+  return fotoDeCategoriaValida(FOTO_POR_TIPO[tipo]) ?? fotoDeCategoriaValida(FOTOS.heroe);
+}
 
 /**
  * Lo que muestra la página pública del básquet y no sale de la base: los

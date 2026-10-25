@@ -462,26 +462,32 @@
 .portal-logos-lista a{display:flex;align-items:center;justify-content:center;min-height:var(--tap);width:100%}
 .portal-logos-lista img{display:block;max-width:100%;max-height:4rem;width:auto;height:auto;object-fit:contain}
 
-/* "Lo que viene": el próximo evento como una ENTRADA. A la izquierda el talón,
-   en el color de su tipo, con SÁB / 24 / OCT en grande; a la derecha el
-   cuerpo, separado por la línea punteada y las dos muescas, con el título, el
-   horario, el lugar y cómo agendarlo. Está levemente girado y "se pega" al
-   aparecer (.sticker). El fondo de las muescas es el de la página. */
-.portal-prox{margin-bottom:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden}
-.portal-prox-cab{display:flex;justify-content:space-between;align-items:center;padding:var(--sp-2) var(--sp-4);border-bottom:1px solid var(--pub-borde);font-family:var(--ff-titulo);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-125);color:var(--gris-osc)}
-.portal-prox-cab span::before{content:"";display:inline-block;width:.4375rem;height:.4375rem;margin-right:var(--sp-2);border-radius:50%;background:var(--primario);vertical-align:middle}
-.portal-prox-cab b{color:var(--sobre-oscuro)}
-.portal-prox-ev{position:relative;display:grid;grid-template-columns:5.5rem minmax(0,1fr)}
-.portal-prox-ev::before,.portal-prox-ev::after{content:"";position:absolute;left:calc(5.5rem - .6875rem);width:1.375rem;height:1.375rem;border-radius:50%;background:var(--pub-fondo);z-index:1}
-.portal-prox-ev::before{top:-.6875rem}
-.portal-prox-ev::after{bottom:-.6875rem}
-.portal-prox-fecha{display:grid;align-content:center;justify-items:center;gap:.125rem;padding:var(--sp-4) var(--sp-2);text-align:center;color:var(--pub-fondo)}
+/* "Lo que viene": el próximo evento en grande, como en la propuesta de v0. La
+   foto es la del TIPO de evento (no hay una de cada uno), en el mismo duotono
+   de las categorías, con la fecha en el color del tipo abajo a la izquierda.
+   En el celular, la foto arriba y los datos abajo; en compu, lado a lado
+   (layout.css). */
+.portal-prox{display:grid;background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden}
+.portal-prox-foto{position:relative;isolation:isolate;aspect-ratio:3 / 2;overflow:hidden;background:var(--pub-fondo)}
+.portal-prox-foto img{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.25)}
+.portal-prox-foto::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--club);mix-blend-mode:multiply;opacity:.35}
+.portal-prox-foto::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(to top,var(--velo-pub-medio) 0,var(--velo-pub-cero) 55%)}
+.portal-prox-fecha{
+  position:absolute;left:var(--sp-4);bottom:var(--sp-4);display:grid;justify-items:center;gap:.125rem;min-width:5rem;
+  padding:var(--sp-3);border-radius:var(--r-s);background:var(--sobre-oscuro);color:var(--pub-fondo);text-align:center;
+}
 .portal-prox-fecha small{display:block;font-family:var(--ff-titulo);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-170);line-height:1}
 .portal-prox-fecha b{display:block;font-family:var(--ff-titulo);font-weight:700;font-size:3.5rem;line-height:.9}
-.portal-prox-cuerpo{min-width:0;padding:var(--sp-4);border-left:2px dashed var(--linea-osc)}
-.portal-prox-tipo{display:inline-block;vertical-align:middle;font-size:var(--fs-125);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris-osc)}
-.portal-prox-t{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-260);line-height:1;margin:var(--sp-1) 0;overflow-wrap:anywhere}
-.portal-prox-h{color:var(--gris-osc);font-size:var(--fs-145)}
+.portal-prox-cuerpo{min-width:0;display:grid;align-content:center;gap:var(--sp-2);padding:var(--sp-5) var(--sp-4)}
+.portal-prox-cuerpo > p{margin:0}
+.portal-prox-cab{display:flex;align-items:center;gap:var(--sp-1)}
+.portal-prox-tipo{font-size:var(--fs-125);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris-osc)}
+.portal-prox-cab b{margin-left:var(--sp-2);padding:.125rem var(--sp-3);border-radius:var(--r-full);background:var(--sobre-oscuro);color:var(--pub-fondo);font-family:var(--ff-titulo);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:var(--fs-135)}
+.portal-prox-t{margin:0;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:clamp(2rem,1.5rem + 2.5vw,3rem);line-height:.95;overflow-wrap:anywhere;text-wrap:balance}
+.portal-prox-h{color:var(--sobre-oscuro);font-size:var(--fs-170)}
+.portal-prox-lugar{display:flex;align-items:center;gap:var(--sp-2);color:var(--gris-osc);font-size:var(--fs-160)}
+.portal-prox-lugar i{display:grid}
+.portal-prox-lugar svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 /* "Agendar": dos botones de verdad (48 px), no dos links chicos. */
 .portal-prox .portal-ev-agregar{gap:var(--sp-2);margin-top:var(--sp-3)}
 .portal-prox .portal-ev-agregar > span{font-size:var(--fs-135);width:100%}
@@ -540,14 +546,6 @@ html:not(.js-anim) .portal-cinta-fila[aria-hidden]{display:none}
 .portal-cinta-pausa[aria-pressed="true"] .p{display:none}
 .portal-cinta-pausa[aria-pressed="true"] .r{display:block}
 html:not(.js-anim) .portal-cinta-pausa{display:none}
-
-/* ---- stickers: el ticket queda un poco girado y se "pega" al aparecer ---- */
-.sticker{transform:rotate(-2deg)}
-.js-anim .sticker{opacity:0;transform:rotate(-4deg) scale(.9);transition:opacity var(--dur-rise) var(--ease-salida),transform var(--dur-rise) var(--ease-salida)}
-.js-anim .sticker.visto{opacity:1;transform:rotate(-2deg)}
-@media (prefers-reduced-motion:reduce){
-  .js-anim .sticker{opacity:1;transform:rotate(-2deg)}
-}
 
 /* ---- calendario del mes ---- */
 /* El color de cada tipo pinta el puntito del día, el cuadradito de la leyenda y el filete del evento. */

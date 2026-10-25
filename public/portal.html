@@ -120,6 +120,14 @@
     <div class="portal-cuerpo">
     <nav class="portal-atajos" id="portal-atajos" aria-label="Atajos"></nav>
 
+    <!-- El próximo evento en grande, con una foto según su tipo (src/ui/portal.js,
+         htmlProximo). Sin evento por delante, oculta. -->
+    <section class="portal-sec portal-viene rise" id="lo-que-viene" aria-labelledby="t-viene" hidden>
+      <div class="portal-st">Agenda</div>
+      <h2 id="t-viene">Lo que viene</h2>
+      <div id="portal-viene"></div>
+    </section>
+
     <!-- Como en la propuesta de v0: elegís el año de nacimiento y al lado te dice
          la categoría y el horario; abajo, una tarjeta con foto por categoría,
          que al tocarla salta a su año. -->
@@ -135,7 +143,6 @@
       <div class="portal-st">Agenda del club</div>
       <h2 id="t-calendario">Calendario</h2>
       <p class="intro">Partidos, eventos y charlas. Tocá un día para ver qué hay.</p>
-      <div id="portal-proximo" class="sticker"></div>
       <div id="portal-calendario" class="rise"></div>
     </section>
 

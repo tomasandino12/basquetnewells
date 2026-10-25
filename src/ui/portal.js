@@ -4,7 +4,7 @@ import { formulariosPublicos, eventosDelMes } from '../data/repositorio.js';
 import {
   PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal,
   categoriasDelAnio, sedeValida, aliasValido, fotoValida, tarjetasDeCategorias, tarjetaDelAnio, turnosDeHorario,
-  fotoDeCategoriaValida, FOTOS,
+  fotoDeCategoriaValida, fotoDeEvento, FOTOS,
 } from '../data/portal.js';
 import { temporadaComoAnio } from '../data/categorias.js';
 import { resolverFormularios, separarFormularios } from '../data/formulariosPortal.js';
@@ -37,6 +37,7 @@ const ICONO = {
   calendario: html`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`,
   categorias: html`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
   colaborar: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>`,
+  agenda: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 5h13l-3 4 3 4H5"/></svg>`,
   ayuda: html`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/></svg>`,
   comprobante: html`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>`,
   inscribir: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 14h6M9 17h4"/></svg>`,
@@ -412,30 +413,34 @@ export function htmlEvento(e, fecha = null) {
 const UN_TIPO = { partido: 'Partido', evento: 'Evento', charla: 'Charla', entrenamiento: 'Entrenamiento' };
 
 /**
- * "Lo que viene": el próximo evento, arriba del mes, como un tablero (fecha
- * grande, el color del tipo en el filete). Sin ninguno por delante, nada.
- * `proximo`: { fecha, evento } de proximosEventos.
+ * "Lo que viene": el próximo evento en grande. Una foto según su tipo (los
+ * eventos no traen la suya) en duotono, con la fecha en el color del tipo; al
+ * lado, el tipo, el título, cuándo y dónde, y cómo agendarlo. Sin ninguno por
+ * delante, nada. De Google no se toma la descripción: en un calendario público
+ * puede traer nombres. `proximo`: { fecha, evento } de proximosEventos.
  */
 export function htmlProximo(proximo, hoy) {
   if (!proximo) return html``;
   const { fecha, evento: e } = proximo;
   const f = partesDeFecha(fecha);
   const cuando = cuandoEs(fecha, hoy);
-  return html`<div class="portal-prox tipo-${e.tipo}">
-    <div class="portal-prox-cab"><span>Lo que viene</span>${cuando && html`<b>${cuando}</b>`}</div>
-    <div class="portal-prox-ev">
+  const foto = fotoDeEvento(e.tipo);
+  return html`<article class="portal-prox tipo-${e.tipo}">
+    <div class="portal-prox-foto">
+      ${foto && html`<img src="${foto.src640}" srcset="${foto.src640} 640w, ${foto.src} 1080w" sizes="(min-width: 40rem) 32rem, 100vw" width="640" height="427" alt="${foto.alt}" loading="lazy" style="object-position:${foto.posicion}">`}
       <div class="portal-prox-fecha" aria-label="${fechaLarga(fecha)}"><small>${f.semana}</small><b>${f.dia}</b><small>${f.mes}</small></div>
-      <div class="portal-prox-cuerpo">
-        <i class="portal-tipo-ico">${ICONO_TIPO[e.tipo]}</i><span class="portal-prox-tipo">${UN_TIPO[e.tipo]}</span>
-        <div class="portal-prox-t">${e.titulo}</div>
-        <div class="portal-prox-h">${e.hora ? `${e.hora} a ${e.horaFin}` : 'Todo el día'}${e.lugar && html` · ${e.lugar}`}</div>
-        <div class="portal-ev-agregar"><span>Agendar:</span>
-          <a href="${enlaceAgregarGoogle(e)}" target="_blank" rel="noopener">Google</a>
-          <button type="button" data-ics="${claveEvento(e)}">iPhone</button>
-        </div>
+    </div>
+    <div class="portal-prox-cuerpo">
+      <p class="portal-prox-cab"><i class="portal-tipo-ico">${ICONO_TIPO[e.tipo]}</i><span class="portal-prox-tipo">${UN_TIPO[e.tipo]}</span>${cuando && html`<b>${cuando}</b>`}</p>
+      <h3 class="portal-prox-t">${e.titulo}</h3>
+      <p class="portal-prox-h">${fechaLarga(fecha)} · ${e.hora ? `${e.hora} a ${e.horaFin}` : 'Todo el día'}</p>
+      ${e.lugar && html`<p class="portal-prox-lugar"><i>${ICONO.lugar}</i>${e.lugar}</p>`}
+      <div class="portal-ev-agregar"><span>Agendar:</span>
+        <a href="${enlaceAgregarGoogle(e)}" target="_blank" rel="noopener">Google</a>
+        <button type="button" data-ics="${claveEvento(e)}">iPhone</button>
       </div>
     </div>
-  </div>`;
+  </article>`;
 }
 
 /**
@@ -546,7 +551,7 @@ function bajarIcs(evento) {
   setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
-function iniciarCalendario(calendarios) {
+function iniciarCalendario(calendarios, alMostrarProximo) {
   const hoy = hoyEnRosario();
   const cache = new Map();
   const estado = { anio: Number(hoy.slice(0, 4)), mes: Number(hoy.slice(5, 7)), elegido: hoy, hoy, porDia: new Map(), fallidos: 0, cargando: true };
@@ -590,22 +595,24 @@ function iniciarCalendario(calendarios) {
     const [actual, siguiente] = await Promise.all([traer(anio, mes), traer(sig.anio, sig.mes)]);
     // Un torneo que cruza el fin de mes está en los dos: proximosEventos lo cuenta una vez.
     const proximos = proximosEventos(new Map([...actual.porDia, ...siguiente.porDia]), hoy, 6);
-    $('portal-proximo').innerHTML = htmlProximo(proximos[0], hoy);
+    $('portal-viene').innerHTML = htmlProximo(proximos[0], hoy);
+    $('lo-que-viene').hidden = !proximos.length;
     $('portal-cinta').innerHTML = htmlCinta(proximos);
     $('cinta').hidden = !proximos.length;
-    revelar($('portal-proximo'));
+    revelar($('lo-que-viene'));
+    alMostrarProximo();
   }
 
-  // En la sección entera: el "iPhone" de "Lo que viene" y los del mes. El
-  // evento se busca en todos los meses ya traídos, porque "Lo que viene"
-  // puede ser de otro mes que el de la grilla.
-  $('calendario').addEventListener('click', (ev) => {
+  // En toda la página: el "iPhone" de "Lo que viene" (que ya no está dentro del
+  // calendario) y los del mes. El evento se busca en todos los meses ya
+  // traídos, porque "Lo que viene" puede ser de otro mes que el de la grilla.
+  document.addEventListener('click', (ev) => {
     const ics = ev.target.closest('[data-ics]');
-    if (ics) {
-      const evento = [...cache.values()].flatMap((c) => [...c.porDia.values()].flat()).find((e) => claveEvento(e) === ics.dataset.ics);
-      if (evento) bajarIcs(evento);
-      return;
-    }
+    if (!ics) return;
+    const evento = [...cache.values()].flatMap((c) => [...c.porDia.values()].flat()).find((e) => claveEvento(e) === ics.dataset.ics);
+    if (evento) bajarIcs(evento);
+  });
+  $('calendario').addEventListener('click', (ev) => {
     const dia = ev.target.closest('[data-dia]');
     if (dia) {
       estado.elegido = dia.dataset.dia;
@@ -763,19 +770,24 @@ export async function iniciarPortal() {
   $('calendario').hidden = !calendarios.length;
   iniciarCopiar();
 
-  $('portal-atajos').innerHTML = htmlAtajos([
-    !$('categorias').hidden && { clave: 'categorias', texto: 'Categorías', href: '#categorias' },
-    !$('calendario').hidden && { clave: 'calendario', texto: 'Calendario', href: '#calendario' },
-    { clave: 'colaborar', texto: 'Sumate', href: '#colaborar' },
-    { clave: 'ayuda', texto: 'Ayuda', href: '#ayuda' },
-  ].filter(Boolean));
+  // "Agenda" aparece cuando se sabe que hay un próximo evento: se vuelve a pintar entonces.
+  const pintarAtajos = () => {
+    $('portal-atajos').innerHTML = htmlAtajos([
+      !$('lo-que-viene').hidden && { clave: 'agenda', texto: 'Agenda', href: '#lo-que-viene' },
+      !$('categorias').hidden && { clave: 'categorias', texto: 'Categorías', href: '#categorias' },
+      !$('calendario').hidden && { clave: 'calendario', texto: 'Calendario', href: '#calendario' },
+      { clave: 'colaborar', texto: 'Sumate', href: '#colaborar' },
+      { clave: 'ayuda', texto: 'Ayuda', href: '#ayuda' },
+    ].filter(Boolean));
+  };
+  pintarAtajos();
 
   // Si la URL es la vuelta de un login, portalEntrada.js ya está mandando a la
   // persona a /app. Acá no se consulta nada: el cliente de Supabase canjearía
   // el ?code= o el #access_token en esta página, y la sesión es de /app.
   if (destinoDeAuth(window.location.search, window.location.hash)) return;
 
-  if (calendarios.length) iniciarCalendario(calendarios);
+  if (calendarios.length) iniciarCalendario(calendarios, pintarAtajos);
 
   const { estado, formularios } = await resolverFormularios(() => formulariosPublicos(PORTAL.clubId), PORTAL.formularios);
 

@@ -17,7 +17,7 @@ const portal = readFileSync('src/ui/portal.js', 'utf8');
 const seccion = (id) => pagina.match(new RegExp(`<section [^>]*id="${id}"[\\s\\S]*?</section>`))?.[0] ?? '';
 
 test('arriba de todo, la banda con las dos acciones; después el resto, en orden', () => {
-  const orden = ['heroe', 'categorias', 'calendario', 'recaudacion', 'colaborar', 'sede', 'formularios', 'club', 'sponsors'];
+  const orden = ['heroe', 'lo-que-viene', 'categorias', 'calendario', 'recaudacion', 'colaborar', 'sede', 'formularios', 'club', 'sponsors'];
   const posiciones = orden.map((id) => pagina.search(new RegExp(`<section [^>]*id="${id}"`)));
   assert.ok(posiciones.every((p) => p > 0), `faltan secciones: ${posiciones}`);
   assert.deepEqual([...posiciones].sort((a, b) => a - b), posiciones, 'las secciones están desordenadas');
@@ -25,7 +25,7 @@ test('arriba de todo, la banda con las dos acciones; después el resto, en orden
 });
 
 test('las secciones que dependen de datos arrancan ocultas; la banda, recaudación y colaborar se ven siempre', () => {
-  for (const id of ['calendario', 'categorias', 'sede', 'formularios', 'club', 'sponsors']) {
+  for (const id of ['lo-que-viene', 'calendario', 'categorias', 'sede', 'formularios', 'club', 'sponsors']) {
     assert.match(seccion(id).split('>')[0], /\bhidden\b/, `#${id} tiene que arrancar oculta`);
   }
   for (const id of ['heroe', 'recaudacion', 'colaborar']) {
@@ -110,7 +110,7 @@ test('el portal no consulta nada si la URL es la vuelta de un login: esos links 
   assert.match(portal, /destinoDeAuth\(window\.location\.search, window\.location\.hash\)/);
   const guarda = portal.indexOf('destinoDeAuth(');
   assert.ok(guarda > 0 && guarda < portal.indexOf('resolverFormularios('), 'la guarda tiene que ir antes de leer la base');
-  assert.ok(guarda < portal.lastIndexOf('iniciarCalendario(calendarios)'), 'y antes de pedir el calendario');
+  assert.ok(guarda < portal.lastIndexOf('iniciarCalendario(calendarios, pintarAtajos)'), 'y antes de pedir el calendario');
 });
 
 // ---- El hero: foto, título y los dos botones ----
@@ -268,7 +268,7 @@ test('calendario: un día sin nada muestra lo que viene; si falló un calendario
 test('"Lo que viene": fecha grande, tipo, título escapado, hora y lugar, y para agendarlo', () => {
   const [prox] = proximosEventos(porDia, '2026-10-23', 1);
   const out = htmlProximo(prox, '2026-10-23').toString();
-  assert.match(out, /<div class="portal-prox tipo-evento">/, 'el de todo el día va primero');
+  assert.match(out, /<article class="portal-prox tipo-evento">/, 'el de todo el día va primero');
   assert.match(out, /<small>sáb<\/small><b>24<\/b><small>oct<\/small>/);
   assert.match(out, /<b>Mañana<\/b>/);
   assert.match(out, /Hamburgueseada/);
@@ -280,6 +280,35 @@ test('"Lo que viene": fecha grande, tipo, título escapado, hora y lugar, y para
   assert.doesNotMatch(partido, /Mañana|Hoy/);
   assert.match(htmlProximo({ fecha: '2026-10-24', evento: porDia.get('2026-10-24')[1] }, '2026-10-24').toString(), /U15 vs\. &lt;Náutico&gt;[\s\S]*Microestadio/);
   assert.equal(htmlProximo(undefined, '2026-10-20').toString(), '');
+});
+
+test('lo que viene sin eventos no se muestra: no devuelve nada y la sección queda oculta hasta que haya uno', () => {
+  assert.equal(htmlProximo(undefined, '2026-10-20').toString(), '');
+  assert.match(seccion('lo-que-viene').split('>')[0], /\bhidden\b/);
+  assert.doesNotMatch(pagina, /portal-proximo/, 'ya no cuelga del calendario');
+  assert.doesNotMatch(seccion('calendario'), /portal-prox/);
+  const desde = portal.indexOf('async function mostrarProximo()');
+  const cuerpo = portal.slice(desde, portal.indexOf('\n  }\n', desde));
+  assert.match(cuerpo, /\$\('lo-que-viene'\)\.hidden = !proximos\.length/);
+  assert.match(cuerpo, /alMostrarProximo\(\)/, 'y el atajo "Agenda" se suma recién entonces');
+  assert.match(portal, /!\$\('lo-que-viene'\)\.hidden && \{ clave: 'agenda', texto: 'Agenda', href: '#lo-que-viene' \}/);
+});
+
+test('lo que viene muestra fecha, tipo y botones de agendar, con la foto de su tipo', () => {
+  for (const [dia, tipo, foto] of [['2026-10-24', 'evento', 'escuelita-grupo'], ['2026-10-31', 'partido', 'juego-ataque']]) {
+    const [prox] = proximosEventos(porDia, dia, 1);
+    const out = htmlProximo(prox, dia).toString();
+    assert.match(out, new RegExp(`<article class="portal-prox tipo-${tipo}">`));
+    assert.match(out, new RegExp(`<img src="/public/img/fotos/${foto}-640\\.webp"[^>]*alt="[^"]{20,}"[^>]*loading="lazy"`));
+    assert.match(out, /<div class="portal-prox-fecha" aria-label="[^"]+"><small>[^<]+<\/small><b>\d+<\/b><small>[^<]+<\/small><\/div>/);
+    assert.match(out, /<h3 class="portal-prox-t">/);
+    assert.match(out, /<a href="https:\/\/calendar\.google\.com\/calendar\/render\?action=TEMPLATE[^"]*" target="_blank" rel="noopener">Google<\/a>/);
+    assert.match(out, /<button type="button" data-ics="[^"]+">iPhone<\/button>/);
+  }
+  // El lugar sólo si hay, y nada de la descripción de Google (puede traer nombres).
+  assert.doesNotMatch(htmlProximo(proximosEventos(porDia, '2026-10-24', 1)[0], '2026-10-24').toString(), /portal-prox-lugar/);
+  assert.match(htmlProximo({ fecha: '2026-10-24', evento: porDia.get('2026-10-24')[1] }, '2026-10-24').toString(), /portal-prox-lugar[^>]*><i><svg[\s\S]*?<\/i>Microestadio/);
+  assert.doesNotMatch(portal.slice(portal.indexOf('export function htmlProximo')), /descripcion|description/);
 });
 
 test('"Lo que viene" busca en el mes siguiente si en lo que queda del mes no hay nada', () => {
@@ -344,7 +373,7 @@ test('la cinta y "Lo que viene" salen de los mismos eventos: este mes y el sigui
   const cuerpo = portal.slice(desde, portal.indexOf('\n  }\n', desde));
   assert.match(cuerpo, /proximosEventos\(new Map\(\[\.\.\.actual\.porDia, \.\.\.siguiente\.porDia\]\), hoy, 6\)/);
   assert.match(cuerpo, /htmlCinta\(proximos\)/);
-  assert.match(cuerpo, /revelar\(\$\('portal-proximo'\)\)/);
+  assert.match(cuerpo, /revelar\(\$\('lo-que-viene'\)\)/);
   assert.ok(pagina.indexOf('id="cinta"') > pagina.indexOf('id="heroe"') && pagina.indexOf('id="cinta"') < pagina.indexOf('id="calendario"'), 'la cinta va entre el hero y el calendario');
 });
 
