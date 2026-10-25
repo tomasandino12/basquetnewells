@@ -204,12 +204,17 @@
 
   </main>
 
-  <!-- El pie: lo legal, sobre una franja con el borde de arriba rasgado (el único
-       de la página: el hero ya tiene su corte en diagonal). Abajo deja lugar a
-       la barra fija. -->
+  <!-- El pie: el escudo, lo legal y la firma, sobre una franja con el borde de
+       arriba rasgado (el único de la página: el hero ya tiene su corte en
+       diagonal). La firma ("Hecho por …") sale de PORTAL.creador y no se ve
+       mientras no haya nombre. Abajo deja lugar a la barra fija. -->
   <footer class="portal-pie">
     <div class="portal-rasgado" aria-hidden="true"></div>
-    <div class="pie-legal"><a href="/app">Entrar a Semillero</a> · <a href="/public/legal/privacidad.html">Política de privacidad</a> · <a href="/public/legal/terminos.html">Términos y condiciones</a></div>
+    <div class="pie-legal">
+      <div class="pie-marca"><img src="/public/escudo.png" alt="" width="40" height="40"><div><b>Básquet Newell&#39;s</b><small>Formativas · Familias</small></div></div>
+      <p class="pie-links"><a href="/app">Entrar a Semillero</a><a href="/public/legal/privacidad.html">Política de privacidad</a><a href="/public/legal/terminos.html">Términos y condiciones</a></p>
+      <p class="pie-firma" id="portal-firma" hidden></p>
+    </div>
   </footer>
 
   <!-- Ayuda: no ocupa lugar en la página. Todo link a #ayuda la abre encima

@@ -471,7 +471,15 @@
 /* Pie: franja con el borde de arriba rasgado y lugar abajo para la barra fija. */
 .portal-pie{margin-top:var(--sp-8)}
 .portal-rasgado{height:1.5rem;background:var(--pub-tarjeta);clip-path:polygon(0 55%,4% 30%,8% 70%,12% 40%,16% 75%,20% 35%,24% 60%,28% 25%,32% 70%,36% 45%,40% 80%,44% 30%,48% 65%,52% 40%,56% 75%,60% 28%,64% 62%,68% 38%,72% 78%,76% 32%,80% 68%,84% 42%,88% 72%,92% 30%,96% 64%,100% 45%,100% 100%,0 100%)}
-.portal-pie .pie-legal{margin:0;padding:var(--sp-2) var(--sp-4) calc(5.5rem + env(safe-area-inset-bottom));background:var(--pub-tarjeta)}
+.portal-pie .pie-legal{margin:0;display:grid;justify-items:center;gap:var(--sp-3);padding:var(--sp-4) var(--sp-4) calc(5.5rem + env(safe-area-inset-bottom));background:var(--pub-tarjeta)}
+.pie-marca{display:flex;align-items:center;gap:var(--sp-3);text-align:left}
+.pie-marca img{width:2.5rem;height:2.5rem;flex:0 0 auto}
+.pie-marca b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:var(--fs-190);line-height:1;color:var(--sobre-oscuro)}
+.pie-marca small{display:block;margin-top:.1875rem;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc)}
+.pie-links{margin:0;display:flex;flex-wrap:wrap;justify-content:center;gap:0 var(--sp-4)}
+.pie-firma{margin:0;color:var(--gris-osc);font-size:var(--fs-125)}
+.pie-firma b{color:var(--sobre-oscuro);font-weight:600}
+.pie-firma .pie-firma-link{display:inline-flex;align-items:center;gap:var(--sp-1);min-height:var(--tap);color:var(--sobre-oscuro);font-weight:600}
 .portal-aviso{color:var(--gris-osc);font-style:italic;font-size:var(--fs-135);margin:0 0 var(--sp-3)}
 
 .portal-lista{display:grid;gap:var(--sp-3)}

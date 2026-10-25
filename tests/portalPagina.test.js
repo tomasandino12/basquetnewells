@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlAcciones, htmlDock, htmlPago, htmlCinta, htmlCarrusel, htmlAlias, htmlBuscador, htmlCategoriaDelAnio, htmlProximo,
-  htmlRecaudacion, htmlColaborar, htmlAyuda, htmlAtajos, htmlCalendario, htmlFoto, htmlSede, diaInicial, htmlSuscripcion,
+  htmlRecaudacion, htmlColaborar, htmlFirma, htmlAyuda, htmlAtajos, htmlCalendario, htmlFoto, htmlSede, diaInicial, htmlSuscripcion,
 } from '../src/ui/portal.js';
 import { eventoDesdeGoogle, eventosPorDia, proximosEventos } from '../src/data/agenda.js';
+import { PORTAL } from '../src/data/portal.js';
 
 /**
  * portal.html es HTML escrito a mano y no hay navegador en los tests: se lee
@@ -360,6 +361,31 @@ test('día inicial: hoy si es del mes; si no, el primero con algo, o el 1', () =
   assert.equal(diaInicial(2026, 10, '2026-10-20', porDia), '2026-10-20');
   assert.equal(diaInicial(2026, 10, '2026-09-30', porDia), '2026-10-24');
   assert.equal(diaInicial(2026, 11, '2026-10-20', porDia), '2026-11-01');
+});
+
+// ---- El pie: escudo, links legales y firma ----
+
+test('el pie lleva escudo y links legales; la firma arranca oculta y sale de PORTAL.creador', () => {
+  const pie = pagina.match(/<footer class="portal-pie">[\s\S]*?<\/footer>/)[0];
+  assert.match(pie, /<div class="pie-marca"><img src="\/public\/escudo\.png" alt="" width="40" height="40">/, 'el escudo es decorativo: el nombre va al lado');
+  assert.match(pie, /Básquet Newell&#39;s/);
+  assert.match(pie, /<a href="\/app">Entrar a Semillero<\/a>/);
+  assert.match(pie, /<a href="\/public\/legal\/privacidad\.html">Política de privacidad<\/a>/);
+  assert.match(pie, /<a href="\/public\/legal\/terminos\.html">Términos y condiciones<\/a>/);
+  assert.match(pie, /<p class="pie-firma" id="portal-firma" hidden><\/p>/, 'sin nombre, no se ve');
+  assert.doesNotMatch(pie, /linkedin|Hecho por/i, 'ni nombre ni link escritos a mano en el HTML');
+  assert.match(portal, /mostrar\('portal-firma', htmlFirma\(PORTAL\.creador\), 'portal-firma'\)/);
+  for (const a of ['/public/legal/privacidad.html', '/public/legal/terminos.html']) assert.ok(readFileSync(a.slice(1), 'utf8').length > 0, a);
+});
+
+test('la firma del pie: "Hecho por" con link externo a LinkedIn (noopener), sólo el nombre sin link válido, nada sin nombre; escapada', () => {
+  const con = htmlFirma({ nombre: 'Ana <b>', linkedin: 'https://www.linkedin.com/in/ana/' }).toString();
+  assert.match(con, /^Hecho por <a class="pie-firma-link" href="https:\/\/www\.linkedin\.com\/in\/ana\/" target="_blank" rel="noopener">Ana &lt;b&gt; /);
+  const sinLink = htmlFirma({ nombre: 'Ana', linkedin: 'https://evil.com/in/ana' }).toString();
+  assert.equal(sinLink, 'Hecho por <b>Ana</b>');
+  assert.doesNotMatch(sinLink, /<a /);
+  assert.equal(htmlFirma({ nombre: null, linkedin: 'https://www.linkedin.com/in/ana/' }).toString(), '');
+  assert.equal(htmlFirma(PORTAL.creador).toString(), '', 'hoy el pie no firma');
 });
 
 // ---- El sticker de sponsor del hero ----

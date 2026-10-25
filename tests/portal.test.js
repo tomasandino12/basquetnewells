@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import {
   PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal, categoriasDelAnio,
-  sedeValida, aliasValido, fotoValida, fotoDeCategoriaValida, fotoDeEvento, tarjetasDeCategorias, tarjetaDelAnio, turnosDeHorario, FOTOS,
+  sedeValida, aliasValido, fotoValida, fotoDeCategoriaValida, fotoDeEvento, firmaValida, tarjetasDeCategorias, tarjetaDelAnio, turnosDeHorario, FOTOS,
 } from '../src/data/portal.js';
 import { TIPOS_AGENDA, idCalendario } from '../src/data/agenda.js';
 
@@ -252,4 +252,20 @@ test('cada tipo de evento tiene foto válida, que existe en disco; uno desconoci
   assert.equal(new Set(TIPOS_AGENDA.map((t) => fotoDeEvento(t).src)).size, TIPOS_AGENDA.length, 'una foto distinta por tipo');
   assert.equal(fotoDeEvento('otro').src, '/public/img/fotos/formativas-bandeja.webp');
   assert.equal(fotoDeEvento(undefined).src, '/public/img/fotos/formativas-bandeja.webp');
+});
+
+test('la firma sólo enlaza a LinkedIn: sin nombre no hay firma; un link de otro sitio se descarta y queda el nombre; PORTAL.creador arranca vacío', () => {
+  const ok = 'https://www.linkedin.com/in/alguien-123/';
+  assert.deepEqual(firmaValida({ nombre: ' Ana Pérez ', linkedin: ok }), { nombre: 'Ana Pérez', linkedin: ok });
+  assert.deepEqual(firmaValida({ nombre: 'Ana', linkedin: null }), { nombre: 'Ana', linkedin: null });
+  for (const mala of ['http://www.linkedin.com/in/a', 'https://linkedin.com/in/a', 'https://www.linkedin.com', 'https://evil.com/www.linkedin.com/in/a',
+    'https://www.linkedin.com@evil.com/in/a', 'https://www.linkedin.com.evil.com/in/a', 'https://user:pw@www.linkedin.com/in/a', 'javascript:alert(1)', 'https://www.linkedin.com/in/a b', 'https://www.linkedin.com/"><script>']) {
+    assert.deepEqual(firmaValida({ nombre: 'Ana', linkedin: mala }), { nombre: 'Ana', linkedin: null }, mala);
+  }
+  for (const vacia of [null, undefined, {}, { nombre: null, linkedin: ok }, { nombre: '   ', linkedin: ok }]) {
+    assert.equal(firmaValida(vacia), null, JSON.stringify(vacia));
+  }
+  assert.equal(firmaValida({ nombre: 'x'.repeat(200) }).nombre.length, 80);
+  // Mientras Tomás no pase sus datos, el pie no firma nada (no se inventa nombre ni link).
+  assert.deepEqual({ ...PORTAL.creador }, { nombre: null, linkedin: null });
 });

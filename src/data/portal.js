@@ -138,6 +138,12 @@ export const PORTAL = Object.freeze({
   // existe o una ruta de otro lado, no se muestra: ver sponsorsValidos().
   sponsors: Object.freeze([]),
 
+  // La firma del pie, "Hecho por <nombre>", con un link a su LinkedIn. PENDIENTE:
+  // Tomás todavía no pasó el nombre ni la URL; con el nombre vacío el pie no
+  // muestra la firma. Sin una URL de https://www.linkedin.com/… válida, va sólo
+  // el nombre, sin link (ver firmaValida).
+  creador: Object.freeze({ nombre: null, linkedin: null }),
+
   // Respaldo de los formularios: lo que se muestra si la base no responde. La
   // lista de verdad la carga la coordinación desde su panel. Vacío a propósito
   // mientras la inscripción nueva no esté publicada: mejor la tarjeta cerrada
@@ -316,6 +322,27 @@ export function enlaceContacto(valor) {
     return null;
   }
   return u.protocol === 'https:' && u.hostname === 'wa.me' && u.pathname.length > 1 ? valor : null;
+}
+
+/**
+ * La firma del pie si tiene nombre; si no, null (el pie no dice nada). El link
+ * va sólo si es de LinkedIn por https (termina en un <a href> que abre otro
+ * sitio): host exacto www.linkedin.com, sin usuario ni contraseña.
+ */
+export function firmaValida(creador) {
+  const nombre = texto(creador?.nombre).slice(0, 80);
+  if (!nombre) return null;
+  const url = texto(creador.linkedin);
+  let linkedin = null;
+  if (/^https:\/\/www\.linkedin\.com\/[^\s"<>]+$/.test(url)) {
+    try {
+      const u = new URL(url);
+      if (u.protocol === 'https:' && u.hostname === 'www.linkedin.com' && !u.username && !u.password) linkedin = url;
+    } catch {
+      // Una URL que no se puede leer no es un link: queda sólo el nombre.
+    }
+  }
+  return { nombre, linkedin };
 }
 
 // Sólo imágenes propias, de la carpeta de logos: el CSP de la app no deja cargar

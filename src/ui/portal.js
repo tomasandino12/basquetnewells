@@ -4,7 +4,7 @@ import { formulariosPublicos, eventosDelMes } from '../data/repositorio.js';
 import {
   PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal,
   categoriasDelAnio, sedeValida, aliasValido, fotoValida, tarjetasDeCategorias, tarjetaDelAnio, turnosDeHorario,
-  fotoDeCategoriaValida, fotoDeEvento, FOTOS,
+  fotoDeCategoriaValida, fotoDeEvento, firmaValida, FOTOS,
 } from '../data/portal.js';
 import { temporadaComoAnio } from '../data/categorias.js';
 import { resolverFormularios, separarFormularios } from '../data/formulariosPortal.js';
@@ -259,6 +259,16 @@ export function htmlCarrusel(tarjetas) {
       </button>
     </li>`)}</ul>
     <p class="portal-carrusel-guia" aria-hidden="true">Deslizá para ver todas →</p>`;
+}
+
+/**
+ * "Hecho por <nombre>" del pie, con link a LinkedIn si el que está cargado es
+ * válido; sin link, sólo el nombre. Sin nombre, nada (el pie la oculta).
+ */
+export function htmlFirma(creador) {
+  const f = firmaValida(creador);
+  if (!f) return html``;
+  return html`Hecho por ${f.linkedin ? botonExterno(f.linkedin, f.nombre, 'pie-firma-link') : html`<b>${f.nombre}</b>`}`;
 }
 
 /** Las flechas del carrusel: corren la pista una tarjeta y media. Con movimiento reducido, sin deslizar. */
@@ -748,6 +758,7 @@ export async function iniciarPortal() {
   iniciarMapa();
   mostrar('club', htmlFoto(PORTAL.foto), 'portal-foto');
   mostrar('sponsors', htmlLogos(PORTAL.sponsors), 'portal-logos');
+  mostrar('portal-firma', htmlFirma(PORTAL.creador), 'portal-firma');
 
   // Hasta que responda la base, todo cerrado: nunca un botón a un formulario que quizá ya no está.
   const pintarFormularios = ({ inscripcion = null, comprobante = null, consultas = null, colaboradores = null, recaudacion = null } = {}, cargando = false) => {
