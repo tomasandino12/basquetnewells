@@ -292,7 +292,7 @@
   }
   .publico .portal-heroe-cuerpo{max-width:64rem}
   /* El sticker de sponsor: abajo a la derecha de la foto, más grande. */
-  .publico .portal-sponsor{top:auto;left:auto;bottom:6rem;right:var(--sp-6);width:8rem;height:8rem}
+  .publico .portal-sponsor{top:auto;bottom:6rem;right:var(--sp-6);width:8rem;height:8rem}
   .publico .portal-sponsor-centro{font-size:var(--fs-230)}
   .publico .portal-heroe-cuerpo > *{max-width:38rem}
   .publico .portal-acciones{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3)}

@@ -429,8 +429,28 @@ test('el sticker respeta reduced-motion: gira sólo con el keyframe del escudo, 
   assert.match(modulo, /export function iniciarGiroSponsor\(\)/);
   assert.match(modulo, /classList\.toggle\('quieto', !entrada\.isIntersecting\)/);
   // En el celu, arriba a la izquierda (el título y los botones están abajo); en compu, abajo a la derecha.
-  assert.match(css, /\.portal-sponsor\{[^}]*top:5rem;left:var\(--sp-4\)/);
-  assert.match(readFileSync('public/css/layout.css', 'utf8'), /\.publico \.portal-sponsor\{top:auto;left:auto;bottom:6rem;right:var\(--sp-6\)/);
+  assert.match(css, /\.portal-sponsor\{[^}]*top:3\.75rem;right:var\(--sp-4\)/);
+  assert.match(readFileSync('public/css/layout.css', 'utf8'), /\.publico \.portal-sponsor\{top:auto;bottom:6rem;right:var\(--sp-6\)/);
+});
+
+test('el sticker no tapa el texto del hero en el celular: el hero le reserva el lugar de arriba y el título se achica para que todo entre', () => {
+  const css = readFileSync('public/css/publico.css', 'utf8');
+  const rem = (v) => Number(v.replace('rem', ''));
+  const sticker = css.match(/\.portal-sponsor\{[^}]*top:([\d.]+rem);right:var\(--sp-4\);[^}]*width:([\d.]+rem);height:([\d.]+rem);/);
+  assert.ok(sticker, 'el sticker va arriba a la derecha, con alto y ancho en rem');
+  assert.equal(sticker[2], sticker[3], 'es un círculo');
+  const heroe = css.match(/\.portal-heroe\{[^}]*padding:([\d.]+rem) var\(--sp-4\) ([\d.]+rem);/);
+  assert.ok(heroe, 'el hero declara su padding-top');
+  // El texto (eyebrow, título, bajada y botones) empieza abajo del padding-top: el sticker tiene que terminar antes.
+  assert.ok(rem(sticker[1]) + rem(sticker[3]) <= rem(heroe[1]), `el sticker (${sticker[1]} + ${sticker[3]}) pasa del padding-top del hero (${heroe[1]})`);
+  // Y debajo del botón Semillero (44 px de alto, a 12 px del borde), no encima.
+  assert.ok(rem(sticker[1]) >= (12 + 44) / 16, 'el sticker no pisa el botón Semillero');
+  // El título cuenta con ese lugar: lo que no es título ocupa 33rem en el celular (en compu, layout.css lo corrige).
+  assert.match(readFileSync('public/css/tokens.css', 'utf8'), /--fs-hero:clamp\([^;]*100svh - 33rem\)/);
+  // En compu el sticker pasa abajo a la derecha y el hero trae su propio padding-top (6rem): no hay nada que reservar.
+  const compu = readFileSync('public/css/layout.css', 'utf8');
+  assert.match(compu, /\.publico \.portal-heroe\{padding-top:6rem;/);
+  assert.match(compu, /\.publico \.portal-sponsor\{top:auto;bottom:6rem;/);
 });
 
 // ---- La cinta de las próximas fechas ----
