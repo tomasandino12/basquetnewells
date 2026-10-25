@@ -43,7 +43,7 @@ test('la cinta corre sólo bajo .js-anim, con la mitad de la pista y pausable; s
   assert.match(css, /\.portal-cinta\.pausada \.portal-cinta-pista\{animation-play-state:paused\}/);
   assert.match(css, /@media \(hover:hover\)\{\.portal-cinta:hover \.portal-cinta-pista\{animation-play-state:paused\}\}/);
   assert.match(css, /html:not\(\.js-anim\) \.portal-cinta-banda\{overflow-x:auto\}/);
-  assert.match(css, /html:not\(\.js-anim\) \.portal-cinta-fila\[aria-hidden\]\{display:none\}/);
+  assert.match(css, /html:not\(\.js-anim\) \.portal-cinta-fila\[aria-hidden\],html:not\(\.js-anim\) \.portal-cinta-fila li\[aria-hidden\]\{display:none\}/);
   assert.match(css, /\.portal-cinta-pausa\{[^}]*width:var\(--tap\);height:var\(--tap\)/);
   assert.match(modulo, /export function iniciarCintaPausa\(\)/);
   assert.match(modulo, /toggle\('pausada'\)/);

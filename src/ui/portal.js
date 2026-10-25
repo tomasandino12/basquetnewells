@@ -453,30 +453,38 @@ export function htmlProximo(proximo, hoy) {
   </article>`;
 }
 
+// Cuántos ítems tiene como mínimo cada mitad de la pista: con menos, en una pantalla ancha la fila no llega al borde y se ve un hueco.
+const ITEMS_POR_MITAD = 8;
+// Lo que tarda en pasar un ítem: la velocidad no depende de cuántas fechas haya.
+const SEGUNDOS_POR_ITEM = 7;
+
 /**
  * La cinta de abajo del hero: sólo las próximas fechas (fecha con el ícono y el
  * color de su tipo, título y un rombo entre una y otra). Sin fechas no devuelve
  * nada y la sección se oculta: pedir sponsors no es cosa de la cinta, para eso
  * está el sticker del hero. `proximos`: [{ fecha, evento }] de proximosEventos.
- * Con tres o más corre sola (la fila se repite, la copia aria-hidden, y
- * arrancar de nuevo parece infinito) y trae un botón para pausarla; con menos
- * se queda quieta, porque un cartel que se mueve para mostrar dos cosas no
- * aporta.
+ * Corre siempre que haya al menos una fecha: la lista se repite dentro de la
+ * fila hasta tener ITEMS_POR_MITAD ítems (una sola fecha, repetida, llena el
+ * ancho) y la pista son dos mitades idénticas, así arrancar de nuevo con
+ * translateX(-50%) no se nota. Sólo la primera aparición de cada fecha es
+ * accesible: las repeticiones y la mitad copia van aria-hidden. Trae un botón
+ * para pausarla. Con movimiento reducido el CSS la deja quieta y se desliza a
+ * mano (ahí se ven sólo las fechas, sin repeticiones).
  */
 export function htmlCinta(proximos) {
   if (!proximos.length) return html``;
-  const anda = proximos.length >= 3;
-  const fila = (oculta) => html`<ul class="portal-cinta-fila"${oculta && html` aria-hidden="true"`}>${proximos.map(({ fecha, evento }) => {
+  const items = Array.from({ length: Math.ceil(ITEMS_POR_MITAD / proximos.length) }, () => proximos).flat();
+  const fila = (copia) => html`<ul class="portal-cinta-fila"${copia && html` aria-hidden="true"`}>${items.map(({ fecha, evento }, i) => {
     const f = partesDeFecha(fecha);
-    return html`<li class="tipo-${evento.tipo}"><i>${ICONO_TIPO[evento.tipo]}</i><b>${f.semana} ${f.dia} ${f.mes}</b><span>${evento.titulo}</span><em aria-hidden="true"></em></li>`;
+    return html`<li class="tipo-${evento.tipo}"${i >= proximos.length && html` aria-hidden="true"`}><i>${ICONO_TIPO[evento.tipo]}</i><b>${f.semana} ${f.dia} ${f.mes}</b><span>${evento.titulo}</span><em aria-hidden="true"></em></li>`;
   })}</ul>`;
   return html`<div class="portal-cinta-banda">
-      <div class="portal-cinta-pista${anda ? ' anda' : ''}"${anda && html` style="--dur-cinta:${proximos.length * 7}s"`}>${fila(false)}${anda && fila(true)}</div>
+      <div class="portal-cinta-pista anda" style="--dur-cinta:${items.length * SEGUNDOS_POR_ITEM}s">${fila(false)}${fila(true)}</div>
     </div>
-    ${anda && html`<button type="button" class="portal-cinta-pausa" data-cinta-pausa aria-pressed="false" aria-label="Pausar la cinta">
+    <button type="button" class="portal-cinta-pausa" data-cinta-pausa aria-pressed="false" aria-label="Pausar la cinta">
       <svg class="p" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
       <svg class="r" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg>
-    </button>`}`;
+    </button>`;
 }
 
 /** Para tener el calendario entero en el celular, una vez, y que los eventos nuevos aparezcan solos. */

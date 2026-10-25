@@ -457,11 +457,11 @@ test('el sticker no tapa el texto del hero en el celular: va al lado de las dos 
 
 // ---- La cinta de las próximas fechas ----
 
-test('cinta: fecha con ícono y color de su tipo, título escapado; corre y se repite aria-hidden con botón de pausa', () => {
+test('cinta: fecha con ícono y color de su tipo, título escapado; corre y se repite aria-hidden con botón de pausa; con tres fechas, cada mitad llega a nueve ítems', () => {
   const proximos = proximosEventos(porDia, '2026-10-20', 6);
   const mas = [...proximos, ...proximos].slice(0, 3);
   const out = htmlCinta(mas).toString();
-  assert.match(out, /<div class="portal-cinta-pista anda" style="--dur-cinta:21s">/);
+  assert.match(out, /<div class="portal-cinta-pista anda" style="--dur-cinta:63s">/);
   assert.equal((out.match(/<ul class="portal-cinta-fila"/g) ?? []).length, 2, 'la fila se repite para el loop');
   assert.equal((out.match(/<ul class="portal-cinta-fila" aria-hidden="true">/g) ?? []).length, 1, 'sólo la copia es aria-hidden');
   assert.match(out, /<li class="tipo-evento"><i><svg[\s\S]*?<\/i><b>sáb 24 oct<\/b><span>Hamburgueseada<\/span>/);
@@ -480,12 +480,37 @@ test('la cinta no ofrece sponsors: eso es del sticker del hero, y la banda ya no
   assert.doesNotMatch(banda, /rotate/);
 });
 
-test('cinta: con uno o dos eventos queda quieta', () => {
-  const uno = htmlCinta(proximosEventos(porDia, '2026-10-20', 1)).toString();
-  assert.doesNotMatch(uno, /pista anda|<ul class="portal-cinta-fila" aria-hidden|portal-cinta-pausa|--dur-cinta/);
-  assert.equal((uno.match(/<ul class="portal-cinta-fila"/g) ?? []).length, 1);
-  const dos = htmlCinta(proximosEventos(porDia, '2026-10-20', 2)).toString();
-  assert.doesNotMatch(dos, /pista anda|portal-cinta-pausa/);
+test('la cinta corre aunque haya una sola fecha: repite la lista hasta llenar cada mitad y mantiene la velocidad', () => {
+  for (const n of [1, 2]) {
+    const out = htmlCinta(proximosEventos(porDia, '2026-10-20', n)).toString();
+    assert.match(out, /<div class="portal-cinta-pista anda" style="--dur-cinta:56s">/, `${n} fecha(s): corre`);
+    assert.match(out, /<button type="button" class="portal-cinta-pausa" data-cinta-pausa/, 'y se puede pausar');
+    const mitades = out.match(/<ul class="portal-cinta-fila"[^>]*>[\s\S]*?<\/ul>/g);
+    assert.equal(mitades.length, 2, 'dos mitades');
+    assert.equal(mitades[0].replace(/ aria-hidden="true"/g, ''), mitades[1].replace(/ aria-hidden="true"/g, ''), 'idénticas, para que -50% empalme');
+    assert.equal((mitades[0].match(/<li /g) ?? []).length, 8, 'ocho ítems por mitad');
+  }
+  // La velocidad es la misma con cualquier cantidad: 7 s por ítem.
+  const diez = htmlCinta(Array.from({ length: 10 }, () => proximosEventos(porDia, '2026-10-20', 1)[0])).toString();
+  assert.match(diez, /--dur-cinta:70s/);
+  assert.equal((diez.match(/<ul class="portal-cinta-fila"/g) ?? []).length, 2);
+  // Con movimiento reducido (sin .js-anim) queda quieta, se desliza a mano y no muestra las repeticiones.
+  const css = readFileSync('public/css/publico.css', 'utf8');
+  assert.match(css, /html:not\(\.js-anim\) \.portal-cinta-fila\[aria-hidden\],html:not\(\.js-anim\) \.portal-cinta-fila li\[aria-hidden\]\{display:none\}/);
+  assert.match(css, /\.js-anim \.portal-cinta-pista\.anda\{/);
+  assert.doesNotMatch(css.replace(/\.js-anim \.portal-cinta-pista\.anda\{[^}]*\}/, ''), /\.portal-cinta-pista\.anda\{[^}]*animation/);
+});
+
+test('las repeticiones de la cinta no son accesibles: sólo la primera aparición de cada fecha, y la mitad copia entera, se anuncian', () => {
+  const proximos = proximosEventos(porDia, '2026-10-20', 2);
+  const out = htmlCinta(proximos).toString();
+  const [visible, copia] = out.match(/<ul class="portal-cinta-fila"[^>]*>[\s\S]*?<\/ul>/g);
+  assert.doesNotMatch(visible, /^<ul[^>]*aria-hidden/);
+  assert.match(copia, /^<ul class="portal-cinta-fila" aria-hidden="true">/);
+  const lis = visible.match(/<li [^>]*>/g);
+  assert.equal(lis.filter((li) => !/aria-hidden/.test(li)).length, proximos.length, 'una sola aparición accesible por fecha');
+  assert.equal(lis.filter((li) => /aria-hidden="true"/.test(li)).length, lis.length - proximos.length, 'el resto, oculto');
+  assert.ok(!/aria-hidden/.test(lis[0]) && !/aria-hidden/.test(lis[proximos.length - 1]) && /aria-hidden/.test(lis[proximos.length]), 'las primeras son las accesibles');
 });
 
 test('sin fechas la cinta no se muestra: no devuelve nada y la sección queda oculta', () => {
