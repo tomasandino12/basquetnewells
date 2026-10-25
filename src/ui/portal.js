@@ -3,7 +3,7 @@ import { $ } from './dom.js';
 import { formulariosPublicos, eventosDelMes } from '../data/repositorio.js';
 import {
   PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal,
-  categoriasDelAnio, sedeValida, aliasValido, fotoValida, rangoDeCategorias,
+  categoriasDelAnio, sedeValida, aliasValido, fotoValida,
 } from '../data/portal.js';
 import { temporadaComoAnio } from '../data/categorias.js';
 import { resolverFormularios, separarFormularios } from '../data/formulariosPortal.js';
@@ -91,12 +91,17 @@ export function htmlAcciones({ inscripcion = null, consultas = null, temporada =
 }
 
 /**
- * El sello dorado del hero, "De U9 a U21". `rango`: de rangoDeCategorias. Sin
- * rango no devuelve nada y el sello queda oculto: nunca un número inventado.
+ * La barra fija de abajo: el mismo botón principal del hero (con su mismo
+ * texto y destino) y "Pagar". Sin formulario para el principal (o mientras la
+ * base no respondió) queda sólo "Pagar": un botón apagado abajo de todo sería
+ * ruido, y el del hero ya cuenta cuándo se habilita.
  */
-export function htmlSello(rango) {
-  if (!rango) return html``;
-  return html`<span>De ${rango.desde}</span><span>a ${rango.hasta}</span>`;
+export function htmlDock({ inscripcion = null, consultas = null } = {}) {
+  const url = (f) => (f ? enlaceFormulario(f.enlace) : null);
+  const ins = url(inscripcion);
+  const principal = ins ?? url(consultas);
+  return html`${principal && html`<a class="portal-dock-btn principal" href="${principal}" target="_blank" rel="noopener">${ins ? 'Inscribirme' : 'Quiero que juegue'}</a>`}
+    <button type="button" class="portal-dock-btn pago" data-abrir-pago aria-haspopup="dialog">Pagar</button>`;
 }
 
 /**
@@ -618,7 +623,6 @@ export async function iniciarPortal() {
   if (temporada) $('t-categorias-temp').textContent = ` ${temporada}`;
   if (temporada && categorias.length) iniciarBuscador(temporada);
   if (temporada) $('portal-heroe-ey').textContent = `Temporada ${temporada} · Formativas`;
-  mostrar('portal-sello', htmlSello(rangoDeCategorias(PORTAL.categorias)), 'portal-sello');
   mostrar('sede', htmlSede(PORTAL.sede));
   iniciarMapa();
   mostrar('club', htmlFoto(PORTAL.foto), 'portal-foto');
@@ -628,6 +632,7 @@ export async function iniciarPortal() {
   const pintarFormularios = ({ inscripcion = null, comprobante = null, consultas = null, colaboradores = null, recaudacion = null } = {}, cargando = false) => {
     const abierto = (f) => Boolean(f && enlaceFormulario(f.enlace));
     $('portal-heroe').innerHTML = htmlAcciones({ inscripcion, consultas, temporada: PORTAL.temporada, cargando });
+    $('portal-dock-acc').innerHTML = htmlDock({ inscripcion, consultas });
     $('portal-pago-cuerpo').innerHTML = htmlPago({ alias: PORTAL.alias, comprobante });
     $('portal-recaudacion').innerHTML = htmlRecaudacion(recaudacion);
     $('portal-colaborar').innerHTML = htmlColaborar(colaboradores);

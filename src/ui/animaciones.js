@@ -50,3 +50,20 @@ export function iniciarRise(raiz = document) {
   elementos.forEach((e) => observador.observe(e));
   html.setAttribute('data-anim-lista', '');
 }
+
+/**
+ * La barra fija de abajo aparece cuando los botones del hero salieron de
+ * pantalla POR ARRIBA (se scrolleó más allá) y se va cuando vuelven a verse.
+ * Oculta es `inert`. No es una animación: funciona también con movimiento
+ * reducido (ahí aparece sin deslizarse). Sin IntersectionObserver queda oculta.
+ */
+export function iniciarDock(idVigilado = 'portal-heroe', idDock = 'portal-dock') {
+  const vigilado = document.getElementById(idVigilado);
+  const dock = document.getElementById(idDock);
+  if (!vigilado || !dock || typeof IntersectionObserver === 'undefined') return;
+  new IntersectionObserver(([entrada]) => {
+    const visible = !entrada.isIntersecting && entrada.boundingClientRect.top < 0;
+    dock.classList.toggle('visible', visible);
+    dock.toggleAttribute('inert', !visible);
+  }).observe(vigilado);
+}

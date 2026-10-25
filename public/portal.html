@@ -88,11 +88,10 @@
     <!-- El hero: foto a pantalla completa, el título y los dos botones de las
          familias. Todo lo que no depende de la base (la foto, el título, el
          subtítulo) está acá, escrito a mano: se cambia tocando esta línea y
-         pinta sin esperar a nada. src/ui/portal.js completa la temporada, el
-         sello (sale de las categorías) y los dos botones, que dependen de qué
-         formularios están abiertos. El título son tres líneas: cada una sube
+         pinta sin esperar a nada. src/ui/portal.js completa la temporada y los
+         dos botones, que dependen de qué formularios están abiertos. El título son tres líneas: cada una sube
          desde su máscara (.linea). -->
-    <section class="portal-heroe tratamiento-color" id="heroe" aria-labelledby="t-heroe">
+    <section class="portal-heroe" id="heroe" aria-labelledby="t-heroe">
       <picture class="portal-heroe-foto">
         <source media="(max-width:47.99rem)" srcset="/public/img/fotos/formativas-bandeja-vertical.webp" width="576" height="720">
         <img src="/public/img/fotos/formativas-bandeja.webp" width="1080" height="720" fetchpriority="high"
@@ -106,7 +105,6 @@
             <span class="linea"><span style="--i:2">forma</span></span>
             <span class="linea rojo"><span style="--i:3">la Lepra</span></span>
           </h1>
-          <div class="portal-sello" id="portal-sello" aria-hidden="true" hidden></div>
         </div>
         <p class="portal-heroe-bajada entra" style="--i:4">El básquet formativo de Newell&#39;s Old Boys, en el Parque de la Independencia, Rosario.</p>
         <div class="portal-acciones entra" style="--i:5" id="portal-heroe"></div>
@@ -181,6 +179,13 @@
        compu, un diálogo. Preguntas frecuentes en acordeón y, al final, la
        única vez que aparece el coordinador. Se cierra con la X, tocando
        afuera o con Escape (lo da <dialog>). -->
+  <!-- Barra fija de abajo: los mismos dos botones del hero, que aparece cuando
+       esos salen de pantalla (src/ui/animaciones.js, iniciarDock). Oculta es
+       `inert`: ni el teclado ni el lector de pantalla llegan a ella. -->
+  <div class="portal-dock" id="portal-dock" role="region" aria-label="Accesos rápidos" inert>
+    <div class="portal-dock-acc" id="portal-dock-acc"></div>
+  </div>
+
   <!-- Pagar: la misma hoja que Ayuda (mobile: sube desde abajo; compu: diálogo).
        Con el alias para copiar y, si hay formulario de comprobante activo, el
        botón para enviarlo (src/ui/portal.js, htmlPago). Se paga más que

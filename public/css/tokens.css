@@ -65,8 +65,8 @@
   --pub-fondo:#0D0D10;
   --pub-tarjeta:#17171C;
   --pub-borde:#2B2B34;
-  /* Dorado de los sellos del portal (el sticker "De U9 a U21"): sobre él va
-     --pub-fondo, no blanco. Es el mismo del tipo "evento" del calendario. */
+  /* Dorado del portal (hoy, el tipo "evento" del calendario): sobre él va
+     --pub-fondo, no blanco. */
   --dorado:#F2B33D;
   /* Velos del hero del portal: el color de --pub-fondo con distinta opacidad.
      Cada uno lleva su propio cero (no "transparent") para que el degradé no

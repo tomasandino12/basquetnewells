@@ -2,11 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlAcciones, htmlSello, htmlPago, htmlAlias, htmlBuscador, htmlCategoriaDelAnio, htmlProximo,
+  htmlFormularios, htmlAvisoRespaldo, htmlLogos, htmlAcciones, htmlDock, htmlPago, htmlAlias, htmlBuscador, htmlCategoriaDelAnio, htmlProximo,
   htmlRecaudacion, htmlColaborar, htmlAyuda, htmlAtajos, htmlCalendario, htmlCategorias, htmlFoto, htmlSede, diaInicial, htmlSuscripcion,
 } from '../src/ui/portal.js';
 import { eventoDesdeGoogle, eventosPorDia, proximosEventos } from '../src/data/agenda.js';
-import { PORTAL, rangoDeCategorias } from '../src/data/portal.js';
 
 /**
  * portal.html es HTML escrito a mano y no hay navegador en los tests: se lee
@@ -168,14 +167,18 @@ test('mientras la base no responde: el principal está ocupado, no dice "Pronto"
   assert.match(portal, /pintarFormularios\(\{\}, true\)/, 'se pinta cargando antes de pedir la lista');
 });
 
-test('el sello sale de las categorías: de la U más chica a la más grande, y sin rango no hay sello', () => {
-  assert.deepEqual(rangoDeCategorias(PORTAL.categorias), { desde: 'U9', hasta: 'U21' });
-  assert.deepEqual(rangoDeCategorias([{ grupo: 'U15' }, { grupo: 'MAYORES' }, { grupo: 'U9' }, { grupo: 'U11' }]), { desde: 'U9', hasta: 'U15' });
-  for (const poco of [[], [{ grupo: 'U9' }], [{ grupo: 'U9' }, { grupo: 'U9' }], [{ grupo: 'MAYORES' }], null]) {
-    assert.equal(rangoDeCategorias(poco), null);
+test('la barra fija repite el principal del hero (mismo texto y destino) y "Pagar"; sin formulario, sólo "Pagar"', () => {
+  const abierta = htmlDock({ inscripcion: FORM('x'), consultas: FORM('y', 'https://forms.gle/Jug1') }).toString();
+  assert.match(abierta, /<a class="portal-dock-btn principal" href="https:\/\/forms\.gle\/Abc1" target="_blank" rel="noopener">Inscribirme<\/a>/);
+  assert.doesNotMatch(abierta, /Jug1/);
+  const cerrada = htmlDock({ inscripcion: MALO, consultas: FORM('y', 'https://forms.gle/Jug1') }).toString();
+  assert.match(cerrada, /href="https:\/\/forms\.gle\/Jug1"[^>]*>Quiero que juegue<\/a>/);
+  for (const sin of [htmlDock({}), htmlDock({ consultas: MALO })]) {
+    assert.doesNotMatch(sin.toString(), /<a |evil/);
+    assert.match(sin.toString(), /<button type="button" class="portal-dock-btn pago" data-abrir-pago/);
   }
-  assert.equal(htmlSello(null).toString(), '');
-  assert.match(htmlSello({ desde: 'U9', hasta: 'U21' }).toString(), /<span>De U9<\/span><span>a U21<\/span>/);
+  assert.match(pagina, /<div class="portal-dock" id="portal-dock" role="region" aria-label="[^"]+" inert>/, 'oculta es inert: el teclado no llega');
+  assert.match(portal, /htmlDock\(\{ inscripcion, consultas \}\)/);
 });
 
 test('la hoja de pago: el alias y el comprobante; sin formulario lo dice y deja el alias; escapado', () => {

@@ -278,7 +278,7 @@
    ancho máximo legible y se centra. No es un celular estirado.
    ===================================================================== */
 /* Hero en pantallas anchas: la foto ocupa la derecha (el jugador queda
-   lejos del título), el sello flota arriba a la derecha y los dos botones
+   lejos del título) y los dos botones
    van lado a lado. El velo de la izquierda hace de costura con la foto. */
 @media (min-width:48rem){
   .publico .portal-heroe{padding-top:6rem;padding-bottom:4rem}
@@ -289,11 +289,11 @@
       linear-gradient(to top,var(--pub-fondo) 0,var(--velo-pub-cero) 30%),
       linear-gradient(to bottom,var(--velo-pub-fuerte) 0,var(--velo-pub-cero) 8rem);
   }
-  .publico .portal-heroe-cuerpo,.publico .portal-titulo{position:static}
   .publico .portal-heroe-cuerpo{max-width:64rem}
   .publico .portal-heroe-cuerpo > *{max-width:38rem}
-  .publico .portal-sello{right:var(--sp-8);top:7rem}
   .publico .portal-acciones{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3)}
+  /* La barra fija: una píldora flotante centrada, más chica. */
+  .publico .portal-dock{inset:auto 0 var(--sp-4);width:min(26rem,calc(100% - 2rem));margin-inline:auto;padding:var(--sp-2);border:1px solid var(--pub-borde);border-radius:var(--r);transform:translateY(calc(100% + var(--sp-8)))}
 }
 @media (min-width:64rem){
   .app{

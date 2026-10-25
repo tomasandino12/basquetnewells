@@ -56,3 +56,15 @@ test('el hero: botones de al menos 56px, título que se achica con el alto de la
   assert.match(css, /\.portal-heroe\{[^}]*clip-path:polygon\(0 0,100% 0,100% 100%,0 calc\(100% - 2\.5rem\)\)/);
   assert.match(css, /\.portal-heroe\{[^}]*min-height:min\(100svh,/);
 });
+
+test('la barra fija: aparece al pasar el hero POR ARRIBA, oculta es inert y no depende de .js-anim', () => {
+  const desde = modulo.indexOf('export function iniciarDock');
+  const cuerpo = modulo.slice(desde);
+  assert.match(cuerpo, /!entrada\.isIntersecting && entrada\.boundingClientRect\.top < 0/);
+  assert.match(cuerpo, /toggleAttribute\('inert', !visible\)/);
+  assert.doesNotMatch(cuerpo, /js-anim/, 'con movimiento reducido igual tiene que aparecer');
+  assert.match(css, /\.portal-dock\{[^}]*env\(safe-area-inset-bottom\)[^}]*backdrop-filter:blur\(12px\)/);
+  assert.match(css, /\.portal-dock\.visible\{transform:none\}/);
+  assert.match(css, /\.portal\{width:100%;padding-bottom:calc\(5\.5rem \+ env\(safe-area-inset-bottom\)\)\}/, 'la barra no tapa el pie');
+  assert.match(css, /\.portal-dock-btn\{[^}]*min-height:3rem/);
+});
