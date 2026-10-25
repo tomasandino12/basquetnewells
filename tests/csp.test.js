@@ -123,7 +123,8 @@ test('el import map del portal tiene su hash en script-src y no hay otros script
   assert.ok(m, 'el portal no tiene import map');
   const hash = `'sha256-${createHash('sha256').update(m[1], 'utf8').digest('base64')}'`;
   assert.ok(directiva('script-src')?.includes(hash), `script-src no tiene ${hash} del portal`);
-  const inline = [...portal.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>/g)].filter((x) => !/type="importmap"/.test(x[1]));
+  // El JSON-LD (type="application/ld+json") es un bloque de datos: el navegador no lo ejecuta ni la CSP lo evalúa.
+  const inline = [...portal.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>/g)].filter((x) => !/type="(importmap|application\/ld\+json)"/.test(x[1]));
   assert.deepEqual(inline.map((x) => x[0]), []);
 });
 

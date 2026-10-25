@@ -81,8 +81,10 @@ test('Ayuda no ocupa lugar en la página: es una hoja (<dialog>) con la X, que a
   assert.match(portal, /iniciarAyuda\(\);/);
 });
 
-test('el coordinador aparece una sola vez: al final de las preguntas frecuentes', () => {
-  assert.doesNotMatch(pagina.replace(/<!--[\s\S]*?-->/g, ''), /wa\.me|coordinador/i, 'el HTML no lo nombra: sale de htmlAyuda');
+test('el coordinador aparece una sola vez en lo dinámico: al final de las preguntas frecuentes', () => {
+  // Excepción pedida para el SEO: el bloque estático "Cómo sumarte" (#info-sumarte) lleva un botón de WhatsApp.
+  const sinEstatico = pagina.replace(/<!--[\s\S]*?-->/g, '').replace(/<section [^>]*id="info-sumarte"[\s\S]*?<\/section>/, '');
+  assert.doesNotMatch(sinEstatico, /wa\.me|coordinador/i, 'el resto del HTML no lo nombra: sale de htmlAyuda');
   assert.equal((portal.match(/enlaceContacto\(/g) ?? []).length, 1, 'sólo htmlAyuda arma el enlace al coordinador');
   const desde = portal.indexOf('export function htmlAyuda(');
   assert.ok(portal.indexOf('enlaceContacto(') > desde, 'y es el de htmlAyuda');
@@ -90,8 +92,8 @@ test('el coordinador aparece una sola vez: al final de las preguntas frecuentes'
 
 const importMapDe = (html) => html.replace(/\r\n/g, '\n').match(/<script type="importmap">([\s\S]*?)<\/script>/)?.[1];
 
-test('portal.html no tiene más script inline que el import map ni enlaza el manifest', () => {
-  const inline = [...pagina.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>/g)].filter((m) => !/type="importmap"/.test(m[1]));
+test('portal.html no tiene más script inline que el import map (y el JSON-LD, que es un dato) ni enlaza el manifest', () => {
+  const inline = [...pagina.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>/g)].filter((m) => !/type="(importmap|application\/ld\+json)"/.test(m[1]));
   assert.deepEqual(inline.map((m) => m[0]), []);
   assert.doesNotMatch(pagina, /rel="manifest"/);
   assert.doesNotMatch(pagina, /serviceWorker/);
@@ -380,7 +382,7 @@ test('el portal se declara oscuro para que el navegador no le cambie los colores
 
 test('el pie lleva escudo y links legales; la firma arranca oculta y sale de PORTAL.creador', () => {
   const pie = pagina.match(/<footer class="portal-pie">[\s\S]*?<\/footer>/)[0];
-  assert.match(pie, /<div class="pie-marca"><img src="\/public\/escudo\.png" alt="" width="40" height="40">/, 'el escudo es decorativo: el nombre va al lado');
+  assert.match(pie, /<div class="pie-marca"><img src="\/public\/escudo\.png" alt="Escudo de Newell&#39;s Old Boys" width="40" height="40">/, 'el escudo lleva su texto alternativo (pedido de SEO)');
   assert.match(pie, /Básquet Newell&#39;s/);
   assert.match(pie, /<a href="\/app">Entrar a Semillero<\/a>/);
   assert.match(pie, /<a href="\/public\/legal\/privacidad\.html">Política de privacidad<\/a>/);

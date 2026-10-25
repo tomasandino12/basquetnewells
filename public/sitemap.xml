@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Dos páginas públicas: el portal del básquet en / y Semillero (la app) en
-     /app, más las páginas legales, que sí tienen que poder encontrarse. Sirve
-     menos para el ranking que para Search Console, que lo pide para confirmar
-     qué se indexó.
+<!-- Dominio canónico: basquetnewells.com.ar. Sólo lo que tiene que aparecer en
+     las búsquedas: el portal del básquet en / y las páginas legales, que sí
+     tienen que poder encontrarse. /app (Semillero) NO va: es la puerta de una
+     app con login y lleva noindex. Sirve menos para el ranking que para Search
+     Console, que lo pide para confirmar qué se indexó.
 
      Sin <lastmod>: habría que acordarse de tocarlo en cada deploy, y una
      fecha vieja le dice a Google algo falso. Mejor que no haya dato. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://app-semillero.vercel.app/</loc>
+    <loc>https://basquetnewells.com.ar/</loc>
   </url>
   <url>
-    <loc>https://app-semillero.vercel.app/app</loc>
+    <loc>https://basquetnewells.com.ar/privacidad</loc>
   </url>
   <url>
-    <loc>https://app-semillero.vercel.app/privacidad</loc>
-  </url>
-  <url>
-    <loc>https://app-semillero.vercel.app/terminos</loc>
+    <loc>https://basquetnewells.com.ar/terminos</loc>
   </url>
 </urlset>

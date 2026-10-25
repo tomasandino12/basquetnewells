@@ -283,6 +283,8 @@
 /* El rojo del club sobre el negro llega a 3.8:1: alcanza para texto de este tamaño, no para uno chico. */
 .portal-heroe .linea.rojo{color:var(--primario)}
 .portal-heroe-bajada{max-width:30rem;margin:var(--sp-3) 0 var(--sp-4);font-size:var(--fs-170);line-height:1.4}
+/* La bajada vive dentro del h1 (para el SEO) pero se ve como un párrafo, no como título. */
+.portal-heroe h1 .portal-heroe-bajada{display:block;font-family:var(--ff-cuerpo);font-weight:400;text-transform:none;letter-spacing:normal}
 
 .portal-acciones{display:grid;gap:var(--sp-2)}
 /* Cada botón es la tarjeta entera: ícono, título, una línea y la flecha (o "Pronto"). */
@@ -736,6 +738,17 @@ html:not(.js-anim) .portal-cinta-pausa{display:none}
 .portal-sede-lugares{list-style:none;margin:var(--sp-3) 0 var(--sp-4);padding:0;display:flex;flex-wrap:wrap;gap:var(--sp-2)}
 .portal-sede-lugares li{padding:var(--sp-1) var(--sp-3);border:1px solid var(--pub-borde);border-radius:var(--r-full);background:var(--pub-tarjeta);font-size:var(--fs-125);font-weight:600}
 .portal-sede-txt .btn{display:inline-flex;width:auto;min-height:var(--tap);padding:0 var(--sp-4);font-size:var(--fs-145);text-decoration:none}
+
+/* Resumen estático de categorías, sede, cómo sumarte y preguntas (ver portal.html: se mantiene a mano). */
+.portal-info-cats{list-style:none;margin:0;padding:0;display:grid;gap:var(--sp-3)}
+.portal-info-cat{padding:var(--sp-4);border:1px solid var(--pub-borde);border-radius:var(--r);background:var(--pub-tarjeta)}
+.portal-info-cat h3{font-size:var(--fs-230);line-height:1;margin-bottom:var(--sp-1)}
+.portal-info-cat p{margin:0;color:var(--gris-osc);font-size:var(--fs-135)}
+.portal-info-cat ul{list-style:none;margin:var(--sp-2) 0 0;padding:0;display:grid;gap:var(--sp-1);font-size:var(--fs-145)}
+.portal-info-dir{margin:0 0 var(--sp-4);font-style:normal;font-size:var(--fs-145);line-height:1.5}
+.portal-info-acc{display:flex;flex-wrap:wrap;gap:var(--sp-3)}
+.portal-info .btn{display:inline-flex;width:auto;min-height:var(--tap);padding:0 var(--sp-4);font-size:var(--fs-145);text-decoration:none}
+@media (min-width:48rem){.portal-info-cats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .portal-mapa{
   position:relative;aspect-ratio:16 / 9;overflow:hidden;border:1px solid var(--pub-borde);border-radius:var(--r);
   background:

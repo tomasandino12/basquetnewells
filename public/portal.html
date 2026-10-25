@@ -11,24 +11,72 @@
      Samsung Internet y de Chromium no lo recolore (ponía "LA LEPRA" rosa, el
      sticker marrón y "Pagar" gris). Sólo acá: la app (index.html) es clara. -->
 <meta name="color-scheme" content="dark">
-<title>Básquet · Newell&#39;s Old Boys</title>
-<meta name="description" content="Básquet formativo de Newell's Old Boys: inscripción, formularios, calendario de partidos y eventos, e información para las familias.">
+<title>Básquet de Newell&#39;s en Rosario | Escuelita e inferiores 2027</title>
+<meta name="description" content="Básquet formativo de Newell's Old Boys en el Parque de la Independencia, Rosario. Categorías U9 a Primera, horarios e inscripción 2027. Sumate al club.">
+<meta name="robots" content="index,follow">
 
-<!-- Open Graph: el link se reparte por WhatsApp. URL absoluta y medidas
-     declaradas a propósito (ver el comentario de index.html). -->
-<link rel="canonical" href="https://app-semillero.vercel.app/">
+<!-- Dominio canónico único: basquetnewells.com.ar. Open Graph: el link se
+     reparte por WhatsApp. URL absoluta y medidas declaradas a propósito (ver el
+     comentario de index.html). La imagen es la tarjeta ancha de 1200x630
+     (escudo y texto, sin fotos de chicos); la hace public/og-basquet-newells.png. -->
+<link rel="canonical" href="https://basquetnewells.com.ar/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Básquet Newell's">
 <meta property="og:locale" content="es_AR">
-<meta property="og:url" content="https://app-semillero.vercel.app/">
-<meta property="og:title" content="Básquet · Newell's Old Boys">
-<meta property="og:description" content="Básquet formativo de Newell's Old Boys: inscripción, formularios, calendario de partidos y eventos, e información para las familias.">
-<meta property="og:image" content="https://app-semillero.vercel.app/public/escudo.png">
+<meta property="og:url" content="https://basquetnewells.com.ar/">
+<meta property="og:title" content="Básquet de Newell's en Rosario | Escuelita e inferiores 2027">
+<meta property="og:description" content="Básquet formativo de Newell's Old Boys en el Parque de la Independencia, Rosario. Categorías U9 a Primera, horarios e inscripción 2027. Sumate al club.">
+<meta property="og:image" content="https://basquetnewells.com.ar/public/og-basquet-newells.png">
 <meta property="og:image:type" content="image/png">
-<meta property="og:image:width" content="512">
-<meta property="og:image:height" content="512">
-<meta property="og:image:alt" content="Escudo del club">
-<meta name="twitter:card" content="summary">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Escudo de Newell's Old Boys y el texto Básquet Newell's Rosario">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Básquet de Newell's en Rosario | Escuelita e inferiores 2027">
+<meta name="twitter:description" content="Básquet formativo de Newell's Old Boys en el Parque de la Independencia, Rosario. Categorías U9 a Primera, horarios e inscripción 2027. Sumate al club.">
+<meta name="twitter:image" content="https://basquetnewells.com.ar/public/og-basquet-newells.png">
+<meta name="twitter:image:alt" content="Escudo de Newell's Old Boys y el texto Básquet Newell's Rosario">
+
+<!-- Datos estructurados. Es un bloque de datos, no un script que se ejecute: la
+     CSP (script-src) no lo toca. Sólo lo verificable: sin coordenadas ni
+     horarios (los horarios cambian cada temporada y viven en la sección de
+     categorías). tests/portalInfoEstatica.test.js lo compara con PORTAL. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SportsClub",
+      "@id": "https://basquetnewells.com.ar/#club",
+      "name": "Básquet Newell's Old Boys",
+      "url": "https://basquetnewells.com.ar/",
+      "logo": "https://basquetnewells.com.ar/public/escudo.png",
+      "image": "https://basquetnewells.com.ar/public/og-basquet-newells.png",
+      "sport": "Basketball",
+      "description": "Básquet formativo de Newell's Old Boys en el Parque de la Independencia, Rosario: categorías U9 a Primera.",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Av. Int. Morcillo 2675",
+        "postalCode": "S2000",
+        "addressLocality": "Rosario",
+        "addressRegion": "Santa Fe",
+        "addressCountry": "AR"
+      },
+      "telephone": "+5493413709161",
+      "areaServed": "Rosario",
+      "sameAs": ["https://www.instagram.com/basquetnewells"]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://basquetnewells.com.ar/#sitio",
+      "name": "Básquet Newell's",
+      "url": "https://basquetnewells.com.ar/",
+      "inLanguage": "es-AR",
+      "publisher": { "@id": "https://basquetnewells.com.ar/#club" }
+    }
+  ]
+}
+</script>
 
 <link rel="preload" href="/public/fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/public/fonts/barlow-condensed-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -68,7 +116,7 @@
      ===================================================================== -->
 <div class="publico portal-d" id="publico">
   <header class="portal-barra">
-    <img src="/public/escudo.png" alt="" width="36" height="36">
+    <img src="/public/escudo.png" alt="Escudo de Newell&#39;s Old Boys" width="36" height="36">
     <div class="portal-marca"><div class="t">Newell&#39;s <span>Básquet</span></div><div class="s">Formativas · Familias</div></div>
     <nav class="portal-barra-acc" aria-label="Accesos">
       <!-- Para profes y jugadores: un botón visible (con borde e ícono) que abre la entrada a Semillero y
@@ -109,6 +157,9 @@
             <span class="linea"><span style="--i:1">Acá se</span></span>
             <span class="linea"><span style="--i:2">forma</span></span>
             <span class="linea rojo"><span style="--i:3">la Lepra</span></span>
+            <!-- La bajada va DENTRO del h1: así el título de la página dice "básquet", "Newell's" y "Rosario"
+                 sin texto oculto. El CSS la deja con el aspecto de un párrafo. -->
+            <span class="portal-heroe-bajada entra" style="--i:4">El básquet formativo de Newell&#39;s Old Boys, en el Parque de la Independencia, Rosario.</span>
           </h1>
           <!-- El sticker de sponsor: único elemento que gira (DESIGN.md). Lleva a Sumate. En el celu
              queda al lado de las dos primeras líneas del título (que son angostas); en compu, abajo a la
@@ -122,7 +173,6 @@
             <span class="portal-sponsor-centro" aria-hidden="true">Sumate</span>
           </a>
         </div>
-        <p class="portal-heroe-bajada entra" style="--i:4">El básquet formativo de Newell&#39;s Old Boys, en el Parque de la Independencia, Rosario.</p>
         <div class="portal-acciones entra" style="--i:5" id="portal-heroe"></div>
       </div>
     </section>
@@ -206,6 +256,67 @@
       <div class="portal-logos" id="portal-logos"></div>
     </section>
 
+    <!-- =================================================================
+         CONTENIDO ESTÁTICO PARA BUSCADORES Y FAMILIAS. Se mantiene A MANO.
+         Las categorías, los horarios y la sede de arriba se cargan con JS
+         desde src/data/portal.js y Google no los ve; esto es lo mismo escrito
+         en el HTML. CUANDO CAMBIEN los horarios, las categorías, la sede o la
+         temporada en src/data/portal.js hay que cambiarlo acá también:
+         tests/portalInfoEstatica.test.js falla si no coinciden. (No hay paso
+         de build: el test cumple el papel de "generarlo desde los mismos
+         datos".) Sin nombres de chicos.
+         ================================================================= -->
+    <section class="portal-sec portal-info" id="info-categorias" aria-labelledby="t-info-categorias">
+      <div class="portal-st">Escuelita e inferiores</div>
+      <h2 id="t-info-categorias">Categorías y horarios 2027</h2>
+      <p class="intro">El básquet formativo de Newell&#39;s Old Boys funciona en el Parque de la Independencia, en Rosario. Si buscás una escuelita de básquet o básquet infantil para tu hijo o hija, se entra por la U9, mixta, para chicos y chicas nacidos en 2018 y 2019; de ahí sigue el camino por las categorías hasta la Primera.</p>
+      <ul class="portal-info-cats">
+        <li class="portal-info-cat"><h3>U9</h3><p>Mixto · nacidos 2018 y 2019</p>
+          <ul><li>Mar 18 a 19 h · Estadio Cubierto</li><li>Jue 18 a 19 h · Playón Deportivo</li></ul></li>
+        <li class="portal-info-cat"><h3>U11</h3><p>Mixto · nacidos 2016 y 2017</p>
+          <ul><li>Mar 19 a 20 h · Estadio Cubierto</li><li>Jue 19 a 20 h · Playón Deportivo</li></ul></li>
+        <li class="portal-info-cat"><h3>U13</h3><p>Mixto · nacidos 2014 y 2015</p>
+          <ul><li>Lun y Vie 18 a 19 h · Estadio Cubierto</li><li>Mié 18 a 19 h · Microestadio</li></ul></li>
+        <li class="portal-info-cat"><h3>U15</h3><p>Masculino · nacidos 2012 y 2013</p>
+          <ul><li>Lun y Vie 18 a 19 h · Estadio Cubierto</li><li>Mié 18 a 19 h · Microestadio</li></ul></li>
+        <li class="portal-info-cat"><h3>U17</h3><p>Masculino · nacidos 2010 y 2011</p>
+          <ul><li>Lun y Vie 19 a 20 h · Estadio Cubierto</li><li>Mié 19 a 20 h · Microestadio</li></ul></li>
+        <li class="portal-info-cat"><h3>U21</h3><p>Masculino · nacidos 2006 a 2009</p>
+          <ul><li>Lun y Vie 20 a 21 h · Estadio Cubierto</li><li>Mié 20 a 21 h · Microestadio</li></ul></li>
+        <li class="portal-info-cat"><h3>Primera</h3><p>Masculino · nacidos 2005 y antes</p></li>
+        <li class="portal-info-cat"><h3>Primera</h3><p>Femenino · nacidos 2005 y antes</p></li>
+      </ul>
+    </section>
+
+    <section class="portal-sec portal-info" id="info-donde" aria-labelledby="t-info-donde">
+      <div class="portal-st">Sede</div>
+      <h2 id="t-info-donde">Dónde se entrena</h2>
+      <p class="intro">Estadio Cubierto &quot;Claudio Newell&quot;, Microestadio y Playón Deportivo, en el Parque de la Independencia. En cuál te toca lo dice el horario de tu categoría.</p>
+      <address class="portal-info-dir">Parque de la Independencia<br>Av. Int. Morcillo 2675, S2000 Rosario, Santa Fe</address>
+      <a class="btn sec chico" href="https://www.google.com/maps/search/?api=1&amp;query=Estadio+Cubierto+Claudio+Newell+Rosario" target="_blank" rel="noopener">Cómo llegar <span aria-hidden="true">↗</span></a>
+    </section>
+
+    <section class="portal-sec portal-info" id="info-sumarte" aria-labelledby="t-info-sumarte">
+      <div class="portal-st">Inscripción</div>
+      <h2 id="t-info-sumarte">Cómo sumarte</h2>
+      <p class="intro">Dejá tus datos y te avisamos para que venga a probar, o escribinos por WhatsApp.</p>
+      <div class="portal-info-acc">
+        <a class="btn" href="/consultas">Quiero que juegue</a>
+        <a class="btn sec" href="https://wa.me/5493413709161?text=Hola!%20Quiero%20consultar%20por%20el%20b%C3%A1squet%20de%20Newell's" target="_blank" rel="noopener">Escribir por WhatsApp <span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+
+    <section class="portal-sec portal-info" id="info-faq" aria-labelledby="t-info-faq">
+      <div class="portal-st">Ayuda</div>
+      <h2 id="t-info-faq">Preguntas frecuentes</h2>
+      <div class="portal-faqs">
+        <details class="portal-faq"><summary>¿Desde qué edad pueden jugar?</summary><div class="portal-faq-r"><p>Desde la U9: chicos y chicas nacidos en 2018 y 2019. La categoría va por el año de nacimiento, como la arma la CABB. Para chicos más chicos todavía no hay categoría.</p></div></details>
+        <details class="portal-faq"><summary>¿Dónde se entrena?</summary><div class="portal-faq-r"><p>En el Estadio Cubierto &quot;Claudio Newell&quot;, el Microestadio y el Playón Deportivo, dentro del Parque de la Independencia, en Rosario. En cuál te toca lo dice el horario de tu categoría.</p></div></details>
+        <details class="portal-faq"><summary>¿Cómo me inscribo?</summary><div class="portal-faq-r"><p>Tocá <b>Quiero que juegue</b>: dejás tus datos y te avisamos para que venga a probar. Cuando la inscripción de la temporada esté abierta, el botón <b>Inscribirme</b> aparece arriba de todo en esta página.</p></div></details>
+        <details class="portal-faq"><summary>¿Cuánto cuesta?</summary><div class="portal-faq-r"><p>El valor no está publicado en esta página. Escribinos por WhatsApp y te lo pasamos. Los pagos se hacen por transferencia desde el botón <b>Pagar</b>, arriba de todo.</p></div></details>
+      </div>
+    </section>
+
     </div>
 
   </main>
@@ -217,7 +328,7 @@
   <footer class="portal-pie">
     <div class="portal-rasgado" aria-hidden="true"></div>
     <div class="pie-legal">
-      <div class="pie-marca"><img src="/public/escudo.png" alt="" width="40" height="40"><div><b>Básquet Newell&#39;s</b><small>Formativas · Familias</small></div></div>
+      <div class="pie-marca"><img src="/public/escudo.png" alt="Escudo de Newell&#39;s Old Boys" width="40" height="40"><div><b>Básquet Newell&#39;s</b><small>Formativas · Familias</small></div></div>
       <p class="pie-links"><a href="/app">Entrar a Semillero</a><a href="/public/legal/privacidad.html">Política de privacidad</a><a href="/public/legal/terminos.html">Términos y condiciones</a></p>
       <p class="pie-firma" id="portal-firma" hidden></p>
     </div>

@@ -1,58 +1,61 @@
 # Visibilidad en buscadores
 
-La app tiene **una sola URL pública**: la landing en `/`. No hay ruteo —
-navegar muestra y esconde secciones del mismo documento— así que no existen
-rutas de la app que un buscador pueda pedir. Todo lo demás está detrás de la
-sesión, y son datos de menores.
-
-Eso ordena el resto: no hay "páginas importantes" que priorizar ni sitemap
-que crezca. Lo único que se busca es que la landing se indexe bien y que el
-link se vea decente cuando alguien lo comparte.
+**Dominio canónico único: `https://basquetnewells.com.ar`.** La página que tiene
+que aparecer en las búsquedas es el portal del básquet, en `/`. `/app`
+(Semillero) es la puerta de una app con login: lleva `noindex` y no está en el
+sitemap. No hay más rutas públicas que un buscador pueda pedir (dentro de la app
+no hay ruteo) y todo lo que está detrás de la sesión son datos de menores.
 
 ## Qué hay en el repo
 
 | Archivo | Para qué |
 |---|---|
-| `public/index.html` | `<title>`, `description`, `canonical` y las etiquetas `og:*` |
+| `public/portal.html` | Título, descripción, `robots`, canonical, `og:*`, Twitter cards, JSON-LD (SportsClub + WebSite) y el bloque estático de categorías, sede, "Cómo sumarte" y preguntas |
+| `public/index.html` | `/app`: canonical, `og:*` y `<meta name="robots" content="noindex">` |
+| `public/og-basquet-newells.png` | Imagen social de 1200x630 (escudo y texto; sin fotos de chicos) |
 | `public/robots.txt` | Deja rastrear todo y declara el sitemap |
-| `public/sitemap.xml` | La única URL, `/` |
+| `public/sitemap.xml` | `/`, `/privacidad` y `/terminos` |
 | `vercel.json` | Los rewrites que sirven robots y sitemap **desde la raíz** |
-| `tests/metadatos.test.js` | Compara el dominio en los cuatro lados donde está escrito |
+| `tests/metadatos.test.js` | Dominio, canonical, `og:*`, robots y sitemap coherentes |
+| `tests/portalInfoEstatica.test.js` | El bloque estático y el JSON-LD contra `PORTAL` (`src/data/portal.js`) |
 
-El dominio de producción está escrito a mano en varios archivos. Si alguna
-vez cambia (dominio propio en vez de `app-semillero.vercel.app`), hay que
-tocarlos todos: el test dice cuáles.
+Si el dominio vuelve a cambiar hay que tocar todos esos archivos: los tests
+dicen cuáles.
 
-Sobre `/public/index.html`: devuelve 200 y es la misma página que `/`. No se
-bloquea con `Disallow` a propósito, porque eso le impediría a Google leer el
-`canonical` que resuelve el duplicado —y de paso le escondería el CSS y el
-JS, dejándole una landing rota. El canonical es la herramienta correcta acá.
+## Qué hay que mantener a mano
 
-## El paso que queda, y es manual
+Las categorías, los horarios y la sede se cargan con JS desde
+`src/data/portal.js`, y Google no los ve. Por eso `portal.html` tiene una copia
+estática (secciones `#info-categorias`, `#info-donde`, `#info-sumarte`,
+`#info-faq`). **Al cambiar horarios, categorías, sede o temporada en
+`portal.js`, hay que cambiarlos también ahí**: `tests/portalInfoEstatica.test.js`
+falla si no coinciden. No hay paso de build; si algún día lo hay, ese bloque es
+lo primero para generar desde los mismos datos.
+
+## Por qué `/app` no se bloquea con `Disallow`
+
+Un `Disallow` le impide a Google leer el `noindex`, y entonces la URL puede
+quedar indexada igual, sin contenido. Tampoco se bloquea `/public/`: ahí viven el
+CSS, el JS y el escudo, y sin ellos Google ve una página rota. El duplicado
+`/public/portal.html` se resuelve con el `canonical` del head.
+
+## Pasos manuales
 
 Dar de alta el sitio en **Google Search Console**
-(https://search.google.com/search-console). No se puede hacer desde el repo:
-el token de verificación sale de la cuenta de Google del dueño del sitio.
+(https://search.google.com/search-console), propiedad **Prefijo de URL**
+`https://basquetnewells.com.ar`:
 
-1. Agregar una propiedad de tipo **Prefijo de URL**:
-   `https://app-semillero.vercel.app`
-2. Elegir verificación por **etiqueta HTML**. Google da un
-   `<meta name="google-site-verification" content="...">`.
-3. Pegarlo en el `<head>` de `public/index.html`, junto a los otros `meta`, y
-   desplegar. **No** hace falta tocar la CSP: es una etiqueta, no un script.
-4. Volver a Search Console y confirmar.
-5. En **Sitemaps**, enviar `sitemap.xml`.
-6. En **Inspección de URL**, pedir la indexación de `/` y mirar el render:
-   ahí se ve lo que Google realmente dibuja, no el HTML crudo.
+1. Verificación por **etiqueta HTML**: Google da un
+   `<meta name="google-site-verification" content="...">`; pegarlo en el `<head>`
+   de `public/portal.html` y desplegar. No hace falta tocar la CSP.
+2. En **Sitemaps**, enviar `sitemap.xml`.
+3. En **Inspección de URL**, pedir la indexación de `/` y mirar el render.
 
-Ese punto 6 es el que importa más de todos. El markup de la landing está en
-el HTML estático, pero el shell arranca con `hidden` y se muestra recién
-cuando resuelve la sesión: si Google renderiza antes de tiempo, ve una
-página en blanco. La inspección de URL es la única forma de comprobarlo.
+Y, por el cambio de dominio, en otras consolas (no se hace desde el repo):
 
-## Expectativa realista
-
-Esto no va a traer tráfico de búsqueda: nadie googlea "app de seguimiento de
-inferiores de básquet". La app se reparte porque el coordinador pasa el
-link. Por eso las etiquetas `og:*` —cómo se ve el link en WhatsApp— valen
-más acá que cualquier cosa de ranking.
+- **Google Cloud**: la API key del calendario está restringida por sitio; agregar
+  `https://basquetnewells.com.ar/*` (ver `docs/COORDINACION.md`). Sin eso el
+  calendario del portal da 403 en el dominio nuevo.
+- **Supabase → Authentication → URL Configuration**: Site URL y Redirect URLs con
+  el dominio nuevo (ver `docs/CONFIGURAR-AUTH.md`), para que el login de Semillero
+  vuelva a `basquetnewells.com.ar/app`.

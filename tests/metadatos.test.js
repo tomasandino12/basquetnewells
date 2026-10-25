@@ -67,11 +67,25 @@ test('og:image es absoluta, del mismo dominio, y el archivo existe, con las medi
   }
 });
 
-test('robots.txt y el sitemap declaran el mismo sitio y listan las dos páginas', () => {
+test('el dominio canónico es basquetnewells.com.ar y no queda el viejo en el head ni en robots/sitemap', () => {
+  assert.equal(sitio, 'https://basquetnewells.com.ar/');
+  for (const [nombre, texto] of [['portal.html', portal], ['index.html', app], ['robots.txt', robots], ['sitemap.xml', sitemap]]) {
+    assert.doesNotMatch(texto, /vercel\.app/, `${nombre}: quedó el dominio viejo`);
+  }
+});
+
+test('robots.txt y el sitemap declaran el mismo sitio; el sitemap lista el portal y no la app', () => {
   assert.equal(robots.match(/^Sitemap:\s*(\S+)/m)?.[1], `${sitio}sitemap.xml`);
   const locs = [...sitemap.matchAll(/<loc>([^<]*)<\/loc>/g)].map((m) => m[1]);
   assert.ok(locs.includes(sitio), 'el sitemap no lista el portal');
-  assert.ok(locs.includes(`${sitio}app`), 'el sitemap no lista /app');
+  assert.ok(locs.every((l) => l.startsWith(sitio)), `el sitemap lista URLs de otro dominio: ${locs}`);
+  assert.ok(!locs.includes(`${sitio}app`), '/app lleva noindex: no va en el sitemap');
+  for (const legal of ['privacidad', 'terminos']) assert.ok(locs.includes(`${sitio}${legal}`), `falta /${legal}`);
+});
+
+test('el portal se indexa y /app no: es la puerta de una app con login', () => {
+  assert.equal(meta(portal, 'robots'), 'index,follow');
+  assert.equal(meta(app, 'robots'), 'noindex');
 });
 
 test('robots.txt no bloquea /public: Google necesita el CSS y el JS para ver las páginas', () => {
