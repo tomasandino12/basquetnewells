@@ -430,7 +430,7 @@
 .portal-atajos svg{width:1.125rem;height:1.125rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 .portal-sec{padding:var(--sp-8) var(--sp-4) 0;scroll-margin-top:var(--sp-4)}
-.portal-st{font-family:var(--ff-titulo);font-weight:600;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-115);color:var(--primario);margin-bottom:var(--sp-1)}
+.portal-st{font-family:var(--ff-titulo);font-weight:600;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-115);color:var(--club-texto);margin-bottom:var(--sp-1)}
 .portal-sec h2{font-size:var(--fs-260);line-height:1.05;letter-spacing:.02em;margin-bottom:var(--sp-2)}
 .portal-sec .intro{color:var(--gris-osc);font-size:var(--fs-145);line-height:1.5;margin-bottom:var(--sp-4)}
 .portal-sec .portal-nota{color:var(--gris-osc);font-size:var(--fs-135);line-height:1.55;margin-top:var(--sp-4)}
@@ -566,7 +566,7 @@ html:not(.js-anim) .portal-cinta-pausa{display:none}
 .portal-ley{list-style:none;margin:0;display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-3);padding:var(--sp-3) var(--sp-4) 0;font-size:var(--fs-115);color:var(--gris-osc)}
 .portal-ley li{display:flex;align-items:center;gap:var(--sp-1)}
 .portal-ley li::before{content:"";width:.625rem;height:.625rem}
-.portal-grilla{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;padding:var(--sp-2) var(--sp-2) var(--sp-3);transition:opacity var(--dur-2) var(--ease-salida)}
+.portal-grilla{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px 0;padding:var(--sp-2) var(--sp-1) var(--sp-3);transition:opacity var(--dur-2) var(--ease-salida)}
 .portal-dn{font-size:var(--fs-100);font-weight:600;color:var(--gris-osc);text-align:center;padding:var(--sp-2) 0}
 .portal-dia{
   position:relative;min-height:var(--tap);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:.1875rem;

@@ -240,24 +240,27 @@ Al agregar o editar un formulario, el selector **"Cómo se muestra en la página
 tiene estas opciones:
 
 - **Común**: va en la lista "Otros formularios" (pase, rifas…).
-- **Inscripción (botón grande de arriba)** (desde 0062): **así se abre y se cierra
-  la inscripción**. Con el formulario marcado y visible, el primer botón de la
-  banda roja y negra de arriba es "Inscribir a mi hijo o hija"; oculto o sin
-  marcar, ese lugar es de "Quiero jugar en Newell's".
-- **Quiero jugar en Newell's (consultas)**: es el primer botón de arriba mientras
-  la inscripción está cerrada (sin formulario activo, se ve apagado). Es el
+- **Inscripción (botón de arriba)** (desde 0062): **así se abre y se cierra
+  la inscripción**. Con el formulario marcado y visible, el botón principal de
+  arriba (rojo, sobre la foto) es "Inscribirme"; oculto o sin marcar, ese lugar
+  es de "Quiero que juegue" (el formulario "Quiero jugar en Newell's").
+- **Quiero jugar en Newell's (consultas)**: es el botón principal de arriba ("Quiero
+  que juegue") mientras la inscripción está cerrada (sin formulario activo, se ve
+  apagado). La barra fija de abajo repite el mismo botón al scrollear. Es el
   formulario al que lleva el QR impreso (ver abajo).
-- **Comprobante de pago (botón grande de arriba)** (desde 0062): el segundo botón
-  de la banda, con el alias para copiar debajo. Es independiente de la
+- **Comprobante de pago** (desde 0062): el botón "Pagar" (siempre activo) abre una
+  hoja con el alias para copiar y, si este formulario está visible, el botón
+  "Enviar comprobante"; si no, la hoja dice "Por ahora no hay nada para pagar".
+  Sirve para cuotas y para cualquier otro pago. Es independiente de la
   inscripción: se puede inscribir alguien sin pagar nada.
 - **Sumate al básquet de Newell's (colaboradores)**: su propia sección, para una
   empresa que quiere asociarse o alguien que quiere dar una mano en los eventos.
 - **Eventos de recaudación** (desde 0063): es otro formulario que el de
   colaborar, para quien quiere comprar y colaborar (pizzas, rifas, comidas) y
-  deja su mail. Es la banda roja de debajo del calendario.
+  deja su mail. Es la tarjeta con foto de debajo del calendario.
 
 El WhatsApp del coordinador aparece **una sola vez**, al final de las preguntas
-frecuentes (el botón "Ayuda" de arriba lleva ahí). Profes y jugadores entran a
+frecuentes (el atajo "Ayuda" de abajo del hero y los "¿Dudas?" llevan ahí). Profes y jugadores entran a
 Semillero desde "Soy profe o jugador", en el encabezado.
 
 Cada lugar especial es **único**: si marcás un formulario y otro ya lo tenía, la

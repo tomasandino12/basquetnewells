@@ -155,7 +155,7 @@ function abrirFormulario(formulario, inicial = null) {
           ${DESTINOS.map((d) => html`<option value="${d.clave}"${v.destino === d.clave && html` selected`}>${d.rotulo}</option>`)}
         </select></span>
       </div>
-      <div class="p det">Los lugares especiales son únicos: inscripción y comprobante son los dos botones grandes de arriba (con la inscripción cerrada, el primero es "Quiero jugar", al que lleva el QR impreso); colaborar tiene su sección; recaudación es la banda roja de debajo del calendario.${formulario?.destino && !formulario.activo ? ' Mientras esté oculto no se muestra, aunque tenga este lugar.' : ''}</div>
+      <div class="p det">Los lugares especiales son únicos: la inscripción es el botón principal de arriba (con la inscripción cerrada, es "Quiero que juegue", al que lleva el QR impreso); el comprobante está dentro de la hoja que abre el botón "Pagar"; colaborar tiene su sección; recaudación es la tarjeta con foto de debajo del calendario.${formulario?.destino && !formulario.activo ? ' Mientras esté oculto no se muestra, aunque tenga este lugar.' : ''}</div>
       <div id="form-destino-nota" class="p det" role="status"></div>
       <div id="form-aviso"></div>
       <div class="acciones-hoja">

@@ -35,6 +35,7 @@
   --primario-osc:#A00D22;                    /* apretado y hover */
   --primario-cl:#FFEBEE;                     /* fondo suave */
   --primario-tenue:#FBE5E8;                  /* fondo de una etiqueta del club */
+  --club-texto:#E34D62;                      /* el color del club como TEXTO chico sobre fondo oscuro: el rojo puro llega a 3.8:1, éste a 4.7:1 */
 
   /* ---- neutros ---- */
   --negro:#131316;
@@ -202,6 +203,7 @@
     --primario-osc:color-mix(in srgb,var(--club) 73.7%,black);
     --primario-cl:color-mix(in oklab,var(--club) 9%,white);
     --primario-tenue:color-mix(in srgb,var(--club) 11%,white);
+    --club-texto:color-mix(in srgb,var(--club) 75%,white);
   }
 }
 

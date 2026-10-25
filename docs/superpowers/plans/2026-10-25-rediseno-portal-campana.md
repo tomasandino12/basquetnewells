@@ -81,7 +81,7 @@ Lo que anda y hay que conservar tal cual: copiar alias, `data-ics` (iPhone) + `e
 | **3 · Cinta + ticket + calendario** ✅ (25/10; falta ver con eventos reales en el deploy) | Cinta, ticket, calendario restyle, formas por tipo. | Funciones con eventos de muestra; iPhone `.ics` y Google; navegación de mes; 0/1/6 eventos. |
 | **4 · Categorías** ✅ (25/10) | Carrusel con fotos duotono. | Buscador intacto; snap en táctil; 8 tarjetas. |
 | **5 · Recaudación, Sumate, Sede, bordes** ✅ (25/10; borde rasgado sólo en el pie, el hero ya tiene su diagonal) | Tarjetas con foto, sede con foto, bordes rasgados, "rise" y sticker. | "Ver mapa" no carga hasta tocar; un solo rojo dominante por pantalla. |
-| **6 · Cierre** | Textos de Ayuda (nombres nuevos de botones), tests, DESIGN.md (sección portal), auditoría con ui-ux-pro-max (contraste, tap, foco), reduced-motion, JS bloqueado, 320 px. | `test:q` verde; revisión final; sugerir deploy de preview. |
+| **6 · Cierre** ✅ (25/10) | Textos de Ayuda (nombres nuevos de botones), tests, DESIGN.md (sección portal), auditoría con ui-ux-pro-max (contraste, tap, foco), reduced-motion, JS bloqueado, 320 px. | `test:q` verde; revisión final; sugerir deploy de preview. |
 
 ## 6. Decisiones que necesito de vos
 
@@ -89,3 +89,11 @@ Lo que anda y hay que conservar tal cual: copiar alias, `data-ics` (iPhone) + `e
 2. **Sello:** el pedido decía "U9 a U17", pero los datos tienen hasta U21 (y Primera). Propongo "De U9 a U21", derivado de los datos.
 3. **Etiqueta de la barra fija:** con la inscripción cerrada, "Inscribirme" confunde. Propongo que copie el texto del botón del hero ("Quiero que juegue" / "Inscribirme").
 4. **"Quiero que juegue" mientras carga la base o sin formulario:** hoy queda apagado con "Pronto". Propongo mantenerlo así (el único botón que puede estarlo); "Pagar" nunca.
+
+## 7. Antes de mergear / publicar (pendiente de Tomás)
+
+1. Probar el deploy de preview en un celular real: copiar el alias ("¡Copiado!"), abrir la hoja de Pagar, la barra fija, la cinta con eventos reales de Google (en local la clave da 403) y el ticket.
+2. Medir LCP/CLS en Lighthouse mobile (en el navegador de pruebas no se pudo): el LCP debería ser la foto del hero.
+3. Las fotos son provisorias (Instagram del básquet, uso autorizado por Tomás "por ahora"); cambiarlas en `FOTOS` de `src/data/portal.js` cuando llegue el fotógrafo. La Primera femenina va sin foto.
+4. Verificar que el merge no pise otras ramas que toquen `publico.css`, `portal.html` o `portal.js`.
+5. El OG image (`og:image`) sigue siendo el escudo: se puede cambiar por una foto del hero.

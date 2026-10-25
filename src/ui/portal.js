@@ -156,7 +156,7 @@ export function htmlAvisoRespaldo() {
 }
 
 /**
- * La banda roja de debajo del calendario: el aviso por mail de los eventos de
+ * La tarjeta con foto de Recaudación (debajo del calendario): el aviso por mail de los eventos de
  * recaudación del club. Es el formulario con destino recaudacion (0063), aparte
  * del de colaborar: quien quiere comprar una pizza no es una empresa que quiere
  * asociarse. Su planilla de respuestas vive en Google. Los partidos y charlas

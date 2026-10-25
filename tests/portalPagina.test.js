@@ -449,7 +449,7 @@ test('el portal aparta los formularios con lugar propio: no aparecen dos veces',
   assert.match(portal, /htmlFormularios\(comunes\)/);
 });
 
-// ---- Recaudación: banda roja con su propio formulario (destino recaudacion, 0063) ----
+// ---- Recaudación: tarjeta con foto y su propio formulario (destino recaudacion, 0063) ----
 
 test('htmlRecaudacion: grande "Enterate…", chico los ejemplos, y sin formulario el botón apagado', () => {
   const abierta = htmlRecaudacion(FORM('x', 'https://forms.gle/Rec1')).toString();

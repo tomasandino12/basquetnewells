@@ -175,6 +175,13 @@ test('el texto de la landing llega a 4.5:1 sobre su tarjeta y su fondo', () => {
     ['--gris-osc', '--pub-tarjeta'], ['--gris-osc', '--pub-fondo'],
     ['--sobre-oscuro', '--pub-tarjeta'], ['--sobre-oscuro', '--pub-fondo'],
     ['--sube-osc', '--pub-tarjeta'],
+    // El color del club como texto chico (los títulos de sección del portal): --club solo llega a 3.8:1.
+    ['--club-texto', '--pub-tarjeta'], ['--club-texto', '--pub-fondo'],
+    // El dorado (ejemplos de recaudación) y el texto sobre el talón del ticket.
+    ['--dorado', '--pub-fondo'], ['--pub-fondo', '--dorado'], ['--pub-fondo', '--agenda-charla'], ['--pub-fondo', '--sube-osc'],
+    ['--sobre-club', '--club'],
+    // La línea de ayuda del botón "Pagar" (claro) y su texto.
+    ['--gris', '--papel'], ['--tinta', '--papel'],
   ];
   for (const [texto, fondo] of pares) {
     const [t, f] = [valorDeToken(texto), valorDeToken(fondo)];
