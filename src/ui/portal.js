@@ -37,6 +37,7 @@ const ICONO = {
   calendario: html`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`,
   categorias: html`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
   colaborar: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>`,
+  celular: html`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg>`,
   agenda: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 5h13l-3 4 3 4H5"/></svg>`,
   ayuda: html`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/></svg>`,
   comprobante: html`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>`,
@@ -119,8 +120,8 @@ export function htmlDock({ inscripcion = null, consultas = null } = {}) {
   const url = (f) => (f ? enlaceFormulario(f.enlace) : null);
   const ins = url(inscripcion);
   const principal = ins ?? url(consultas);
-  return html`${principal && html`<a class="portal-dock-btn principal" href="${principal}" target="_blank" rel="noopener">${ins ? 'Inscribirme' : 'Quiero que juegue'}</a>`}
-    <button type="button" class="portal-dock-btn pago" data-abrir-pago aria-haspopup="dialog">Pagar</button>`;
+  return html`${principal && html`<a class="portal-dock-btn principal" href="${principal}" target="_blank" rel="noopener">${ICONO.personaMas}${ins ? 'Inscribirme' : 'Quiero que juegue'}</a>`}
+    <button type="button" class="portal-dock-btn pago" data-abrir-pago aria-haspopup="dialog">${ICONO.billetera}Pagar</button>`;
 }
 
 /**
@@ -404,8 +405,8 @@ export function htmlEvento(e, fecha = null) {
     <small><i class="portal-tipo-ico">${ICONO_TIPO[e.tipo]}</i>${fecha ? fechaLarga(fecha) : NOMBRE_TIPO[e.tipo]} · ${cuando}</small>
     <b>${e.titulo}</b>${e.lugar && html`<span>${e.lugar}</span>`}
     <div class="portal-ev-agregar">Agregar a mi calendario:
-      <a href="${enlaceAgregarGoogle(e)}" target="_blank" rel="noopener">Google</a>
-      <button type="button" data-ics="${claveEvento(e)}">iPhone</button>
+      <a href="${enlaceAgregarGoogle(e)}" target="_blank" rel="noopener">${ICONO.calendario}Google</a>
+      <button type="button" data-ics="${claveEvento(e)}">${ICONO.celular}iPhone</button>
     </div>
   </li>`;
 }
@@ -436,8 +437,8 @@ export function htmlProximo(proximo, hoy) {
       <p class="portal-prox-h">${fechaLarga(fecha)} · ${e.hora ? `${e.hora} a ${e.horaFin}` : 'Todo el día'}</p>
       ${e.lugar && html`<p class="portal-prox-lugar"><i>${ICONO.lugar}</i>${e.lugar}</p>`}
       <div class="portal-ev-agregar"><span>Agendar:</span>
-        <a href="${enlaceAgregarGoogle(e)}" target="_blank" rel="noopener">Google</a>
-        <button type="button" data-ics="${claveEvento(e)}">iPhone</button>
+        <a href="${enlaceAgregarGoogle(e)}" target="_blank" rel="noopener">${ICONO.calendario}Google</a>
+        <button type="button" data-ics="${claveEvento(e)}">${ICONO.celular}iPhone</button>
       </div>
     </div>
   </article>`;

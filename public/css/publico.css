@@ -601,10 +601,11 @@ html:not(.js-anim) .portal-cinta-pausa{display:none}
 /* "Agregar a mi calendario": dos botones chicos pero de 44 px de alto para el pulgar. */
 .portal-ev-agregar{display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--sp-2);margin-top:var(--sp-1);font-size:var(--fs-115);color:var(--gris-osc)}
 .portal-ev-agregar a,.portal-ev-agregar button{
-  display:inline-flex;align-items:center;min-height:var(--tap);padding:0 var(--sp-2);
+  display:inline-flex;align-items:center;gap:var(--sp-2);min-height:var(--tap);padding:0 var(--sp-2);
   font:inherit;font-weight:600;color:var(--sobre-oscuro);text-decoration:underline;text-underline-offset:.2em;
   background:transparent;border:0;cursor:pointer;
 }
+.portal-ev-agregar svg{flex:0 0 auto;width:1.125rem;height:1.125rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .portal-seguir{margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--pub-borde)}
 .portal-seguir b{display:block;font-size:var(--fs-145)}
 .portal-seguir span{display:block;font-size:var(--fs-125);color:var(--gris-osc);margin:var(--sp-1) 0 var(--sp-3)}
@@ -890,11 +891,12 @@ html:not(.js-anim) .portal-cinta-pausa{display:none}
 .portal-dock.visible{transform:none}
 .portal-dock-acc{display:flex;gap:var(--sp-2);max-width:30rem;margin-inline:auto}
 .portal-dock-btn{
-  flex:1 1 0;display:inline-flex;align-items:center;justify-content:center;min-height:3rem;padding:0 var(--sp-3);
+  flex:1 1 0;display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);min-height:3rem;padding:0 var(--sp-2);
   border:0;border-radius:var(--r-btn);text-decoration:none;cursor:pointer;
   font-family:var(--ff-titulo);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:var(--fs-190);line-height:1;
   transition:transform var(--dur-1) var(--ease-salida);
 }
+.portal-dock-btn svg{flex:0 0 auto;width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .portal-dock-btn:active{transform:scale(.97)}
 .portal-dock-btn.principal{flex-grow:1.5;background:var(--primario);color:var(--sobre-club);white-space:nowrap}
 .portal-dock-btn.pago{background:var(--papel);color:var(--tinta)}

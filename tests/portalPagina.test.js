@@ -169,16 +169,38 @@ test('mientras la base no responde: el principal está ocupado, no dice "Pronto"
 
 test('la barra fija repite el principal del hero (mismo texto y destino) y "Pagar"; sin formulario, sólo "Pagar"', () => {
   const abierta = htmlDock({ inscripcion: FORM('x'), consultas: FORM('y', 'https://forms.gle/Jug1') }).toString();
-  assert.match(abierta, /<a class="portal-dock-btn principal" href="https:\/\/forms\.gle\/Abc1" target="_blank" rel="noopener">Inscribirme<\/a>/);
+  assert.match(abierta, /<a class="portal-dock-btn principal" href="https:\/\/forms\.gle\/Abc1" target="_blank" rel="noopener"><svg[\s\S]*?<\/svg>Inscribirme<\/a>/);
   assert.doesNotMatch(abierta, /Jug1/);
   const cerrada = htmlDock({ inscripcion: MALO, consultas: FORM('y', 'https://forms.gle/Jug1') }).toString();
-  assert.match(cerrada, /href="https:\/\/forms\.gle\/Jug1"[^>]*>Quiero que juegue<\/a>/);
+  assert.match(cerrada, /href="https:\/\/forms\.gle\/Jug1"[^>]*><svg[\s\S]*?<\/svg>Quiero que juegue<\/a>/);
   for (const sin of [htmlDock({}), htmlDock({ consultas: MALO })]) {
     assert.doesNotMatch(sin.toString(), /<a |evil/);
     assert.match(sin.toString(), /<button type="button" class="portal-dock-btn pago" data-abrir-pago/);
   }
   assert.match(pagina, /<div class="portal-dock" id="portal-dock" role="region" aria-label="[^"]+" inert>/, 'oculta es inert: el teclado no llega');
   assert.match(portal, /htmlDock\(\{ inscripcion, consultas \}\)/);
+});
+
+test('el dock lleva íconos: cada botón con su svg decorativo y el texto a la vista', () => {
+  const out = htmlDock({ inscripcion: FORM('x') }).toString();
+  const botones = out.match(/<(?:a|button)\b[^>]*class="portal-dock-btn[^>]*>[\s\S]*?<\/(?:a|button)>/g);
+  assert.equal(botones.length, 2);
+  for (const b of botones) {
+    assert.match(b, /^<(?:a|button)[^>]*><svg viewBox="0 0 24 24" aria-hidden="true">[\s\S]*?<\/svg>[A-Za-zÁ-ú ]+<\/(?:a|button)>$/, b);
+  }
+  // Y el área táctil sigue siendo de 48 px.
+  assert.match(readFileSync('public/css/publico.css', 'utf8'), /\.portal-dock-btn\{[^}]*min-height:3rem/);
+});
+
+test('agendar lleva íconos: Google (calendario) e iPhone (celular), en cada evento y en "Lo que viene", con área de toque de 44 px', () => {
+  const [prox] = proximosEventos(porDia, '2026-10-24', 1);
+  const arreglos = [htmlProximo(prox, '2026-10-24'), htmlCalendario(estado(), CALS)].map(String);
+  for (const out of arreglos) {
+    assert.match(out, /rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true">[\s\S]*?<\/svg>Google<\/a>/);
+    assert.match(out, /<button type="button" data-ics="[^"]+"><svg viewBox="0 0 24 24" aria-hidden="true">[\s\S]*?<\/svg>iPhone<\/button>/);
+  }
+  const css = readFileSync('public/css/publico.css', 'utf8');
+  assert.match(css, /\.portal-ev-agregar a,\.portal-ev-agregar button\{[^}]*min-height:var\(--tap\)/);
 });
 
 test('la hoja de pago: el alias y el comprobante; sin formulario lo dice y deja el alias; escapado', () => {
@@ -302,8 +324,8 @@ test('lo que viene muestra fecha, tipo y botones de agendar, con la foto de su t
     assert.match(out, new RegExp(`<img src="/public/img/fotos/${foto}-640\\.webp"[^>]*alt="[^"]{20,}"[^>]*loading="lazy"`));
     assert.match(out, /<div class="portal-prox-fecha" aria-label="[^"]+"><small>[^<]+<\/small><b>\d+<\/b><small>[^<]+<\/small><\/div>/);
     assert.match(out, /<h3 class="portal-prox-t">/);
-    assert.match(out, /<a href="https:\/\/calendar\.google\.com\/calendar\/render\?action=TEMPLATE[^"]*" target="_blank" rel="noopener">Google<\/a>/);
-    assert.match(out, /<button type="button" data-ics="[^"]+">iPhone<\/button>/);
+    assert.match(out, /<a href="https:\/\/calendar\.google\.com\/calendar\/render\?action=TEMPLATE[^"]*" target="_blank" rel="noopener"><svg[\s\S]*?<\/svg>Google<\/a>/);
+    assert.match(out, /<button type="button" data-ics="[^"]+"><svg[\s\S]*?<\/svg>iPhone<\/button>/);
   }
   // El lugar sólo si hay, y nada de la descripción de Google (puede traer nombres).
   assert.doesNotMatch(htmlProximo(proximosEventos(porDia, '2026-10-24', 1)[0], '2026-10-24').toString(), /portal-prox-lugar/);
@@ -596,8 +618,8 @@ test('htmlLogos: sin sponsors no muestra nada; con sponsors, una imagen con su n
 test('cada evento ofrece agregarlo: link a Google y botón que baja el .ics', () => {
   const out = htmlCalendario(estado(), CALS).toString();
   const evento = out.match(/<li class="portal-ev tipo-partido">[\s\S]*?<\/li>/)[0];
-  assert.match(evento, /<a href="https:\/\/calendar\.google\.com\/calendar\/render\?action=TEMPLATE[^"]*" target="_blank" rel="noopener">Google<\/a>/);
-  assert.match(evento, /<button type="button" data-ics="1\|2026-10-24">iPhone<\/button>/);
+  assert.match(evento, /<a href="https:\/\/calendar\.google\.com\/calendar\/render\?action=TEMPLATE[^"]*" target="_blank" rel="noopener"><svg[\s\S]*?<\/svg>Google<\/a>/);
+  assert.match(evento, /<button type="button" data-ics="1\|2026-10-24"><svg[\s\S]*?<\/svg>iPhone<\/button>/);
   assert.match(evento, /Partidos · 10:30 a 11:30/);
 });
 
