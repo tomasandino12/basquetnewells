@@ -385,7 +385,7 @@ test('la firma del pie: "Hecho por" con link externo a LinkedIn (noopener), sól
   assert.equal(sinLink, 'Hecho por <b>Ana</b>');
   assert.doesNotMatch(sinLink, /<a /);
   assert.equal(htmlFirma({ nombre: null, linkedin: 'https://www.linkedin.com/in/ana/' }).toString(), '');
-  assert.equal(htmlFirma(PORTAL.creador).toString(), '', 'hoy el pie no firma');
+  assert.match(htmlFirma(PORTAL.creador).toString(), /^Hecho por <a class="pie-firma-link" href="https:\/\/www\.linkedin\.com\/in\/[^"]+" target="_blank" rel="noopener">/, 'el pie firma con link');
 });
 
 // ---- El sticker de sponsor del hero ----

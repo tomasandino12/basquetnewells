@@ -254,7 +254,7 @@ test('cada tipo de evento tiene foto válida, que existe en disco; uno desconoci
   assert.equal(fotoDeEvento(undefined).src, '/public/img/fotos/formativas-bandeja.webp');
 });
 
-test('la firma sólo enlaza a LinkedIn: sin nombre no hay firma; un link de otro sitio se descarta y queda el nombre; PORTAL.creador arranca vacío', () => {
+test('la firma sólo enlaza a LinkedIn: sin nombre no hay firma; un link de otro sitio se descarta y queda el nombre; PORTAL.creador firma con link', () => {
   const ok = 'https://www.linkedin.com/in/alguien-123/';
   assert.deepEqual(firmaValida({ nombre: ' Ana Pérez ', linkedin: ok }), { nombre: 'Ana Pérez', linkedin: ok });
   assert.deepEqual(firmaValida({ nombre: 'Ana', linkedin: null }), { nombre: 'Ana', linkedin: null });
@@ -266,6 +266,6 @@ test('la firma sólo enlaza a LinkedIn: sin nombre no hay firma; un link de otro
     assert.equal(firmaValida(vacia), null, JSON.stringify(vacia));
   }
   assert.equal(firmaValida({ nombre: 'x'.repeat(200) }).nombre.length, 80);
-  // Mientras Tomás no pase sus datos, el pie no firma nada (no se inventa nombre ni link).
-  assert.deepEqual({ ...PORTAL.creador }, { nombre: null, linkedin: null });
+  // La firma real tiene que pasar la validación entera: si no, el pie perdería el link sin avisar.
+  assert.deepEqual(firmaValida(PORTAL.creador), { ...PORTAL.creador });
 });

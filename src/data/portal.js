@@ -138,11 +138,10 @@ export const PORTAL = Object.freeze({
   // existe o una ruta de otro lado, no se muestra: ver sponsorsValidos().
   sponsors: Object.freeze([]),
 
-  // La firma del pie, "Hecho por <nombre>", con un link a su LinkedIn. PENDIENTE:
-  // Tomás todavía no pasó el nombre ni la URL; con el nombre vacío el pie no
-  // muestra la firma. Sin una URL de https://www.linkedin.com/… válida, va sólo
-  // el nombre, sin link (ver firmaValida).
-  creador: Object.freeze({ nombre: null, linkedin: null }),
+  // La firma del pie, "Hecho por <nombre>", con un link a su LinkedIn. Con el
+  // nombre vacío el pie no firma; sin una URL de https://www.linkedin.com/…
+  // válida, va sólo el nombre, sin link (ver firmaValida).
+  creador: Object.freeze({ nombre: 'Tomás Andino', linkedin: 'https://www.linkedin.com/in/tom%C3%A1s-andino-0758ab310/' }),
 
   // Respaldo de los formularios: lo que se muestra si la base no responde. La
   // lista de verdad la carga la coordinación desde su panel. Vacío a propósito
