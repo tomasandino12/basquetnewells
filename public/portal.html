@@ -102,15 +102,6 @@
         <img src="/public/img/fotos/formativas-bandeja.webp" width="1080" height="720" fetchpriority="high"
           alt="Un jugador de Newell's sube a hacer una bandeja en un partido de las formativas">
       </picture>
-      <!-- El sticker de sponsor: único elemento que gira (DESIGN.md). Lleva a Sumate. El
-           anillo es decorativo (aria-hidden); el nombre accesible lo da aria-label. -->
-      <a class="portal-sponsor" href="#colaborar" aria-label="¿Tenés una empresa? Sumate: ver cómo sumar tu empresa como sponsor">
-        <svg class="portal-sponsor-anillo" id="anillo-sponsor" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
-          <defs><path id="circulo-sponsor" d="M60,14 a46,46 0 1,1 0,92 a46,46 0 1,1 0,-92"/></defs>
-          <text font-size="12"><textPath href="#circulo-sponsor" textLength="284" lengthAdjust="spacing">¿TENÉS UNA EMPRESA?&#8195;·&#8195;¿TENÉS UNA EMPRESA?&#8195;·&#8195;</textPath></text>
-        </svg>
-        <span class="portal-sponsor-centro" aria-hidden="true">Sumate</span>
-      </a>
       <div class="portal-heroe-cuerpo">
         <p class="portal-heroe-ey entra" style="--i:0"><span aria-hidden="true"></span><span id="portal-heroe-ey">Formativas</span></p>
         <div class="portal-titulo">
@@ -119,6 +110,17 @@
             <span class="linea"><span style="--i:2">forma</span></span>
             <span class="linea rojo"><span style="--i:3">la Lepra</span></span>
           </h1>
+          <!-- El sticker de sponsor: único elemento que gira (DESIGN.md). Lleva a Sumate. En el celu
+             queda al lado de las dos primeras líneas del título (que son angostas); en compu, abajo a la
+             derecha de la foto. El
+               anillo es decorativo (aria-hidden); el nombre accesible lo da aria-label. -->
+          <a class="portal-sponsor entra" style="--i:4" href="#colaborar" aria-label="¿Tenés una empresa? Sumate: ver cómo sumar tu empresa como sponsor">
+            <svg class="portal-sponsor-anillo" id="anillo-sponsor" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+              <defs><path id="circulo-sponsor" d="M60,14 a46,46 0 1,1 0,92 a46,46 0 1,1 0,-92"/></defs>
+              <text font-size="12"><textPath href="#circulo-sponsor" textLength="284" lengthAdjust="spacing">¿TENÉS UNA EMPRESA?&#8195;·&#8195;¿TENÉS UNA EMPRESA?&#8195;·&#8195;</textPath></text>
+            </svg>
+            <span class="portal-sponsor-centro" aria-hidden="true">Sumate</span>
+          </a>
         </div>
         <p class="portal-heroe-bajada entra" style="--i:4">El básquet formativo de Newell&#39;s Old Boys, en el Parque de la Independencia, Rosario.</p>
         <div class="portal-acciones entra" style="--i:5" id="portal-heroe"></div>

@@ -292,6 +292,8 @@
   }
   .publico .portal-heroe-cuerpo{max-width:64rem}
   /* El sticker de sponsor: abajo a la derecha de la foto, más grande. */
+  /* El sticker se ancla al hero, no al título: ni el cuerpo ni el título son su bloque contenedor. */
+  .publico .portal-heroe-cuerpo,.publico .portal-titulo{position:static}
   .publico .portal-sponsor{top:auto;bottom:6rem;right:var(--sp-6);width:8rem;height:8rem}
   .publico .portal-sponsor-centro{font-size:var(--fs-230)}
   .publico .portal-heroe-cuerpo > *{max-width:38rem}

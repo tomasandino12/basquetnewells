@@ -405,7 +405,7 @@ test('la firma del pie: "Hecho por" con link externo a LinkedIn (noopener), sól
 
 test('el sticker de sponsor lleva a colaborar: dentro del hero, con nombre accesible y el anillo decorativo', () => {
   const heroe = seccion('heroe');
-  const sticker = heroe.match(/<a class="portal-sponsor"[\s\S]*?<\/a>/)?.[0];
+  const sticker = heroe.match(/<a class="portal-sponsor[^"]*"[\s\S]*?<\/a>/)?.[0];
   assert.ok(sticker, 'falta el sticker en el hero');
   assert.match(sticker, /href="#colaborar"/);
   assert.match(sticker, /aria-label="¿Tenés una empresa\? Sumate[^"]*"/);
@@ -413,7 +413,7 @@ test('el sticker de sponsor lleva a colaborar: dentro del hero, con nombre acces
   assert.match(sticker, /<textPath[^>]*>¿TENÉS UNA EMPRESA\?/);
   assert.match(sticker, /<span class="portal-sponsor-centro" aria-hidden="true">Sumate<\/span>/);
   assert.ok(pagina.indexOf('id="colaborar"') > 0, 'y existe a dónde ir');
-  assert.ok(heroe.indexOf('portal-sponsor"') < heroe.indexOf('portal-heroe-cuerpo'), 'antes del cuerpo: no tapa el título al tabular');
+  assert.match(heroe, /<div class="portal-titulo">[\s\S]*<\/h1>\s*<!--[\s\S]*?-->\s*<a class="portal-sponsor[^"]*"/, 'dentro del contenedor del título, después del h1');
   assert.match(portal, /^$|/); // el HTML es estático: no depende de la base
   assert.match(readFileSync('src/ui/portalArranque.js', 'utf8'), /iniciarGiroSponsor\(\);/);
 });
@@ -429,28 +429,28 @@ test('el sticker respeta reduced-motion: gira sólo con el keyframe del escudo, 
   assert.match(modulo, /export function iniciarGiroSponsor\(\)/);
   assert.match(modulo, /classList\.toggle\('quieto', !entrada\.isIntersecting\)/);
   // En el celu, arriba a la izquierda (el título y los botones están abajo); en compu, abajo a la derecha.
-  assert.match(css, /\.portal-sponsor\{[^}]*top:3\.75rem;right:var\(--sp-4\)/);
+  assert.match(css, /\.portal-sponsor\{[^}]*top:0;right:0;/);
   assert.match(readFileSync('public/css/layout.css', 'utf8'), /\.publico \.portal-sponsor\{top:auto;bottom:6rem;right:var\(--sp-6\)/);
 });
 
-test('el sticker no tapa el texto del hero en el celular: el hero le reserva el lugar de arriba y el título se achica para que todo entre', () => {
+test('el sticker no tapa el texto del hero en el celular: va al lado de las dos primeras líneas del título, que son angostas, sin reservar alto', () => {
   const css = readFileSync('public/css/publico.css', 'utf8');
   const rem = (v) => Number(v.replace('rem', ''));
-  const sticker = css.match(/\.portal-sponsor\{[^}]*top:([\d.]+rem);right:var\(--sp-4\);[^}]*width:([\d.]+rem);height:([\d.]+rem);/);
-  assert.ok(sticker, 'el sticker va arriba a la derecha, con alto y ancho en rem');
-  assert.equal(sticker[2], sticker[3], 'es un círculo');
-  const heroe = css.match(/\.portal-heroe\{[^}]*padding:([\d.]+rem) var\(--sp-4\) ([\d.]+rem);/);
-  assert.ok(heroe, 'el hero declara su padding-top');
-  // El texto (eyebrow, título, bajada y botones) empieza abajo del padding-top: el sticker tiene que terminar antes.
-  assert.ok(rem(sticker[1]) + rem(sticker[3]) <= rem(heroe[1]), `el sticker (${sticker[1]} + ${sticker[3]}) pasa del padding-top del hero (${heroe[1]})`);
-  // Y debajo del botón Semillero (44 px de alto, a 12 px del borde), no encima.
-  assert.ok(rem(sticker[1]) >= (12 + 44) / 16, 'el sticker no pisa el botón Semillero');
-  // El título cuenta con ese lugar: lo que no es título ocupa 33rem en el celular (en compu, layout.css lo corrige).
-  assert.match(readFileSync('public/css/tokens.css', 'utf8'), /--fs-hero:clamp\([^;]*100svh - 33rem\)/);
-  // En compu el sticker pasa abajo a la derecha y el hero trae su propio padding-top (6rem): no hay nada que reservar.
+  // Se ancla al título (arriba a la derecha) y se puede tocar (≥ 4.5rem).
+  assert.match(css, /\.portal-titulo\{position:relative\}/);
+  const sticker = css.match(/\.portal-sponsor\{[^}]*top:0;right:0;[^}]*width:([\d.]+rem);height:([\d.]+rem);/);
+  assert.ok(sticker, 'el sticker va arriba a la derecha del título, con alto y ancho en rem');
+  assert.equal(sticker[1], sticker[2], 'es un círculo');
+  assert.ok(rem(sticker[1]) >= 4.5, 'se puede tocar');
+  // No cuesta alto: el hero vuelve a su padding de siempre y el título a su tamaño.
+  assert.match(css, /\.portal-heroe\{[^}]*padding:5rem var\(--sp-4\) 3\.5rem;/);
+  assert.match(readFileSync('public/css/tokens.css', 'utf8'), /--fs-hero:clamp\(2\.75rem,min\(23vw,calc\(\(100svh - 29rem\) \/ 2\.7\)\),9rem\);/);
+  // Entra al lado de "ACÁ SE" y "FORMA" (~2.7em, y --fs-hero ≤ 23vw ⇒ ≤ 63% del ancho): queda más de un tercio libre.
+  assert.ok(2.7 * 0.23 < 0.63 + 0.001);
+  // En compu el sticker sigue abajo a la derecha de la FOTO: ni el cuerpo ni el título son su bloque contenedor.
   const compu = readFileSync('public/css/layout.css', 'utf8');
-  assert.match(compu, /\.publico \.portal-heroe\{padding-top:6rem;/);
-  assert.match(compu, /\.publico \.portal-sponsor\{top:auto;bottom:6rem;/);
+  assert.match(compu, /\.publico \.portal-heroe-cuerpo,\.publico \.portal-titulo\{position:static\}/);
+  assert.match(compu, /\.publico \.portal-sponsor\{top:auto;bottom:6rem;right:var\(--sp-6\);width:8rem;height:8rem\}/);
 });
 
 // ---- La cinta de las próximas fechas ----

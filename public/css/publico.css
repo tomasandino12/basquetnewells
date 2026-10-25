@@ -258,7 +258,7 @@
 .portal-heroe{
   position:relative;isolation:isolate;overflow:hidden;color:var(--sobre-oscuro);
   display:flex;flex-direction:column;justify-content:flex-end;min-height:calc(100svh - var(--alto-cinta));
-  padding:9rem var(--sp-4) 3.5rem;
+  padding:5rem var(--sp-4) 3.5rem;
   clip-path:polygon(0 0,100% 0,100% 100%,0 calc(100% - 2.5rem));
 }
 .portal-heroe-foto{position:absolute;inset:0;z-index:-2;display:block}
@@ -313,12 +313,13 @@
    único elemento del portal que gira (con el anillo del escudo de la landing,
    del que reusa el keyframe y la duración): un observer le pone .quieto cuando
    el hero sale de pantalla y, con prefers-reduced-motion, base.css lo apaga y
-   el texto queda legible. En el celu va arriba a la derecha, debajo del botón
-   Semillero y sobre la foto, y el hero le reserva ese lugar (padding-top de
-   .portal-heroe): nunca se superpone con el eyebrow, el título ni los botones.
-   En compu, abajo a la derecha de la foto (layout.css). */
+   el texto queda legible. En el celu va dentro de .portal-titulo, arriba a la
+   derecha, al lado de "ACÁ SE" y "FORMA": esas dos líneas miden ~2.7em y --fs-hero
+   no pasa de 23vw, así que dejan libre más de un tercio del ancho; "LA LEPRA",
+   que es más ancha, queda debajo del sticker. Así no le roba alto al título. En
+   compu, abajo a la derecha de la foto (layout.css). */
 .portal-sponsor{
-  position:absolute;top:3.75rem;right:var(--sp-4);z-index:1;display:grid;place-items:center;width:5rem;height:5rem;
+  position:absolute;top:0;right:0;z-index:1;display:grid;place-items:center;width:5rem;height:5rem;
   border-radius:50%;background:var(--dorado);color:var(--pub-fondo);text-decoration:none;
   transition:transform var(--dur-1) var(--ease-salida);
 }
