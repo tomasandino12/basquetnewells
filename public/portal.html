@@ -46,6 +46,8 @@
 }
 </script>
 <script src="/public/config.js"></script>
+<!-- Prende .js-anim antes del primer pintado (ver el comentario del archivo). -->
+<script src="/public/js/anim.js"></script>
 </head>
 <body>
 
@@ -65,10 +67,10 @@
     <img src="/public/escudo.png" alt="" width="36" height="36">
     <div class="portal-marca"><div class="t">Newell&#39;s <span>Básquet</span></div><div class="s">Formativas · Familias</div></div>
     <nav class="portal-barra-acc" aria-label="Accesos">
-      <a class="portal-barra-btn" href="#ayuda">Ayuda</a>
-      <!-- Para profes y jugadores: la entrada a Semillero y cómo instalarla, sin buscarla en el portal de padres. -->
+      <!-- Para profes y jugadores: un botón visible (con borde e ícono) que abre la entrada a Semillero y
+           cómo instalarla, sin buscarla en el portal de padres. -->
       <details class="portal-sem" id="semillero">
-        <summary class="portal-barra-btn portal-sem-btn">Soy profe o jugador</summary>
+        <summary class="portal-barra-btn portal-sem-btn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>Semillero</summary>
         <div class="portal-sem-panel">
           <b>Semillero</b>
           <p>La aplicación del cuerpo técnico y de los jugadores. Las familias no la necesitan: todo lo suyo está en esta página.</p>
@@ -84,80 +86,163 @@
   </header>
 
   <main class="portal">
-    <!-- El hero: la banda roja y negra (la camiseta) con el título de la
-         página y, adentro, las dos tarjetas protagonistas (src/ui/portal.js,
-         htmlHeroe): inscribir (o "Quiero jugar" si la inscripción está
-         cerrada) y enviar el comprobante, con el alias. Arranca con todo
-         cerrado hasta que responde la base. -->
-    <section class="portal-heroe" id="heroe" aria-label="Básquet formativo de Newell's">
-      <div id="portal-heroe"><div class="portal-heroe-ey">Formativas · Rosario</div><h1>Básquet formativo de Newell&#39;s</h1></div>
+    <!-- El hero: foto a pantalla completa, el título y los dos botones de las
+         familias. Todo lo que no depende de la base (la foto, el título, el
+         subtítulo) está acá, escrito a mano: se cambia tocando esta línea y
+         pinta sin esperar a nada. src/ui/portal.js completa la temporada y los
+         dos botones, que dependen de qué formularios están abiertos. El título son tres líneas: cada una sube
+         desde su máscara (.linea). -->
+    <section class="portal-heroe" id="heroe" aria-labelledby="t-heroe">
+      <picture class="portal-heroe-foto">
+        <source media="(max-width:47.99rem)" srcset="/public/img/fotos/formativas-bandeja-vertical.webp" width="576" height="720">
+        <img src="/public/img/fotos/formativas-bandeja.webp" width="1080" height="720" fetchpriority="high"
+          alt="Un jugador de Newell's sube a hacer una bandeja en un partido de las formativas">
+      </picture>
+      <!-- El sticker de sponsor: único elemento que gira (DESIGN.md). Lleva a Sumate. El
+           anillo es decorativo (aria-hidden); el nombre accesible lo da aria-label. -->
+      <a class="portal-sponsor" href="#colaborar" aria-label="¿Tenés una empresa? Sumate: ver cómo sumar tu empresa como sponsor">
+        <svg class="portal-sponsor-anillo" id="anillo-sponsor" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+          <defs><path id="circulo-sponsor" d="M60,14 a46,46 0 1,1 0,92 a46,46 0 1,1 0,-92"/></defs>
+          <text font-size="12"><textPath href="#circulo-sponsor" textLength="284" lengthAdjust="spacing">¿TENÉS UNA EMPRESA?&#8195;·&#8195;¿TENÉS UNA EMPRESA?&#8195;·&#8195;</textPath></text>
+        </svg>
+        <span class="portal-sponsor-centro" aria-hidden="true">Sumate</span>
+      </a>
+      <div class="portal-heroe-cuerpo">
+        <p class="portal-heroe-ey entra" style="--i:0"><span aria-hidden="true"></span><span id="portal-heroe-ey">Formativas</span></p>
+        <div class="portal-titulo">
+          <h1 id="t-heroe">
+            <span class="linea"><span style="--i:1">Acá se</span></span>
+            <span class="linea"><span style="--i:2">forma</span></span>
+            <span class="linea rojo"><span style="--i:3">la Lepra</span></span>
+          </h1>
+        </div>
+        <p class="portal-heroe-bajada entra" style="--i:4">El básquet formativo de Newell&#39;s Old Boys, en el Parque de la Independencia, Rosario.</p>
+        <div class="portal-acciones entra" style="--i:5" id="portal-heroe"></div>
+      </div>
     </section>
 
+    <!-- La cinta (src/ui/portal.js, htmlCinta): sólo las próximas fechas, que
+         salen de los mismos eventos del calendario. Sin fechas (o sin JS), oculta. -->
+    <section class="portal-cinta" id="cinta" aria-label="Próximas fechas" hidden>
+      <div id="portal-cinta"></div>
+    </section>
+
+    <div class="portal-cuerpo">
     <nav class="portal-atajos" id="portal-atajos" aria-label="Atajos"></nav>
+
+    <!-- El próximo evento en grande, con una foto según su tipo (src/ui/portal.js,
+         htmlProximo). Sin evento por delante, oculta. -->
+    <section class="portal-sec portal-viene rise" id="lo-que-viene" aria-labelledby="t-viene" hidden>
+      <div class="portal-st">Agenda</div>
+      <h2 id="t-viene">Lo que viene</h2>
+      <div id="portal-viene"></div>
+    </section>
+
+    <!-- Como en la propuesta de v0: elegís el año de nacimiento y al lado te dice
+         la categoría y el horario; abajo, una tarjeta con foto por categoría,
+         que al tocarla salta a su año. -->
+    <section class="portal-sec portal-cat rise" id="categorias" aria-labelledby="t-categorias" hidden>
+      <div class="portal-st">Categorías<span id="t-categorias-temp"></span></div>
+      <h2 id="t-categorias">¿En qué categoría juega?</h2>
+      <p class="intro">Tocá los botones hasta llegar al año en que nació.</p>
+      <div class="portal-buscador" id="portal-buscador"></div>
+      <div class="portal-carrusel" id="portal-carrusel"></div>
+    </section>
 
     <section class="portal-sec" id="calendario" aria-labelledby="t-calendario" hidden>
       <div class="portal-st">Agenda del club</div>
       <h2 id="t-calendario">Calendario</h2>
       <p class="intro">Partidos, eventos y charlas. Tocá un día para ver qué hay.</p>
-      <div id="portal-proximo"></div>
-      <div id="portal-calendario"></div>
+      <div id="portal-calendario" class="rise"></div>
     </section>
 
-    <!-- Banda roja a todo el ancho: aviso de los eventos de recaudación (destino recaudacion, 0063). -->
-    <section class="portal-banda" id="recaudacion" aria-labelledby="t-recaudacion">
-      <div id="portal-recaudacion"><h2 id="t-recaudacion">Enterate de los eventos de recaudación del club</h2></div>
+    </div>
+
+    <!-- Franja dorada sin foto, a todo el ancho (como en v0): aviso de los
+         eventos de recaudación (destino recaudacion, 0063). -->
+    <section class="portal-rec rise" id="recaudacion" aria-labelledby="t-recaudacion">
+      <div class="portal-rec-cuerpo" id="portal-recaudacion"><h2 id="t-recaudacion">Enterate de los eventos de recaudación</h2></div>
     </section>
 
-    <!-- Para una empresa que quiere asociarse o alguien que quiere dar una mano (destino colaboradores, 0061). -->
-    <section class="portal-sec portal-colaborar" id="colaborar" aria-labelledby="t-colaborar">
+    <div class="portal-cuerpo">
+
+    <!-- Para una empresa que quiere asociarse o alguien que quiere dar una mano
+         (destino colaboradores, 0061). Al lado, el afiche de sponsors del club. -->
+    <section class="portal-sec portal-colaborar rise" id="colaborar" aria-labelledby="t-colaborar">
       <div class="portal-st">Colaborá con el club</div>
       <h2 id="t-colaborar">Sumate al básquet de Newell&#39;s</h2>
-      <div id="portal-colaborar"></div>
-    </section>
-
-    <!-- Elegís el año de nacimiento y al lado te dice la categoría y el
-         horario. La lista completa queda plegada abajo. -->
-    <section class="portal-sec portal-cat" id="categorias" aria-labelledby="t-categorias" hidden>
-      <div class="portal-st">Categorías<span id="t-categorias-temp"></span></div>
-      <h2 id="t-categorias">¿En qué categoría juega?</h2>
-      <div class="portal-buscador" id="portal-buscador"></div>
-      <details class="portal-todas"><summary>Ver todas las categorías</summary><div id="portal-categorias"></div></details>
+      <div class="portal-colaborar-cuerpo" id="portal-colaborar"></div>
     </section>
 
     <!-- Al lado de los horarios: los lugares, "Cómo llegar" y el mapa de Google,
          que se carga recién al tocar "Ver mapa" (frame-src www.google.com). -->
-    <section class="portal-sec portal-sede-sec" id="sede" aria-labelledby="t-sede" hidden>
+    <section class="portal-sec portal-sede-sec rise" id="sede" aria-labelledby="t-sede" hidden>
       <div class="portal-st">Dónde se entrena</div>
       <h2 id="t-sede">Parque de la Independencia</h2>
       <div class="portal-sede" id="portal-sede"></div>
     </section>
 
-    <section class="portal-sec" id="formularios" aria-labelledby="t-formularios" hidden>
+    <section class="portal-sec rise" id="formularios" aria-labelledby="t-formularios" hidden>
       <h2 id="t-formularios">Otros formularios</h2>
       <p class="intro">Cada uno te cuenta para qué es y qué tenés que tener a mano antes de abrirlo.</p>
       <div class="portal-lista" id="portal-formularios"></div>
     </section>
 
     <!-- La foto del club (PORTAL.foto): sólo con la autorización de imagen de las familias. -->
-    <section class="portal-sec" id="club" aria-label="El club" hidden>
+    <section class="portal-sec rise" id="club" aria-label="El club" hidden>
       <div id="portal-foto"></div>
     </section>
 
     <!-- Los logos de sponsors y colaboradores (PORTAL.sponsors). Sin ninguno, oculta. -->
-    <section class="portal-sec" id="sponsors" aria-labelledby="t-sponsors" hidden>
+    <section class="portal-sec rise" id="sponsors" aria-labelledby="t-sponsors" hidden>
       <div class="portal-st">Gracias</div>
       <h2 id="t-sponsors">Nos acompañan</h2>
       <div class="portal-logos" id="portal-logos"></div>
     </section>
 
-    <div class="pie-legal"><a href="/app">Entrar a Semillero</a> · <a href="/public/legal/privacidad.html">Política de privacidad</a> · <a href="/public/legal/terminos.html">Términos y condiciones</a></div>
+    </div>
+
   </main>
+
+  <!-- El pie: el escudo, lo legal y la firma, sobre una franja con el borde de
+       arriba rasgado (el único de la página: el hero ya tiene su corte en
+       diagonal). La firma ("Hecho por …") sale de PORTAL.creador y no se ve
+       mientras no haya nombre. Abajo deja lugar a la barra fija. -->
+  <footer class="portal-pie">
+    <div class="portal-rasgado" aria-hidden="true"></div>
+    <div class="pie-legal">
+      <div class="pie-marca"><img src="/public/escudo.png" alt="" width="40" height="40"><div><b>Básquet Newell&#39;s</b><small>Formativas · Familias</small></div></div>
+      <p class="pie-links"><a href="/app">Entrar a Semillero</a><a href="/public/legal/privacidad.html">Política de privacidad</a><a href="/public/legal/terminos.html">Términos y condiciones</a></p>
+      <p class="pie-firma" id="portal-firma" hidden></p>
+    </div>
+  </footer>
 
   <!-- Ayuda: no ocupa lugar en la página. Todo link a #ayuda la abre encima
        (src/ui/portal.js): en el celular, una hoja que sube desde abajo; en
        compu, un diálogo. Preguntas frecuentes en acordeón y, al final, la
        única vez que aparece el coordinador. Se cierra con la X, tocando
        afuera o con Escape (lo da <dialog>). -->
+  <!-- Barra fija de abajo: los mismos dos botones del hero, que aparece cuando
+       esos salen de pantalla (src/ui/animaciones.js, iniciarDock). Oculta es
+       `inert`: ni el teclado ni el lector de pantalla llegan a ella. -->
+  <div class="portal-dock" id="portal-dock" role="region" aria-label="Accesos rápidos" inert>
+    <div class="portal-dock-acc" id="portal-dock-acc"></div>
+  </div>
+
+  <!-- Pagar: la misma hoja que Ayuda (mobile: sube desde abajo; compu: diálogo).
+       Con el alias para copiar y, si hay formulario de comprobante activo, el
+       botón para enviarlo (src/ui/portal.js, htmlPago). Se paga más que
+       cuotas: no dice "cuota". -->
+  <dialog class="portal-hoja" id="pago" aria-labelledby="t-pago">
+    <div class="portal-hoja-cuerpo">
+      <div class="portal-hoja-cab">
+        <div><div class="portal-st">Pagos</div><h2 id="t-pago">Pagar</h2></div>
+        <button type="button" class="portal-hoja-x" data-cerrar-pago aria-label="Cerrar">×</button>
+      </div>
+      <div id="portal-pago-cuerpo"></div>
+    </div>
+  </dialog>
+
   <dialog class="portal-hoja" id="ayuda" aria-labelledby="t-ayuda">
     <div class="portal-hoja-cuerpo">
       <div class="portal-hoja-cab">

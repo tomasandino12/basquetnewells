@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import {
   PORTAL, enlaceFormulario, enlaceContacto, sponsorsValidos, calendariosActivos, categoriasDelPortal, categoriasDelAnio,
-  sedeValida, aliasValido, fotoValida,
+  sedeValida, aliasValido, fotoValida, fotoDeCategoriaValida, fotoDeEvento, firmaValida, tarjetasDeCategorias, tarjetaDelAnio, turnosDeHorario, FOTOS,
 } from '../src/data/portal.js';
 import { TIPOS_AGENDA, idCalendario } from '../src/data/agenda.js';
 
@@ -185,4 +185,87 @@ test('PORTAL.sponsors es una lista (hoy vacía) y cada logo cargado existe en pu
     assert.equal(sponsorsValidos([s]).length, 1, `sponsor inválido: ${s.nombre}`);
     assert.ok(existsSync(s.logo.slice(1)), `falta el archivo ${s.logo}`);
   }
+});
+
+// ---- Carrusel de categorías: una foto por tarjeta, sólo de public/img/fotos ----
+
+test('fotoDeCategoriaValida: un archivo de public/img/fotos con su alt; nada de rutas ni de variantes -640', () => {
+  const ok = fotoDeCategoriaValida({ archivo: 'formativas-bandeja', alt: ' Un jugador ', posicion: '50% 40%' });
+  assert.deepEqual(ok, { src: '/public/img/fotos/formativas-bandeja.webp', src640: '/public/img/fotos/formativas-bandeja-640.webp', alt: 'Un jugador', posicion: '50% 40%' });
+  assert.equal(fotoDeCategoriaValida({ archivo: 'x', alt: 'a', posicion: 'url(evil)' }).posicion, '50% 50%');
+  for (const malo of [null, {}, { archivo: 'x' }, { archivo: '../escudo', alt: 'a' }, { archivo: 'https://evil.com/x', alt: 'a' }, { archivo: 'foto-640', alt: 'a' }, { archivo: 'A B', alt: 'a' }, { archivo: 'x', alt: '  ' }]) {
+    assert.equal(fotoDeCategoriaValida(malo), null, JSON.stringify(malo));
+  }
+});
+
+test('tarjetasDeCategorias: las mismas categorías, cada una con su foto o sin ella; una inválida se descarta', () => {
+  const t = tarjetasDeCategorias([
+    { grupo: 'U9', rama: 'Mixto', foto: { archivo: 'formativas-dribbling', alt: 'a' } },
+    { grupo: 'U10' },
+    { grupo: 'U11', rama: 'Mixto' },
+    { grupo: 'U13', foto: { archivo: '../x', alt: 'a' } },
+  ], 2027);
+  assert.deepEqual(t.map((c) => [c.nombre, c.foto?.src ?? null]), [['U9', '/public/img/fotos/formativas-dribbling.webp'], ['U11', null], ['U13', null]]);
+  assert.equal(tarjetasDeCategorias(null, 2027).length, 0);
+});
+
+test('tarjetasDeCategorias: los topes de años y el año al que salta el buscador (el más viejo; la Primera, el más nuevo)', () => {
+  const [u13, primera] = tarjetasDeCategorias([{ grupo: 'U13' }, { grupo: 'MAYORES', nombre: 'Primera' }], 2027);
+  assert.deepEqual([u13.desde, u13.hasta, u13.anio], [2014, 2015, 2014]);
+  assert.equal(primera.desde, null);
+  assert.equal(primera.anio, primera.hasta);
+  assert.ok(tarjetaDelAnio(u13, 2014) && tarjetaDelAnio(u13, 2015));
+  assert.ok(!tarjetaDelAnio(u13, 2013) && !tarjetaDelAnio(u13, 2016) && !tarjetaDelAnio(u13, '2014'));
+  assert.ok(tarjetaDelAnio(primera, 1980) && !tarjetaDelAnio(primera, primera.hasta + 1));
+});
+
+test('turnosDeHorario: un turno por " · ", con su lugar entre paréntesis o sin él', () => {
+  assert.deepEqual(turnosDeHorario('Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)'), [
+    { cuando: 'Lun y Vie 18 a 19 h', lugar: 'Estadio Cubierto' },
+    { cuando: 'Mié 18 a 19 h', lugar: 'Microestadio' },
+  ]);
+  assert.deepEqual(turnosDeHorario('Sáb 10 h'), [{ cuando: 'Sáb 10 h', lugar: null }]);
+  assert.deepEqual(turnosDeHorario(null), []);
+  assert.deepEqual(turnosDeHorario('  '), []);
+});
+
+test('todas las categorías del club tienen tarjeta con foto; las fotos existen en disco con su -640 y ningún archivo se repite', async () => {
+  const { existsSync } = await import('node:fs');
+  const t = tarjetasDeCategorias(PORTAL.categorias, PORTAL.temporada);
+  assert.equal(t.length, PORTAL.categorias.length);
+  for (const { foto } of t) {
+    assert.ok(foto, 'cada categoría con su foto');
+    assert.ok(existsSync(foto.src.slice(1)) && existsSync(foto.src640.slice(1)), foto.src);
+  }
+  // Una foto repetida con otro recorte se nota: cada archivo, una vez (contando la del hero y la de la sede).
+  const archivos = [...t.map((c) => c.foto.src), fotoDeCategoriaValida(FOTOS.sede).src, '/public/img/fotos/formativas-bandeja.webp'];
+  assert.equal(new Set(archivos).size, archivos.length);
+});
+
+test('cada tipo de evento tiene foto válida, que existe en disco; uno desconocido usa la del hero', () => {
+  for (const tipo of TIPOS_AGENDA) {
+    const f = fotoDeEvento(tipo);
+    assert.ok(f, tipo);
+    assert.ok(existsSync(f.src.slice(1)) && existsSync(f.src640.slice(1)), `${tipo}: ${f.src}`);
+    assert.ok(f.alt.length > 20, 'con un texto que cuenta qué se ve');
+  }
+  assert.equal(new Set(TIPOS_AGENDA.map((t) => fotoDeEvento(t).src)).size, TIPOS_AGENDA.length, 'una foto distinta por tipo');
+  assert.equal(fotoDeEvento('otro').src, '/public/img/fotos/formativas-bandeja.webp');
+  assert.equal(fotoDeEvento(undefined).src, '/public/img/fotos/formativas-bandeja.webp');
+});
+
+test('la firma sólo enlaza a LinkedIn: sin nombre no hay firma; un link de otro sitio se descarta y queda el nombre; PORTAL.creador arranca vacío', () => {
+  const ok = 'https://www.linkedin.com/in/alguien-123/';
+  assert.deepEqual(firmaValida({ nombre: ' Ana Pérez ', linkedin: ok }), { nombre: 'Ana Pérez', linkedin: ok });
+  assert.deepEqual(firmaValida({ nombre: 'Ana', linkedin: null }), { nombre: 'Ana', linkedin: null });
+  for (const mala of ['http://www.linkedin.com/in/a', 'https://linkedin.com/in/a', 'https://www.linkedin.com', 'https://evil.com/www.linkedin.com/in/a',
+    'https://www.linkedin.com@evil.com/in/a', 'https://www.linkedin.com.evil.com/in/a', 'https://user:pw@www.linkedin.com/in/a', 'javascript:alert(1)', 'https://www.linkedin.com/in/a b', 'https://www.linkedin.com/"><script>']) {
+    assert.deepEqual(firmaValida({ nombre: 'Ana', linkedin: mala }), { nombre: 'Ana', linkedin: null }, mala);
+  }
+  for (const vacia of [null, undefined, {}, { nombre: null, linkedin: ok }, { nombre: '   ', linkedin: ok }]) {
+    assert.equal(firmaValida(vacia), null, JSON.stringify(vacia));
+  }
+  assert.equal(firmaValida({ nombre: 'x'.repeat(200) }).nombre.length, 80);
+  // Mientras Tomás no pase sus datos, el pie no firma nada (no se inventa nombre ni link).
+  assert.deepEqual({ ...PORTAL.creador }, { nombre: null, linkedin: null });
 });

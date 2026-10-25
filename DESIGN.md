@@ -71,6 +71,9 @@ Todos viven en `public/css/tokens.css`, en `:root`. Es el único archivo con val
 | `--pub-fondo` | `#0D0D10` | Fondo de landing y autenticación. |
 | `--pub-tarjeta` | `#17171C` | Tarjetas de la landing (`--gris-osc` encima da 7.4:1). |
 | `--pub-borde` | `#2B2B34` | Borde de esas tarjetas. |
+| `--dorado` | `#F2B33D` | Dorado del portal: el tipo "evento" del calendario y los ejemplos de recaudación. Sobre él va `--pub-fondo`. |
+| `--club-texto` | `#E34D62` | El color del club como **texto chico** sobre fondo oscuro (`--club` solo llega a 3.8:1; éste, a 4.7:1). Los textos grandes (≥ 24 px, el título del hero) sí pueden usar `--primario`. |
+| `--velo-pub-fuerte` / `-medio` / `-cero` | `rgba(13,13,16,.92 / .55 / 0)` | Velos del color de `--pub-fondo` para leer texto sobre una foto. Cada uno con su propio cero: un degradé hacia `transparent` pasa por un gris. |
 
 ### Semánticos y capas
 
@@ -125,7 +128,10 @@ Los usados con más frecuencia: `--fs-115` (ayudas, chips, meta), `--fs-125` (ey
 | `--dur-2` | `200ms` | Entrada de pantalla, toast, velo, sombra de la tarjeta tocable. |
 | `--dur-3` | `280ms` | Hoja y relleno de barras. |
 | `--dur-demo` | `1400ms` | Demos de la landing: corren al entrar en pantalla y se repiten al pasar el mouse o tocar la tarjeta. |
-| `--dur-giro` | `25s` | Una vuelta del anillo del escudo de la landing (la única animación continua). |
+| `--dur-giro` | `25s` | Una vuelta del anillo del escudo de la landing (animación continua, la primera). |
+| `--dur-cinta` | `38s` | Mitad de la pista de la cinta de fechas del portal (animación continua, la segunda; `portal.js` la ajusta por cantidad de eventos). |
+| `--dur-rise` / `--dur-linea` | `700ms` / `900ms` | Portal: lo que sube al entrar (texto, botones, secciones) y cada línea del título desde su máscara. |
+| `--paso-entrada` / `--retardo-entrada` | `90ms` / `150ms` | Portal: escalón entre elementos del hero (`style="--i:N"`) y espera antes del primero. |
 | `--ease-salida` | `cubic-bezier(.16,1,.3,1)` | Lo que entra o responde: frena al llegar. Es el default. |
 | `--ease-entrada` | `cubic-bezier(.3,0,.8,.15)` | Lo que se va: acelera al irse (hoy, el velo al cerrarse). |
 
@@ -149,7 +155,7 @@ Los usados con más frecuencia: `--fs-115` (ayudas, chips, meta), `--fs-125` (ey
 - **Entrada de las tarjetas de la landing con `opacity`**: sumaba ~+316 ms de LCP (+2,6 %), porque un párrafo de `.ben` es el LCP y no cuenta hasta que se ve. Hoy entran subiendo con `translateY` y sin `opacity` (no ocultan nada, así que se pintan desde el primer frame).
 - **`translateY` en la entrada de pantalla**: el navegador arma una capa del tamaño de la pantalla (más frames largos con CPU 4x) y un ancestro transformado re-ancla a los hijos `position:fixed` (el teclado de MEDIR). La entrada es sólo fade.
 - **Animar `width`, `height`, `top`/`left`, `box-shadow`, `background`, `filter` o `backdrop-filter`**: repintan cada frame. Una barra crece con `scaleX` desde el ancho final, no animando el ancho.
-- **Animaciones infinitas, parallax, marquee, blur de fondo, marcas de agua**: decorado de sitio institucional; el blur cuesta en Android gama baja y una marca de agua no escala a multi-club. **Única excepción:** el giro del anillo de texto del escudo en la landing (`publico.css`, verificado por test: una sola `infinite`, sólo ahí). Condiciones: anima sólo `transform` (keyframe con `from` solo), es lineal en `--dur-giro`, se pausa cuando el escudo sale de pantalla (IntersectionObserver) y con `prefers-reduced-motion` queda quieto y legible. Las demos de la landing no hacen loop.
+- **Animaciones infinitas, parallax, marquee, blur de fondo, marcas de agua**: decorado de sitio institucional; el blur cuesta en Android gama baja y una marca de agua no escala a multi-club. **Excepciones** (`publico.css`, verificadas por test: tres `infinite`, sólo ahí): el giro del anillo de texto del escudo en la landing, la cinta de fechas del portal y el sticker de sponsor del hero del portal. Condiciones: anima sólo `transform` (keyframe con `from` solo), es lineal en `--dur-giro`, se pausa cuando el escudo sale de pantalla (IntersectionObserver) y con `prefers-reduced-motion` queda quieto y legible. Las demos de la landing no hacen loop.
 - **Una fuente más** (Oswald, Chakra Petch): ~20–30 KB para una diferencia que casi no se nota. **Sacar pesos de Inter**: es variable, no ahorra un byte.
 - **Tema oscuro para la app por dentro**: se usa en la cancha, con cualquier brillo.
 
@@ -199,6 +205,22 @@ abrirHoja({ titulo: jugador.nombre, cuerpo: html`<div class="tarj">…</div>` })
 ```html
 <div class="beneficios"><div class="ben"><div class="t">Título</div><div class="d">Texto.</div></div></div>
 ```
+
+**Portal de familias** (`public/portal.html`, `.publico.portal-d`; rediseño de octubre de 2026, plan en `docs/superpowers/plans/2026-10-25-rediseno-portal-campana.md`). Es la cara pública para los padres, desde el celular: oscura, con fotos y Barlow Condensed grande. Lo que hay que respetar al tocarla:
+- **Base: la propuesta de v0 "newell-s-youth-basketball-landing-page"** (la otra quedaba muy de caricatura). Orden: hero, cinta, Lo que viene, categorías, calendario, recaudación, Sumate, sede.
+- **Un solo bloque rojo dominante por pantalla** (el botón principal del hero). Recaudación es una franja a todo el ancho en `--pub-oro-fondo` con el botón dorado, sin foto; Sumate lleva el botón con borde (`btn sec`) y, como imagen, el afiche de sponsors del club. El duotono suave (grises + `--club` al 35 % en `multiply`) es de las tarjetas de categorías (`.portal-card`).
+- **Categorías**: la sección no es una caja. Adentro, una caja con el año (− y + redondos) y otra con la categoría (nombre grande en `--primario`, un renglón por turno con reloj y lugar). Abajo, una tarjeta-botón con foto por categoría: tocarla lleva el buscador a su año, y la del año elegido lleva aro y "Su categoría".
+- **Hero**: foto en `<picture>` (vertical en celular), `fetchpriority="high"` (es el LCP), título escrito a mano en el HTML. El título usa `--fs-hero`, que se achica con el ancho **y el alto**: los dos botones tienen que verse sin scrollear en 360×640, 390×844 y 1366×768 (`min-height` de cada botón: 3.5rem). Su corte diagonal es de 2.5rem.
+- **Botones**: el principal es "Inscribirme" (inscripción abierta) o "Quiero que juegue" (cerrada); "Pagar" **nunca se apaga** y abre la hoja con el alias y, si hay, el comprobante. La barra fija de abajo (`.portal-dock`, `inert` cuando está oculta) repite los mismos dos.
+- **Entrada**: `public/js/anim.js` (script externo: la CSP no deja inline) prende `.js-anim` en `<html>` sólo sin movimiento reducido y se apaga solo si `animaciones.js` no avisó en 3 s. Lo que arranca oculto (`.rise`, la entrada del hero) vive **sólo bajo `.js-anim`**: sin JS o con movimiento reducido todo está ya en su lugar. `revelar(raiz)` observa lo que se arma después de cargar.
+- **El tipo de evento no se dice sólo con el color**: forma en el mes y la leyenda (círculo, rombo, cuadrado, triángulo) e ícono en el detalle y la cinta.
+- **Lo que viene**: el próximo evento en grande (`#lo-que-viene`, oculta si no hay): tarjeta con foto a la izquierda y datos a la derecha en compu, apilada en el celu. La foto es **la del tipo de evento** (`fotoDeEvento` en `src/data/portal.js`, en duotono como las categorías), porque los eventos de Google no traen foto; de Google tampoco se toma la descripción (puede traer nombres). Suma el atajo "Agenda".
+- **Sticker de sponsor**: círculo dorado en el hero (`.portal-sponsor`, a `#colaborar`) con "¿Tenés una empresa?" en un anillo y "Sumate" fijo al centro. Es el único elemento del portal que gira (reusa el keyframe `giro` y `--dur-giro` del escudo de la landing; se pausa fuera de pantalla y con `prefers-reduced-motion` queda quieto). En el celu va arriba a la izquierda, sin tapar título ni botones; en compu, abajo a la derecha de la foto.
+- **Cinta**: sólo las próximas fechas, recta (pedir sponsors es del sticker del hero); sin fechas, no se muestra. Corre sola con 3 o más cosas, se pausa con el mouse y con un botón de 44 px, y no corre con movimiento reducido (ahí se desliza a mano).
+- **Borde rasgado**: uno solo, arriba del pie. Más lo vuelve ruido.
+- **Pie**: escudo con "Básquet Newell's", los links (Entrar a Semillero, privacidad, términos) y la firma "Hecho por <nombre>" con link a LinkedIn. El nombre y la URL salen de `PORTAL.creador` (`src/data/portal.js`); sin nombre la firma no se ve y un link que no sea `https://www.linkedin.com/…` no se pinta.
+- **Fotos**: de `public/img/fotos/` (provisorias, del Instagram del básquet), con su `-640.webp` para el celular, `width`/`height` y `loading="lazy"` salvo la del hero. Se asignan en `src/data/portal.js` (`FOTOS`); una ruta o nombre raro se descarta. **Cada archivo se usa una sola vez** en la página (lo verifica `tests/portal.test.js`): una foto repetida con otro recorte se nota. Única excepción: las de "Lo que viene", que reusan cuatro de `FOTOS` y se ven sólo si hay un evento de ese tipo.
+- **Límite conocido**: a 320 px las celdas del calendario miden 37×44 (siete columnas no entran a 44 de ancho); a 360 px o más entran.
 
 **Guías** — hoja de explicación con cabecera y pasos (`guiaSalto.js`, `protocoloCorporal.js`, `protocoloSalto.js` en `src/ui/componentes/`). `.guia-cab` (ícono, título y `.tag-metodo`, más un `.sub`), `.guia-paso` (tarjeta numerada, número en mono, con `.dibujo` para un SVG y su `.chip-rango`), `.guia-clave` (bloque destacado con el filete del club, como `.al`), `.chip-rango` (un rango en mono, siempre leído de las constantes de `antropometria.js`) y `.cifra-clave` (la cifra héroe de la ficha, con `.u` para la unidad y un `.etq` debajo). `.tag-metodo` es la etiqueta "Metodología <apodo>": la arma `etiquetaMetodologia(club)` con los apodos de `club.apodos` (0046), o `club.nombre` si no hay. Los SVG de pierna viven en `iconos.js` (`ICONO.piernaExtendida`, `ICONO.piernaFlexionada`) con `currentColor`.
 

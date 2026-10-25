@@ -13,3 +13,6 @@ backups/
 
 # Insumos de trabajo (estructura de formularios, listas de la CABB): no van a git
 docs/insumos/
+
+# Zips de referencia del rediseno (v0): no se publican
+*.zip

@@ -200,30 +200,37 @@
    roja y negra de arriba (la camiseta); profes y jugadores tienen Semillero
    en el encabezado; el coordinador aparece una vez, al final de las preguntas
    frecuentes. Se alternan bandas a todo el ancho y tarjetas para que no se
-   lea como un formulario. Sin animaciones de entrada: un texto de acá arriba
-   puede ser el LCP. Una columna en el celular; lo de compu vive en
+   lea como un formulario. El LCP es la foto del hero (fetchpriority alto), no su
+   texto: por eso el hero sí anima su entrada. Una columna en el celular; lo de compu vive en
    layout.css. Cada sección sin datos queda con [hidden] (lo pone src/ui/portal.js). */
 .portal-d::before{height:22rem;background:radial-gradient(ellipse 90% 90% at 85% 0,var(--club),transparent);opacity:.38}
-.portal{max-width:64rem;margin-inline:auto;width:100%;padding-bottom:var(--sp-4)}
+.portal{width:100%}
+/* El hero va a todo el ancho; lo demás, en una columna centrada. El lugar de la barra fija lo deja el pie. */
+.portal-cuerpo{max-width:64rem;margin-inline:auto}
 .portal [hidden]{display:none}
 
-/* Encabezado: marca a la izquierda; Ayuda y "Soy profe o jugador" a la derecha. */
-.portal-barra{position:relative;z-index:3;display:flex;align-items:center;gap:var(--sp-2);max-width:64rem;margin-inline:auto;width:100%;padding:var(--sp-3) var(--sp-4)}
+/* Encabezado: flota sobre la foto del hero. Marca a la izquierda y, a la
+   derecha, el botón de Semillero para profes y jugadores. La ayuda ya no
+   está acá: se abre desde los atajos, el pie y los "¿Dudas?". */
+.portal-barra{position:absolute;inset:0 0 auto;z-index:5;display:flex;align-items:center;gap:var(--sp-2);max-width:64rem;margin-inline:auto;width:100%;padding:var(--sp-3) var(--sp-4)}
 .portal-barra img{width:2.25rem;height:2.25rem;flex:0 0 auto}
 .portal-marca{min-width:0}
-.portal-barra .t{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:var(--fs-170);line-height:1}
+.portal-barra .t{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:var(--fs-190);line-height:1}
 .portal-barra .t span{color:var(--primario)}
-/* El subtítulo no entra junto a los dos botones en el celular: aparece desde 40rem (layout.css). */
+/* El subtítulo no entra junto al link en el celular: aparece desde 40rem (layout.css). */
 .portal-barra .s{display:none;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc);margin-top:.125rem}
 .portal-barra-acc{margin-left:auto;display:flex;align-items:center;gap:var(--sp-1)}
 .portal-barra-btn{
   display:inline-flex;align-items:center;justify-content:center;min-height:var(--tap);padding:0 var(--sp-3);
-  font-size:var(--fs-125);font-weight:600;line-height:1.1;text-align:center;color:var(--sobre-oscuro);text-decoration:none;
-  background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r-full);cursor:pointer;white-space:nowrap;
+  font-size:var(--fs-135);font-weight:600;line-height:1.1;text-align:center;color:var(--sobre-oscuro);text-decoration:none;
+  cursor:pointer;
 }
-.portal-sem-btn{list-style:none;white-space:normal;background:var(--primario);border-color:var(--primario);color:var(--sobre-club);max-width:7.5rem}
+/* "Semillero": un botón con borde e ícono (no un link subrayado), sobre un velo para que se lea encima de la foto. */
+.portal-sem-btn{list-style:none;white-space:nowrap;gap:var(--sp-2);background:var(--velo-pub-medio);border:1px solid var(--gris-osc);border-radius:var(--r-btn)}
 .portal-sem-btn::-webkit-details-marker{display:none}
-.portal-sem[open] .portal-sem-btn{background:var(--primario-osc)}
+.portal-sem-btn svg{width:1.125rem;height:1.125rem;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.portal-sem[open] .portal-sem-btn{border-color:var(--primario)}
+@media (hover:hover){.portal-sem-btn:hover{background:var(--toque-osc)}}
 .portal-sem-panel{
   position:absolute;right:var(--sp-4);top:calc(100% - var(--sp-1));width:min(22rem,calc(100vw - 2rem));
   padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);
@@ -235,46 +242,101 @@
 .portal-sem-inst small{display:block;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc)}
 .portal-sem-inst p{margin:var(--sp-2) 0 0;color:var(--sobre-oscuro)}
 
-/* El hero: la banda roja y negra en diagonal (la camiseta) con el título de
-   la página, el escudo de marca de agua y, adentro, las dos tarjetas
-   protagonistas. En el celular entran las dos en la primera pantalla; en
-   compu van lado a lado (layout.css). */
+/* El hero: foto a pantalla completa, velos para que se lea el texto, corte
+   diagonal abajo, título gigante y los dos botones. El título se achica con
+   el ancho Y el alto de la pantalla (--fs-hero): así, con lo que sea que tenga
+   arriba, los dos botones entran sin scrollear en 360×640, 390×844 y
+   1366×768. El texto va abajo, sobre el degradé; el padding de abajo deja
+   lugar al corte diagonal. */
 .portal-heroe{
-  position:relative;isolation:isolate;overflow:hidden;padding:var(--sp-5) var(--sp-4) var(--sp-5);
-  background:linear-gradient(118deg,var(--primario) 0 62%,var(--pub-fondo) 62%);color:var(--sobre-club);
+  position:relative;isolation:isolate;overflow:hidden;color:var(--sobre-oscuro);
+  display:flex;flex-direction:column;justify-content:flex-end;min-height:min(100svh,50rem);
+  padding:5rem var(--sp-4) 3.5rem;
+  clip-path:polygon(0 0,100% 0,100% 100%,0 calc(100% - 2.5rem));
 }
-.portal-heroe::after{content:"";position:absolute;right:-3.5rem;bottom:-2.5rem;z-index:-1;width:13rem;height:13rem;background:url(/public/escudo.png) center/contain no-repeat;opacity:.16;pointer-events:none}
-.portal-heroe-ey{font-family:var(--ff-titulo);font-weight:700;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-115)}
-.portal-heroe h1{font-size:clamp(2.25rem,1.9rem + 2.5vw,3.75rem);line-height:.9;margin:var(--sp-2) 0 var(--sp-2);max-width:17rem}
-.portal-heroe-bajada{font-size:var(--fs-135);line-height:1.4;margin:0 0 var(--sp-4);max-width:19rem}
+.portal-heroe-foto{position:absolute;inset:0;z-index:-2;display:block}
+.portal-heroe-foto img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+.portal-heroe::before{
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:
+    linear-gradient(to top,var(--pub-fondo) 0,var(--velo-pub-fuerte) 28%,var(--velo-pub-cero) 72%),
+    linear-gradient(to bottom,var(--velo-pub-fuerte) 0,var(--velo-pub-cero) 8rem);
+}
+/* Color real, un poco apagado: el piso azul de la cancha no domina. */
+.portal-heroe-foto img{filter:saturate(.75)}
+
+.portal-heroe-cuerpo{position:relative;width:100%;max-width:64rem;margin-inline:auto}
+.portal-heroe-ey{display:flex;align-items:center;gap:var(--sp-3);margin:0 0 var(--sp-2);font-family:var(--ff-titulo);font-weight:600;letter-spacing:.2em;text-transform:uppercase;font-size:var(--fs-145)}
+.portal-heroe-ey span:first-child{flex:0 0 2rem;height:.125rem;background:var(--primario)}
+.portal-titulo{position:relative}
+.portal-heroe h1{font-size:var(--fs-hero);line-height:.82;letter-spacing:-.01em}
+/* Cada línea sube desde su propia máscara (la entrada, más abajo). */
+.portal-heroe .linea{display:block;overflow:hidden;padding-bottom:.06em}
+.portal-heroe .linea > span{display:block}
+/* El rojo del club sobre el negro llega a 3.8:1: alcanza para texto de este tamaño, no para uno chico. */
+.portal-heroe .linea.rojo{color:var(--primario)}
+.portal-heroe-bajada{max-width:30rem;margin:var(--sp-3) 0 var(--sp-4);font-size:var(--fs-170);line-height:1.4}
+
 .portal-acciones{display:grid;gap:var(--sp-2)}
-/* Cada tarjeta es el botón entero: ícono, título, una línea y la flecha (o "Pronto"). */
+/* Cada botón es la tarjeta entera: ícono, título, una línea y la flecha (o "Pronto"). */
 .portal-accion{
-  display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:var(--sp-3);min-height:3.75rem;padding:var(--sp-3);
-  border-radius:var(--r);text-decoration:none;transition:transform var(--dur-1) var(--ease-salida);
+  display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:var(--sp-3);width:100%;min-height:3.5rem;padding:var(--sp-2) var(--sp-3);
+  border:0;border-radius:var(--r-btn);text-decoration:none;font:inherit;text-align:left;cursor:pointer;
+  transition:transform var(--dur-1) var(--ease-salida);
 }
-a.portal-accion:active{transform:scale(.98)}
+.portal-accion:not(.apagada):active{transform:scale(.97)}
 .portal-accion i{display:grid;place-items:center;width:2.5rem;height:2.5rem;border-radius:50%}
 .portal-accion svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.portal-accion b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:var(--fs-200);line-height:1}
-.portal-accion small{display:block;font-size:var(--fs-125);line-height:1.35;margin-top:.125rem}
+.portal-accion b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:var(--fs-200);line-height:1}
+.portal-accion small{display:block;font-size:var(--fs-135);line-height:1.3;margin-top:.1875rem}
 .portal-accion em{font-style:normal;font-size:var(--fs-190)}
-.portal-accion.principal{background:var(--sobre-oscuro);color:var(--pub-fondo)}
-.portal-accion.principal i{background:var(--primario);color:var(--sobre-club)}
-.portal-accion.principal small{color:var(--gris)}
-.portal-accion.pago{background:var(--pub-tarjeta);color:var(--sobre-oscuro)}
-.portal-accion.pago i{background:var(--pub-fondo);color:var(--primario)}
-.portal-accion.pago small{color:var(--gris-osc)}
-/* Sin formulario activo: la misma tarjeta, oscura y maciza, con el ícono gris y "Pronto". */
-.portal-accion.apagada{background:var(--pub-tarjeta);color:var(--sobre-oscuro);border:1px solid var(--pub-borde)}
+.portal-accion.principal{background:var(--primario);color:var(--sobre-club)}
+.portal-accion.principal i{background:var(--presion-osc)}
+.portal-accion.pago{background:var(--papel);color:var(--tinta)}
+.portal-accion.pago i{background:var(--primario);color:var(--sobre-club)}
+.portal-accion.pago small{color:var(--gris)}
+/* Sin formulario activo (o todavía sin respuesta): oscura y maciza, con el ícono gris y, si corresponde, "Pronto". */
+.portal-accion.apagada{background:var(--pub-tarjeta);color:var(--sobre-oscuro);border:1px solid var(--pub-borde);cursor:default}
 .portal-accion.apagada i{background:var(--pub-fondo);color:var(--gris-osc)}
 .portal-accion.apagada small{color:var(--gris-osc)}
 .portal-accion.apagada em{font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-100);letter-spacing:.08em;text-transform:uppercase;color:var(--gris-osc);border:1px solid var(--pub-borde);border-radius:var(--r-btn);padding:.125rem var(--sp-2)}
-/* El comprobante y el alias forman una sola tarjeta. */
-.portal-pago{min-width:0;background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden}
-.portal-pago .portal-accion{border:0;border-radius:0}
-.portal-heroe .portal-alias{margin:0;border:0;border-top:1px solid var(--pub-borde);border-radius:0;background:var(--pub-tarjeta);padding:var(--sp-2) var(--sp-3)}
-.portal-heroe .portal-copiar{min-height:2.25rem}
+
+/* El sticker de sponsor: un círculo dorado (el rojo es del botón del hero) con
+   el pedido en un anillo que gira despacio y "Sumate" fijo al centro. Es el
+   único elemento del portal que gira (con el anillo del escudo de la landing,
+   del que reusa el keyframe y la duración): un observer le pone .quieto cuando
+   el hero sale de pantalla y, con prefers-reduced-motion, base.css lo apaga y
+   el texto queda legible. En el celu va arriba a la izquierda, sobre la foto (el
+   título y los botones están abajo); en compu, abajo a la derecha de la foto
+   (layout.css). */
+.portal-sponsor{
+  position:absolute;top:5rem;left:var(--sp-4);z-index:1;display:grid;place-items:center;width:6rem;height:6rem;
+  border-radius:50%;background:var(--dorado);color:var(--pub-fondo);text-decoration:none;
+  transition:transform var(--dur-1) var(--ease-salida);
+}
+.portal-sponsor:active{transform:scale(.94)}
+@media (hover:hover){.portal-sponsor:hover{transform:scale(1.06)}}
+.portal-sponsor-anillo{position:absolute;inset:0;width:100%;height:100%;animation:giro var(--dur-giro) linear infinite}
+.portal-sponsor-anillo.quieto{animation-play-state:paused}
+.portal-sponsor-anillo text{font-family:var(--ff-titulo);font-weight:700;letter-spacing:.04em;fill:currentColor}
+.portal-sponsor-centro{position:relative;font-family:var(--ff-titulo);font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:var(--fs-170);line-height:1}
+
+/* Entrada del hero, una sola vez al cargar: cada elemento sube escalonado
+   (--i lo pone el HTML) y cada línea del título sube desde su máscara. Sólo
+   con .js-anim: sin JS o con movimiento reducido, todo está ya en su lugar. */
+.js-anim .entra{animation:subir var(--dur-rise) var(--ease-salida) backwards;animation-delay:calc(var(--retardo-entrada) + var(--i) * var(--paso-entrada))}
+.js-anim .portal-heroe .linea > span{animation:subir-linea var(--dur-linea) var(--ease-salida) backwards;animation-delay:calc(var(--retardo-entrada) + var(--i) * var(--paso-entrada))}
+@keyframes subir{from{opacity:0;transform:translateY(1.5rem)}}
+@keyframes subir-linea{from{transform:translateY(105%)}}
+
+/* Parallax suave de la foto: baja hasta un 18% mientras se scrollea el hero.
+   Va con la línea de tiempo del scroll donde el navegador la tiene; en los
+   demás (Safari anterior al 26) lo hace animaciones.js. El estado de
+   reposo es el FINAL; el keyframe define sólo el de partida. */
+@supports (animation-timeline:scroll()){
+  .js-anim .portal-heroe-foto{transform:translateY(18%) scale(1.1);animation:parallax-hero linear both;animation-timeline:scroll(root);animation-range:0 100svh}
+}
+@keyframes parallax-hero{from{transform:translateY(0) scale(1.1)}}
 
 /* Botón de una tarjeta sin formulario activo: visible pero claramente apagado
    (borde punteado y sin relleno), con el texto en una línea o dos legibles. */
@@ -283,26 +345,38 @@ a.portal-accion:active{transform:scale(.98)}
   font-size:var(--fs-135);letter-spacing:.06em;line-height:1.25;text-align:center;cursor:not-allowed;
 }
 
-/* La banda roja a todo el ancho de recaudación: el título grande, los
-   ejemplos chicos y el escudo chico y a color en la esquina. */
-.portal-banda{position:relative;margin-top:var(--sp-8);padding:var(--sp-6) var(--sp-4);background:var(--primario);color:var(--sobre-club);scroll-margin-top:var(--sp-4)}
-.portal-banda-escudo{position:absolute;top:var(--sp-4);right:var(--sp-4);width:2.75rem;height:2.75rem}
-.portal-banda h2{font-size:clamp(1.75rem,1.4rem + 2vw,2.75rem);line-height:.95;margin:0 0 var(--sp-2);max-width:calc(100% - 3.5rem)}
-.portal-banda-ej{font-family:var(--ff-titulo);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-125)}
-.portal-banda p{font-size:var(--fs-145);line-height:1.45;margin:var(--sp-2) 0 var(--sp-4);max-width:22rem}
-.portal-banda-btn{
-  display:inline-flex;align-items:center;gap:var(--sp-2);min-height:var(--tap);padding:0 var(--sp-5);
-  background:var(--pub-fondo);color:var(--sobre-oscuro);text-decoration:none;border:0;border-radius:var(--r-btn);
-  font-family:var(--ff-titulo);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:var(--fs-170);
+/* Recaudación: una franja a todo el ancho en negro tibio, con filete y
+   detalles dorados y un cuadrado girado de adorno (como en la propuesta de
+   v0). Sin foto y con el botón dorado: el rojo queda para el hero (un solo
+   bloque rojo por pantalla). */
+.portal-rec{position:relative;overflow:hidden;margin-top:var(--sp-8);background:var(--pub-oro-fondo);border-block:1px solid var(--dorado-borde);scroll-margin-top:var(--sp-4)}
+.portal-rec::before{content:"";position:absolute;top:-6rem;right:-6rem;width:18rem;height:18rem;border:1.75rem solid var(--dorado-suave);transform:rotate(45deg)}
+.portal-rec-cuerpo{position:relative;max-width:64rem;margin-inline:auto;padding:var(--sp-8) var(--sp-4);display:grid;gap:var(--sp-6)}
+.portal-rec .portal-st{color:var(--dorado)}
+.portal-rec h2{font-size:clamp(2.25rem,1.5rem + 3.2vw,3.75rem);line-height:.92;margin:0 0 var(--sp-3);text-wrap:balance}
+.portal-rec p{margin:0;color:var(--gris-osc);font-size:var(--fs-170);line-height:1.5;max-width:30rem}
+.portal-rec-ej{list-style:none;margin:var(--sp-5) 0 0;padding:0;display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.portal-rec-ej li{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-3);border-radius:var(--r-full);background:var(--dorado-suave);font-size:var(--fs-160);font-weight:600}
+.portal-rec-ej i{display:grid;color:var(--dorado)}
+.portal-rec-ej svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.portal-rec-btn{
+  display:flex;align-items:center;justify-content:center;gap:var(--sp-2);width:100%;min-height:3.5rem;padding:0 var(--sp-5);
+  background:var(--dorado);color:var(--pub-fondo);text-decoration:none;border:0;border-radius:var(--r-btn);
+  font-family:var(--ff-titulo);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:var(--fs-230);
   transition:transform var(--dur-1) var(--ease-salida);
 }
-.portal-banda-btn:active{transform:scale(.97)}
-.portal-banda-btn:disabled{background:transparent;color:var(--sobre-club);border:1px dashed currentColor;font-size:var(--fs-125);cursor:not-allowed;transform:none}
+.portal-rec-btn:active{transform:scale(.97)}
+.portal-rec-btn:disabled{background:transparent;color:var(--sobre-oscuro);border:1px dashed var(--dorado);font-size:var(--fs-145);letter-spacing:.04em;cursor:not-allowed;transform:none}
 
-/* "Sumate al básquet de Newell's": las dos formas de colaborar y un botón. */
+/* "Sumate al básquet de Newell's": las dos formas de colaborar y un botón y,
+   al lado (abajo en el celular), el afiche de sponsors del club. Sin fotos de
+   fondo: el afiche ya es la imagen de la sección. */
+.portal-colaborar .portal-st{color:var(--dorado)}
 .portal-colaborar h2{font-size:clamp(2rem,1.6rem + 2vw,2.75rem);line-height:.95;margin-bottom:var(--sp-4)}
+.portal-colaborar-cuerpo{display:grid;gap:var(--sp-6)}
+.portal-afiche{display:block;justify-self:center;width:min(100%,18rem);height:auto;border:1px solid var(--pub-borde);border-radius:var(--r)}
 .portal-formas{list-style:none;margin:0 0 var(--sp-4);padding:0;display:grid;gap:var(--sp-3)}
-.portal-formas li{display:grid;grid-template-columns:2.75rem 1fr;gap:var(--sp-3);align-items:start;padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);color:var(--gris-osc);font-size:var(--fs-135);line-height:1.45}
+.portal-formas li{display:grid;grid-template-columns:2.75rem 1fr;gap:var(--sp-3);align-items:start;padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);color:var(--sobre-oscuro);font-size:var(--fs-145);line-height:1.45}
 .portal-formas i{display:grid;place-items:center;width:2.75rem;height:2.75rem;border-radius:50%;background:var(--pub-fondo);color:var(--primario)}
 .portal-formas svg{width:1.375rem;height:1.375rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .portal-formas b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:var(--fs-200);line-height:1.1;color:var(--sobre-oscuro);margin-bottom:var(--sp-1)}
@@ -364,6 +438,14 @@ a.portal-accion:active{transform:scale(.98)}
 }
 .portal-copiar:active{transform:scale(.96)}
 
+/* La hoja "Pagar": el alias grande, el botón de comprobante abajo. */
+.portal-hoja .portal-alias{margin:var(--sp-4) 0;padding:var(--sp-4);border-color:var(--gris-osc)}
+.portal-hoja .portal-alias b{font-size:var(--fs-230)}
+.portal-hoja .intro{margin:0;color:var(--gris-osc);font-size:var(--fs-145);line-height:1.5}
+.portal-pago-paso{margin:0 0 var(--sp-3);color:var(--gris-osc);font-size:var(--fs-145)}
+.portal-pago-nada{margin:0;color:var(--gris-osc);font-style:italic;font-size:var(--fs-145)}
+.portal-hoja-cuerpo .btn{text-decoration:none}
+
 /* Atajos: sólo a lo que existe en la página (src/ui/portal.js). */
 .portal-atajos{display:grid;grid-template-columns:repeat(auto-fit,minmax(4.5rem,1fr));gap:var(--sp-2);padding:var(--sp-5) var(--sp-4) 0}
 .portal-atajos:empty{display:none}
@@ -379,13 +461,25 @@ a.portal-accion:active{transform:scale(.98)}
 .portal-atajos svg{width:1.125rem;height:1.125rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 .portal-sec{padding:var(--sp-8) var(--sp-4) 0;scroll-margin-top:var(--sp-4)}
-.portal-st{font-family:var(--ff-titulo);font-weight:600;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-115);color:var(--primario);margin-bottom:var(--sp-1)}
-.portal-sec h2{font-size:var(--fs-260);line-height:1.05;letter-spacing:.02em;margin-bottom:var(--sp-2)}
+.portal-st{font-family:var(--ff-titulo);font-weight:600;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-115);color:var(--club-texto);margin-bottom:var(--sp-1)}
+/* Títulos de sección grandes y apretados, como en la propuesta de v0. */
+.portal-sec h2{font-size:clamp(2.25rem,1.5rem + 3.2vw,3.75rem);line-height:.92;letter-spacing:.01em;margin-bottom:var(--sp-3);text-wrap:balance}
 .portal-sec .intro{color:var(--gris-osc);font-size:var(--fs-145);line-height:1.5;margin-bottom:var(--sp-4)}
 .portal-sec .portal-nota{color:var(--gris-osc);font-size:var(--fs-135);line-height:1.55;margin-top:var(--sp-4)}
 .portal-sec .portal-nota b{color:var(--sobre-oscuro);font-weight:600}
 .portal-sec > .btn{text-decoration:none}
-.portal .pie-legal{margin-top:var(--sp-6)}
+/* Pie: franja con el borde de arriba rasgado y lugar abajo para la barra fija. */
+.portal-pie{margin-top:var(--sp-8)}
+.portal-rasgado{height:1.5rem;background:var(--pub-tarjeta);clip-path:polygon(0 55%,4% 30%,8% 70%,12% 40%,16% 75%,20% 35%,24% 60%,28% 25%,32% 70%,36% 45%,40% 80%,44% 30%,48% 65%,52% 40%,56% 75%,60% 28%,64% 62%,68% 38%,72% 78%,76% 32%,80% 68%,84% 42%,88% 72%,92% 30%,96% 64%,100% 45%,100% 100%,0 100%)}
+.portal-pie .pie-legal{margin:0;display:grid;justify-items:center;gap:var(--sp-3);padding:var(--sp-4) var(--sp-4) calc(5.5rem + env(safe-area-inset-bottom));background:var(--pub-tarjeta)}
+.pie-marca{display:flex;align-items:center;gap:var(--sp-3);text-align:left}
+.pie-marca img{width:2.5rem;height:2.5rem;flex:0 0 auto}
+.pie-marca b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:var(--fs-190);line-height:1;color:var(--sobre-oscuro)}
+.pie-marca small{display:block;margin-top:.1875rem;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc)}
+.pie-links{margin:0;display:flex;flex-wrap:wrap;justify-content:center;gap:0 var(--sp-4)}
+.pie-firma{margin:0;color:var(--gris-osc);font-size:var(--fs-125)}
+.pie-firma b{color:var(--sobre-oscuro);font-weight:600}
+.pie-firma .pie-firma-link{display:inline-flex;align-items:center;gap:var(--sp-1);min-height:var(--tap);color:var(--sobre-oscuro);font-weight:600}
 .portal-aviso{color:var(--gris-osc);font-style:italic;font-size:var(--fs-135);margin:0 0 var(--sp-3)}
 
 .portal-lista{display:grid;gap:var(--sp-3)}
@@ -399,26 +493,90 @@ a.portal-accion:active{transform:scale(.98)}
 .portal-logos-lista a{display:flex;align-items:center;justify-content:center;min-height:var(--tap);width:100%}
 .portal-logos-lista img{display:block;max-width:100%;max-height:4rem;width:auto;height:auto;object-fit:contain}
 
-/* "Lo que viene": el próximo evento como un tablero, arriba del mes. El color
-   del tipo va en el filete de la fecha y en el puntito de la etiqueta (este,
-   junto a los del mes, en el bloque de colores por tipo). */
-.portal-prox{margin-bottom:var(--sp-3);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden}
-.portal-prox-cab{display:flex;justify-content:space-between;align-items:center;padding:var(--sp-2) var(--sp-4);border-bottom:1px solid var(--pub-borde);font-family:var(--ff-titulo);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-115);color:var(--gris-osc)}
-.portal-prox-cab span::before{content:"";display:inline-block;width:.4375rem;height:.4375rem;margin-right:var(--sp-2);border-radius:50%;background:var(--primario);vertical-align:middle}
-.portal-prox-cab b{color:var(--sobre-oscuro)}
-.portal-prox-ev{display:grid;grid-template-columns:4.75rem 1fr;gap:var(--sp-4);padding:var(--sp-4)}
-.portal-prox-fecha{align-self:start;text-align:center;padding:var(--sp-2) 0;background:var(--pub-fondo);border-top:4px solid;border-radius:0 0 var(--r-s) var(--r-s)}
-.portal-prox-fecha small{display:block;font-family:var(--ff-titulo);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-115);color:var(--gris-osc)}
-.portal-prox-fecha b{display:block;font-family:var(--ff-mono);font-weight:600;font-size:2.5rem;line-height:1}
-.portal-prox-tipo{display:inline-flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-115);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris-osc)}
-.portal-prox-tipo::before{content:"";width:.5rem;height:.5rem;border-radius:50%}
-.portal-prox-t{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-260);line-height:1;margin:var(--sp-1) 0;overflow-wrap:anywhere}
-.portal-prox-h{color:var(--gris-osc);font-size:var(--fs-135)}
-.portal-prox .portal-ev-agregar{margin-top:var(--sp-2)}
-.portal-prox.tipo-partido .portal-prox-fecha{border-top-color:var(--agenda-partido)}
-.portal-prox.tipo-evento .portal-prox-fecha{border-top-color:var(--agenda-evento)}
-.portal-prox.tipo-charla .portal-prox-fecha{border-top-color:var(--agenda-charla)}
-.portal-prox.tipo-entrenamiento .portal-prox-fecha{border-top-color:var(--agenda-entrenamiento)}
+/* "Lo que viene": el próximo evento en grande, como en la propuesta de v0. La
+   foto es la del TIPO de evento (no hay una de cada uno), en el mismo duotono
+   de las categorías, con la fecha en el color del tipo abajo a la izquierda.
+   En el celular, la foto arriba y los datos abajo; en compu, lado a lado
+   (layout.css). */
+.portal-prox{display:grid;background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden}
+.portal-prox-foto{position:relative;isolation:isolate;aspect-ratio:3 / 2;overflow:hidden;background:var(--pub-fondo)}
+.portal-prox-foto img{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.25)}
+.portal-prox-foto::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--club);mix-blend-mode:multiply;opacity:.35}
+.portal-prox-foto::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(to top,var(--velo-pub-medio) 0,var(--velo-pub-cero) 55%)}
+.portal-prox-fecha{
+  position:absolute;left:var(--sp-4);bottom:var(--sp-4);display:grid;justify-items:center;gap:.125rem;min-width:5rem;
+  padding:var(--sp-3);border-radius:var(--r-s);background:var(--sobre-oscuro);color:var(--pub-fondo);text-align:center;
+}
+.portal-prox-fecha small{display:block;font-family:var(--ff-titulo);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-170);line-height:1}
+.portal-prox-fecha b{display:block;font-family:var(--ff-titulo);font-weight:700;font-size:3.5rem;line-height:.9}
+.portal-prox-cuerpo{min-width:0;display:grid;align-content:center;gap:var(--sp-2);padding:var(--sp-5) var(--sp-4)}
+.portal-prox-cuerpo > p{margin:0}
+.portal-prox-cab{display:flex;align-items:center;gap:var(--sp-1)}
+.portal-prox-tipo{font-size:var(--fs-125);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris-osc)}
+.portal-prox-cab b{margin-left:var(--sp-2);padding:.125rem var(--sp-3);border-radius:var(--r-full);background:var(--sobre-oscuro);color:var(--pub-fondo);font-family:var(--ff-titulo);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:var(--fs-135)}
+.portal-prox-t{margin:0;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:clamp(2rem,1.5rem + 2.5vw,3rem);line-height:.95;overflow-wrap:anywhere;text-wrap:balance}
+.portal-prox-h{color:var(--sobre-oscuro);font-size:var(--fs-170)}
+.portal-prox-lugar{display:flex;align-items:center;gap:var(--sp-2);color:var(--gris-osc);font-size:var(--fs-160)}
+.portal-prox-lugar i{display:grid}
+.portal-prox-lugar svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* "Agendar": dos botones de verdad (48 px), no dos links chicos. */
+.portal-prox .portal-ev-agregar{gap:var(--sp-2);margin-top:var(--sp-3)}
+.portal-prox .portal-ev-agregar > span{font-size:var(--fs-135);width:100%}
+.portal-prox .portal-ev-agregar a,.portal-prox .portal-ev-agregar button{
+  min-height:3rem;padding:0 var(--sp-4);border:1px solid var(--gris-osc);border-radius:var(--r-btn);text-decoration:none;
+  font-family:var(--ff-titulo);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:var(--fs-170);
+  transition:transform var(--dur-1) var(--ease-salida);
+}
+.portal-prox .portal-ev-agregar a:active,.portal-prox .portal-ev-agregar button:active{transform:scale(.97)}
+.portal-prox.tipo-partido .portal-prox-fecha{background:var(--agenda-partido);color:var(--sobre-club)}
+.portal-prox.tipo-evento .portal-prox-fecha{background:var(--agenda-evento)}
+.portal-prox.tipo-charla .portal-prox-fecha{background:var(--agenda-charla)}
+.portal-prox.tipo-entrenamiento .portal-prox-fecha{background:var(--agenda-entrenamiento)}
+
+/* El ícono del tipo (junto al texto del tipo): el tipo no se dice sólo con el color. */
+.portal-tipo-ico{display:inline-grid;vertical-align:middle;margin-right:var(--sp-1)}
+.portal-tipo-ico svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tipo-partido .portal-tipo-ico{color:var(--agenda-partido)}
+.tipo-evento .portal-tipo-ico{color:var(--agenda-evento)}
+.tipo-charla .portal-tipo-ico{color:var(--agenda-charla)}
+.tipo-entrenamiento .portal-tipo-ico{color:var(--agenda-entrenamiento)}
+/* Sobre el talón de color el ícono del tipo no se pinta con el mismo color. */
+.portal-prox .portal-tipo-ico{color:var(--gris-osc)}
+
+/* ---- cinta de las próximas fechas ----
+   Una banda recta, sólo con fechas. La pista tiene dos copias de la fila y corre la
+   mitad: al terminar, vuelve a arrancar sin salto. Con .js-anim (o sea, sin
+   movimiento reducido) corre sola; sin él queda quieta y se desliza a mano.
+   Se pausa con el mouse y con el botón. */
+.portal-cinta{position:relative;overflow:hidden;padding:var(--sp-5) 0 var(--sp-2)}
+.portal-cinta-banda{border-block:1px solid var(--pub-borde);background:var(--pub-tarjeta);overflow:hidden}
+html:not(.js-anim) .portal-cinta-banda{overflow-x:auto}
+.portal-cinta-pista{display:flex;width:max-content;padding-inline:2rem}
+.portal-cinta-fila{display:flex;align-items:center;list-style:none;margin:0;padding:0}
+html:not(.js-anim) .portal-cinta-fila[aria-hidden]{display:none}
+.portal-cinta-fila li{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) 0 var(--sp-3) var(--sp-6);white-space:nowrap}
+.portal-cinta-fila li > i{display:grid}
+.portal-cinta-fila svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.portal-cinta-fila b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:var(--fs-230);line-height:1}
+.portal-cinta-fila span{font-family:var(--ff-titulo);font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:var(--fs-230);line-height:1}
+.portal-cinta-fila em{width:.375rem;height:.375rem;margin-left:var(--sp-3);background:var(--gris-osc);transform:rotate(45deg)}
+.portal-cinta-fila .tipo-partido > i,.portal-cinta-fila .tipo-partido b{color:var(--agenda-partido)}
+.portal-cinta-fila .tipo-evento > i,.portal-cinta-fila .tipo-evento b{color:var(--agenda-evento)}
+.portal-cinta-fila .tipo-charla > i,.portal-cinta-fila .tipo-charla b{color:var(--agenda-charla)}
+.portal-cinta-fila .tipo-entrenamiento > i,.portal-cinta-fila .tipo-entrenamiento b{color:var(--agenda-entrenamiento)}
+.js-anim .portal-cinta-pista.anda{transform:translateX(-50%);animation:marcha var(--dur-cinta) linear infinite}
+@keyframes marcha{from{transform:translateX(0)}}
+.portal-cinta.pausada .portal-cinta-pista{animation-play-state:paused}
+@media (hover:hover){.portal-cinta:hover .portal-cinta-pista{animation-play-state:paused}}
+.portal-cinta-pausa{
+  position:absolute;right:var(--sp-3);bottom:var(--sp-1);z-index:2;display:grid;place-items:center;width:var(--tap);height:var(--tap);
+  color:var(--sobre-oscuro);background:var(--pub-fondo);border:1px solid var(--pub-borde);border-radius:50%;cursor:pointer;
+}
+.portal-cinta-pausa svg{width:1.125rem;height:1.125rem;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
+.portal-cinta-pausa .r{display:none;fill:currentColor;stroke-linejoin:round}
+.portal-cinta-pausa[aria-pressed="true"] .p{display:none}
+.portal-cinta-pausa[aria-pressed="true"] .r{display:block}
+html:not(.js-anim) .portal-cinta-pausa{display:none}
 
 /* ---- calendario del mes ---- */
 /* El color de cada tipo pinta el puntito del día, el cuadradito de la leyenda y el filete del evento. */
@@ -426,6 +584,12 @@ a.portal-accion:active{transform:scale(.98)}
 .portal-puntos i.tipo-evento,.portal-prox.tipo-evento .portal-prox-tipo::before,.portal-ley li.tipo-evento::before,.portal-ev.tipo-evento::before{background:var(--agenda-evento)}
 .portal-puntos i.tipo-charla,.portal-prox.tipo-charla .portal-prox-tipo::before,.portal-ley li.tipo-charla::before,.portal-ev.tipo-charla::before{background:var(--agenda-charla)}
 .portal-puntos i.tipo-entrenamiento,.portal-prox.tipo-entrenamiento .portal-prox-tipo::before,.portal-ley li.tipo-entrenamiento::before,.portal-ev.tipo-entrenamiento::before{background:var(--agenda-entrenamiento)}
+/* El tipo no se dice sólo con el color: cada uno tiene su forma (partido, círculo;
+   evento, rombo; charla, cuadrado; entrenamiento, triángulo), en el mes y en la leyenda. */
+.portal-ley li.tipo-partido::before{border-radius:50%}
+.portal-puntos i.tipo-evento,.portal-ley li.tipo-evento::before{transform:rotate(45deg);border-radius:1px}
+.portal-puntos i.tipo-charla,.portal-ley li.tipo-charla::before{border-radius:1px}
+.portal-puntos i.tipo-entrenamiento,.portal-ley li.tipo-entrenamiento::before{border-radius:0;clip-path:polygon(50% 0,100% 100%,0 100%)}
 .portal-cal{background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden;min-width:0}
 .portal-cal.cargando .portal-grilla{opacity:.55}
 .portal-cal-cab{display:flex;justify-content:space-between;align-items:center;padding:var(--sp-3) var(--sp-4);border-bottom:1px solid var(--pub-borde)}
@@ -439,8 +603,8 @@ a.portal-accion:active{transform:scale(.98)}
 .portal-cal-nav:active{transform:scale(.94)}
 .portal-ley{list-style:none;margin:0;display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-3);padding:var(--sp-3) var(--sp-4) 0;font-size:var(--fs-115);color:var(--gris-osc)}
 .portal-ley li{display:flex;align-items:center;gap:var(--sp-1)}
-.portal-ley li::before{content:"";width:.5rem;height:.5rem;border-radius:2px}
-.portal-grilla{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;padding:var(--sp-2) var(--sp-2) var(--sp-3);transition:opacity var(--dur-2) var(--ease-salida)}
+.portal-ley li::before{content:"";width:.625rem;height:.625rem}
+.portal-grilla{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px 0;padding:var(--sp-2) var(--sp-1) var(--sp-3);transition:opacity var(--dur-2) var(--ease-salida)}
 .portal-dn{font-size:var(--fs-100);font-weight:600;color:var(--gris-osc);text-align:center;padding:var(--sp-2) 0}
 .portal-dia{
   position:relative;min-height:var(--tap);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:.1875rem;
@@ -453,7 +617,7 @@ a.portal-accion:active{transform:scale(.98)}
 .portal-dia.hoy{border-color:var(--sobre-oscuro)}
 .portal-dia.elegido{background:var(--primario);border-color:var(--primario);color:var(--sobre-club)}
 .portal-puntos{display:flex;gap:2px}
-.portal-puntos i{width:.375rem;height:.375rem;border-radius:50%}
+.portal-puntos i{width:.5rem;height:.5rem;border-radius:50%}
 /* Sobre el rojo del día elegido, un punto rojo de partido no se ve: se le pone aro. */
 .portal-dia.elegido .portal-puntos i{box-shadow:0 0 0 1px var(--sobre-club)}
 .portal-cal-dia{border-top:1px solid var(--pub-borde);padding:var(--sp-3) var(--sp-4) var(--sp-4)}
@@ -462,16 +626,17 @@ a.portal-accion:active{transform:scale(.98)}
 .portal-evs{list-style:none;margin:0 0 var(--sp-3);padding:0;display:grid;gap:var(--sp-3)}
 .portal-ev{position:relative;padding-left:var(--sp-4)}
 .portal-ev::before{content:"";position:absolute;left:0;top:.125rem;bottom:.125rem;width:4px;border-radius:2px}
-.portal-ev small{display:block;font-size:var(--fs-115);font-weight:600;color:var(--gris-osc);letter-spacing:.04em}
+.portal-ev small{display:flex;align-items:center;font-size:var(--fs-125);font-weight:600;color:var(--gris-osc);letter-spacing:.04em}
 .portal-ev b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-190);letter-spacing:.02em;line-height:1.1;margin:.125rem 0}
 .portal-ev span{display:block;font-size:var(--fs-125);color:var(--gris-osc)}
 /* "Agregar a mi calendario": dos botones chicos pero de 44 px de alto para el pulgar. */
 .portal-ev-agregar{display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--sp-2);margin-top:var(--sp-1);font-size:var(--fs-115);color:var(--gris-osc)}
 .portal-ev-agregar a,.portal-ev-agregar button{
-  display:inline-flex;align-items:center;min-height:var(--tap);padding:0 var(--sp-2);
+  display:inline-flex;align-items:center;gap:var(--sp-2);min-height:var(--tap);padding:0 var(--sp-2);
   font:inherit;font-weight:600;color:var(--sobre-oscuro);text-decoration:underline;text-underline-offset:.2em;
   background:transparent;border:0;cursor:pointer;
 }
+.portal-ev-agregar svg{flex:0 0 auto;width:1.125rem;height:1.125rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .portal-seguir{margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--pub-borde)}
 .portal-seguir b{display:block;font-size:var(--fs-145)}
 .portal-seguir span{display:block;font-size:var(--fs-125);color:var(--gris-osc);margin:var(--sp-1) 0 var(--sp-3)}
@@ -479,34 +644,80 @@ a.portal-accion:active{transform:scale(.98)}
 .portal-seguir .btn{text-decoration:none;font-size:var(--fs-135);padding:var(--sp-2);letter-spacing:.08em}
 
 /* ---- categorías y sede ---- */
-/* "¿En qué categoría juega?": compacto. En el celular, el año arriba y la
-   categoría abajo; en compu, lado a lado y ocupando todo el ancho (layout.css). */
-.portal-sec.portal-cat{margin-top:var(--sp-8);padding-top:var(--sp-6);padding-bottom:var(--sp-5);background:var(--pub-tarjeta);border-top:3px solid var(--primario)}
-.portal-buscador{display:grid;gap:var(--sp-3);margin-top:var(--sp-2)}
-.portal-anio-et{display:block;font-size:var(--fs-115);color:var(--gris-osc);margin-bottom:var(--sp-1)}
-.portal-anio{display:grid;grid-template-columns:3.25rem 1fr 3.25rem;align-items:center;background:var(--pub-fondo);border:1px solid var(--pub-borde);border-radius:var(--r)}
+/* "¿En qué categoría juega?" (como en la propuesta de v0): la sección no es
+   una caja; adentro, una caja con el año y otra con la categoría. En el
+   celular, una arriba de la otra; en compu, lado a lado (layout.css). */
+.portal-buscador{display:grid;gap:var(--sp-3)}
+.portal-anio-caja,.portal-cat-resultado{padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r)}
+.portal-anio-et{display:block;font-size:var(--fs-160);font-weight:600;color:var(--gris-osc);margin-bottom:var(--sp-2)}
+.portal-anio{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3)}
 .portal-anio button{
-  min-height:3.25rem;font:inherit;font-size:var(--fs-260);line-height:1;color:var(--sobre-oscuro);background:none;border:0;cursor:pointer;
+  flex:none;width:4rem;height:4rem;display:grid;place-items:center;font:inherit;font-size:var(--fs-300);line-height:1;
+  color:var(--sobre-oscuro);background:var(--pub-fondo);border:1px solid var(--pub-borde);border-radius:50%;cursor:pointer;
   transition:transform var(--dur-1) var(--ease-salida);
 }
-.portal-anio button:active{transform:scale(.9)}
+.portal-anio button:active{transform:scale(.92)}
 .portal-anio button:disabled{color:var(--gris-osc);cursor:default;transform:none}
-.portal-anio output{text-align:center;font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-260)}
-.portal-cat-resultado{display:grid;gap:var(--sp-2);align-content:start}
-.portal-cat-res{padding:var(--sp-3) var(--sp-4);border-radius:var(--r);background:var(--primario);color:var(--sobre-club)}
-.portal-cat-nombre{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 var(--sp-2)}
-.portal-cat-nombre b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-300);line-height:1}
-.portal-cat-nombre span{font-family:var(--ff-titulo);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:var(--fs-125)}
-.portal-cat-nombre small{margin-left:auto;font-size:var(--fs-125)}
-.portal-cat-hora{list-style:none;margin:var(--sp-2) 0 0;padding:0;display:grid;gap:.125rem;font-size:var(--fs-135);font-weight:600}
-.portal-cat-sin{margin:var(--sp-2) 0 0;font-size:var(--fs-135)}
-.portal-cat-nada{margin:0;color:var(--gris-osc);font-size:var(--fs-145);line-height:1.45}
+.portal-anio output{font-family:var(--ff-titulo);font-weight:700;font-size:clamp(3.5rem,2.75rem + 3vw,4.5rem);line-height:1;font-variant-numeric:tabular-nums}
+.portal-cat-resultado{display:grid;gap:var(--sp-4);align-content:start}
+.portal-cat-res + .portal-cat-res{padding-top:var(--sp-4);border-top:1px solid var(--pub-borde)}
+.portal-cat-nombre{display:flex;align-items:flex-end;gap:var(--sp-3);margin-bottom:var(--sp-3)}
+/* El nombre en el rojo del club: es texto grande (≥ 24 px), ahí alcanza --primario. */
+.portal-cat-nombre b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:clamp(3.5rem,2.75rem + 3vw,4.5rem);line-height:.8;color:var(--primario)}
+.portal-cat-nombre span{display:grid;gap:var(--sp-1)}
+.portal-cat-nombre em{font-style:normal;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-230);line-height:1}
+.portal-cat-nombre small{font-size:var(--fs-160);color:var(--gris-osc)}
+.portal-cat-hora{list-style:none;margin:0;padding:0;border-top:1px solid var(--pub-borde)}
+.portal-cat-hora li{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-5);padding:var(--sp-3) 0}
+.portal-cat-hora li + li{border-top:1px solid var(--pub-borde)}
+.portal-cat-hora span{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-170);font-weight:600}
+.portal-cat-hora .lugar{font-size:var(--fs-160);font-weight:400;color:var(--gris-osc)}
+.portal-cat-hora i{display:grid;color:var(--gris-osc)}
+.portal-cat-hora svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.portal-cat-sin{margin:0;color:var(--gris-osc);font-size:var(--fs-160)}
+.portal-cat-nada{margin:0;color:var(--gris-osc);font-size:var(--fs-160);line-height:1.5}
 .portal-cat-nada a{color:var(--sobre-oscuro);font-weight:600}
-.portal-todas{margin-top:var(--sp-4);border-top:1px solid var(--pub-borde);padding-top:var(--sp-1)}
-.portal-todas summary{display:flex;align-items:center;min-height:var(--tap);font-weight:600;font-size:var(--fs-145);cursor:pointer}
-.portal-todas[open] summary{margin-bottom:var(--sp-2)}
-/* Dentro de la banda, la lista va sobre el fondo, para que se despegue. */
-.portal-cat .portal-cats{background:var(--pub-fondo)}
+/* La fila de categorías: tarjetas con foto en duotono suave (grises + un poco
+   del color del club, multiplicado, como el tono "subtle" de v0) y un degradé
+   abajo para el texto. Cada una es un botón; la del año elegido lleva un aro y
+   "Su categoría". Se desliza con snap; con mouse suma dos flechas. La pista
+   sangra hasta el borde en el celular, así se ve que hay más a la derecha. Sin
+   foto, un fondo del club y una pelota. */
+.portal-carrusel{margin-top:var(--sp-6);min-width:0}
+.portal-carrusel:empty{display:none}
+.portal-carrusel-cab{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-2)}
+.portal-carrusel-cab h3{margin:0;font-family:var(--ff-titulo);font-weight:600;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-125);color:var(--gris-osc)}
+.portal-carrusel-guia{margin:var(--sp-1) 0 0;font-size:var(--fs-135);color:var(--gris-osc)}
+@media (hover:hover){.portal-carrusel-guia{display:none}}
+.portal-carrusel-flechas{display:none;gap:var(--sp-2)}
+.portal-carrusel-flechas button{width:var(--tap);height:var(--tap);display:grid;place-items:center;font-size:var(--fs-200);color:var(--sobre-oscuro);background:transparent;border:1px solid var(--pub-borde);border-radius:var(--r-s)}
+.portal-carrusel-flechas button:active{transform:scale(.94)}
+@media (hover:hover){.portal-carrusel-flechas{display:flex}}
+.portal-carrusel-pista{
+  display:flex;gap:var(--sp-3);list-style:none;margin:0 calc(var(--sp-4) * -1);padding:0 var(--sp-4) var(--sp-2);
+  overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:var(--sp-4);overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:var(--pub-borde) transparent;
+}
+.portal-card{position:relative;isolation:isolate;flex:0 0 min(15rem,72vw);aspect-ratio:3 / 4;scroll-snap-align:start;overflow:hidden;border-radius:var(--r);background:var(--pub-tarjeta)}
+.portal-card button{position:absolute;inset:0;display:block;width:100%;padding:0;font:inherit;color:inherit;text-align:left;background:transparent;border:0;border-radius:inherit;cursor:pointer}
+.portal-card button[aria-pressed="true"]{box-shadow:inset 0 0 0 3px var(--sobre-oscuro)}
+.portal-card img{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.25);transition:transform var(--dur-3) var(--ease-salida)}
+@media (hover:hover){.portal-card button:hover img{transform:scale(1.05)}}
+.portal-card::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--club);mix-blend-mode:multiply;opacity:.35}
+.portal-card::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(to top,var(--velo-pub-fuerte) 0,var(--velo-pub-medio) 35%,var(--velo-pub-cero) 70%)}
+.portal-card.sin-foto{background:linear-gradient(160deg,var(--primario-osc),var(--pub-fondo))}
+.portal-card.sin-foto::before{display:none}
+.portal-card button > i{position:absolute;top:var(--sp-4);right:var(--sp-4);opacity:.35}
+.portal-card button > i svg{width:4rem;height:4rem;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.portal-card-su{position:absolute;top:var(--sp-3);left:var(--sp-3);display:none;align-items:center;gap:var(--sp-1);padding:var(--sp-1) var(--sp-3);border-radius:var(--r-full);background:var(--sobre-oscuro);color:var(--pub-fondo);font-size:var(--fs-135);font-weight:600}
+[aria-pressed="true"] > .portal-card-su{display:flex}
+.portal-card-su i{display:grid}
+.portal-card-su svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.portal-card-txt{position:absolute;inset:auto 0 0;display:block;padding:var(--sp-4)}
+/* El nombre se achica con el ancho de la tarjeta: "Primera" en cinco columnas no entra a 3.5rem. */
+.portal-card{container-type:inline-size}
+.portal-card-txt b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:min(3.5rem,24cqi);line-height:.9;letter-spacing:.01em}
+.portal-card-txt span{display:block;margin-top:var(--sp-1);font-family:var(--ff-titulo);font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-145)}
+.portal-card-txt small{display:block;margin-top:var(--sp-1);font-size:var(--fs-135);color:var(--sobre-oscuro)}
 
 /* "Dónde se entrena": los lugares, "Cómo llegar" y el mapa 16:9. En el
    celular, el texto arriba y el mapa abajo; en compu, lado a lado (layout.css).
@@ -524,24 +735,17 @@ a.portal-accion:active{transform:scale(.98)}
     var(--pub-tarjeta);
 }
 .portal-mapa iframe{display:block;width:100%;height:100%;border:0}
+/* El recuadro del mapa, con una foto del estadio detrás (oscurecida): el botón sigue cargando el mapa recién al tocarlo. */
+.portal-mapa-foto{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.75) brightness(.5)}
 .portal-mapa-ver{
-  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-1);
+  position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-1);
   font:inherit;color:var(--sobre-oscuro);background:transparent;border:0;cursor:pointer;
 }
 .portal-mapa-ver i{display:grid;place-items:center;width:3rem;height:3rem;border-radius:50%;background:var(--primario);color:var(--sobre-club);transition:transform var(--dur-1) var(--ease-salida)}
 .portal-mapa-ver:active i{transform:scale(.92)}
 .portal-mapa-ver svg{width:1.5rem;height:1.5rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .portal-mapa-ver b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:var(--fs-200)}
-.portal-mapa-ver small{font-size:var(--fs-115);color:var(--gris-osc)}
-.portal-cats{list-style:none;margin:0;padding:0;background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r)}
-.portal-cats li{display:grid;grid-template-columns:1fr auto;gap:0 var(--sp-3);align-items:baseline;padding:var(--sp-3) var(--sp-4)}
-.portal-cats li + li{border-top:1px solid var(--pub-borde)}
-.portal-cats b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:var(--fs-190);letter-spacing:.03em}
-.portal-cats li > div:first-child span{margin-left:var(--sp-2);font-size:var(--fs-115);color:var(--gris-osc);text-transform:uppercase;letter-spacing:.08em}
-.portal-cats-anios{font-family:var(--ff-mono);font-size:var(--fs-135);color:var(--sobre-oscuro);text-align:right}
-.portal-cats-hora{grid-column:1 / -1;font-size:var(--fs-125);color:var(--gris-osc);margin-top:var(--sp-1)}
-/* Un día por renglón ("Mar 18 a 19 h (Estadio Cubierto)"): partido a la mitad no se lee. */
-.portal-cats-hora span{display:block}
+.portal-mapa-ver small{font-size:var(--fs-125);color:var(--sobre-oscuro)}
 
 .portal-foto{margin:0;border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden;background:var(--pub-tarjeta)}
 .portal-foto img{display:block;width:100%;height:auto;aspect-ratio:3 / 2;object-fit:cover}
@@ -691,3 +895,39 @@ a.portal-accion:active{transform:scale(.98)}
   .enlaces button:hover b{color:var(--sobre-oscuro)}
   .quien-op:hover{background:var(--toque-osc)}
 }
+
+/* ---- Portal: entrada al scroll ----
+   Lo que lleva .rise arranca oculto y 1.5rem más abajo SÓLO si public/js/anim.js
+   prendió .js-anim (sin JS, o con movimiento reducido, no se prende y todo se
+   ve). src/ui/animaciones.js le pone .visto al aparecer, una sola vez. La
+   transición es de opacity y transform, como pide DESIGN.md. */
+.js-anim .rise{opacity:0;transform:translateY(1.5rem);transition:opacity var(--dur-rise) var(--ease-salida),transform var(--dur-rise) var(--ease-salida)}
+.js-anim .rise.visto{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .js-anim .rise{opacity:1;transform:none}
+}
+
+/* ---- Portal: barra fija de abajo ----
+   Los mismos dos botones del hero, para cuando el hero ya quedó atrás. Aparece
+   y se va deslizándose (sólo transform). Fondo oscuro translúcido con blur; sin
+   backdrop-filter, el velo ya es casi sólido. Respeta la zona segura del
+   iPhone. El .portal reserva abajo el lugar de la barra para no tapar el pie. */
+.portal-dock{
+  position:fixed;inset:auto 0 0;z-index:20;
+  padding:var(--sp-2) var(--sp-4) calc(var(--sp-2) + env(safe-area-inset-bottom));
+  background:var(--velo-pub-fuerte);border-top:1px solid var(--pub-borde);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  transform:translateY(100%);transition:transform var(--dur-3) var(--ease-salida);
+}
+.portal-dock.visible{transform:none}
+.portal-dock-acc{display:flex;gap:var(--sp-2);max-width:30rem;margin-inline:auto}
+.portal-dock-btn{
+  flex:1 1 0;display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);min-height:3rem;padding:0 var(--sp-2);
+  border:0;border-radius:var(--r-btn);text-decoration:none;cursor:pointer;
+  font-family:var(--ff-titulo);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:var(--fs-190);line-height:1;
+  transition:transform var(--dur-1) var(--ease-salida);
+}
+.portal-dock-btn svg{flex:0 0 auto;width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.portal-dock-btn:active{transform:scale(.97)}
+.portal-dock-btn.principal{flex-grow:1.5;background:var(--primario);color:var(--sobre-club);white-space:nowrap}
+.portal-dock-btn.pago{background:var(--papel);color:var(--tinta)}

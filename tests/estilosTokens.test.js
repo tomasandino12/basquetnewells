@@ -156,13 +156,16 @@ test('los keyframes sólo definen "from": con reduced-motion el estado final que
   assert.deepEqual(malos, []);
 });
 
-test('sólo publico.css tiene una animación infinite, y es una sola', () => {
-  // Excepción de DESIGN.md: el giro del anillo del escudo. Cualquier otra
-  // animación continua es decorado que cuesta batería en gama baja.
+test('sólo publico.css tiene animaciones infinite, y son tres: el anillo del escudo, la cinta de fechas y el sticker de sponsor', () => {
+  // Excepciones: el giro del anillo del escudo (DESIGN.md) y la cinta de fechas
+  // del portal, que se pausa con el mouse y con un botón, y no corre con
+  // movimiento reducido ni con menos de tres eventos, y el sticker de sponsor del
+  // hero del portal (reusa el giro del escudo). Cualquier otra animación
+  // continua es decorado que cuesta batería en gama baja.
   const cuenta = (n) => (sinComentarios(css[n]).match(/\binfinite\b/g) ?? []).length;
   const otros = ARCHIVOS.filter((n) => n !== 'publico' && cuenta(n) > 0);
   assert.deepEqual(otros, []);
-  assert.ok(cuenta('publico') <= 1, `publico.css tiene ${cuenta('publico')} infinite`);
+  assert.ok(cuenta('publico') <= 3, `publico.css tiene ${cuenta('publico')} infinite`);
 });
 
 test('el texto de la landing llega a 4.5:1 sobre su tarjeta y su fondo', () => {
@@ -173,6 +176,14 @@ test('el texto de la landing llega a 4.5:1 sobre su tarjeta y su fondo', () => {
     ['--gris-osc', '--pub-tarjeta'], ['--gris-osc', '--pub-fondo'],
     ['--sobre-oscuro', '--pub-tarjeta'], ['--sobre-oscuro', '--pub-fondo'],
     ['--sube-osc', '--pub-tarjeta'],
+    // El color del club como texto chico (los títulos de sección del portal): --club solo llega a 3.8:1.
+    ['--club-texto', '--pub-tarjeta'], ['--club-texto', '--pub-fondo'],
+    // El dorado (ejemplos de recaudación) y el texto sobre el talón del ticket.
+    ['--dorado', '--pub-fondo'], ['--pub-fondo', '--dorado'],
+    ['--dorado', '--pub-oro-fondo'], ['--gris-osc', '--pub-oro-fondo'], ['--sobre-oscuro', '--pub-oro-fondo'], ['--pub-fondo', '--agenda-charla'], ['--pub-fondo', '--sube-osc'],
+    ['--sobre-club', '--club'],
+    // La línea de ayuda del botón "Pagar" (claro) y su texto.
+    ['--gris', '--papel'], ['--tinta', '--papel'],
   ];
   for (const [texto, fondo] of pares) {
     const [t, f] = [valorDeToken(texto), valorDeToken(fondo)];

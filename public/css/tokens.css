@@ -35,6 +35,7 @@
   --primario-osc:#A00D22;                    /* apretado y hover */
   --primario-cl:#FFEBEE;                     /* fondo suave */
   --primario-tenue:#FBE5E8;                  /* fondo de una etiqueta del club */
+  --club-texto:#E34D62;                      /* el color del club como TEXTO chico sobre fondo oscuro: el rojo puro llega a 3.8:1, éste a 4.7:1 */
 
   /* ---- neutros ---- */
   --negro:#131316;
@@ -65,13 +66,27 @@
   --pub-fondo:#0D0D10;
   --pub-tarjeta:#17171C;
   --pub-borde:#2B2B34;
+  /* Dorado del portal (hoy, el tipo "evento" del calendario): sobre él va
+     --pub-fondo, no blanco. */
+  --dorado:#F2B33D;
+  /* La franja de recaudación: un negro tibio, con el dorado de filete y en los
+     detalles. Ahí el botón es dorado, no rojo (un solo bloque rojo por pantalla). */
+  --pub-oro-fondo:#15130F;
+  --dorado-borde:rgba(242,179,61,.25);
+  --dorado-suave:rgba(242,179,61,.1);
+  /* Velos del hero del portal: el color de --pub-fondo con distinta opacidad.
+     Cada uno lleva su propio cero (no "transparent") para que el degradé no
+     pase por un gris. */
+  --velo-pub-fuerte:rgba(13,13,16,.92);
+  --velo-pub-medio:rgba(13,13,16,.55);
+  --velo-pub-cero:rgba(13,13,16,0);
 
   /* ---- calendario del portal: un color por tipo de evento (un calendario de
      Google por tipo). Sólo pintan puntitos, filetes y cuadraditos de la
      leyenda: el texto del evento va en --sobre-oscuro / --gris-osc, porque
      el rojo del club no llega a 4.5:1 sobre --pub-tarjeta. */
   --agenda-partido:var(--club);
-  --agenda-evento:#F2B33D;
+  --agenda-evento:var(--dorado);
   --agenda-charla:#5AB4F0;
   --agenda-entrenamiento:var(--sube-osc);
 
@@ -144,6 +159,9 @@
   --fs-cifra:clamp(2.5rem,2rem + 2.4vw,3.5rem);   /* el número héroe de una card */
   --fs-titulo:clamp(1.5rem,1.25rem + 1.2vw,2rem);
   --fs-titulo-chico:clamp(1.5rem,1.3rem + 1vw,2rem);
+  /* El título del hero del portal: se achica con el ancho Y el alto de la pantalla,
+     para que los dos botones entren sin scrollear (ver publico.css). */
+  --fs-hero:clamp(3.25rem,min(23vw,19svh),9rem);
 
   /* ---- espaciado ---- */
   --sp-1:0.25rem;
@@ -163,7 +181,13 @@
   --dur-2:200ms;          /* entrada de pantalla, toast, velo */
   --dur-3:280ms;          /* hoja y barras */
   --dur-demo:1400ms;       /* demos de la landing: una vez al entrar en pantalla */
+  --dur-cinta:38s;        /* la cinta de fechas: la mitad de la pista (portal.js la ajusta según cuántas haya) */
   --dur-giro:25s;         /* una vuelta del anillo del escudo (landing) */
+  --dur-rise:700ms;       /* portal: texto y botones que suben al entrar */
+  --dur-linea:900ms;      /* portal: cada línea del título sube de su máscara */
+  --paso-entrada:90ms;    /* portal: escalón entre elementos del hero */
+  --retardo-entrada:150ms;/* portal: espera antes del primer elemento */
+  --i:0;                  /* portal: lugar en la entrada escalonada; el HTML lo pisa con style="--i:2" */
   --ease-salida:cubic-bezier(.16,1,.3,1);   /* frena al llegar: entra */
   --ease-entrada:cubic-bezier(.3,0,.8,.15); /* acelera al irse: sale */
 
@@ -184,6 +208,7 @@
     --primario-osc:color-mix(in srgb,var(--club) 73.7%,black);
     --primario-cl:color-mix(in oklab,var(--club) 9%,white);
     --primario-tenue:color-mix(in srgb,var(--club) 11%,white);
+    --club-texto:color-mix(in srgb,var(--club) 75%,white);
   }
 }
 

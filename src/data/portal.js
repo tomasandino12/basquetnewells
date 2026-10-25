@@ -2,6 +2,49 @@ import { TIPOS_AGENDA, idCalendario, claveValida } from './agenda.js';
 import { aniosDeCategoria, textoAnios } from './categorias.js';
 
 /**
+ * Las fotos del club que usa el portal (public/img/fotos/): el nombre del
+ * archivo SIN extensión (de cada uno hay un `-640.webp` para el celular), qué se
+ * ve (texto alternativo: lo que pasa en la foto, nunca quiénes son) y hacia
+ * dónde mirar cuando la tarjeta la recorta (`posicion`, de object-position).
+ * Provisorias: del Instagram del básquet, hasta tener las del fotógrafo. Cada
+ * archivo se usa UNA vez en la página (la del hero, formativas-bandeja, va
+ * escrita en el HTML): una foto repetida con otro recorte se nota.
+ */
+export const FOTOS = Object.freeze({
+  // La del hero: va escrita en portal.html; acá está sólo como la foto general de "Lo que viene".
+  heroe: Object.freeze({ archivo: 'formativas-bandeja', posicion: '50% 30%', alt: 'Un jugador de Newell\'s sube a hacer una bandeja en un partido de las formativas' }),
+  mini: Object.freeze({ archivo: 'formativas-mini', posicion: '50% 70%', alt: 'Chicos de mini de Newell\'s y de otro club posan juntos en la cancha después de un partido' }),
+  dribbling: Object.freeze({ archivo: 'formativas-dribbling', posicion: '48% 40%', alt: 'Un jugador de Newell\'s conduce la pelota en un partido' }),
+  grupo: Object.freeze({ archivo: 'escuelita-grupo', posicion: '45% 70%', alt: 'Chicas, chicos y grandes posan juntos en la cancha del Estadio Cubierto' }),
+  entrenamiento: Object.freeze({ archivo: 'formativas-entrenamiento', posicion: '30% 40%', alt: 'Un jugador de Newell\'s avanza con la pelota en un partido' }),
+  ataque: Object.freeze({ archivo: 'juego-ataque', posicion: '62% 40%', alt: 'Un jugador de Newell\'s protege la pelota con las dos manos frente a un rival' }),
+  penetracion: Object.freeze({ archivo: 'primera-penetracion', posicion: '35% 40%', alt: 'Un jugador de Newell\'s entra a canasta marcado por un rival' }),
+  lanzamiento: Object.freeze({ archivo: 'primera-lanzamiento', posicion: '40% 30%', alt: 'Un jugador sube a lanzar al aro marcado por un rival' }),
+  femenino: Object.freeze({ archivo: 'femenino-equipo', posicion: '50% 45%', alt: 'Un equipo femenino de Newell\'s posa en la cancha con su entrenador' }),
+  sede: Object.freeze({ archivo: 'estadio-cubierto', posicion: '50% 30%', alt: 'El Estadio Cubierto Claudio Newell por dentro, con sus tribunas rojas' }),
+  // El afiche que el club subió a Instagram para buscar sponsors: el texto va en el alt.
+  sponsor: Object.freeze({ archivo: 'sponsor-camisetas', posicion: '50% 50%', alt: 'Afiche del club: Newell\'s Básquet 2026, nuevas camisetas. Sumá tu empresa como sponsor: 341 370-9161' }),
+});
+
+/**
+ * La foto de "Lo que viene" según el tipo de evento: los eventos del calendario
+ * no traen foto propia. Reusa fotos de FOTOS (excepción a "una vez por página":
+ * se ve sólo si hay un evento de ese tipo, y en la tarjeta grande, no en la fila
+ * de categorías). Un tipo sin foto usa la general del hero.
+ */
+const FOTO_POR_TIPO = Object.freeze({
+  partido: FOTOS.ataque,
+  evento: FOTOS.grupo,
+  charla: FOTOS.mini,
+  entrenamiento: FOTOS.entrenamiento,
+});
+
+/** La foto válida de un tipo de evento (ver FOTO_POR_TIPO); si el tipo no tiene, la del hero. */
+export function fotoDeEvento(tipo) {
+  return fotoDeCategoriaValida(FOTO_POR_TIPO[tipo]) ?? fotoDeCategoriaValida(FOTOS.heroe);
+}
+
+/**
  * Lo que muestra la página pública del básquet y no sale de la base: los
  * calendarios, las categorías con sus horarios, la sede, el contacto, el alias
  * para transferir, la foto y los sponsors. Vive acá y no en el HTML para que
@@ -52,14 +95,14 @@ export const PORTAL = Object.freeze({
   // femenina es Primera. Las dos Primeras no figuran en ningún formulario y van
   // sin horario hasta que el club lo pase.
   categorias: Object.freeze([
-    Object.freeze({ grupo: 'U9', rama: 'Mixto', horario: 'Mar 18 a 19 h (Estadio Cubierto) · Jue 18 a 19 h (Playón Deportivo)' }),
-    Object.freeze({ grupo: 'U11', rama: 'Mixto', horario: 'Mar 19 a 20 h (Estadio Cubierto) · Jue 19 a 20 h (Playón Deportivo)' }),
-    Object.freeze({ grupo: 'U13', rama: 'Mixto', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)' }),
-    Object.freeze({ grupo: 'U15', rama: 'Masculino', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)' }),
-    Object.freeze({ grupo: 'U17', rama: 'Masculino', horario: 'Lun y Vie 19 a 20 h (Estadio Cubierto) · Mié 19 a 20 h (Microestadio)' }),
-    Object.freeze({ grupo: 'U21', rama: 'Masculino', horario: 'Lun y Vie 20 a 21 h (Estadio Cubierto) · Mié 20 a 21 h (Microestadio)' }),
-    Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Masculino', horario: null }),
-    Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Femenino', horario: null }),
+    Object.freeze({ grupo: 'U9', rama: 'Mixto', horario: 'Mar 18 a 19 h (Estadio Cubierto) · Jue 18 a 19 h (Playón Deportivo)', foto: FOTOS.mini }),
+    Object.freeze({ grupo: 'U11', rama: 'Mixto', horario: 'Mar 19 a 20 h (Estadio Cubierto) · Jue 19 a 20 h (Playón Deportivo)', foto: FOTOS.dribbling }),
+    Object.freeze({ grupo: 'U13', rama: 'Mixto', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)', foto: FOTOS.grupo }),
+    Object.freeze({ grupo: 'U15', rama: 'Masculino', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)', foto: FOTOS.entrenamiento }),
+    Object.freeze({ grupo: 'U17', rama: 'Masculino', horario: 'Lun y Vie 19 a 20 h (Estadio Cubierto) · Mié 19 a 20 h (Microestadio)', foto: FOTOS.ataque }),
+    Object.freeze({ grupo: 'U21', rama: 'Masculino', horario: 'Lun y Vie 20 a 21 h (Estadio Cubierto) · Mié 20 a 21 h (Microestadio)', foto: FOTOS.penetracion }),
+    Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Masculino', horario: null, foto: FOTOS.lanzamiento }),
+    Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Femenino', horario: null, foto: FOTOS.femenino }),
   ]),
 
   // Dónde se entrena. Sin calle ni número en ningún formulario: el mapa es una
@@ -95,6 +138,12 @@ export const PORTAL = Object.freeze({
   // existe o una ruta de otro lado, no se muestra: ver sponsorsValidos().
   sponsors: Object.freeze([]),
 
+  // La firma del pie, "Hecho por <nombre>", con un link a su LinkedIn. PENDIENTE:
+  // Tomás todavía no pasó el nombre ni la URL; con el nombre vacío el pie no
+  // muestra la firma. Sin una URL de https://www.linkedin.com/… válida, va sólo
+  // el nombre, sin link (ver firmaValida).
+  creador: Object.freeze({ nombre: null, linkedin: null }),
+
   // Respaldo de los formularios: lo que se muestra si la base no responde. La
   // lista de verdad la carga la coordinación desde su panel. Vacío a propósito
   // mientras la inscripción nueva no esté publicada: mejor la tarjeta cerrada
@@ -128,6 +177,59 @@ export function categoriasDelPortal(lista, temporada) {
       anios: textoAnios(anios),
       horario: texto(c.horario) || null,
     }];
+  });
+}
+
+const ARCHIVO_FOTO = /^(?!.*-640$)[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const POSICION_FOTO = /^\d{1,3}% \d{1,3}%$/;
+
+/**
+ * La foto de una categoría: sólo un archivo de public/img/fotos/ (la CSP no
+ * deja otras imágenes y un nombre raro no tiene que poder salirse de ahí), con
+ * texto alternativo. Devuelve las dos rutas (celular y normal), o null.
+ */
+export function fotoDeCategoriaValida(foto) {
+  const archivo = texto(foto?.archivo);
+  const alt = texto(foto?.alt);
+  if (!ARCHIVO_FOTO.test(archivo) || !alt) return null;
+  return {
+    src: `/public/img/fotos/${archivo}.webp`,
+    src640: `/public/img/fotos/${archivo}-640.webp`,
+    alt,
+    posicion: POSICION_FOTO.test(texto(foto.posicion)) ? foto.posicion.trim() : '50% 50%',
+  };
+}
+
+/**
+ * Las tarjetas del carrusel de categorías: las mismas categorías de
+ * categoriasDelPortal, cada una con su foto (o null si no tiene o no es válida:
+ * la tarjeta sale igual, sin foto). Con sus topes de años (`desde`/`hasta`,
+ * null si no tiene) para marcar la del año elegido, y `anio`: el año al que
+ * salta el buscador al tocarla (el más viejo; la Primera, el más nuevo).
+ */
+export function tarjetasDeCategorias(lista, temporada) {
+  return (Array.isArray(lista) ? lista : []).flatMap((c) => {
+    const [categoria] = categoriasDelPortal([c], temporada);
+    if (!categoria) return [];
+    const { viejo, nuevo } = aniosDeCategoria(c.grupo, temporada);
+    return [{ ...categoria, foto: fotoDeCategoriaValida(c.foto), desde: viejo, hasta: nuevo, anio: viejo ?? nuevo }];
+  });
+}
+
+/** Si quien nació en `anio` entra en la tarjeta (de tarjetasDeCategorias). */
+export function tarjetaDelAnio(tarjeta, anio) {
+  return Number.isInteger(anio) && (tarjeta.desde == null || anio >= tarjeta.desde) && (tarjeta.hasta == null || anio <= tarjeta.hasta);
+}
+
+/**
+ * El horario de una categoría partido en turnos: "Lun y Vie 18 a 19 h
+ * (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)" → [{ cuando, lugar }].
+ * Un turno sin lugar entre paréntesis queda con lugar null. Sin horario, [].
+ */
+export function turnosDeHorario(horario) {
+  return texto(horario).split(' · ').map((t) => t.trim()).filter(Boolean).map((t) => {
+    const m = t.match(/^(.*\S)\s*\(([^()]+)\)$/);
+    return m ? { cuando: m[1], lugar: m[2].trim() } : { cuando: t, lugar: null };
   });
 }
 
@@ -220,6 +322,27 @@ export function enlaceContacto(valor) {
     return null;
   }
   return u.protocol === 'https:' && u.hostname === 'wa.me' && u.pathname.length > 1 ? valor : null;
+}
+
+/**
+ * La firma del pie si tiene nombre; si no, null (el pie no dice nada). El link
+ * va sólo si es de LinkedIn por https (termina en un <a href> que abre otro
+ * sitio): host exacto www.linkedin.com, sin usuario ni contraseña.
+ */
+export function firmaValida(creador) {
+  const nombre = texto(creador?.nombre).slice(0, 80);
+  if (!nombre) return null;
+  const url = texto(creador.linkedin);
+  let linkedin = null;
+  if (/^https:\/\/www\.linkedin\.com\/[^\s"<>]+$/.test(url)) {
+    try {
+      const u = new URL(url);
+      if (u.protocol === 'https:' && u.hostname === 'www.linkedin.com' && !u.username && !u.password) linkedin = url;
+    } catch {
+      // Una URL que no se puede leer no es un link: queda sólo el nombre.
+    }
+  }
+  return { nombre, linkedin };
 }
 
 // Sólo imágenes propias, de la carpeta de logos: el CSP de la app no deja cargar
