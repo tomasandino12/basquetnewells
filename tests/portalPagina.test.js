@@ -464,7 +464,7 @@ test('cinta: fecha con ícono y color de su tipo, título escapado; corre y se r
   assert.match(out, /<div class="portal-cinta-pista anda" style="--dur-cinta:63s">/);
   assert.equal((out.match(/<ul class="portal-cinta-fila"/g) ?? []).length, 2, 'la fila se repite para el loop');
   assert.equal((out.match(/<ul class="portal-cinta-fila" aria-hidden="true">/g) ?? []).length, 1, 'sólo la copia es aria-hidden');
-  assert.match(out, /<li class="tipo-evento"><i><svg[\s\S]*?<\/i><b>sáb 24 oct<\/b><span>Hamburgueseada<\/span>/);
+  assert.match(out, /<li class="tipo-evento"><a href="#calendario" data-cinta-dia="2026-10-24"><i><svg[\s\S]*?<\/i><b>sáb 24 oct<\/b><span>Hamburgueseada<\/span><\/a>/);
   assert.match(out, /U15 vs\. &lt;Náutico&gt;/);
   assert.doesNotMatch(out, /<Náutico>/);
   assert.match(out, /<button type="button" class="portal-cinta-pausa" data-cinta-pausa aria-pressed="false" aria-label="Pausar la cinta">/);
@@ -487,7 +487,8 @@ test('la cinta corre aunque haya una sola fecha: repite la lista hasta llenar ca
     assert.match(out, /<button type="button" class="portal-cinta-pausa" data-cinta-pausa/, 'y se puede pausar');
     const mitades = out.match(/<ul class="portal-cinta-fila"[^>]*>[\s\S]*?<\/ul>/g);
     assert.equal(mitades.length, 2, 'dos mitades');
-    assert.equal(mitades[0].replace(/ aria-hidden="true"/g, ''), mitades[1].replace(/ aria-hidden="true"/g, ''), 'idénticas, para que -50% empalme');
+    const igual = (m) => m.replace(/ (aria-hidden="true"|tabindex="-1")/g, '');
+    assert.equal(igual(mitades[0]), igual(mitades[1]), 'idénticas, para que -50% empalme');
     assert.equal((mitades[0].match(/<li /g) ?? []).length, 8, 'ocho ítems por mitad');
   }
   // La velocidad es la misma con cualquier cantidad: 7 s por ítem.
@@ -511,6 +512,31 @@ test('las repeticiones de la cinta no son accesibles: sólo la primera aparició
   assert.equal(lis.filter((li) => !/aria-hidden/.test(li)).length, proximos.length, 'una sola aparición accesible por fecha');
   assert.equal(lis.filter((li) => /aria-hidden="true"/.test(li)).length, lis.length - proximos.length, 'el resto, oculto');
   assert.ok(!/aria-hidden/.test(lis[0]) && !/aria-hidden/.test(lis[proximos.length - 1]) && /aria-hidden/.test(lis[proximos.length]), 'las primeras son las accesibles');
+  // Los links de las repeticiones tampoco reciben foco; los de la primera aparición, sí.
+  const links = visible.match(/<a [^>]*>/g);
+  assert.equal(links.filter((a) => !/tabindex/.test(a)).length, proximos.length);
+  assert.equal(links.filter((a) => /tabindex="-1"/.test(a)).length, links.length - proximos.length);
+  assert.ok(!/tabindex/.test(links[0]) && /tabindex="-1"/.test(links[proximos.length]));
+  assert.ok(copia.match(/<a [^>]*>/g).every((a) => /tabindex="-1"/.test(a)), 'en la mitad copia, ninguno');
+});
+
+test('tocar una fecha de la cinta lleva al calendario en ese día: link a #calendario y el calendario queda en el mes y el día de la fecha', () => {
+  const out = htmlCinta(proximosEventos(porDia, '2026-10-20', 3)).toString();
+  const primeros = out.match(/<a href="#calendario" data-cinta-dia="[^"]+"[^>]*>/g);
+  assert.match(primeros[0], /data-cinta-dia="2026-10-24"/);
+  assert.match(primeros[2], /data-cinta-dia="2026-10-31"/);
+  assert.ok(primeros.every((a) => /^<a href="#calendario" data-cinta-dia="\d{4}-\d{2}-\d{2}"( tabindex="-1")?>$/.test(a)), 'sólo # interno y la fecha: sin JS igual baja al calendario');
+  // La cinta pasa por iniciarCalendario: reusa cargar (cambio de mes) y pintar (día elegido), sin otra lógica de calendario.
+  const fuente = portal.replace(/\r\n/g, '\n');
+  const desde = fuente.indexOf('function iniciarCalendario(');
+  const cuerpo = fuente.slice(desde, fuente.indexOf('\n}\n', desde));
+  assert.match(cuerpo, /async function cargar\(anio, mes, dia = null\)/);
+  assert.equal((cuerpo.match(/estado\.elegido = dia \?\? diaInicial\(anio, mes, hoy, estado\.porDia\)/g) ?? []).length, 2, 'al cambiar de mes queda elegido ese día, no el inicial');
+  assert.match(cuerpo, /function irAlDia\(fecha\) \{[\s\S]*?if \(anio === estado\.anio && mes === estado\.mes\) \{\s*estado\.elegido = fecha;\s*pintar\(\);\s*return;\s*\}\s*cargar\(anio, mes, fecha\);/);
+  assert.match(cuerpo, /closest\('\[data-cinta-dia\]'\);\s*if \(enlace\) irAlDia\(enlace\.dataset\.cintaDia\)/);
+  assert.doesNotMatch(cuerpo.slice(cuerpo.indexOf('irAlDia(enlace')), /preventDefault/, 'el link baja solo, con o sin JS');
+  // Área táctil: toda la altura de la fila, ≥ --tap.
+  assert.match(readFileSync('public/css/publico.css', 'utf8'), /\.portal-cinta-fila a\{[^}]*min-height:var\(--tap\)/);
 });
 
 test('sin fechas la cinta no se muestra: no devuelve nada y la sección queda oculta', () => {

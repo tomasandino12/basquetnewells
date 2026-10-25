@@ -566,16 +566,19 @@ html:not(.js-anim) .portal-cinta-banda{overflow-x:auto}
 .portal-cinta-pista{display:flex;width:max-content;padding-inline:2rem}
 .portal-cinta-fila{display:flex;align-items:center;list-style:none;margin:0;padding:0}
 html:not(.js-anim) .portal-cinta-fila[aria-hidden],html:not(.js-anim) .portal-cinta-fila li[aria-hidden]{display:none}
-.portal-cinta-fila li{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) 0 var(--sp-3) var(--sp-6);white-space:nowrap}
-.portal-cinta-fila li > i{display:grid}
+.portal-cinta-fila li{display:flex;align-items:center;gap:var(--sp-3);padding:0 0 0 var(--sp-6);white-space:nowrap}
+/* Cada fecha es un link al calendario: el área de toque es toda la altura de la fila (≥ --tap). */
+.portal-cinta-fila a{display:flex;align-items:center;gap:var(--sp-3);min-height:var(--tap);padding:var(--sp-3) 0;color:inherit;text-decoration:none}
+@media (hover:hover){.portal-cinta-fila a:hover span{text-decoration:underline;text-underline-offset:.2em}}
+.portal-cinta-fila a > i{display:grid}
 .portal-cinta-fila svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .portal-cinta-fila b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:var(--fs-230);line-height:1}
 .portal-cinta-fila span{font-family:var(--ff-titulo);font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:var(--fs-230);line-height:1}
 .portal-cinta-fila em{width:.375rem;height:.375rem;margin-left:var(--sp-3);background:var(--gris-osc);transform:rotate(45deg)}
-.portal-cinta-fila .tipo-partido > i,.portal-cinta-fila .tipo-partido b{color:var(--agenda-partido)}
-.portal-cinta-fila .tipo-evento > i,.portal-cinta-fila .tipo-evento b{color:var(--agenda-evento)}
-.portal-cinta-fila .tipo-charla > i,.portal-cinta-fila .tipo-charla b{color:var(--agenda-charla)}
-.portal-cinta-fila .tipo-entrenamiento > i,.portal-cinta-fila .tipo-entrenamiento b{color:var(--agenda-entrenamiento)}
+.portal-cinta-fila .tipo-partido i,.portal-cinta-fila .tipo-partido b{color:var(--agenda-partido)}
+.portal-cinta-fila .tipo-evento i,.portal-cinta-fila .tipo-evento b{color:var(--agenda-evento)}
+.portal-cinta-fila .tipo-charla i,.portal-cinta-fila .tipo-charla b{color:var(--agenda-charla)}
+.portal-cinta-fila .tipo-entrenamiento i,.portal-cinta-fila .tipo-entrenamiento b{color:var(--agenda-entrenamiento)}
 .js-anim .portal-cinta-pista.anda{transform:translateX(-50%);animation:marcha var(--dur-cinta) linear infinite}
 @keyframes marcha{from{transform:translateX(0)}}
 .portal-cinta.pausada .portal-cinta-pista{animation-play-state:paused}

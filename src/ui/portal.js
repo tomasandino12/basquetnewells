@@ -467,8 +467,10 @@ const SEGUNDOS_POR_ITEM = 7;
  * fila hasta tener ITEMS_POR_MITAD ítems (una sola fecha, repetida, llena el
  * ancho) y la pista son dos mitades idénticas, así arrancar de nuevo con
  * translateX(-50%) no se nota. Sólo la primera aparición de cada fecha es
- * accesible: las repeticiones y la mitad copia van aria-hidden. Trae un botón
- * para pausarla. Con movimiento reducido el CSS la deja quieta y se desliza a
+ * accesible: las repeticiones y la mitad copia van aria-hidden (y sus links,
+ * con tabindex -1). Cada fecha es un link a #calendario (sin JS, baja igual);
+ * iniciarCalendario además lo deja en el mes y el día de esa fecha. Trae un
+ * botón para pausarla. Con movimiento reducido el CSS la deja quieta y se desliza a
  * mano (ahí se ven sólo las fechas, sin repeticiones).
  */
 export function htmlCinta(proximos) {
@@ -476,7 +478,8 @@ export function htmlCinta(proximos) {
   const items = Array.from({ length: Math.ceil(ITEMS_POR_MITAD / proximos.length) }, () => proximos).flat();
   const fila = (copia) => html`<ul class="portal-cinta-fila"${copia && html` aria-hidden="true"`}>${items.map(({ fecha, evento }, i) => {
     const f = partesDeFecha(fecha);
-    return html`<li class="tipo-${evento.tipo}"${i >= proximos.length && html` aria-hidden="true"`}><i>${ICONO_TIPO[evento.tipo]}</i><b>${f.semana} ${f.dia} ${f.mes}</b><span>${evento.titulo}</span><em aria-hidden="true"></em></li>`;
+    const repetido = copia || i >= proximos.length;
+    return html`<li class="tipo-${evento.tipo}"${i >= proximos.length && html` aria-hidden="true"`}><a href="#calendario" data-cinta-dia="${fecha}"${repetido && html` tabindex="-1"`}><i>${ICONO_TIPO[evento.tipo]}</i><b>${f.semana} ${f.dia} ${f.mes}</b><span>${evento.titulo}</span></a><em aria-hidden="true"></em></li>`;
   })}</ul>`;
   return html`<div class="portal-cinta-banda">
       <div class="portal-cinta-pista anda" style="--dur-cinta:${items.length * SEGUNDOS_POR_ITEM}s">${fila(false)}${fila(true)}</div>
@@ -585,20 +588,33 @@ function iniciarCalendario(calendarios, alMostrarProximo) {
     return cache.get(clave);
   }
 
-  async function cargar(anio, mes) {
+  /** `dia`: el día que queda elegido (si no, el inicial del mes). */
+  async function cargar(anio, mes, dia = null) {
     const clave = `${anio}-${mes}`;
     Object.assign(estado, { anio, mes, cargando: !cache.has(clave) });
     if (!cache.has(clave)) {
       estado.porDia = new Map();
-      estado.elegido = diaInicial(anio, mes, hoy, estado.porDia);
+      estado.elegido = dia ?? diaInicial(anio, mes, hoy, estado.porDia);
       pintar();
       await traer(anio, mes);
       // Si mientras tanto la persona pasó a otro mes, este resultado queda guardado y no se pinta.
       if (estado.anio !== anio || estado.mes !== mes) return;
     }
     Object.assign(estado, cache.get(clave), { cargando: false });
-    estado.elegido = diaInicial(anio, mes, hoy, estado.porDia);
+    estado.elegido = dia ?? diaInicial(anio, mes, hoy, estado.porDia);
     pintar();
+  }
+
+  /** Deja el calendario parado en el mes de `fecha` y con ese día elegido (lo usan las fechas de la cinta). */
+  function irAlDia(fecha) {
+    const anio = Number(fecha.slice(0, 4));
+    const mes = Number(fecha.slice(5, 7));
+    if (anio === estado.anio && mes === estado.mes) {
+      estado.elegido = fecha;
+      pintar();
+      return;
+    }
+    cargar(anio, mes, fecha);
   }
 
   /**
@@ -629,6 +645,11 @@ function iniciarCalendario(calendarios, alMostrarProximo) {
     if (!ics) return;
     const evento = [...cache.values()].flatMap((c) => [...c.porDia.values()].flat()).find((e) => claveEvento(e) === ics.dataset.ics);
     if (evento) bajarIcs(evento);
+  });
+  // Cada fecha de la cinta es un link a #calendario: el navegador baja, esto elige el día.
+  document.addEventListener('click', (ev) => {
+    const enlace = ev.target.closest('[data-cinta-dia]');
+    if (enlace) irAlDia(enlace.dataset.cintaDia);
   });
   $('calendario').addEventListener('click', (ev) => {
     const dia = ev.target.closest('[data-dia]');
