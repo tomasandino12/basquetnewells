@@ -81,7 +81,7 @@ test('"Dónde se entrena": los tres lugares, la dirección y el mismo "Cómo lle
 test('"Cómo sumarte": el formulario y el WhatsApp del club con el texto prellenado', () => {
   const sumarte = sinEntidades(seccion('info-sumarte'));
   assert.match(sumarte, /<h2 id="t-info-sumarte">Cómo sumarte<\/h2>/);
-  assert.match(sumarte, /href="\/consultas">Quiero que juegue</);
+  assert.match(sumarte, /href="\/consultas">Anotarse para probar</);
   const url = new URL(sumarte.match(/href="(https:\/\/wa\.me\/[^"]+)"/)[1]);
   assert.equal(`${url.origin}${url.pathname}`, PORTAL.contacto);
   assert.equal(url.searchParams.get('text'), "Hola! Quiero consultar por el básquet de Newell's");

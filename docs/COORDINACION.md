@@ -243,9 +243,9 @@ tiene estas opciones:
 - **Inscripción (botón de arriba)** (desde 0062): **así se abre y se cierra
   la inscripción**. Con el formulario marcado y visible, el botón principal de
   arriba (rojo, sobre la foto) es "Inscribirme"; oculto o sin marcar, ese lugar
-  es de "Quiero que juegue" (el formulario "Quiero jugar en Newell's").
-- **Quiero jugar en Newell's (consultas)**: es el botón principal de arriba ("Quiero
-  que juegue") mientras la inscripción está cerrada (sin formulario activo, se ve
+  es de "Anotarse para probar" (el formulario "Quiero jugar en Newell's").
+- **Quiero jugar en Newell's (consultas)**: es el botón principal de arriba ("Anotarse
+  para probar") mientras la inscripción está cerrada (sin formulario activo, se ve
   apagado). La barra fija de abajo repite el mismo botón al scrollear. Es el
   formulario al que lleva el QR impreso (ver abajo).
 - **Comprobante de pago** (desde 0062): el botón "Pagar" (siempre activo) abre una

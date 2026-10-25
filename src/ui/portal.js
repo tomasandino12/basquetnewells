@@ -101,7 +101,7 @@ export function htmlAcciones({ inscripcion = null, consultas = null, temporada =
   const ins = url(inscripcion);
   const primera = ins
     ? accion({ clase: 'principal', icono: 'personaMas', titulo: 'Inscribirme', url: ins, detalle: `Inscripción${temporada ? ` ${temporada}` : ''} abierta` })
-    : accion({ clase: 'principal', icono: 'personaMas', titulo: 'Quiero que juegue', url: url(consultas), cargando,
+    : accion({ clase: 'principal', icono: 'personaMas', titulo: 'Anotarse para probar', url: url(consultas), cargando,
       detalle: 'Dejá tus datos y te avisamos', cerrado: 'Se habilita cuando abra el formulario' });
   return html`${primera}
     <button type="button" class="portal-accion pago" data-abrir-pago aria-haspopup="dialog">
@@ -119,7 +119,7 @@ export function htmlDock({ inscripcion = null, consultas = null } = {}) {
   const url = (f) => (f ? enlaceFormulario(f.enlace) : null);
   const ins = url(inscripcion);
   const principal = ins ?? url(consultas);
-  return html`${principal && html`<a class="portal-dock-btn principal" href="${principal}" target="_blank" rel="noopener">${ICONO.personaMas}${ins ? 'Inscribirme' : 'Quiero que juegue'}</a>`}
+  return html`${principal && html`<a class="portal-dock-btn principal" href="${principal}" target="_blank" rel="noopener">${ICONO.personaMas}${ins ? 'Inscribirme' : 'Anotarse para probar'}</a>`}
     <button type="button" class="portal-dock-btn pago" data-abrir-pago aria-haspopup="dialog">${ICONO.billetera}Pagar</button>`;
 }
 
@@ -322,7 +322,7 @@ export function htmlCategoriaDelAnio(anio, categorias) {
 /**
  * Las preguntas frecuentes, en acordeón: lo que un padre pregunta antes de
  * escribirle al coordinador. Las respuestas cambian con lo que hay abierto
- * (inscripción, "Quiero jugar") para no mandar a un botón apagado. Al final,
+ * (inscripción, "Anotarse para probar") para no mandar a un botón apagado. Al final,
  * la ÚNICA vez que aparece el WhatsApp del coordinador en la página.
  */
 export function htmlAyuda({ inscripcionAbierta = false, consultasAbierto = false, temporada = null, alias = null, sede = null, contacto = null } = {}) {
@@ -333,7 +333,7 @@ export function htmlAyuda({ inscripcionAbierta = false, consultasAbierto = false
   const comoInscribir = inscripcionAbierta
     ? html`<p>Tocá <b>Inscribirme</b>, arriba de todo. Se abre un formulario de Google: completalo desde el celular. Tené a mano el DNI del chico o la chica y el tuyo.</p>`
     : html`<p>La inscripción${temporada ? html` ${temporada}` : ''} todavía no abrió. ${consultasAbierto
-      ? html`Mientras tanto, tocá <b>Quiero que juegue</b>, arriba de todo: dejás tus datos y te avisamos para que venga a probar.`
+      ? html`Mientras tanto, tocá <b>Anotarse para probar</b>, arriba de todo: dejás tus datos y te avisamos para que venga a probar.`
       : html`Cuando abra, el botón se habilita arriba de todo.`}</p>`;
   const alCoordinador = coordinador ? 'escribile al coordinador (el botón de acá abajo)' : 'escribile al coordinador';
   // Las preguntas van en la voz del padre y con sujeto: así las busca con la vista.

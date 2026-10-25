@@ -17,7 +17,7 @@ import { enlaceFormulario } from './portal.js';
  * formulario sin destino es "común" y va en la lista.
  */
 export const DESTINOS = Object.freeze([
-  Object.freeze({ clave: 'consultas', rotulo: 'Quiero que juegue (botón de arriba con la inscripción cerrada; QR)', chip: 'Quiero jugar' }),
+  Object.freeze({ clave: 'consultas', rotulo: 'Anotarse para probar (botón de arriba con la inscripción cerrada; QR)', chip: 'Quiero jugar' }),
   Object.freeze({ clave: 'colaboradores', rotulo: 'Sumate al básquet de Newell\'s (empresas y quien quiere dar una mano)', chip: 'Colaborar' }),
   // 0062: los dos botones de arriba del portal (el comprobante, dentro de la hoja de "Pagar").
   Object.freeze({ clave: 'inscripcion', rotulo: 'Inscripción (botón de arriba: Inscribirme)', chip: 'Inscripción' }),

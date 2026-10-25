@@ -155,15 +155,15 @@ test('el hero está escrito a mano en el HTML: foto en <picture>, título en tre
 test('inscripción abierta: "Inscribirme" como botón principal, y "Pagar", que no es un enlace', () => {
   const out = htmlAcciones({ inscripcion: FORM('x'), consultas: FORM('y', 'https://forms.gle/Jug1'), temporada: 2027 }).toString();
   assert.match(out, /<a class="portal-accion principal" href="https:\/\/forms\.gle\/Abc1" target="_blank" rel="noopener">[\s\S]*Inscribirme[\s\S]*Inscripción 2027 abierta/);
-  assert.doesNotMatch(out, /Jug1/, 'con la inscripción abierta, "Quiero que juegue" no va');
+  assert.doesNotMatch(out, /Jug1/, 'con la inscripción abierta, "Anotarse para probar" no va');
   assert.equal(acciones(out).length, 2, 'dos botones, ni uno más');
   assert.match(out, /<button type="button" class="portal-accion pago" data-abrir-pago[^>]*>[\s\S]*<b>Pagar<\/b><small>Alias y comprobante<\/small>/);
 });
 
-test('inscripción cerrada: el principal es "Quiero que juegue" y lleva al formulario para probarse', () => {
+test('inscripción cerrada: el principal es "Anotarse para probar" y lleva al formulario para probarse', () => {
   for (const inscripcion of [null, MALO]) {
     const out = htmlAcciones({ inscripcion, consultas: FORM('Para chicos <x>', 'https://forms.gle/Jug1') }).toString();
-    assert.match(out, /<a class="portal-accion principal" href="https:\/\/forms\.gle\/Jug1"[\s\S]*Quiero que juegue/);
+    assert.match(out, /<a class="portal-accion principal" href="https:\/\/forms\.gle\/Jug1"[\s\S]*Anotarse para probar/);
     assert.match(out, /Dejá tus datos y te avisamos/);
     assert.doesNotMatch(out, /Para chicos/, 'la línea del panel no va en el botón');
   }
@@ -190,7 +190,7 @@ test('la barra fija repite el principal del hero (mismo texto y destino) y "Paga
   assert.match(abierta, /<a class="portal-dock-btn principal" href="https:\/\/forms\.gle\/Abc1" target="_blank" rel="noopener"><svg[\s\S]*?<\/svg>Inscribirme<\/a>/);
   assert.doesNotMatch(abierta, /Jug1/);
   const cerrada = htmlDock({ inscripcion: MALO, consultas: FORM('y', 'https://forms.gle/Jug1') }).toString();
-  assert.match(cerrada, /href="https:\/\/forms\.gle\/Jug1"[^>]*><svg[\s\S]*?<\/svg>Quiero que juegue<\/a>/);
+  assert.match(cerrada, /href="https:\/\/forms\.gle\/Jug1"[^>]*><svg[\s\S]*?<\/svg>Anotarse para probar<\/a>/);
   for (const sin of [htmlDock({}), htmlDock({ consultas: MALO })]) {
     assert.doesNotMatch(sin.toString(), /<a |evil/);
     assert.match(sin.toString(), /<button type="button" class="portal-dock-btn pago" data-abrir-pago/);
@@ -806,7 +806,7 @@ test('ayuda: "me equivoqué en un dato" es volver a mandarlo (el Tablero toma la
 
 test('ayuda: "¿cómo inscribo?" no manda a un botón apagado', () => {
   assert.match(htmlAyuda({ inscripcionAbierta: true }).toString(), /Tocá <b>Inscribirme<\/b>/);
-  assert.match(htmlAyuda({ consultasAbierto: true, temporada: 2027 }).toString(), /La inscripción 2027 todavía no abrió\. Mientras tanto, tocá <b>Quiero que juegue<\/b>/);
+  assert.match(htmlAyuda({ consultasAbierto: true, temporada: 2027 }).toString(), /La inscripción 2027 todavía no abrió\. Mientras tanto, tocá <b>Anotarse para probar<\/b>/);
   assert.match(htmlAyuda({}).toString(), /Cuando abra, el botón se habilita arriba de todo/);
   assert.doesNotMatch(htmlAyuda({ contacto: 'javascript:alert(1)' }).toString(), /javascript|No encontraste/);
 });
