@@ -363,6 +363,19 @@ test('día inicial: hoy si es del mes; si no, el primero con algo, o el 1', () =
   assert.equal(diaInicial(2026, 11, '2026-10-20', porDia), '2026-11-01');
 });
 
+test('el portal se declara oscuro para que el navegador no le cambie los colores; la app, que es clara, no', () => {
+  const cabeza = pagina.slice(0, pagina.indexOf('</head>'));
+  assert.match(cabeza, /<meta name="color-scheme" content="dark">/);
+  const app = readFileSync('public/index.html', 'utf8');
+  assert.doesNotMatch(app, /name="color-scheme"/, 'la app es clara: declararla oscura rompería sus colores');
+  const css = readFileSync('public/css/publico.css', 'utf8');
+  assert.match(css, /:root:has\(\.portal-d\),\.portal-d\{color-scheme:dark\}/);
+  assert.doesNotMatch(css, /\.publico\{[^}]*color-scheme/, 'sólo el portal, no todo .publico');
+  for (const otro of ['tokens', 'base', 'layout', 'componentes']) {
+    assert.doesNotMatch(readFileSync(`public/css/${otro}.css`, 'utf8'), /(^|[^-])color-scheme\s*:\s*dark/, `${otro}.css no declara oscura a la app`);
+  }
+});
+
 // ---- El pie: escudo, links legales y firma ----
 
 test('el pie lleva escudo y links legales; la firma arranca oculta y sale de PORTAL.creador', () => {

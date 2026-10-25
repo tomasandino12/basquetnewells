@@ -203,6 +203,11 @@
    lea como un formulario. El LCP es la foto del hero (fetchpriority alto), no su
    texto: por eso el hero sí anima su entrada. Una columna en el celular; lo de compu vive en
    layout.css. Cada sección sin datos queda con [hidden] (lo pone src/ui/portal.js). */
+/* Lo mismo que el <meta name="color-scheme"> de portal.html, por si el navegador
+   mira el CSS: el portal ya es oscuro y el oscurecimiento automático (Samsung
+   Internet, Chromium) no tiene que recolorearlo. Va sobre la raíz de ESTA página
+   y no sobre .publico a secas, que también es el shell de la app. */
+:root:has(.portal-d),.portal-d{color-scheme:dark}
 .portal-d::before{height:22rem;background:radial-gradient(ellipse 90% 90% at 85% 0,var(--club),transparent);opacity:.38}
 .portal{width:100%}
 /* El hero va a todo el ancho; lo demás, en una columna centrada. El lugar de la barra fija lo deja el pie. */
