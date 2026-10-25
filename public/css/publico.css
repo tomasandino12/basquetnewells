@@ -210,7 +210,7 @@
 .portal [hidden]{display:none}
 
 /* Encabezado: flota sobre la foto del hero. Marca a la izquierda y, a la
-   derecha, un link de texto discreto para profes y jugadores. La ayuda ya no
+   derecha, el botón de Semillero para profes y jugadores. La ayuda ya no
    está acá: se abre desde los atajos, el pie y los "¿Dudas?". */
 .portal-barra{position:absolute;inset:0 0 auto;z-index:5;display:flex;align-items:center;gap:var(--sp-2);max-width:64rem;margin-inline:auto;width:100%;padding:var(--sp-3) var(--sp-4)}
 .portal-barra img{width:2.25rem;height:2.25rem;flex:0 0 auto}
@@ -225,9 +225,12 @@
   font-size:var(--fs-135);font-weight:600;line-height:1.1;text-align:center;color:var(--sobre-oscuro);text-decoration:none;
   cursor:pointer;
 }
-.portal-sem-btn{list-style:none;white-space:nowrap;text-decoration:underline;text-decoration-color:var(--gris-osc);text-underline-offset:.3em;padding:0 var(--sp-2)}
+/* "Semillero": un botón con borde e ícono (no un link subrayado), sobre un velo para que se lea encima de la foto. */
+.portal-sem-btn{list-style:none;white-space:nowrap;gap:var(--sp-2);background:var(--velo-pub-medio);border:1px solid var(--gris-osc);border-radius:var(--r-btn)}
 .portal-sem-btn::-webkit-details-marker{display:none}
-.portal-sem[open] .portal-sem-btn{text-decoration-color:var(--primario)}
+.portal-sem-btn svg{width:1.125rem;height:1.125rem;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.portal-sem[open] .portal-sem-btn{border-color:var(--primario)}
+@media (hover:hover){.portal-sem-btn:hover{background:var(--toque-osc)}}
 .portal-sem-panel{
   position:absolute;right:var(--sp-4);top:calc(100% - var(--sp-1));width:min(22rem,calc(100vw - 2rem));
   padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);

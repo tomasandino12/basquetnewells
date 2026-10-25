@@ -42,11 +42,26 @@ test('el encabezado sólo lleva a Semillero (con cómo instalarla); la Ayuda se 
   const barra = pagina.match(/<header class="portal-barra">[\s\S]*?<\/header>/)[0];
   assert.doesNotMatch(barra, /#ayuda/, 'la Ayuda ya no está en el encabezado');
   const sem = barra.match(/<details class="portal-sem" id="semillero">[\s\S]*?<\/details>/)[0];
-  assert.match(sem, /<summary[^>]*>Soy profe o jugador<\/summary>/);
+  assert.match(sem, /<summary[^>]*>[\s\S]*Semillero<\/summary>/);
   assert.match(sem, /<a class="btn" href="\/app">Entrar a Semillero<\/a>/);
   assert.match(sem, /Instalar app/);
   assert.match(sem, /Agregar a inicio/);
   assert.match(portal, /\{ clave: 'ayuda', texto: 'Ayuda', href: '#ayuda' \}/, 'sigue habiendo un atajo a la Ayuda');
+});
+
+test('el acceso a Semillero es un botón visible: con borde, ícono y el nombre, no un link subrayado; el panel no cambia', () => {
+  const sem = pagina.match(/<details class="portal-sem" id="semillero">[\s\S]*?<\/details>/)[0];
+  const resumen = sem.match(/<summary class="portal-barra-btn portal-sem-btn">([\s\S]*?)<\/summary>/)?.[1] ?? '';
+  assert.match(resumen, /^<svg viewBox="0 0 24 24" aria-hidden="true">[\s\S]*<\/svg>Semillero$/);
+  assert.doesNotMatch(sem, /Soy profe o jugador/);
+  const css = readFileSync('public/css/publico.css', 'utf8');
+  const boton = css.match(/\.portal-sem-btn\{[^}]*\}/)[0];
+  assert.match(boton, /border:1px solid var\(--gris-osc\)/);
+  assert.doesNotMatch(boton, /underline/);
+  assert.match(css, /\.portal-barra-btn\{[^}]*min-height:var\(--tap\)/);
+  // El panel de siempre: Entrar y cómo instalarla.
+  assert.match(sem, /<a class="btn" href="\/app">Entrar a Semillero<\/a>/);
+  assert.match(sem, /Instalar app[\s\S]*Agregar a inicio/);
 });
 
 test('Ayuda no ocupa lugar en la página: es una hoja (<dialog>) con la X, que abre todo link a #ayuda', () => {
