@@ -56,8 +56,9 @@ test('el destino siempre es /app: nada que venga en la URL cambia el sitio', () 
 test('el portal carga el reenvío antes que el resto de sus scripts', () => {
   const pagina = readFileSync('public/portal.html', 'utf8');
   const scripts = [...pagina.matchAll(/<script[^>]*\bsrc="([^"]+)"/g)].map((m) => m[1]);
-  // anim.js sólo prende una clase de <html>: no pide nada ni redirige.
-  assert.deepEqual(scripts, ['/public/config.js', '/public/js/anim.js', '/src/ui/portalEntrada.js', '/src/ui/portalArranque.js']);
+  // anim.js sólo prende una clase de <html>: no pide nada ni redirige. analitica.js
+  // (Google Analytics) va con defer: corre recién con el documento parseado y sólo mide clics.
+  assert.deepEqual(scripts, ['/public/config.js', '/public/js/anim.js', '/public/js/analitica.js', '/src/ui/portalEntrada.js', '/src/ui/portalArranque.js']);
 });
 
 test('portalEntrada.js sólo reenvía: sin red y sin importar repos', () => {

@@ -16,6 +16,8 @@ import { fileURLToPath } from 'node:url';
 const raiz = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 // El parser de HTML normaliza CRLF a LF antes de calcular el hash.
 const html = readFileSync(path.join(raiz, 'public', 'index.html'), 'utf8').replace(/\r\n/g, '\n');
+const HOST_GTAG = 'https://www.googletagmanager.com';
+const HOSTS_ANALYTICS = ['https://www.google-analytics.com', 'https://analytics.google.com', 'https://region1.google-analytics.com', HOST_GTAG];
 const vercel = JSON.parse(readFileSync(path.join(raiz, 'vercel.json'), 'utf8'));
 
 function csp() {
@@ -44,7 +46,8 @@ test('script-src no abre la puerta a inline, eval ni CDNs', () => {
   const s = directiva('script-src');
   assert.ok(s, 'falta script-src');
   for (const prohibido of ["'unsafe-inline'", "'unsafe-eval'", 'https:', '*']) assert.ok(!s.includes(prohibido), prohibido);
-  assert.deepEqual(s.filter((v) => !v.startsWith("'sha256-")), ["'self'"]);
+  // Único host externo: el gtag.js de Google Analytics del portal (public/js/analitica.js).
+  assert.deepEqual(s.filter((v) => !v.startsWith("'sha256-")), ["'self'", HOST_GTAG]);
 });
 
 test('el import map apunta a archivos que existen en public/vendor', () => {
@@ -55,13 +58,14 @@ test('el import map apunta a archivos que existen en public/vendor', () => {
   }
 });
 
-// El calendario del portal le pide los eventos a la API de Google Calendar.
-// Además de Supabase, es el único host de connect-src.
-test('connect-src: Supabase y la API de Google Calendar, nada más', async () => {
+// El calendario del portal le pide los eventos a la API de Google Calendar, y
+// Google Analytics manda sus mediciones a sus propios hosts. Además de
+// Supabase, no hay otros hosts en connect-src.
+test('connect-src: Supabase, la API de Google Calendar y Google Analytics, nada más', async () => {
   const { HOST_AGENDA } = await import('../src/data/agenda.js');
   const url = readFileSync(path.join(raiz, 'public', 'config.js'), 'utf8').match(/SUPABASE_URL = '([^']+)'/)[1];
   const otros = directiva('connect-src').filter((h) => h !== "'self'" && h !== url && h !== url.replace('https://', 'wss://'));
-  assert.deepEqual(otros, [`https://${HOST_AGENDA}`]);
+  assert.deepEqual(otros, [`https://${HOST_AGENDA}`, ...HOSTS_ANALYTICS]);
 });
 
 test('connect-src llega al proyecto de Supabase que usa la app', () => {
@@ -137,4 +141,29 @@ test('el import map de /consultas tiene su hash en script-src y no hay otros scr
   assert.ok(directiva('script-src')?.includes(hash), `script-src no tiene ${hash} de consultas.html`);
   const inline = [...pagina.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>/g)].filter((x) => !/type="importmap"/.test(x[1]));
   assert.deepEqual(inline.map((x) => x[0]), []);
+});
+
+// Google Analytics 4 va SÓLO en el portal: la app (menores) y las páginas
+// internas no cargan analitica.js. Tiene que ser un archivo externo y diferido
+// (la CSP no deja inline, y así no pesa en el LCP).
+test('Google Analytics se carga sólo en el portal, desde un script externo diferido', () => {
+  const portal = readFileSync(path.join(raiz, 'public', 'portal.html'), 'utf8');
+  assert.match(portal, /<script defer src="\/public\/js\/analitica\.js"><\/script>/);
+  for (const otra of ['index.html', 'consultas.html', 'legal/privacidad.html', 'legal/terminos.html']) {
+    const contenido = readFileSync(path.join(raiz, 'public', otra), 'utf8');
+    assert.doesNotMatch(contenido, /analitica\.js|googletagmanager|gtag/, `${otra} no puede cargar Analytics`);
+  }
+  const js = readFileSync(path.join(raiz, 'public', 'js', 'analitica.js'), 'utf8');
+  assert.match(js, /G-5DDKGTFXTC/);
+  for (const h of HOSTS_ANALYTICS) assert.ok(csp().includes(h), `la CSP no habilita ${h}`);
+});
+
+test('analitica.js reporta WhatsApp, inscripción, colaborar e Instagram con link_url y section', () => {
+  const portal = readFileSync(path.join(raiz, 'public', 'portal.html'), 'utf8');
+  const js = readFileSync(path.join(raiz, 'public', 'js', 'analitica.js'), 'utf8');
+  for (const e of ['click_whatsapp', 'click_instagram']) assert.ok(js.includes(`'${e}'`), e);
+  assert.match(js, /link_url: a\.href, section: seccionDe\(a\)/);
+  // Inscripción (hero y barra fija) y colaborar (recaudación y sumate) se marcan en portal.html.
+  assert.equal([...portal.matchAll(/data-evento="click_inscripcion"/g)].length, 2);
+  assert.equal([...portal.matchAll(/data-evento="click_colaborar"/g)].length, 2);
 });

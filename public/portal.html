@@ -108,6 +108,8 @@
 <script src="/public/config.js"></script>
 <!-- Prende .js-anim antes del primer pintado (ver el comentario del archivo). -->
 <script src="/public/js/anim.js"></script>
+<!-- Google Analytics 4: sólo el portal. defer, y gtag.js se pide recién al terminar de cargar (no pesa en el LCP). -->
+<script defer src="/public/js/analitica.js"></script>
 </head>
 <body>
 
@@ -181,7 +183,7 @@
             <span class="portal-sponsor-centro" aria-hidden="true">Sumate</span>
           </a>
         </div>
-        <div class="portal-acciones entra" style="--i:5" id="portal-heroe"></div>
+        <div class="portal-acciones entra" style="--i:5" id="portal-heroe" data-evento="click_inscripcion"></div>
       </div>
     </section>
 
@@ -226,7 +228,7 @@
 
     <!-- Franja dorada sin foto, a todo el ancho (como en v0): aviso de los
          eventos de recaudación (destino recaudacion, 0063). -->
-    <section class="portal-rec rise" id="recaudacion" aria-labelledby="t-recaudacion">
+    <section class="portal-rec rise" id="recaudacion" data-evento="click_colaborar" aria-labelledby="t-recaudacion">
       <div class="portal-rec-cuerpo" id="portal-recaudacion"><h2 id="t-recaudacion">Enterate de los eventos de recaudación</h2></div>
     </section>
 
@@ -234,7 +236,7 @@
 
     <!-- Para una empresa que quiere asociarse o alguien que quiere dar una mano
          (destino colaboradores, 0061). Al lado, el afiche de sponsors del club. -->
-    <section class="portal-sec portal-colaborar rise" id="colaborar" aria-labelledby="t-colaborar">
+    <section class="portal-sec portal-colaborar rise" id="colaborar" data-evento="click_colaborar" aria-labelledby="t-colaborar">
       <div class="portal-st">Colaborá con el club</div>
       <h2 id="t-colaborar">Sumate al básquet de Newell&#39;s</h2>
       <div class="portal-colaborar-cuerpo" id="portal-colaborar"></div>
@@ -337,7 +339,7 @@
        esos salen de pantalla (src/ui/animaciones.js, iniciarDock). Oculta es
        `inert`: ni el teclado ni el lector de pantalla llegan a ella. -->
   <div class="portal-dock" id="portal-dock" role="region" aria-label="Accesos rápidos" inert>
-    <div class="portal-dock-acc" id="portal-dock-acc"></div>
+    <div class="portal-dock-acc" id="portal-dock-acc" data-evento="click_inscripcion"></div>
   </div>
 
   <!-- Pagar: una hoja (mobile: sube desde abajo; compu: diálogo).
