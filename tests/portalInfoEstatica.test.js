@@ -110,3 +110,13 @@ test('JSON-LD: SportsClub y WebSite, sin coordenadas ni horarios, con el contact
   assert.equal(sitio.url, club.url);
   for (const prohibida of ['geo', 'openingHours', 'openingHoursSpecification']) assert.ok(!(prohibida in club), `${prohibida}: no se publica nada que no esté verificado`);
 });
+
+test('la foto del hero (el LCP) se precarga: las mismas dos fuentes del <picture>, sin lazy', () => {
+  const heroe = pagina.match(/<picture class="portal-heroe-foto">[\s\S]*?<\/picture>/)[0];
+  const movil = heroe.match(/<source media="[^"]*" srcset="([^"\s]+)"/)[1];
+  const compu = heroe.match(/<img src="([^"]+)"/)[1];
+  assert.ok(pagina.includes(`<link rel="preload" as="image" href="${movil}" media="(max-width:47.99rem)" fetchpriority="high">`), 'falta el preload del celular');
+  assert.ok(pagina.includes(`<link rel="preload" as="image" href="${compu}" media="(min-width:48rem)" fetchpriority="high">`), 'falta el preload de compu');
+  assert.doesNotMatch(heroe, /loading="lazy"/);
+  assert.match(heroe, /<img [^>]*width="\d+" height="\d+"[^>]*fetchpriority="high"/);
+});
