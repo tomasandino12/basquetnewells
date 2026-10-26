@@ -6,6 +6,10 @@
     { "source": "/consultas", "destination": "/public/consultas.html" },
     { "source": "/robots.txt", "destination": "/public/robots.txt" },
     { "source": "/sitemap.xml", "destination": "/public/sitemap.xml" },
+    { "source": "/favicon.ico", "destination": "/public/favicon.ico" },
+    { "source": "/favicon-48.png", "destination": "/public/favicon-48.png" },
+    { "source": "/favicon-192.png", "destination": "/public/favicon-192.png" },
+    { "source": "/apple-touch-icon.png", "destination": "/public/apple-touch-icon.png" },
     { "source": "/privacidad", "destination": "/public/legal/privacidad.html" },
     { "source": "/terminos", "destination": "/public/legal/terminos.html" }
   ],

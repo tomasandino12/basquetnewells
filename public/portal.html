@@ -4,15 +4,19 @@
 <meta charset="UTF-8">
 <!-- Se sirve con Cache-Control: no-store (vercel.json), igual que la app: guardado,
      el navegador lo revalida y el 304 no trae la CSP vigente. -->
-<link rel="icon" href="/public/escudo.png" type="image/png">
+<!-- Íconos en la raíz del dominio (vercel.json los reescribe desde public/): Google busca /favicon.ico
+     y quiere un múltiplo de 48 px; el apple-touch-icon va sobre fondo liso porque iOS rellena de negro lo transparente. -->
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0D0D10">
 <!-- El portal ya es oscuro: lo declaramos para que el modo oscuro automático de
      Samsung Internet y de Chromium no lo recolore (ponía "LA LEPRA" rosa, el
      sticker marrón y "Pagar" gris). Sólo acá: la app (index.html) es clara. -->
 <meta name="color-scheme" content="dark">
-<title>Básquet de Newell&#39;s en Rosario | Escuelita e inferiores 2027</title>
-<meta name="description" content="Básquet formativo de Newell's Old Boys en el Parque de la Independencia, Rosario. Categorías U9 a Primera, horarios e inscripción 2027. Sumate al club.">
+<title>Básquet de Newell&#39;s en Rosario | Inferiores 2027</title>
+<meta name="description" content="15 veces campeón de la Asociación Rosarina. Básquet de Newell's en el Parque de la Independencia: U9 a Primera, horarios e inscripción 2027.">
 <meta name="robots" content="index,follow">
 
 <!-- Dominio canónico único: basquetnewells.com.ar. Open Graph: el link se
@@ -24,16 +28,16 @@
 <meta property="og:site_name" content="Básquet Newell's">
 <meta property="og:locale" content="es_AR">
 <meta property="og:url" content="https://basquetnewells.com.ar/">
-<meta property="og:title" content="Básquet de Newell's en Rosario | Escuelita e inferiores 2027">
-<meta property="og:description" content="Básquet formativo de Newell's Old Boys en el Parque de la Independencia, Rosario. Categorías U9 a Primera, horarios e inscripción 2027. Sumate al club.">
+<meta property="og:title" content="Básquet de Newell's en Rosario | Inferiores 2027">
+<meta property="og:description" content="15 veces campeón de la Asociación Rosarina. Básquet de Newell's en el Parque de la Independencia: U9 a Primera, horarios e inscripción 2027.">
 <meta property="og:image" content="https://basquetnewells.com.ar/public/og-basquet-newells.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Escudo de Newell's Old Boys y el texto Básquet Newell's Rosario">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Básquet de Newell's en Rosario | Escuelita e inferiores 2027">
-<meta name="twitter:description" content="Básquet formativo de Newell's Old Boys en el Parque de la Independencia, Rosario. Categorías U9 a Primera, horarios e inscripción 2027. Sumate al club.">
+<meta name="twitter:title" content="Básquet de Newell's en Rosario | Inferiores 2027">
+<meta name="twitter:description" content="15 veces campeón de la Asociación Rosarina. Básquet de Newell's en el Parque de la Independencia: U9 a Primera, horarios e inscripción 2027.">
 <meta name="twitter:image" content="https://basquetnewells.com.ar/public/og-basquet-newells.png">
 <meta name="twitter:image:alt" content="Escudo de Newell's Old Boys y el texto Básquet Newell's Rosario">
 
@@ -273,9 +277,10 @@
          datos".) Sin nombres de chicos.
          ================================================================= -->
     <section class="portal-sec portal-info" id="info-categorias" aria-labelledby="t-info-categorias">
-      <div class="portal-st">Escuelita e inferiores</div>
+      <div class="portal-st">Inferiores</div>
       <h2 id="t-info-categorias">Categorías y horarios 2027</h2>
-      <p class="intro">El básquet formativo de Newell&#39;s Old Boys funciona en el Parque de la Independencia, en Rosario. Si buscás una escuelita de básquet o básquet infantil para tu hijo o hija, se entra por la U9, mixta, para chicos y chicas nacidos en 2018 y 2019; de ahí sigue el camino por las categorías hasta la Primera.</p>
+      <p class="intro">El básquet formativo de Newell&#39;s Old Boys funciona en el Parque de la Independencia, en Rosario. Si buscás básquet infantil para tu hijo o hija, las inferiores empiezan en la U9, mixta, para chicos y chicas nacidos en 2018 y 2019; de ahí sigue el camino por las categorías hasta la Primera.</p>
+      <p class="intro portal-info-palmares">15 veces campeón de la Asociación Rosarina de Básquetbol (1943 al 54, 77, 78 y 83).</p>
       <ul class="portal-info-cats">
         <li class="portal-info-cat"><h3>U9</h3><p>Mixto · nacidos 2018 y 2019</p>
           <ul><li>Mar 18 a 19 h · Estadio Cubierto</li><li>Jue 18 a 19 h · Playón Deportivo</li></ul></li>
