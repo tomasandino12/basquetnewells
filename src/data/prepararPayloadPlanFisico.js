@@ -1,6 +1,6 @@
 // Mismo criterio de normalización que usa el parser para buscar en la
 // biblioteca, y de la misma fuente: si cambia, cambia en los dos lados a la vez.
-import { clavearNombre } from '../parser/parserCabb.js';
+import { clavearNombre } from './claveNombre.js';
 // La misma lectura de la carga que muestra la pantalla de escalones: el número
 // pegado a "kg". Acá se usa para sembrarlo, no para sugerirlo.
 import { pesoSugeridoDeCarga } from './escalones.js';

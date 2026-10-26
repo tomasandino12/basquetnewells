@@ -13,7 +13,7 @@
  */
 
 import { LIMITE } from './limites.js';
-import { clavearNombre } from '../parser/parserCabb.js';
+import { clavearNombre } from './claveNombre.js';
 
 const AMBOS = ['jugador', 'equipo'];
 

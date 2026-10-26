@@ -1,4 +1,4 @@
-import { limpiarNombre, clavearNombre } from '../../parser/parserCabb.js';
+import { limpiarNombre, clavearNombre } from '../../data/claveNombre.js';
 import { obtenerJugadoresDelClub, altaJugadorManual, crearPertenencia } from '../../data/repositorio.js';
 import { obtenerClubActual, obtenerPlantelActivo } from '../sesion.js';
 import { escaparHtml, toast, esErrorDeRed } from '../nav.js';

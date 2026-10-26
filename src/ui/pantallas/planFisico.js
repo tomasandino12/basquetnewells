@@ -1,5 +1,5 @@
 import { parsearPlanFisico } from '../../parser/parserFisico.js';
-import { clavearNombre } from '../../parser/parserCabb.js';
+import { clavearNombre } from '../../data/claveNombre.js';
 import { calcularHashArchivo } from '../../data/mapearImportacion.js';
 import { obtenerEjerciciosFuerza, importarPlanFisico } from '../../data/repositorio.js';
 import {

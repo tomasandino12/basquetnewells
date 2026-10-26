@@ -1,6 +1,6 @@
 // Mismo criterio de normalización que el import y el matcheo de videos, y de la
 // misma fuente: una línea y su escalón coinciden sólo por nombre exacto.
-import { clavearNombre } from '../parser/parserCabb.js';
+import { clavearNombre } from './claveNombre.js';
 
 /*
  * Lógica pura de la pantalla FÍSICO: el plan que se muestra y los escalones de

@@ -2,7 +2,7 @@
  * Datos de emergencia del chico: lógica pura, sin red ni DOM.
  * Spec: docs/superpowers/specs/2026-10-19-datos-conectados-design.md §3.
  */
-import { clavearNombre } from '../parser/parserCabb.js';
+import { clavearNombre } from './claveNombre.js';
 import { LIMITE } from './limites.js';
 
 // Las casillas de "¿Ha sufrido alguna de estas afecciones?" del formulario

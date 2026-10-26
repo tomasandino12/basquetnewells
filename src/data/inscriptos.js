@@ -3,7 +3,7 @@
  * Semillero" a lo que el profe revisa y confirma. Sin red ni DOM.
  * Spec: docs/superpowers/specs/2026-10-18-cuentas-familia-design.md §3.
  */
-import { clavearNombre } from '../parser/parserCabb.js';
+import { clavearNombre } from './claveNombre.js';
 import { categoriaPorNacimiento } from './categorias.js';
 
 // Texto exacto del desplegable del formulario de inscripción (11 opciones).

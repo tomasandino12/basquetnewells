@@ -1,25 +1,8 @@
 import * as XLSX from 'xlsx';
+import { limpiarNombre, clavearNombre } from '../data/claveNombre.js';
 
-export function limpiarNombre(nombreCrudo) {
-  if (typeof nombreCrudo !== 'string') return '';
-  let limpio = nombreCrudo.trim();
-  limpio = limpio.replace(/\s+/g, ' ');
-  limpio = limpio.replace(/\s+,/g, ',');
-  limpio = limpio.replace(/,+/g, ',');
-  limpio = limpio.replace(/,\s*/g, ', ');
-  return limpio.trim();
-}
-
-export function clavearNombre(nombreLimpio) {
-  if (typeof nombreLimpio !== 'string') return '';
-  return nombreLimpio
-    .toUpperCase()
-    .normalize('NFD')
-    .replace(new RegExp('[\\u0300-\\u036f]', 'g'), '')
-    .replace(/,/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+// Siguen saliendo de acá para no tocar a quien ya las importa de este parser.
+export { limpiarNombre, clavearNombre };
 
 export function parsearFraccion(texto) {
   if (typeof texto !== 'string') return null;
