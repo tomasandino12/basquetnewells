@@ -338,7 +338,7 @@ export function htmlAyuda({ inscripcionAbierta = false, consultasAbierto = false
   const alCoordinador = coordinador ? 'escribile al coordinador (el botón de acá abajo)' : 'escribile al coordinador';
   // Las preguntas van en la voz del padre y con sujeto: así las busca con la vista.
   return html`${pregunta('¿Cómo inscribo a mi hijo o hija?', comoInscribir)}
-    ${pregunta('¿Cómo pago o mando el comprobante?', html`<p>Tocá <b>Pagar</b>, arriba de todo. ${a ? html`Ahí está el alias <b>${a.alias}</b>, con un botón <b>Copiar</b> para pegarlo en tu banco. ` : ''}Después, en esa misma hoja, tocá <b>Enviar comprobante</b> y subí la foto o la captura de la transferencia. Sirve para cuotas y para cualquier otro pago del club. Si no aparece ese botón, es que ahora no hay nada para pagar.</p>`)}
+    ${pregunta('¿Cómo pago o mando el comprobante?', html`<p>Tocá <b>Pagar</b>, arriba de todo. ${a ? html`Ahí está el alias <b>${a.alias}</b>, con un botón <b>Copiar</b> para pegarlo en tu banco. ` : ''}Después, en esa misma hoja, tocá <b>Enviar comprobante</b> y subí la foto o la captura de la transferencia. Sirve para aranceles y otros pagos; la cuota del club no se paga desde acá. Si no aparece ese botón, es que ahora no hay nada para pagar.</p>`)}
     ${pregunta('Me pide iniciar sesión con Google, ¿qué hago?', html`<p>La inscripción y el comprobante la piden porque se suben fotos (los DNI, la transferencia). Si no tenés Gmail, creá una cuenta de Google con el mail que ya usás, sin abrir uno nuevo:</p>
       <ol class="portal-faq-pasos">
         <li>Entrá a <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">accounts.google.com</a> y tocá <b>Crear cuenta</b> → <b>Para uso personal</b>.</li>
@@ -737,29 +737,7 @@ function iniciarBuscador(temporada, tarjetas) {
 /* ---------- Ayuda: una hoja encima de la página ---------- */
 
 /**
- * Todo link a #ayuda (el botón del encabezado, el atajo, "¿Dudas?") abre la
- * hoja en vez de saltar a una sección. <dialog> con showModal da el foco
- * atrapado, Escape y la vuelta del foco al botón que la abrió; acá se suman
- * la X y el toque afuera (el fondo es el propio <dialog>, el contenido está
- * en .portal-hoja-cuerpo). Un link de adentro a otra parte de la página
- * (#categorias) cierra la hoja y deja que el navegador baje hasta ahí.
- */
-function iniciarAyuda() {
-  const hoja = $('ayuda');
-  if (typeof hoja.showModal !== 'function') return; // Sin <dialog>: queda la página sin la hoja, nada se rompe.
-  document.addEventListener('click', (ev) => {
-    if (!ev.target.closest('a[href="#ayuda"]')) return;
-    ev.preventDefault();
-    if (!hoja.open) hoja.showModal();
-  });
-  hoja.addEventListener('click', (ev) => {
-    if (ev.target === hoja || ev.target.closest('[data-cerrar-ayuda]') || ev.target.closest('a[href^="#"]')) hoja.close();
-  });
-  if (window.location.hash === '#ayuda') hoja.showModal();
-}
-
-/**
- * "Pagar": abre su hoja desde el botón del hero. Mismo <dialog> que Ayuda
+ * "Pagar": abre su hoja desde el botón del hero. Es un <dialog>
  * (foco atrapado, Escape y vuelta del foco gratis); se cierra con la X o
  * tocando afuera. Sin <dialog>, el botón queda sin efecto y nada se rompe.
  */
@@ -829,7 +807,6 @@ export async function iniciarPortal() {
     });
   };
   pintarFormularios({}, true);
-  iniciarAyuda();
   iniciarPago();
 
   const calendarios = calendariosActivos(PORTAL.agenda);

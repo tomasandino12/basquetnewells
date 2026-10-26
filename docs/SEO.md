@@ -10,27 +10,32 @@ no hay ruteo) y todo lo que está detrás de la sesión son datos de menores.
 
 | Archivo | Para qué |
 |---|---|
-| `public/portal.html` | Título, descripción, `robots`, canonical, `og:*`, Twitter cards, JSON-LD (SportsClub + WebSite) y el bloque estático de categorías, sede, "Cómo sumarte" y preguntas |
+| `public/portal.html` | Título, descripción, `robots`, canonical, `og:*`, Twitter cards, JSON-LD (SportsClub + WebSite), la sección "El club" (palmarés) y, dentro de un `<noscript>`, el resumen de categorías y sede |
 | `public/index.html` | `/app`: canonical, `og:*` y `<meta name="robots" content="noindex">` |
 | `public/og-basquet-newells.png` | Imagen social de 1200x630 (escudo y texto; sin fotos de chicos) |
 | `public/robots.txt` | Deja rastrear todo y declara el sitemap |
 | `public/sitemap.xml` | `/`, `/privacidad` y `/terminos` |
 | `vercel.json` | Los rewrites que sirven robots y sitemap **desde la raíz** |
 | `tests/metadatos.test.js` | Dominio, canonical, `og:*`, robots y sitemap coherentes |
-| `tests/portalInfoEstatica.test.js` | El bloque estático y el JSON-LD contra `PORTAL` (`src/data/portal.js`) |
+| `tests/portalInfoEstatica.test.js` | El resumen sin JS, el palmarés, los íconos y el JSON-LD contra `PORTAL` (`src/data/portal.js`) |
 
 Si el dominio vuelve a cambiar hay que tocar todos esos archivos: los tests
 dicen cuáles.
 
 ## Qué hay que mantener a mano
 
-Las categorías, los horarios y la sede se cargan con JS desde
-`src/data/portal.js`, y Google no los ve. Por eso `portal.html` tiene una copia
-estática (secciones `#info-categorias`, `#info-donde`, `#info-sumarte`,
-`#info-faq`). **Al cambiar horarios, categorías, sede o temporada en
-`portal.js`, hay que cambiarlos también ahí**: `tests/portalInfoEstatica.test.js`
-falla si no coinciden. No hay paso de build; si algún día lo hay, ese bloque es
-lo primero para generar desde los mismos datos.
+Las categorías, los horarios y la sede se pintan con JS desde
+`src/data/portal.js`. Google renderiza JS, pero un rastreador que no lo corre
+vería la página vacía; por eso `portal.html` lleva un resumen en `<noscript>`
+(`#info-categorias`, con la sede). Sólo lo ve quien no tiene JS: **para las
+familias la página muestra una sola vez cada cosa**. **Al cambiar horarios,
+categorías, sede o temporada en `portal.js`, hay que cambiarlos también ahí**:
+`tests/portalInfoEstatica.test.js` falla si no coinciden. No hay paso de build;
+si algún día lo hay, ese bloque es lo primero para generar desde los mismos
+datos.
+
+Las preguntas frecuentes son una sección de la página (`#ayuda`) que pinta
+`src/ui/portal.js` (`htmlAyuda`), con el botón de WhatsApp al final.
 
 ## Por qué `/app` no se bloquea con `Disallow`
 

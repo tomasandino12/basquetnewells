@@ -65,26 +65,18 @@ test('el acceso a Semillero es un botón visible: con borde, ícono y el nombre,
   assert.match(sem, /Instalar app[\s\S]*Agregar a inicio/);
 });
 
-test('Ayuda no ocupa lugar en la página: es una hoja (<dialog>) con la X, que abre todo link a #ayuda', () => {
-  assert.doesNotMatch(pagina, /<section [^>]*id="ayuda"/);
-  const hoja = pagina.match(/<dialog class="portal-hoja" id="ayuda" aria-labelledby="t-ayuda">[\s\S]*?<\/dialog>/)?.[0];
-  assert.ok(hoja, 'falta la hoja de Ayuda');
-  assert.match(hoja, /<h2 id="t-ayuda">Preguntas frecuentes<\/h2>/);
-  assert.match(hoja, /<button type="button" class="portal-hoja-x" data-cerrar-ayuda aria-label="Cerrar la ayuda">/);
-  assert.match(hoja, /id="portal-ayuda-lista"/);
-  const desde = portal.indexOf('function iniciarAyuda()');
-  const cuerpo = portal.slice(desde, portal.indexOf('\n}\n', desde));
-  assert.match(cuerpo, /closest\('a\[href="#ayuda"\]'\)/);
-  assert.match(cuerpo, /hoja\.showModal\(\)/, 'showModal: foco atrapado y Escape');
-  assert.match(cuerpo, /ev\.target === hoja/, 'tocar afuera la cierra');
-  assert.match(cuerpo, /\[data-cerrar-ayuda\]/);
-  assert.match(portal, /iniciarAyuda\(\);/);
+test('Ayuda es una sección más de la página (ya no una hoja que se abre encima), con la lista de preguntas', () => {
+  assert.doesNotMatch(pagina, /<dialog[^>]*id="ayuda"/);
+  const ayuda = seccion('ayuda');
+  assert.ok(ayuda, 'falta la sección de Ayuda');
+  assert.match(ayuda, /<h2 id="t-ayuda">Preguntas frecuentes<\/h2>/);
+  assert.match(ayuda, /id="portal-ayuda-lista"/);
+  assert.doesNotMatch(portal, /iniciarAyuda|data-cerrar-ayuda/, 'ya no hay nada que abrir ni cerrar');
+  assert.ok(pagina.indexOf('id="ayuda"') > pagina.indexOf('id="sponsors"'), 'va al final del cuerpo, antes del pie');
 });
 
-test('el coordinador aparece una sola vez en lo dinámico: al final de las preguntas frecuentes', () => {
-  // Excepción pedida para el SEO: el bloque estático "Cómo sumarte" (#info-sumarte) lleva un botón de WhatsApp.
-  const sinEstatico = pagina.replace(/<!--[\s\S]*?-->/g, '').replace(/<section [^>]*id="info-sumarte"[\s\S]*?<\/section>/, '');
-  assert.doesNotMatch(sinEstatico, /wa\.me|coordinador/i, 'el resto del HTML no lo nombra: sale de htmlAyuda');
+test('el coordinador aparece una sola vez: al final de las preguntas frecuentes', () => {
+  assert.doesNotMatch(pagina.replace(/<!--[\s\S]*?-->/g, ''), /wa\.me|coordinador/i, 'el HTML no lo nombra: sale de htmlAyuda');
   assert.equal((portal.match(/enlaceContacto\(/g) ?? []).length, 1, 'sólo htmlAyuda arma el enlace al coordinador');
   const desde = portal.indexOf('export function htmlAyuda(');
   assert.ok(portal.indexOf('enlaceContacto(') > desde, 'y es el de htmlAyuda');
@@ -784,6 +776,12 @@ test('ayuda: seis preguntas en acordeón y, al final, el único botón al coordi
   assert.match(out, /href="https:\/\/maps\.app\.goo\.gl\/abc"/);
   assert.match(out, /¿No encontraste tu respuesta\?[\s\S]*<a class="btn" href="https:\/\/wa\.me\/5493410000000" target="_blank" rel="noopener">Escribirle por WhatsApp/);
   assert.equal((out.match(/wa\.me/g) ?? []).length, 1);
+});
+
+test('ayuda: "Pagar" es para aranceles y otros pagos; la cuota del club no se paga desde ahí', () => {
+  const r = htmlAyuda({ alias: { alias: 'NOB.BASQUET' } }).toString().match(/¿Cómo pago o mando el comprobante\?[\s\S]*?<\/details>/)[0];
+  assert.match(r, /Sirve para aranceles y otros pagos; la cuota del club no se paga desde acá/);
+  assert.doesNotMatch(r, /Sirve para cuotas/);
 });
 
 test('ayuda: el login de Google, desde donde se traba el padre: por qué lo pide, cuenta con su mail en 3 pasos, y si no, el coordinador', () => {

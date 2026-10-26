@@ -266,21 +266,34 @@
       <div class="portal-logos" id="portal-logos"></div>
     </section>
 
-    <!-- =================================================================
-         CONTENIDO ESTÁTICO PARA BUSCADORES Y FAMILIAS. Se mantiene A MANO.
-         Las categorías, los horarios y la sede de arriba se cargan con JS
-         desde src/data/portal.js y Google no los ve; esto es lo mismo escrito
-         en el HTML. CUANDO CAMBIEN los horarios, las categorías, la sede o la
-         temporada en src/data/portal.js hay que cambiarlo acá también:
-         tests/portalInfoEstatica.test.js falla si no coinciden. (No hay paso
-         de build: el test cumple el papel de "generarlo desde los mismos
-         datos".) Sin nombres de chicos.
-         ================================================================= -->
-    <section class="portal-sec portal-info" id="info-categorias" aria-labelledby="t-info-categorias">
-      <div class="portal-st">Inferiores</div>
-      <h2 id="t-info-categorias">Categorías y horarios 2027</h2>
+    <!-- El club, en una línea de lo que se busca y otra de palmarés (los datos del Instagram del club). -->
+    <section class="portal-sec portal-info" id="info-club" aria-labelledby="t-info-club">
+      <div class="portal-st">El club</div>
+      <h2 id="t-info-club">Básquet formativo en Rosario</h2>
       <p class="intro">El básquet formativo de Newell&#39;s Old Boys funciona en el Parque de la Independencia, en Rosario. Si buscás básquet infantil para tu hijo o hija, las inferiores empiezan en la U9, mixta, para chicos y chicas nacidos en 2018 y 2019; de ahí sigue el camino por las categorías hasta la Primera.</p>
       <p class="intro portal-info-palmares">15 veces campeón de la Asociación Rosarina de Básquetbol (1943 al 54, 77, 78 y 83).</p>
+    </section>
+
+    <!-- Preguntas frecuentes: una sección más de la página (antes era una hoja que se abría encima).
+         Las respuestas cambian con lo que hay abierto (inscripción, "Quiero jugar") y las pinta
+         src/ui/portal.js (htmlAyuda); termina con el botón de WhatsApp para quien no encontró la suya. -->
+    <section class="portal-sec rise" id="ayuda" aria-labelledby="t-ayuda">
+      <div class="portal-st">Ayuda</div>
+      <h2 id="t-ayuda">Preguntas frecuentes</h2>
+      <div class="portal-faqs" id="portal-ayuda-lista"></div>
+    </section>
+
+    <!-- =================================================================
+         RESUMEN PARA BUSCADORES SIN JAVASCRIPT. Sólo se ve (y sólo lo lee un
+         rastreador) si el JS no corre: las categorías, los horarios y la sede
+         de arriba los pinta src/ui/portal.js desde src/data/portal.js. Se
+         mantiene A MANO: cuando cambien horarios, categorías, sede o temporada
+         en portal.js hay que cambiarlo acá también; tests/portalInfoEstatica.test.js
+         falla si no coinciden. Sin nombres de chicos.
+         ================================================================= -->
+    <noscript>
+    <section class="portal-sec portal-info" id="info-categorias" aria-labelledby="t-info-categorias">
+      <h2 id="t-info-categorias">Categorías y horarios 2027</h2>
       <ul class="portal-info-cats">
         <li class="portal-info-cat"><h3>U9</h3><p>Mixto · nacidos 2018 y 2019</p>
           <ul><li>Mar 18 a 19 h · Estadio Cubierto</li><li>Jue 18 a 19 h · Playón Deportivo</li></ul></li>
@@ -297,36 +310,11 @@
         <li class="portal-info-cat"><h3>Primera</h3><p>Masculino · nacidos 2005 y antes</p></li>
         <li class="portal-info-cat"><h3>Primera</h3><p>Femenino · nacidos 2005 y antes</p></li>
       </ul>
-    </section>
-
-    <section class="portal-sec portal-info" id="info-donde" aria-labelledby="t-info-donde">
-      <div class="portal-st">Sede</div>
       <h2 id="t-info-donde">Dónde se entrena</h2>
-      <p class="intro">Estadio Cubierto &quot;Claudio Newell&quot;, Microestadio y Playón Deportivo, en el Parque de la Independencia. En cuál te toca lo dice el horario de tu categoría.</p>
+      <p class="intro">Estadio Cubierto &quot;Claudio Newell&quot;, Microestadio y Playón Deportivo, en el Parque de la Independencia.</p>
       <address class="portal-info-dir">Parque de la Independencia<br>Av. Int. Morcillo 2675, S2000 Rosario, Santa Fe</address>
-      <a class="btn sec chico" href="https://www.google.com/maps/search/?api=1&amp;query=Estadio+Cubierto+Claudio+Newell+Rosario" target="_blank" rel="noopener">Cómo llegar <span aria-hidden="true">↗</span></a>
     </section>
-
-    <section class="portal-sec portal-info" id="info-sumarte" aria-labelledby="t-info-sumarte">
-      <div class="portal-st">Inscripción</div>
-      <h2 id="t-info-sumarte">Cómo sumarte</h2>
-      <p class="intro">Dejá tus datos y te avisamos para que venga a probar, o escribinos por WhatsApp.</p>
-      <div class="portal-info-acc">
-        <a class="btn" href="/consultas">Anotarse para probar</a>
-        <a class="btn sec" href="https://wa.me/5493413709161?text=Hola!%20Quiero%20consultar%20por%20el%20b%C3%A1squet%20de%20Newell's" target="_blank" rel="noopener">Escribir por WhatsApp <span aria-hidden="true">↗</span></a>
-      </div>
-    </section>
-
-    <section class="portal-sec portal-info" id="info-faq" aria-labelledby="t-info-faq">
-      <div class="portal-st">Ayuda</div>
-      <h2 id="t-info-faq">Preguntas frecuentes</h2>
-      <div class="portal-faqs">
-        <details class="portal-faq"><summary>¿Desde qué edad pueden jugar?</summary><div class="portal-faq-r"><p>Desde la U9: chicos y chicas nacidos en 2018 y 2019. La categoría va por el año de nacimiento, como la arma la CABB. Para chicos más chicos todavía no hay categoría.</p></div></details>
-        <details class="portal-faq"><summary>¿Dónde se entrena?</summary><div class="portal-faq-r"><p>En el Estadio Cubierto &quot;Claudio Newell&quot;, el Microestadio y el Playón Deportivo, dentro del Parque de la Independencia, en Rosario. En cuál te toca lo dice el horario de tu categoría.</p></div></details>
-        <details class="portal-faq"><summary>¿Cómo me inscribo?</summary><div class="portal-faq-r"><p>Tocá <b>Anotarse para probar</b>: dejás tus datos y te avisamos para que venga a probar. Cuando la inscripción de la temporada esté abierta, el botón <b>Inscribirme</b> aparece arriba de todo en esta página.</p></div></details>
-        <details class="portal-faq"><summary>¿Cuánto cuesta?</summary><div class="portal-faq-r"><p>El valor no está publicado en esta página. Escribinos por WhatsApp y te lo pasamos. Los pagos se hacen por transferencia desde el botón <b>Pagar</b>, arriba de todo.</p></div></details>
-      </div>
-    </section>
+    </noscript>
 
     </div>
 
@@ -345,11 +333,6 @@
     </div>
   </footer>
 
-  <!-- Ayuda: no ocupa lugar en la página. Todo link a #ayuda la abre encima
-       (src/ui/portal.js): en el celular, una hoja que sube desde abajo; en
-       compu, un diálogo. Preguntas frecuentes en acordeón y, al final, la
-       única vez que aparece el coordinador. Se cierra con la X, tocando
-       afuera o con Escape (lo da <dialog>). -->
   <!-- Barra fija de abajo: los mismos dos botones del hero, que aparece cuando
        esos salen de pantalla (src/ui/animaciones.js, iniciarDock). Oculta es
        `inert`: ni el teclado ni el lector de pantalla llegan a ella. -->
@@ -357,7 +340,7 @@
     <div class="portal-dock-acc" id="portal-dock-acc"></div>
   </div>
 
-  <!-- Pagar: la misma hoja que Ayuda (mobile: sube desde abajo; compu: diálogo).
+  <!-- Pagar: una hoja (mobile: sube desde abajo; compu: diálogo).
        Con el alias para copiar y, si hay formulario de comprobante activo, el
        botón para enviarlo (src/ui/portal.js, htmlPago). Se paga más que
        cuotas: no dice "cuota". -->
@@ -371,15 +354,6 @@
     </div>
   </dialog>
 
-  <dialog class="portal-hoja" id="ayuda" aria-labelledby="t-ayuda">
-    <div class="portal-hoja-cuerpo">
-      <div class="portal-hoja-cab">
-        <div><div class="portal-st">Ayuda</div><h2 id="t-ayuda">Preguntas frecuentes</h2></div>
-        <button type="button" class="portal-hoja-x" data-cerrar-ayuda aria-label="Cerrar la ayuda">×</button>
-      </div>
-      <div class="portal-faqs" id="portal-ayuda-lista"></div>
-    </div>
-  </dialog>
 </div>
 
 <!-- Primero el reenvío: los mails de Supabase ya enviados apuntan a "/" y tienen
