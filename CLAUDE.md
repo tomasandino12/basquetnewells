@@ -52,6 +52,7 @@ Flujo de dependencias: **pantalla → `repositorio.js` → `repos/<área>` → `
 - **Ejecutar en la sesión, sin subagentes** (arrancan sin contexto y salen caros). Único aceptable: el review final de una rama larga.
 - **Verificaciones por comando las corre Claude directo** (`test:q`, greps), sin ciclo implementer+reviewer. Antes de dar algo por terminado: `npm run test:q`.
 - **Commitear cada paso verificado**: trabajo sin commitear se pierde si la carpeta o el worktree se cierra.
+- **Dos repos, que no queden desfasados.** `AppSemillero` (privado: trabajo, ramas, deploy de Vercel) y `basquetnewells` (público: la misma historia de `main` sin `docs/privado/`). Cada vez que algo entra a `main`, sugerir (con botón, no pushear sin el sí) subir a los dos, en este orden: `git push` y después `npm run publicar -- --push https://github.com/tomasandino12/basquetnewells.git`. Las ramas sólo van al privado. Nunca `--force` contra el público: si `publicar` no hace fast-forward, es que se reescribió historia de `main`, y hay que parar y avisar.
 - Modelo: Sonnet por defecto en este proyecto. Opus para diseño de specs, migraciones, RLS/RPC y el review final.
 - Antes de leer varios archivos: `graphify query "<pregunta>" --budget 1500`. Después de cambiar código: `graphify update .` (sin LLM, gratis).
 - `Grep` y `Read` con `offset`/`limit` en vez de archivos enteros. Los repos son chicos (50–280 líneas): se pueden leer completos; la fachada ya no tiene nada que leer.
