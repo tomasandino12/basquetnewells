@@ -528,7 +528,7 @@ Spec: `docs/superpowers/specs/2026-10-19-datos-conectados-design.md`.
   coordinador no lee `jugador`); también trae a los chicos sin datos.
 - Verificación: `tests/verificar0059.sql` (9 casos); deshacer:
   `tests/rollback0059.sql`; contratos: `tests/contratoEmergencia.test.js`.
-- Texto legal que hay que publicar con esta migración: `docs/LEGAL-EMERGENCIAS.md`.
+- Texto legal que hay que publicar con esta migración: `docs/privado/LEGAL-EMERGENCIAS.md`.
 
 ## Orden de persistencia de una importación
 

@@ -16,7 +16,7 @@
  *
  * VERSION es el hash de esos archivos fijos: si cambia uno (npm run vendor),
  * el test falla y dice el valor nuevo. Plan de escape si esto rompe algo: ver
- * docs/SEGURIDAD-LANZAMIENTO.md.
+ * docs/privado/SEGURIDAD-LANZAMIENTO.md.
  *
  * Script clásico y no módulo: Safari tardó en aceptar service workers módulo.
  */

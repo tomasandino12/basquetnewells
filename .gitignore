@@ -2,8 +2,16 @@ node_modules/
 tests/fixtures/*
 !tests/fixtures/sintetico/
 .env
+.env.*
+!.env.example
 .claude/worktrees/
+.claude/scheduled_tasks.lock
 graphify-out/
+
+# El repo es público: lo que muestra debilidades o compromisos sin cerrar
+# (auditoría de seguridad, borradores legales, revisiones) vive sólo acá.
+# No tiene copia en git: respaldarlo aparte.
+docs/privado/
 
 # Material de referencia (entrevistas, planillas): no se publica
 documentos/

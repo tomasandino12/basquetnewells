@@ -25,7 +25,7 @@ Apellido | Nombre | Fecha de nacimiento | Categoría | Mail del responsable | Ra
 Apellido y nombre | Fecha de nacimiento | Teléfono del adulto | Contacto de urgencia | Afecciones | Alergias | Medicación | Indicación médica | Obra social
 ```
 
-- Sólo filas con el **consentimiento de datos tildado** (el texto está en `docs/LEGAL-EMERGENCIAS.md`).
+- Sólo filas con el **consentimiento de datos tildado** (el texto está en `docs/privado/LEGAL-EMERGENCIAS.md`).
 - `Afecciones` son las casillas del formulario separadas por coma: Desmayos, Taquicardia, Convulsiones, Epilepsia, Meningitis, Diabetes, Pérdida de conocimiento traumática, Asma. Lo que no esté en esa lista no se guarda.
 - Sin DNI, número de afiliado, grupo sanguíneo, domicilio, cirugías ni altura.
 

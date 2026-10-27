@@ -77,7 +77,7 @@ Notas:
 - **Reenvíos.** Vale la **última** respuesta por DNI; el mensaje de confirmación se lo dice a la familia.
 - **Fecha de nacimiento** siempre. Las opciones de **Categoría** llevan sus años y **no llevan el año de temporada en el título**: coordinación las actualiza al empezar cada temporada. En `Revisar`, el tablero marca una categoría que no incluye el año de nacimiento.
 - **Consentimiento de datos obligatorio**, en los dos caminos. Uso de imagen y avisos de recaudación siguen opcionales y sin premarcar.
-- **Casilla "Emergencias en Semillero"**, al lado del consentimiento, en S9 (los dos caminos), opcional y sin premarcar. Texto de `docs/LEGAL-EMERGENCIAS.md`, que se pega tal cual.
+- **Casilla "Emergencias en Semillero"**, al lado del consentimiento, en S9 (los dos caminos), opcional y sin premarcar. Texto de `docs/privado/LEGAL-EMERGENCIAS.md`, que se pega tal cual.
 - **Alertas médicas son obligatorias, con la opción "Ninguna"**: así un casillero vacío no se confunde con "no tiene nada".
 - **La salud vigente** es la de la última respuesta que pasó por S6; si no hay, la de la inscripción 2026. **El contacto vigente** es el de la última respuesta (S7 se completa siempre).
 - Una respuesta "Sí" que no está en la inscripción 2026 ni en una inscripción nueva sale en `Revisar`: a esa familia la coordinación le pide que complete de nuevo eligiendo "No".
