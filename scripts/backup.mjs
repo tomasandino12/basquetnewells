@@ -1,5 +1,5 @@
 // npm run backup: guarda roles, esquema y datos de la base de producción en
-// backups/ (ver docs/BACKUP.md). Sólo LEE de producción. No sube nada a ningún
+// backups/ (ver docs/guias/BACKUP.md). Sólo LEE de producción. No sube nada a ningún
 // lado ni guarda la contraseña: si la CLI la pide, se escribe en la terminal.
 
 import { spawnSync } from 'node:child_process';

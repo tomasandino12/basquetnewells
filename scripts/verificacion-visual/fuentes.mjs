@@ -1,5 +1,5 @@
 // Qué archivos de fuente descarga cada vista. Uso (desde la raíz, con el preview y la galería):
-//   node docs/rendimiento/fuentes.mjs "<la URL de Google Fonts de public/index.html>"
+//   node scripts/verificacion-visual/fuentes.mjs "<la URL de Google Fonts de public/index.html>"
 import puppeteer from 'puppeteer-core';
 const O = 'http://localhost:5173', G = `${O}/.claude/worktrees/_galeria/galeria.html`;
 const vistas = { landing: `${O}/public/`, hoy: `${G}#hoy`, plantel: `${G}#plantel`, datos: `${G}#datos`, hoja: `${G}#hoja` };

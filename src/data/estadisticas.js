@@ -126,7 +126,7 @@ export function evolucionDeTiroDelEquipo(partidos, estadisticas) {
  * Práctica de triples = las 5 posiciones del arco SUMADAS en esa sesión
  * (x/50). Las 5 posiciones de la batería caen sobre el arco (ver
  * posiciones.js), y el boxscore de la CABB no trae desde dónde se tiró
- * (PARSER.md), así que ésta es la única pareja honesta a esa granularidad.
+ * (src/parser/PARSER.md), así que ésta es la única pareja honesta a esa granularidad.
  *
  * NUNCA se resta una serie de la otra: la brecha la lee el entrenador
  * mirando, y una resta sugeriría una precisión que no existe.

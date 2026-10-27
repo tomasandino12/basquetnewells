@@ -48,7 +48,7 @@ export function fotoDeEvento(tipo) {
  * Lo que muestra la página pública del básquet y no sale de la base: los
  * calendarios, las categorías con sus horarios, la sede, el contacto, el alias
  * para transferir, la foto y los sponsors. Vive acá y no en el HTML para que
- * cambiar uno sea tocar una línea (guía en docs/COORDINACION.md).
+ * cambiar uno sea tocar una línea (guía en docs/guias/COORDINACION.md).
  *
  * Lo que el club todavía no pasó va en null o en una lista vacía: esa parte de
  * la página no se muestra. Nunca un "Próximamente" ni un botón a ningún lado.
@@ -71,7 +71,7 @@ export const PORTAL = Object.freeze({
   // que se le pone en Google (TIPO_POR_COLOR en agenda.js: Tomate = partido,
   // Banana = evento, Pavo real = charla, Albahaca = entrenamiento). Sin color,
   // toma `tipo`. `clave`: API key de Google, restringida al dominio del portal
-  // y a la Calendar API (pasos en docs/COORDINACION.md). Sin clave o sin ID, la
+  // y a la Calendar API (pasos en docs/guias/COORDINACION.md). Sin clave o sin ID, la
   // sección no se ve.
   agenda: Object.freeze({
     // Pública a propósito: la usa el navegador. Restringida en Google Cloud al

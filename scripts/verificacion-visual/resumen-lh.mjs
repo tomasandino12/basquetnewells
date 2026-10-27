@@ -1,4 +1,4 @@
-// uso (desde la raíz): node docs/rendimiento/resumen-lh.mjs <prefijo>  -> mediana de 3 corridas de Lighthouse
+// uso (desde la raíz): node scripts/verificacion-visual/resumen-lh.mjs <prefijo>  -> mediana de 3 corridas de Lighthouse
 import { readFileSync, existsSync } from 'node:fs';
 const D = (process.env.SALIDA ?? `${process.cwd()}/.claude/worktrees/_galeria/salida`) + '/lh';
 const pref = process.argv[2];

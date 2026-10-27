@@ -438,6 +438,6 @@ ve (no quiénes son).
 
 El login vuelve a `https://app-semillero.vercel.app/app`. Lo cubre el comodín
 `https://app-semillero.vercel.app/**` de Supabase → Authentication → URL
-Configuration (ver `docs/CONFIGURAR-AUTH.md`); alcanza con confirmar que esa
+Configuration (ver `docs/guias/CONFIGURAR-AUTH.md`); alcanza con confirmar que esa
 entrada existe. Los mails viejos que apuntan a `/` los reenvía el portal a
 `/app`.

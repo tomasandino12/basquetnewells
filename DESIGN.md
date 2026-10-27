@@ -1,6 +1,6 @@
 # DESIGN.md — sistema de diseño de App formativa
 
-Fuente de verdad del diseño. La Parte 1 es para entender la identidad; la Parte 2 es para aplicarla sin releer el CSS. Todo lo que dice sale de `public/css/` y de la rama `feat/identidad-visual` (spec y plan en `docs/superpowers/`, medición en `docs/rendimiento/identidad-visual.md`). Si este documento y el CSS no coinciden, gana el CSS y se corrige el documento.
+Fuente de verdad del diseño. La Parte 1 es para entender la identidad; la Parte 2 es para aplicarla sin releer el CSS. Todo lo que dice sale de `public/css/` y de la rama `feat/identidad-visual` (spec y plan en `docs/superpowers/`, medición en `docs/decisiones/identidad-visual.md`). Si este documento y el CSS no coinciden, gana el CSS y se corrige el documento.
 
 ---
 
@@ -180,7 +180,7 @@ html`<div class="zona-barra">
 ```
 Para barras comparativas simples (sin meta) está `.barras` > `.barra` con `.et`, `.pista`, `.relleno`, `.val` (`src/ui/componentes/barras.js`).
 
-**Escudo con anillo y demos de la landing** — el hero de `#v-landing` lleva el escudo con el nombre del club girando alrededor (`.escudo-anillo`, SVG con `textPath` y `textLength` igual a la circunferencia, así cualquier nombre llena el círculo), y 4 de las 6 tarjetas `.ben` traen una demo (`data-demo`: plantel, temporadas, tiro —con el salto adentro—, jugadas). Reglas: el anillo es decorativo (`aria-hidden`) y el nombre del club está también como texto; las demos no llevan rótulo (se entienden solas) y usan datos inventados, nunca de jugadores reales; la de jugadas anima la pizarra de la app con una jugada fija (`jugadaDemoLanding.js`) por `requestAnimationFrame`, una sola pasada; corren **una sola vez** al entrar en pantalla (`landingAnimada.js` le pone `.en-vista` a la tarjeta, y hasta entonces quedan pausadas en el primer cuadro); sólo se animan los gráficos, **el texto de la tarjeta nunca arranca oculto** (es el LCP); con `prefers-reduced-motion` todo queda en su estado final. Medición en `docs/rendimiento/landing-animada.md`.
+**Escudo con anillo y demos de la landing** — el hero de `#v-landing` lleva el escudo con el nombre del club girando alrededor (`.escudo-anillo`, SVG con `textPath` y `textLength` igual a la circunferencia, así cualquier nombre llena el círculo), y 4 de las 6 tarjetas `.ben` traen una demo (`data-demo`: plantel, temporadas, tiro —con el salto adentro—, jugadas). Reglas: el anillo es decorativo (`aria-hidden`) y el nombre del club está también como texto; las demos no llevan rótulo (se entienden solas) y usan datos inventados, nunca de jugadores reales; la de jugadas anima la pizarra de la app con una jugada fija (`jugadaDemoLanding.js`) por `requestAnimationFrame`, una sola pasada; corren **una sola vez** al entrar en pantalla (`landingAnimada.js` le pone `.en-vista` a la tarjeta, y hasta entonces quedan pausadas en el primer cuadro); sólo se animan los gráficos, **el texto de la tarjeta nunca arranca oculto** (es el LCP); con `prefers-reduced-motion` todo queda en su estado final. Medición en `docs/decisiones/landing-animada.md`.
 
 **Tarjeta con acento** — algo que pide atención. En la app es el aviso `.al`: tarjeta blanca con filete de 3 px en `--primario` a la izquierda (`.al.ok` lo pasa a `--sube`; `.al.error` es el error: fondo `--primario-cl`, filete de 5 px y un "!" para que no dependa del color); `avisoDeError` devuelve el aviso de una pantalla que no cargó y `avisoInline`/`mostrarAviso` (`errores.js`) el de un error dentro de una pantalla en pie: llevan `role="alert"`, y `mostrarAviso` además hace scroll al aviso y marca el campo con `aria-invalid` (el CSS le pone borde del club) hasta que la persona lo toca. En la landing, `.ben` (ver abajo). La variante `.tarj.acento` del spec no existe (ver Deuda).
 ```js
@@ -253,7 +253,7 @@ abrirHoja({ titulo: jugador.nombre, cuerpo: html`<div class="tarj">…</div>` })
 
 ## Rendimiento
 
-Presupuesto de la rama: ninguna regresión contra la medición previa, con tolerancia de ±5 % en LCP y TBT, CLS igual o menor, y cero frames nuevos de más de 50 ms atribuibles a animaciones en el recorrido con CPU 4x a 375 px. Se mide con Lighthouse mobile sobre la landing (mediana de 3 corridas), el peso de CSS y fuentes, y el recorrido con `long-animation-frame`. El procedimiento, los comandos y los resultados están en [`docs/rendimiento/identidad-visual.md`](docs/rendimiento/identidad-visual.md); un cambio visual grande (una fuente, un efecto en la landing, una animación nueva) se mide igual antes de mergear.
+Presupuesto de la rama: ninguna regresión contra la medición previa, con tolerancia de ±5 % en LCP y TBT, CLS igual o menor, y cero frames nuevos de más de 50 ms atribuibles a animaciones en el recorrido con CPU 4x a 375 px. Se mide con Lighthouse mobile sobre la landing (mediana de 3 corridas), el peso de CSS y fuentes, y el recorrido con `long-animation-frame`. El procedimiento, los comandos y los resultados están en [`docs/decisiones/identidad-visual.md`](docs/decisiones/identidad-visual.md); un cambio visual grande (una fuente, un efecto en la landing, una animación nueva) se mide igual antes de mergear.
 
 ## Deuda y decisiones abiertas
 

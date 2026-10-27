@@ -25,7 +25,7 @@ const ARCHIVOS = [
 ];
 
 const FIXTURES_DISPONIBLES = ARCHIVOS.every((archivo) => existsSync(path.join(__dirname, 'fixtures', archivo)));
-const SKIP_SIN_FIXTURES = { skip: !FIXTURES_DISPONIBLES && 'tests/fixtures/*.xlsx no están presentes (excluidos deliberadamente del repo — ver PARSER.md)' };
+const SKIP_SIN_FIXTURES = { skip: !FIXTURES_DISPONIBLES && 'tests/fixtures/*.xlsx no están presentes (excluidos deliberadamente del repo — ver src/parser/PARSER.md)' };
 
 test('limpiarNombre limpia los casos sucios reales', () => {
   const casos = [

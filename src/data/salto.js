@@ -2,7 +2,7 @@
  * Salto vertical por video: del par de cuadros que marca el profe al tiempo
  * de vuelo, la altura y la potencia. Funciones puras: sin red, sin DOM.
  *
- * Fundamento y verificaciones con el S24 FE: docs/evaluaciones-fisicas/FUNDAMENTO.md.
+ * Fundamento y verificaciones con el S24 FE: docs/decisiones/evaluaciones-fisicas.md.
  * En la base se guarda el tiempo de vuelo crudo, nunca la altura: la fórmula
  * vive sólo acá, así una corrección recalcula todo el histórico.
  */

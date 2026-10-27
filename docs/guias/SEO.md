@@ -59,8 +59,8 @@ Dar de alta el sitio en **Google Search Console**
 Y, por el cambio de dominio, en otras consolas (no se hace desde el repo):
 
 - **Google Cloud**: la API key del calendario está restringida por sitio; agregar
-  `https://basquetnewells.com.ar/*` (ver `docs/COORDINACION.md`). Sin eso el
+  `https://basquetnewells.com.ar/*` (ver `docs/guias/COORDINACION.md`). Sin eso el
   calendario del portal da 403 en el dominio nuevo.
 - **Supabase → Authentication → URL Configuration**: Site URL y Redirect URLs con
-  el dominio nuevo (ver `docs/CONFIGURAR-AUTH.md`), para que el login de Semillero
+  el dominio nuevo (ver `docs/guias/CONFIGURAR-AUTH.md`), para que el login de Semillero
   vuelva a `basquetnewells.com.ar/app`.

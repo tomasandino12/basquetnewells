@@ -10,15 +10,18 @@ App móvil para clubes formadores de básquet (piloto: Newell's, multi-club desd
 ## Comandos
 - `npm run test:q` — toda la suite, salida mínima (~300 bytes). **Usar este.** Si algo falla, correr sólo ese archivo: `node --test tests/<archivo>.test.js`.
 - `npm test` — la misma suite con salida TAP de ~60 KB. Evitarlo: gasta ~15k tokens por corrida.
-- `npx supabase db push` — aplica migraciones a la base real. Pedir confirmación antes, y **antes de cada `db push` parar y preguntar si se corrió `npm run backup`** (`docs/BACKUP.md`).
+- `npx supabase db push` — aplica migraciones a la base real. Pedir confirmación antes, y **antes de cada `db push` parar y preguntar si se corrió `npm run backup`** (`docs/guias/BACKUP.md`).
 
 ## Dónde está cada cosa
 - `src/data/repositorio.js`: **fachada** de 15 líneas, sólo `export * from './repos/<área>.js'`. El código está en `src/data/repos/`: `auth`, `clubes`, `coordinacion`, `ejercicios`, `fisico`, `inventario`, `jugadores`, `mediciones`, `partidos`, `recursos`. `src/data/cliente.js`: el cliente Supabase compartido (`obtenerCliente`, `TAMANIO_PAGINA`).
 - `src/data/*.js`: lógica pura y testeable (validar, agrupar, preparar payloads, calcular). Sin red ni DOM.
-- `src/parser/`: parsers de xlsx (`parserCabb.js`, `parserFisico.js`). Contrato en `PARSER.md`.
+- `src/parser/`: parsers de xlsx (`parserCabb.js`, `parserFisico.js`). Contrato en `src/parser/PARSER.md`.
 - `src/ui/main.js`: navegación (`registrarPantalla`, `ir`, `volver`, `refrescar`). `src/ui/pantallas/*.js`: una pantalla por archivo. Helpers de UI: `dom.js` (`$`), `errores.js` (mensajes de error), `html.js` (plantilla que escapa), `nav.js` (toast, escaparHtml, formatos).
 - `DESIGN.md`: sistema de diseño (tokens, reglas de movimiento, componentes, checklist de pantalla nueva). Leerlo antes de tocar CSS o armar una pantalla.
-- `supabase/migrations/`: numeradas. `supabase/ESQUEMA.md` documenta el modelo (le faltan las tablas de 0020–0022). `docs/COORDINACION.md`: roles y despliegue.
+- `supabase/migrations/`: numeradas. `supabase/ESQUEMA.md` documenta el modelo (le faltan las tablas de 0020–0022). `docs/guias/COORDINACION.md`: roles y despliegue.
+- `docs/`: `guias/` (cómo se opera: backup, auth, coordinación, SEO), `decisiones/` (por qué: identidad visual, landing, evaluaciones físicas), `historico/`, `superpowers/` (planes y specs), `cartel-qr/`. `docs/privado/` no va a git (el repo es público): auditoría de seguridad, borradores legales, revisiones. Lo que muestre debilidades o pendientes de seguridad va ahí, nunca a un archivo versionado.
+- `scripts/`: herramientas de Node (`backup`, `cartel-qr`); `scripts/verificacion-visual/`: galería, capturas y mediciones con puppeteer.
+- `google/`: Apps Script y guías de los formularios de Google.
 
 ## Arquitectura: reglas que verifica `tests/arquitectura.test.js`
 Flujo de dependencias: **pantalla → `repositorio.js` → `repos/<área>` → `cliente.js`**, y lógica pura en `src/data/*.js`. No hay clases ni capas extra: son funciones y módulos.
@@ -41,7 +44,7 @@ Flujo de dependencias: **pantalla → `repositorio.js` → `repos/<área>` → `
 - Nada de autorización en `user_metadata` (lo edita el propio usuario) ni en el cliente: el cliente decide qué mostrar, la base decide qué se puede. Auditoría y pendientes de lanzamiento: `docs/privado/SEGURIDAD-LANZAMIENTO.md` (fuera de git).
 - Los `.xlsx` reales de `tests/fixtures/` **no van a git** (nombres de menores); sólo `tests/fixtures/sintetico/`. Nunca abrirlos ni pegar sus nombres. Sin ellos, los tests que los usan se saltean.
 - UI y comentarios en español rioplatense (voseo). Los comentarios explican el porqué, no el qué.
-- `CAMBIOS.md` es histórico (v2→v3) y `docs/superpowers/` son planes y specs ya ejecutados: **no leerlos salvo que la tarea sea sobre ellos**.
+- `docs/historico/CAMBIOS.md` es histórico (v2→v3) y `docs/superpowers/` son planes y specs ya ejecutados: **no leerlos salvo que la tarea sea sobre ellos**.
 - No usar junctions ni enlaces simbólicos hacia `node_modules` (ni a nada fuera de la carpeta) en worktrees: al borrar el worktree se borra también el original. En un worktree, correr `npm ci`.
 
 ## Cómo trabajar (ahorro de tokens)

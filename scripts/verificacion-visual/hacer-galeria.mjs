@@ -1,7 +1,7 @@
 // Genera la galería de verificación: el index.html real con la app "logueada" y datos
 // falsos, servida por el mismo preview (los CSS se leen en vivo, así que cada cambio se
 // ve al recargar). Sin sesión de Supabase no hay otra forma de ver HOY o PLANTEL.
-// Uso, desde la raíz del repo:  node docs/rendimiento/hacer-galeria.mjs
+// Uso, desde la raíz del repo:  node scripts/verificacion-visual/hacer-galeria.mjs
 // Escribe en .claude/worktrees/_galeria/ (ignorado por git).
 import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
 import { dirname } from 'node:path';

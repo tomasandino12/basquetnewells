@@ -2,11 +2,11 @@
 // la galería generada (hacer-galeria.mjs) y puppeteer-core: `npm i --no-save puppeteer-core`.
 // Variables opcionales: CHROME (ruta a chrome.exe) y SALIDA (carpeta de bases y capturas).
 // Se corre desde la raíz del repo:
-//   node docs/rendimiento/herramienta.mjs recorrido            -> frames largos con CPU 4x, 375px (CORRIDAS=n)
-//   node docs/rendimiento/herramienta.mjs base                 -> guarda los estilos computados actuales como base
-//   node docs/rendimiento/herramienta.mjs comparar             -> compara contra la base
-//   node docs/rendimiento/herramienta.mjs capturas <carpeta>   -> PNGs de cada vista a 375 y 1280
-//   node docs/rendimiento/herramienta.mjs js <vista> <ancho> "<expr>"  -> evalúa una expresión (REDUCIDO=1 emula prefers-reduced-motion; CAPTURA=ruta.png saca un PNG al final)
+//   node scripts/verificacion-visual/herramienta.mjs recorrido            -> frames largos con CPU 4x, 375px (CORRIDAS=n)
+//   node scripts/verificacion-visual/herramienta.mjs base                 -> guarda los estilos computados actuales como base
+//   node scripts/verificacion-visual/herramienta.mjs comparar             -> compara contra la base
+//   node scripts/verificacion-visual/herramienta.mjs capturas <carpeta>   -> PNGs de cada vista a 375 y 1280
+//   node scripts/verificacion-visual/herramienta.mjs js <vista> <ancho> "<expr>"  -> evalúa una expresión (REDUCIDO=1 emula prefers-reduced-motion; CAPTURA=ruta.png saca un PNG al final)
 import puppeteer from 'puppeteer-core';
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 

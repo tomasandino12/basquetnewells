@@ -11,14 +11,14 @@ Todo corre contra el preview `app` (`.claude/launch.json`, puerto 5173) y desde 
 1. **Lighthouse mobile** (throttling por defecto), 3 corridas, se anota la mediana:
    ```
    for i in 1 2 3; do npx -y lighthouse@12.8.2 http://localhost:5173/public/ --form-factor=mobile --only-categories=performance --output=json --output-path=.claude/worktrees/_galeria/salida/lh/<antes|despues>-$i.json --chrome-flags="--headless=new --no-sandbox" --quiet; done
-   node docs/rendimiento/resumen-lh.mjs <antes|despues>
+   node scripts/verificacion-visual/resumen-lh.mjs <antes|despues>
    ```
 2. **Bytes de CSS y fuentes**: en la landing, `performance.getEntriesByType('resource')` sumando `encodedBodySize` de `/public/css/*.css` y de `fonts.gstatic.com`.
 3. **Frames largos** con CPU 4x (gama baja) a 375 px: 10 cambios de pantalla, abrir y cerrar la hoja 5 veces, scroll del plantel; se corre 3 veces y se cuentan los frames de `long-animation-frame` (>50 ms) y los de `requestAnimationFrame` de más de 25 ms:
    ```
    npm i --no-save puppeteer-core          # una vez; no toca package.json
-   node docs/rendimiento/hacer-galeria.mjs
-   node docs/rendimiento/herramienta.mjs recorrido
+   node scripts/verificacion-visual/hacer-galeria.mjs
+   node scripts/verificacion-visual/herramienta.mjs recorrido
    ```
 4. **Comparación píxel a píxel de los refactors** (T2, T3): `herramienta.mjs base` guarda los estilos computados de cada elemento en 5 vistas × 375 y 1280 px; `herramienta.mjs comparar` lista lo que cambió. `herramienta.mjs capturas <carpeta>` saca los PNG.
 
@@ -70,7 +70,7 @@ Cada uno se midió con Lighthouse mobile sobre la landing (1 corrida por variant
 | Resplandor en un `::before` con `var(--club)` y `opacity` | 7 706 | 12 633 | Adoptado (con la animación de las tarjetas) |
 | Igual, **sin** la animación escalonada de `.ben` | 7 546 | 12 317 | **Adoptado:** la animación sumaba ~+316 ms de LCP (un párrafo de las tarjetas es el LCP y no cuenta hasta que se ve) |
 
-**T8, pesos de fuente: no hay nada que quitar.** Cruzando `font-family` × `font-weight` de los CSS y mirando qué archivos descarga cada vista (`docs/rendimiento/fuentes.mjs`):
+**T8, pesos de fuente: no hay nada que quitar.** Cruzando `font-family` × `font-weight` de los CSS y mirando qué archivos descarga cada vista (`scripts/verificacion-visual/fuentes.mjs`):
 
 - La landing baja sólo Barlow 600 y 700 e Inter: el navegador ya pide de forma perezosa sólo las caras que se usan, así que quitar pesos del `<link>` no achica la landing.
 - Las pantallas de la app usan los 4 pesos de Barlow (400 en HOY y en la hoja, 500 en PLANTEL y DATOS, 600, 700) y los 2 de IBM Plex Mono.

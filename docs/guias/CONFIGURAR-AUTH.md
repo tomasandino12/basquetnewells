@@ -149,7 +149,7 @@ sí misma, ni un entrenador dárselo a otro: lo impide la base, no la pantalla
 (ver `supabase/ESQUEMA.md`). Sólo aparecen las cuentas que ya confirmaron el
 mail (paso 2).
 
-Lo que sigue siendo a mano, por SQL, está en `docs/COORDINACION.md`: crear un
+Lo que sigue siendo a mano, por SQL, está en `docs/guias/COORDINACION.md`: crear un
 coordinador y darle además el rol de entrenador a un coordinador.
 
 La persona, una vez habilitada, toca **"Ya me dieron el acceso, reintentar"** y entra.

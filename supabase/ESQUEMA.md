@@ -104,7 +104,7 @@ Sólo un coordinador escribe acá, y nunca sobre sí mismo. Ver "Policies del co
 ### `importacion`
 Un registro de "este archivo .xlsx se procesó". Guarda:
 - `hash_archivo` (SHA-256 de los bytes del archivo): defensa **principal** contra reimportar el mismo partido — sobrevive el renombrado (p.ej. un archivo reenviado por WhatsApp con otro nombre tiene el mismo hash).
-- `id_partido_cabb` (nullable): refuerzo secundario, viene del nombre de archivo real de la CABB cuando matchea el patrón (ver `PARSER.md`).
+- `id_partido_cabb` (nullable): refuerzo secundario, viene del nombre de archivo real de la CABB cuando matchea el patrón (ver `src/parser/PARSER.md`).
 - `advertencias` (jsonb): las advertencias que devolvió el parser para este archivo. Sirven para dos cosas: detectar que la CABB cambió el formato de exportación, y (a futuro) mostrarle al entrenador qué tan confiable es una planilla.
 - `unique(club_id, hash_archivo)`.
 
@@ -114,7 +114,7 @@ Un partido, siempre asociado a exactamente una `importacion` (`unique(importacio
 - `rival_nombre`, `puntos_propios`, `puntos_rival`: del bloque rival **no se guarda ningún jugador**, sólo esto. El nombre del rival es información pública de competencia; los `puntos_*` son nullable porque si el parser no pudo leer la fila `TOTALES` de ese bloque (advertencia `SIN_TOTALES`), el marcador real es "no se sabe", no `0`.
 
 ### `estadistica_jugador_partido`
-Todo lo que trae el parser para un jugador **propio** en un partido: minutos en segundos, puntos, los tres tipos de tiro con anotados/intentados/porcentaje, rebotes, asistencias, recuperos, pérdidas, tapones cometidos/recibidos, faltas cometidas/recibidas, valoración y diferencial — cada campo numérico nullable de forma independiente, igual que en el contrato del parser (`PARSER.md`): un `NULL` significa "no se pudo leer", nunca se confunde con `0`.
+Todo lo que trae el parser para un jugador **propio** en un partido: minutos en segundos, puntos, los tres tipos de tiro con anotados/intentados/porcentaje, rebotes, asistencias, recuperos, pérdidas, tapones cometidos/recibidos, faltas cometidas/recibidas, valoración y diferencial — cada campo numérico nullable de forma independiente, igual que en el contrato del parser (`src/parser/PARSER.md`): un `NULL` significa "no se pudo leer", nunca se confunde con `0`.
 - `numero`: el número de camiseta de ESE partido (nunca en `jugador`).
 - `nombre_crudo`: el string exacto del archivo para esa fila, para poder auditar contra el original.
 - `unique(partido_id, jugador_id)`: una sola fila de estadística por jugador por partido.
@@ -352,7 +352,7 @@ Las funciones, todas `security definer` con `set search_path = ''`:
 | `panorama_del_club(club)` | por plantel: jugadores, partidos, última medición; tiro de batería sumado por (sesión, posición); y desde 0022, tiro en partidos sumado por partido (triples y libres, anotados e intentados de a pares, con el rival). Sin porcentajes: los calcula `estadisticas.js` |
 | `historia_del_jugador(jugador)` (0056) | el recorrido completo de un chico para el entrenador que lo tiene hoy en un plantel que puede ver; sin coordinador (ver abajo) |
 
-**Límite conocido:** `usuarios_pendientes()` muestra a cualquier coordinador todas las cuentas sin club de la plataforma. Con un solo club (hoy) es exacto. Desde 0029 no lista a quien ya tiene una cuenta de jugador vigente: sin ese filtro, un chico figuraría entre los "pendientes de habilitar", a un toque de quedar como entrenador con acceso a datos de otros menores. `clubes_para_solicitar()` tiene el límite equivalente. Ver `docs/COORDINACION.md`.
+**Límite conocido:** `usuarios_pendientes()` muestra a cualquier coordinador todas las cuentas sin club de la plataforma. Con un solo club (hoy) es exacto. Desde 0029 no lista a quien ya tiene una cuenta de jugador vigente: sin ese filtro, un chico figuraría entre los "pendientes de habilitar", a un toque de quedar como entrenador con acceso a datos de otros menores. `clubes_para_solicitar()` tiene el límite equivalente. Ver `docs/guias/COORDINACION.md`.
 
 Las funciones invoker de 0029 (`aprobar_solicitud_jugador(payload)`, `rechazar_solicitud_jugador(id)`, `revocar_cuenta_jugador(jugador)`) quedan sujetas a RLS: un entrenador sin asignación al plantel de la solicitud ni siquiera la ve. `aprobar_solicitud_jugador` hace en **una transacción** los dos caminos —`{solicitudId, jugadorId}` vincula a una ficha del plantel; `{solicitudId, nombreClave, nombreLimpio}` crea la ficha, su pertenencia vigente y vincula— y falla con `JUGADOR_YA_EXISTE`, `JUGADOR_YA_TIENE_CUENTA`, `FICHA_FUERA_DEL_PLANTEL` o `SOLICITUD_NO_ENCONTRADA`, sin dejar nada a medias.
 
@@ -385,7 +385,7 @@ Quién entra a un club, y a qué categorías, lo decide el coordinador. **Un ent
 - `miembro_club`: además de la fila propia, ve las de su club. **Insert** sólo de entrenadores (`es_entrenador and not es_coordinador`), nunca de sí mismo. Sin update ni delete. Grant de insert sólo por columna `(user_id, club_id, es_entrenador)`.
 - `asignacion_plantel`: ve las de su club. **Insert** a otro entrenador del club, nunca a sí mismo. **Update** sólo para cerrar una vigente de otro.
 
-Que el coordinador no pueda asignarse a sí mismo es a propósito: si pudiera, "el coordinador no accede a datos individuales" se saltearía con dos toques. Crear un coordinador, o darle además el rol de entrenador, es SQL (`docs/COORDINACION.md`).
+Que el coordinador no pueda asignarse a sí mismo es a propósito: si pudiera, "el coordinador no accede a datos individuales" se saltearía con dos toques. Crear un coordinador, o darle además el rol de entrenador, es SQL (`docs/guias/COORDINACION.md`).
 
 ### RPC `asignar_planteles(user, club, plantel_ids[])`
 

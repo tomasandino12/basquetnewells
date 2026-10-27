@@ -7,7 +7,7 @@ const HEADER_ROW = ['Num.', 'Nombre', 'MIN', 'PTS', 'A/I', '%', 'A/I', '%', 'A/I
 const AGRUPADORES_ROW = ['', '', '', '', 'TC 2P', '', 'TC 3P', '', 'TL'];
 
 // Nombres inventados, conservando la suciedad de formato real documentada en
-// PARSER.md: espacio antes de coma, coma duplicada, apellido compuesto,
+// src/parser/PARSER.md: espacio antes de coma, coma duplicada, apellido compuesto,
 // doble espacio tras la coma, acentos y Ñ.
 const JUGADORES_EQUIPO_A = [
   ['4', 'PÉREZ , FRANCO', '15:23', '8', '3/5', '60', '0/1', '0', '2/2', '100', '2', '1', '3', '2', '1', '0', '0', '0', '1', '2', '10', '4'],

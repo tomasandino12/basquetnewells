@@ -92,7 +92,7 @@ function buscarSugerencia(jugadorArchivo, jugadoresExistentes) {
 
 /**
  * Puro: sin red, sin cliente de base de datos, sin generar IDs. Clasifica la salida del
- * parser (ver PARSER.md) en datos listos para persistir. condicionPropia
+ * parser (ver src/parser/PARSER.md) en datos listos para persistir. condicionPropia
  * ("local"|"visitante") es un dato que decide el entrenador — nunca se
  * infiere comparando nombres de club.
  */
