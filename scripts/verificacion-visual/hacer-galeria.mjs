@@ -71,6 +71,51 @@ const barras = `
   <button class="btn" disabled style="margin-top:.5rem">Deshabilitado</button>
   <div class="campo" style="margin-top:1rem"><label>Campo</label><input value="Texto"></div></div>`;
 
+// Casos especiales para el repaso de temas (task 5 del plan del tema oscuro): lo que no sale en
+// HOY / PLANTEL / DATOS y se pinta con colores propios. Los gráficos y la pizarra se dibujan con
+// los módulos reales (un <script type="module"> al final), con datos inventados.
+const casos = `
+<section class="pant" id="p-casos"><div id="g-casos"><div class="pad">
+  <h2 class="h2">Gráficos</h2>
+  <div class="tarj"><svg class="g" id="svg-evolucion-c"></svg></div>
+  <div class="tarj"><svg class="g" id="svg-cancha-c"></svg></div>
+  <h2 class="h2">Pizarra</h2>
+  <div class="tarj"><svg class="pz" id="svg-pizarra-c"></svg></div>
+  <h2 class="h2">Asistencia</h2>
+  <ul style="list-style:none;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem">
+    <li class="asis-item"><button class="asis-tarj" data-estado="presente"><span class="nom">Morales, Juan</span><span class="asis-estado">Presente</span></button></li>
+    <li class="asis-item"><button class="asis-tarj" data-estado="ausente"><span class="nom">Gómez, Juan</span><span class="asis-estado">Ausente</span></button></li>
+    <li class="asis-item"><button class="asis-tarj" data-estado="sin-tomar"><span class="nom">Bianchi, Juan</span><span class="asis-estado">Sin tomar</span><span class="chip baja">Lesionado</span></button></li>
+    <li class="asis-item"><button class="asis-tarj" data-estado="justificada"><span class="nom">Vázquez, Juan</span><span class="asis-estado">Justificada</span></button></li>
+  </ul>
+  <h2 class="h2">Chips y etiquetas</h2>
+  <div class="chips"><span class="chip">neutro</span> <span class="chip sube">sube</span> <span class="chip baja">baja</span> <span class="chip sin">sin medir</span> <span class="tag">tag</span> <span class="tag rojo">tag rojo</span></div>
+  <div class="yoyo-jug aviso" style="margin-top:.75rem"><div class="etq">Aviso del jugador</div><div class="nom">Ríos, Juan</div></div>
+  <div class="tira" style="margin-top:.75rem"><button class="num on">1</button> <button class="num">2</button></div>
+  <div class="segmentado" style="margin-top:.75rem"><button class="segmento" aria-pressed="true">Uno</button><button class="segmento" aria-pressed="false">Dos</button></div>
+  <div style="display:flex;gap:.5rem;margin-top:.75rem"><button class="chip-tema on">Filtro activo</button><button class="chip-tema">Filtro</button></div>
+  <div class="jug-sugerencia" style="margin-top:.75rem"><div class="decision"><button class="on">Sí</button><button>No</button></div></div>
+  <h2 class="h2">Campos</h2>
+  <div class="campo"><label for="c1">Con placeholder</label><input id="c1" placeholder="Escribí acá" type="text"></div>
+  <div class="campo"><label for="c2">Lista</label><select id="c2"><option>Una opción</option></select></div>
+  <div class="campo"><label for="c3">Nota</label><textarea id="c3" placeholder="Una nota"></textarea><div class="ayuda">Texto de ayuda del campo.</div></div>
+  <div class="campo"><label for="c4">Con error</label><input id="c4" value="Dato" aria-invalid="true"></div>
+  <h2 class="h2">Avisos</h2>
+  <div class="al error"><span class="ico">!</span><div class="tx">Aviso de error<div class="mt">con detalle</div></div></div>
+  <div class="al ok"><span class="ico">✓</span><div class="tx">Aviso de listo<div class="mt">con detalle</div></div></div>
+  <div class="crono-aviso">Aviso amarillo del cronómetro</div>
+  <div class="aviso-corporal"><span>Aviso corporal</span><button class="btn sec chico">Acción</button></div>
+  <h2 class="h2">Números y botones</h2>
+  <div class="fin-fila"><span class="fin-ingreso">+ $ 12.000</span> <span class="fin-egreso">- $ 3.000</span></div>
+  <div class="test-fila hecho"><div class="ic">✓</div><div><div class="nom">Prueba hecha</div><div class="d">12,4 s</div></div></div>
+  <button class="btn sec" style="margin-top:.75rem">Botón secundario</button>
+  <button class="btn contorno" style="margin-top:.75rem">Botón contorno</button>
+  <div class="eyebrow">Eyebrow <span class="der">der</span></div>
+  <div class="rec-dato"><div class="v">Dato hundido</div></div>
+  <div class="pestanas" role="tablist"><button class="pest on" role="tab">Una</button><button class="pest" role="tab">Otra</button></div>
+</div></div></section>`;
+html = html.replace('<section class="pant" id="p-hoy">', casos + '<section class="pant" id="p-hoy">');
+
 const pantallas = { hoy, plantel, datos: barras };
 for (const [id, cont] of Object.entries({ 'p-hoy': hoy, 'p-plantel': plantel, 'p-datos': barras })) {
   html = html.replace(new RegExp(`(<section class="pant" id="${id}"><div id="[^"]+">)`), `$1${cont}`);
@@ -90,7 +135,7 @@ html = html.replace('<nav class="nav" id="nav" aria-label="Navegación principal
 
 const script = `
 <script>
-const ids = { hoy: 'p-hoy', plantel: 'p-plantel', datos: 'p-datos' };
+const ids = { hoy: 'p-hoy', plantel: 'p-plantel', datos: 'p-datos', casos: 'p-casos' };
 function ir(v) {
   document.querySelectorAll('.pant').forEach((p) => p.classList.toggle('on', p.id === ids[v]));
   document.querySelectorAll('.nav button[data-g]').forEach((b) => b.classList.toggle('on', b.dataset.g === v));
@@ -129,7 +174,19 @@ window.recorrido = async () => {
   return { largos: frames.length, peor: Math.max(0, ...frames), frames, rafTotal: d.length, raf25: d.filter((x) => x > 25).length, rafPeor: Math.round(Math.max(...d)) };
 };
 </script>`;
-html = html.replace("</body>", `<script src="/.claude/worktrees/_galeria/dump.js"></script>${script}</body>`);
+const modulos = `
+<script type="module">
+import { grafico, cancha } from '/src/ui/componentes/graficos.js';
+import { dibujarPizarra } from '/src/ui/componentes/pizarra.js';
+import { jugadaVacia, estadoAlInicioDelPaso } from '/src/data/jugadas.js';
+grafico(document.getElementById('svg-evolucion-c'), { etiquetas: ['01/09', '08/09', '15/09', '22/09', '29/09'], series: [
+  { nombre: '2P', c: 'primario', d: [40, 44, 41, 48, 52] }, { nombre: '3P', c: 'tinta', d: [22, 26, null, 30, 33] }, { nombre: 'TL', c: 'apagado', dash: true, d: [60, 64, 66, 70, 71] }] });
+cancha(document.getElementById('svg-cancha-c'), { frontal: { pct: 41, anotados: 41, intentos: 100 }, esquinaDerecha: { pct: 27, anotados: 8, intentos: 30 }, esquinaIzquierda: { pct: 55, anotados: 11, intentos: 20 } }, { alto: 240 });
+const datos = { ...jugadaVacia(), fichas: [
+  { id: 'a1', tipo: 'ataque', numero: 1, x: 0.5, y: 0.8 }, { id: 'a2', tipo: 'ataque', numero: 2, x: 0.25, y: 0.55 }, { id: 'd1', tipo: 'defensa', numero: 1, x: 0.5, y: 0.65 }] };
+dibujarPizarra(document.getElementById('svg-pizarra-c'), datos, estadoAlInicioDelPaso(datos, 0), { paso: 0 });
+</script>`;
+html = html.replace("</body>", `<script src="/.claude/worktrees/_galeria/dump.js"></script>${script}${modulos}</body>`);
 mkdirSync(SALIDA, { recursive: true });
 writeFileSync(`${SALIDA}/galeria.html`, html);
 copyFileSync(`${dirname(fileURLToPath(import.meta.url))}/dump.js`, `${SALIDA}/dump.js`);

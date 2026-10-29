@@ -121,7 +121,7 @@
 .cats:empty{display:none}
 .cat{
   flex:0 0 auto;background:var(--sup-1);border-radius:var(--r-m);
-  padding:var(--sp-2) var(--sp-3);min-height:var(--tap);
+  padding:var(--sp-2) var(--sp-3);min-height:var(--tap);min-width:var(--tap);
   display:flex;align-items:center;
 }
 .cat.on{background:var(--primario)}

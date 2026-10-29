@@ -15,7 +15,7 @@ const tokens = leer('tokens');
 const ROLES = [
   'fondo-app', 'sup', 'sup-hundida', 'texto', 'texto-2', 'borde', 'pista', 'fondo-chip-t',
   'graf-texto', 'graf-eje', 'graf-rejilla', 'graf-cancha', 'marca-texto', 'marca-texto-tinte',
-  'btn-sec-fondo', 'btn-sec-borde',
+  'btn-sec-fondo', 'btn-sec-borde', 'sobre-sube',
 ];
 
 /** Los pares selector { cuerpo } del CSS, también los de dentro de un @media. */

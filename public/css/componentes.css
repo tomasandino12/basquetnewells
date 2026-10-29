@@ -217,7 +217,7 @@
   display:flex;align-items:center;justify-content:center;flex:0 0 auto;
   font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-125);color:var(--texto-2);
 }
-.test-fila.hecho .ic{background:var(--sube);color:var(--blanco)}
+.test-fila.hecho .ic{background:var(--sube);color:var(--sobre-sube)}
 .test-fila .t{font-weight:600;font-size:var(--fs-145)}
 .test-fila .d{font-size:var(--fs-115);color:var(--texto-2);margin-top:.125rem;font-family:var(--ff-mono)}
 .rec{background:var(--sup);border-radius:var(--r);padding:var(--sp-4);margin-bottom:var(--sp-2);box-shadow:var(--sombra)}

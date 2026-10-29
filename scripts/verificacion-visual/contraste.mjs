@@ -87,6 +87,8 @@ export function medirVista({ minToque = 44 } = {}) {
     if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'TITLE'].includes(el.tagName)) continue;
     const texto = [...el.childNodes].filter((x) => x.nodeType === 3).map((x) => x.textContent).join('').trim();
     if (!texto || !visible(el)) continue;
+    // Texto SVG sobre una forma (el número de una ficha de la pizarra): el fondo real es la forma, que acá no se ve. Se revisa a ojo.
+    if (el.closest('svg.pz')) continue;
     const cs = getComputedStyle(el);
     const esSvg = el instanceof SVGElement;
     const colorTexto = rgba(esSvg ? cs.fill : cs.color);

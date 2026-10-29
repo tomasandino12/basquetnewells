@@ -181,6 +181,7 @@ En oscuro también cambian `--sube`, `--baja`, `--sube-fondo`, `--baja-fondo`, `
 - **Pantalla nueva: usá roles, no paleta.** `--papel`, `--blanco`, `--tinta`, `--gris` y `--linea` quedan para lo que es siempre igual, con cualquier tema: la pizarra de jugadas y el PNG que se exporta (son un "papel"), la hoja de impresión, la barra de navegación y la cabecera (negras). `tests/contratoTokens.test.js` lo vigila y lista las excepciones.
 - `.publico` lleva los roles pegados a sus valores claros (`:root,.publico`): lo que comparte con la app (botones, campos, chips) se ve igual en los dos temas.
 - `public/tema.js` aplica el tema antes de pintar (script clásico en el `<head>, sin `defer`; es un archivo porque la CSP sólo acepta scripts de `'self'`). `src/data/tema.js` tiene la regla pura y `src/ui/preferenciaTema.js` el cambio en vivo.
+- **La pizarra de jugadas es siempre un papel claro**, y con ella el PNG que se exporta. Los trazos de la cancha usan los valores oscuros de `--trazo-*`; los íconos de la barra del editor (`.jed-herr-btn`), que van sobre la interfaz, llevan en el tema oscuro la versión clara. El sistema operativo en oscuro ya no cambia los trazos: sólo el interruptor.
 - Una imagen con fondo blanco (un escudo rival, por ejemplo) va sobre una placa clara, no suelta sobre el fondo oscuro.
 - `node scripts/verificacion-visual/herramienta.mjs contraste` (con `TEMA=oscuro` para el otro tema) mide el contraste de cada texto, los desbordes y los toques < 44 px de la galería.
 

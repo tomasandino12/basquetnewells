@@ -18,7 +18,7 @@ const RAIZ = process.env.SALIDA ?? `${process.cwd()}/.claude/worktrees/_galeria/
 const GAL = `${ORIGEN}/.claude/worktrees/_galeria/galeria.html`;
 const VISTAS = {
   landing: `${ORIGEN}/public/`,
-  hoy: `${GAL}#hoy`, plantel: `${GAL}#plantel`, datos: `${GAL}#datos`, hoja: `${GAL}#hoja`,
+  hoy: `${GAL}#hoy`, plantel: `${GAL}#plantel`, datos: `${GAL}#datos`, hoja: `${GAL}#hoja`, casos: `${GAL}#casos`,
 };
 const ANCHOS = [375, 1280];
 
@@ -64,6 +64,7 @@ try {
         const nombres = await p.evaluate(() => window.PROPS_ESTILOS);
         const f = `${RAIZ}/base/${vista}-${ancho}.json`;
         if (cmd === 'base') { writeFileSync(f, JSON.stringify(dump)); total += Object.keys(dump).length; continue; }
+        if (!existsSync(f)) { console.log(`${vista}@${ancho}: sin base (corré el modo base primero)`); await p.close(); continue; }
         const base = JSON.parse(readFileSync(f, 'utf8'));
         const dif = [];
         for (const k of new Set([...Object.keys(base), ...Object.keys(dump)])) {
@@ -83,6 +84,8 @@ try {
     mkdirSync(dir, { recursive: true });
     for (const vista of Object.keys(VISTAS)) for (const ancho of ANCHOS) {
       const p = await abrir(vista, ancho);
+      // La vista casos es larga y el scroll vive en .cuerpo (la app mide 100dvh): se estira la ventana para verla entera.
+      if (vista === 'casos') { await p.setViewport({ width: ancho, height: ancho < 600 ? 3600 : 2600, deviceScaleFactor: 1, isMobile: ancho < 600, hasTouch: ancho < 600 }); await new Promise((r) => setTimeout(r, 300)); }
       await p.screenshot({ path: `${dir}/${vista}-${ancho}.png` });
       await p.close();
     }
