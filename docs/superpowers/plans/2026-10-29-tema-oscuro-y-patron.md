@@ -19,11 +19,14 @@
 
 | Task | Qué | Estado |
 |---|---|---|
-| 1 | Tokens de rol, sin cambio visual | pendiente |
-| 2 | Chequeo de contraste y tema en la herramienta visual | pendiente |
+| 1 | Tokens de rol, sin cambio visual | hecha (8b8d79a) |
+| 2 | Chequeo de contraste y tema en la herramienta visual | hecha |
 | 3 | Tema oscuro: tokens, `tema.js`, interruptor, DESIGN.md | pendiente |
 | 4 | Patrón de fondo y ajuste del claro | pendiente |
 | 5 | Repaso de casos especiales en los dos temas | pendiente |
+
+**Hallazgos del `contraste` en claro (task 2), a arreglar en la task 5:** (a) `.flecha` del chevron de PLANTEL da 2.45:1 porque `publico.css:133` define `.flecha` suelto y le pisa el color a la app; (b) los botones `.cat` de la cabecera miden 41×44 px (< 44 de ancho).
+**Nota de la task 1:** roles extra que hicieron falta: `--sup-hundida` (no `--sup-2`: ya existe como superficie oscura), `--pista` y los de gráficos `--graf-*`. Exentos a propósito: pizarra `.pz*`, impresión, `.nav`, `.test-fila.hecho .ic`, `.rec-filo-sello`, `.crono-aviso`.
 
 ---
 
