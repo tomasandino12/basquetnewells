@@ -19,15 +19,15 @@
 ## Estado
 | Task | Estado | Commit |
 |---|---|---|
-| 1 Lógica pura | pendiente | |
-| 2 Migración 0064 | pendiente | |
-| 3 Repo | pendiente | |
-| 4 Tomar asistencia | pendiente | |
-| 5 Lesiones en la toma | pendiente | |
-| 6 Historial y planilla | pendiente | |
-| 7 Ficha del jugador | pendiente | |
-| 8 Panorama del coordinador | pendiente | |
-| 9 db push y verificación | pendiente | |
+| 1 Lógica pura | hecha | feat(asistencia): lógica pura |
+| 2 Migración 0064 | hecha; probada en la base local (11 casos, tests/verificarAsistencia.sql), sin aplicar a la real | feat(asistencia): migración 0064 |
+| 3 Repo | hecha | feat(asistencia): repo y verificación SQL |
+| 4 Tomar asistencia | hecha, probada en el navegador a 375 px contra la base local | feat(asistencia): pantalla Tomar asistencia |
+| 5 Lesiones en la toma | hecha, probada en el navegador contra la base local | feat(asistencia): justificada y lesiones en la toma |
+| 6 Historial y planilla | hecha, probada en el navegador (planilla leída de vuelta) | feat(asistencia): historial y planilla para el área |
+| 7 Ficha del jugador | hecha (pestaña Físico, primera sección), probada en el navegador a 375 px contra la base local | feat(asistencia): bloque en la ficha del jugador |
+| 8 Panorama del coordinador | hecha (línea en cada tarjeta de categoría), probada en el navegador como coordinador | feat(asistencia): % por categoría en el panorama |
+| 9 db push y verificación | 0064 aplicada a la base real (29/10); ficha y panorama verificados en el navegador contra la base local; falta el recorrido completo de la toma (ver pendientes) y el pendiente legal antes de mergear | |
 
 ---
 

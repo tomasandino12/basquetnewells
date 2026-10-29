@@ -182,6 +182,7 @@
 .chip.sube{background:var(--sube-fondo);color:var(--sube)}
 .chip.baja{background:var(--baja-fondo);color:var(--baja)}
 .chip.sin{background:var(--fondo-chip);color:var(--gris);font-style:italic}
+.chip.alerta{background:var(--primario);color:var(--sobre-club)}
 .flecha{color:var(--gris-cl);font-size:var(--fs-170);line-height:1}
 
 /* ---- datos de la ficha ---- */
@@ -1100,3 +1101,44 @@ svg.pz.pz-icono{width:2.75rem;height:1.375rem;display:inline-block;vertical-alig
    esconde con el atributo (p. ej. "Fue un error, pedir acceso de nuevo" en la
    pantalla sin club) se veían siempre. */
 .btn[hidden]{display:none}
+
+/* ---- ASISTENCIA: tomar asistencia (p-asistencia) ----
+   Una tarjeta por chico: un toque alterna presente y ausente. El estado se
+   dice con el texto y con el borde (lleno / punteado), no sólo con el color. */
+.asis-grilla{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3);list-style:none;margin:0;padding:0}
+.asis-tarj{
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:var(--sp-2);
+  width:100%;min-height:5.5rem;padding:var(--sp-3);text-align:left;
+  background:var(--blanco);border:0.125rem solid var(--borde-control);border-radius:var(--r);box-shadow:var(--sombra);
+  transition:transform var(--dur-1) var(--ease-salida);
+}
+.asis-tarj:active{transform:scale(.97)}
+.asis-tarj .nom{font-weight:600;font-size:var(--fs-145);line-height:1.2;overflow-wrap:anywhere}
+.asis-estado{
+  padding:.125rem var(--sp-2);border-radius:var(--r-btn);background:var(--fondo-chip);color:var(--gris);
+  font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-125);letter-spacing:.1em;text-transform:uppercase;
+}
+.asis-tarj[data-estado="presente"]{border-color:var(--sube)}
+.asis-tarj[data-estado="presente"] .asis-estado{background:var(--sube-fondo);color:var(--sube)}
+.asis-tarj[data-estado="ausente"],.asis-tarj[data-estado="justificada"]{border-style:dashed}
+
+/* Barra fija: cuántos vinieron y Guardar. Va dentro de .pie-fijo. */
+#asis-aviso:empty{display:none}
+.asis-barra{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);
+  padding:var(--sp-3) var(--sp-4);background:var(--negro);color:var(--sobre-oscuro);border-radius:var(--r);box-shadow:var(--sombra-alta);
+}
+.asis-cuenta{flex:1 1 auto;min-width:0;font-size:var(--fs-135)}
+.asis-cuenta .mono b{font-size:var(--fs-220)}
+.asis-cuenta .sin{background:none;color:var(--gris-osc)}
+.asis-barra .btn{flex:0 0 auto;width:auto}
+
+/* Menú de cada tarjeta (justificada, lesión): botón hermano, arriba a la derecha. */
+.asis-item{position:relative}
+.asis-menu{position:absolute;top:var(--sp-1);right:var(--sp-1)}
+.asis-tarj .nom{padding-right:var(--tap)}
+.asis-opciones{display:flex;flex-direction:column;gap:var(--sp-2)}
+
+/* ---- ASISTENCIA: bloque de la ficha del jugador ---- */
+.ficha-asis{display:flex;align-items:center;gap:var(--sp-3)}
+.ficha-asis-pct{font-size:var(--fs-220);font-weight:600}
