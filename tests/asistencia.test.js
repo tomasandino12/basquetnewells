@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   codigoDelDia, resumenDeAsistencia, semaforo, lesionadoEn, textoDeLesion,
+  entrenamientoDesdeFila, lesionDesdeFila,
 } from '../src/data/asistencia.js';
 
 test('codigoDelDia cubre los seis códigos', () => {
@@ -98,5 +99,20 @@ test('textoDeLesion sin zona y con lado no_aplica', () => {
   assert.equal(
     textoDeLesion({ desde: '2026-10-12', zona: 'muneca_mano', lado: null }),
     'Lesionado desde el 12/10 · muñeca o mano',
+  );
+});
+
+test('los mappers pasan a camelCase y respetan el null', () => {
+  assert.deepEqual(
+    entrenamientoDesdeFila({
+      id: 'e1', fecha: '2026-10-28', hubo: true,
+      asistencia: [{ jugador_id: 'j1', estado: 'presente' }],
+    }),
+    { id: 'e1', fecha: '2026-10-28', hubo: true, filas: [{ jugadorId: 'j1', estado: 'presente' }] },
+  );
+  assert.deepEqual(entrenamientoDesdeFila({ id: 'e2', fecha: '2026-10-27', hubo: false }).filas, []);
+  assert.deepEqual(
+    lesionDesdeFila({ id: 'l1', jugador_id: 'j1', desde: '2026-10-12', hasta: null, zona: null, lado: null, tipo: null }),
+    { id: 'l1', jugadorId: 'j1', desde: '2026-10-12', hasta: null, zona: null, lado: null, tipo: null },
   );
 });

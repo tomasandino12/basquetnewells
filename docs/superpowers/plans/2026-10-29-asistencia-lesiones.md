@@ -20,8 +20,8 @@
 | Task | Estado | Commit |
 |---|---|---|
 | 1 Lógica pura | hecha | feat(asistencia): lógica pura |
-| 2 Migración 0064 | hecha, sin aplicar (no hay base local) | feat(asistencia): migración 0064 |
-| 3 Repo | pendiente | |
+| 2 Migración 0064 | hecha; probada en la base local (11 casos, tests/verificarAsistencia.sql), sin aplicar a la real | feat(asistencia): migración 0064 |
+| 3 Repo | hecha | feat(asistencia): repo y verificación SQL |
 | 4 Tomar asistencia | pendiente | |
 | 5 Lesiones en la toma | pendiente | |
 | 6 Historial y planilla | pendiente | |

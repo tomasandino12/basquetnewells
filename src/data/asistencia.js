@@ -105,3 +105,25 @@ export function textoDeLesion({ desde, zona, lado }) {
   if (lado === 'izquierdo' || lado === 'derecho') partes.push(lado);
   return `${base} · ${partes.join(' ')}`;
 }
+
+/** Un día de práctica con lo tomado: `asistencia` es el embed de PostgREST. */
+export function entrenamientoDesdeFila(f) {
+  return {
+    id: f.id,
+    fecha: f.fecha,
+    hubo: f.hubo,
+    filas: (f.asistencia ?? []).map((a) => ({ jugadorId: a.jugador_id, estado: a.estado })),
+  };
+}
+
+export function lesionDesdeFila(f) {
+  return {
+    id: f.id,
+    jugadorId: f.jugador_id,
+    desde: f.desde,
+    hasta: f.hasta,
+    zona: f.zona,
+    lado: f.lado,
+    tipo: f.tipo,
+  };
+}
