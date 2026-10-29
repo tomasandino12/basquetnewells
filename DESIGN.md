@@ -11,8 +11,8 @@ Fuente de verdad del diseño. La Parte 1 es para entender la identidad; la Parte
 Una herramienta de trabajo para clubes formadores de básquet: el profe la abre en la cancha, con el celu en una mano y la pantalla al brillo que venga; el coordinador la mira en la compu. Los datos son de menores. Por eso la app es **clara, densa en datos y sin decorado**: lo que importa es leer un número a un metro de distancia y tocar el botón correcto con el pulgar.
 
 Hay dos mundos, separados a propósito:
-- **La app por dentro** (`.pant`): fondo papel, tarjetas blancas, tinta casi negra. No hay tema oscuro: en la cancha lo claro se lee mejor.
-- **Lo público** (`.publico`: landing y autenticación): fondo casi negro con profundidad y un resplandor del color del club. Es presentación, no herramienta, y vive en su propio archivo (`publico.css`) para que nada se filtre hacia adentro.
+- **La app por dentro** (`.pant`): clara por defecto (fondo papel, tarjetas blancas, tinta casi negra: en la cancha lo claro se lee mejor) y oscura a elección. En Mi perfil, un interruptor "Tema oscuro" pone `data-tema="oscuro"` en `<html>`; la preferencia es del teléfono (`localStorage`, clave `semillero.tema`), no de la cuenta, y no hay opción "como el celular". Ver *Tema claro y oscuro*.
+- **Lo público** (`.publico`: landing y autenticación) **es negro siempre**, con cualquier tema de la app: fondo casi negro con profundidad y un resplandor del color del club. Es presentación, no herramienta, y vive en su propio archivo (`publico.css`) para que nada se filtre hacia adentro.
 
 ## Carácter visual
 
@@ -157,7 +157,43 @@ Los usados con más frecuencia: `--fs-115` (ayudas, chips, meta), `--fs-125` (ey
 - **Animar `width`, `height`, `top`/`left`, `box-shadow`, `background`, `filter` o `backdrop-filter`**: repintan cada frame. Una barra crece con `scaleX` desde el ancho final, no animando el ancho.
 - **Animaciones infinitas, parallax, marquee, blur de fondo, marcas de agua**: decorado de sitio institucional; el blur cuesta en Android gama baja y una marca de agua no escala a multi-club. **Excepciones** (`publico.css`, verificadas por test: tres `infinite`, sólo ahí): el giro del anillo de texto del escudo en la landing, la cinta de fechas del portal y el sticker de sponsor del hero del portal. Condiciones: anima sólo `transform` (keyframe con `from` solo), es lineal en `--dur-giro`, se pausa cuando el escudo sale de pantalla (IntersectionObserver) y con `prefers-reduced-motion` queda quieto y legible. Las demos de la landing no hacen loop.
 - **Una fuente más** (Oswald, Chakra Petch): ~20–30 KB para una diferencia que casi no se nota. **Sacar pesos de Inter**: es variable, no ahorra un byte.
-- **Tema oscuro para la app por dentro**: se usa en la cancha, con cualquier brillo.
+- **Tema "como el celular"** (seguir `prefers-color-scheme`): se descartó a propósito; el tema se elige a mano y el claro es el de la cancha.
+
+### Tema claro y oscuro
+
+Las pantallas piden el **rol** de un color y no el de la paleta; el tema oscuro redefine sólo los roles (`:root[data-tema="oscuro"]` en `tokens.css`, con valores de las superficies `--pub-*`) y toda la app cambia sin tocar un selector.
+
+| Rol | Claro → Oscuro | Para qué |
+|---|---|---|
+| `--fondo-app` | `--papel` → `--pub-fondo` | Fondo de las pantallas, la hoja y lo que las tapa (cronómetro, visor). |
+| `--sup` | `--blanco` → `--pub-tarjeta` | Tarjetas, filas y campos. |
+| `--sup-hundida` | `--papel` → `#202027` | Un nivel hundido dentro de una tarjeta. |
+| `--texto` / `--texto-2` | `--tinta` / `--gris` → `--sobre-oscuro` / `--gris-osc` | Texto principal y secundario. |
+| `--borde` / `--pista` | `--linea` → `--pub-borde` / `#2A2A33` | Separadores y el carril vacío de una barra. |
+| `--fondo-chip-t` | `--fondo-chip` → `#24242C` | Chips y etiquetas en reposo. |
+| `--marca-texto` / `--marca-texto-tinte` | `--primario-osc` → `--club-texto` | El color del club como **texto chico**: el rojo puro llega a 3.8:1 sobre oscuro y a 4.2:1 sobre el fondo con patrón. |
+| `--btn-sec-fondo` / `--btn-sec-borde` | `--negro` → `--sup-2` / `--linea-osc` | El `.btn.sec`: negro macizo en claro; en oscuro se perdería, así que sube un escalón y lleva borde. |
+| `--graf-*` | texto, eje, rejilla y piso de la cancha de tiro | Los gráficos de `graficos.js`, que pintan con `var(--…)`. |
+| `--sombra`, `--sombra-alta` | sombra suave → anillo de `--pub-borde` | Sobre oscuro las sombras no se ven: la tarjeta se separa con un borde fino dentro de la propia sombra. |
+
+En oscuro también cambian `--sube`, `--baja`, `--sube-fondo`, `--baja-fondo`, `--primario-cl` y `--primario-tenue`.
+
+- **Pantalla nueva: usá roles, no paleta.** `--papel`, `--blanco`, `--tinta`, `--gris` y `--linea` quedan para lo que es siempre igual, con cualquier tema: la pizarra de jugadas y el PNG que se exporta (son un "papel"), la hoja de impresión, la barra de navegación y la cabecera (negras). `tests/contratoTokens.test.js` lo vigila y lista las excepciones.
+- `.publico` lleva los roles pegados a sus valores claros (`:root,.publico`): lo que comparte con la app (botones, campos, chips) se ve igual en los dos temas.
+- `public/tema.js` aplica el tema antes de pintar (script clásico en el `<head>, sin `defer`; es un archivo porque la CSP sólo acepta scripts de `'self'`). `src/data/tema.js` tiene la regla pura y `src/ui/preferenciaTema.js` el cambio en vivo.
+- **La pizarra de jugadas es siempre un papel claro**, y con ella el PNG que se exporta. Los trazos de la cancha usan los valores oscuros de `--trazo-*`; los íconos de la barra del editor (`.jed-herr-btn`), que van sobre la interfaz, llevan en el tema oscuro la versión clara. El sistema operativo en oscuro ya no cambia los trazos: sólo el interruptor.
+- Una imagen con fondo blanco (un escudo rival, por ejemplo) va sobre una placa clara, no suelta sobre el fondo oscuro.
+- `node scripts/verificacion-visual/herramienta.mjs contraste` (con `TEMA=oscuro` para el otro tema) mide el contraste de cada texto, los desbordes y los toques < 44 px de la galería.
+
+### Fondo con patrón
+
+Detrás de las pantallas de la app hay un patrón: el escudo en un tono, la pelota y "1903", girado −12° como las diagonales de la camiseta. Es **una capa fija** (`.app::before` en `layout.css`) recortada con la baldosa `public/img/patron.png` (480 px) y pintada con `--patron-color` (tinta al 8 % en claro, blanco al 4 % en oscuro): una sola imagen sirve para los dos temas.
+
+- **Dónde va:** sólo detrás de las tarjetas, nunca sobre texto. Por eso en claro `--fondo-app` es `#E9E7E2` y `--texto-2` `#58554F`: `--gris` sobre el fondo con patrón no llega a 4.5:1, y la herramienta `contraste` mide el peor caso (con y sin patrón).
+- **Dónde no va:** el portal y el ingreso (`.publico`) son negro liso: el patrón cuelga de `.app` y no de `body` justamente para eso (lo vigila `tests/contratoTokens.test.js`). Tampoco en la pizarra ni en lo que se imprime o exporta.
+- **Se apaga solo** sin soporte de `mask` y con `prefers-reduced-transparency`.
+- **No cuesta scroll:** al ser fija se compone una vez; `herramienta.mjs recorrido` da los mismos frames largos con y sin patrón.
+- **Rehacer la baldosa:** `docs/prototipos/patron/generar.html` (se abre servido, en `localhost:5173`) genera el PNG.
 
 ## Componentes
 
@@ -250,6 +286,7 @@ abrirHoja({ titulo: jugador.nombre, cuerpo: html`<div class="tarj">…</div>` })
 10. Marcado con `html\`...\``, reusando las clases de Componentes antes de inventar otra.
 11. Ningún borrado de datos cargados por la persona ocurre de un toque (`confirmarEnHoja`), y un error de guardado se anuncia con `avisoInline`/`mostrarAviso` (`role="alert"`), no con un toast que se va.
 12. ¿Necesita una pista? Sólo si no se entiende sin ella (ver *Guía de primer uso y pistas*).
+13. Colores por **rol** (`--texto`, `--texto-2`, `--sup`, `--borde`...), no de paleta, y probada en los dos temas: `TEMA=oscuro node scripts/verificacion-visual/herramienta.mjs contraste` (ver *Tema claro y oscuro*).
 
 ## Rendimiento
 

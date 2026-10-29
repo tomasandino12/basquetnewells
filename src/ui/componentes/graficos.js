@@ -1,13 +1,21 @@
 import { POSICIONES } from '../../data/posiciones.js';
 
-const COL_MUTED = '#726E65'; // mismo tono que --gris-cl (auditoría de accesibilidad del prototipo)
+// Los gráficos pintan con roles de tokens.css (var(--…) en el atributo), así que
+// cambian solos con el tema. Los nombres que reciben las series ('primario',
+// 'tinta', 'apagado') se resuelven acá; cualquier otro valor se usa tal cual.
+const ROL = {
+  primario: 'var(--primario)',
+  tinta: 'var(--texto)',
+  apagado: 'var(--graf-texto)',
+};
+const COL_MUTED = ROL.apagado;
 
 /**
- * El rojo del club y la tinta viven en tokens.css (--primario, --tinta): un
- * club nuevo cambia el CSS y nada más. El SVG se arma como texto, donde un
- * atributo `fill` no entiende `var()`, así que se lee el valor ya resuelto una
- * vez por render. Sin documento (los tests, que corren en node) cae a
- * `currentColor`, que igual es un color válido.
+ * Valores ya resueltos del rojo del club y de la tinta, para quien dibuja en
+ * un canvas (exportarJugada.js): ahí `var()` no existe. La tinta es la de la
+ * paleta y no el rol --texto, porque el PNG es siempre claro. Sin documento
+ * (los tests, que corren en node) cae a `currentColor`, que igual es un color
+ * válido.
  */
 export function coloresDelClub() {
   if (typeof getComputedStyle !== 'function' || typeof document === 'undefined') {
@@ -58,9 +66,9 @@ export function resumenDeGrafico({ etiquetas, series }, { u = '%', dec = 0, unid
  */
 export function cancha(svg, valores, { alto = 200 } = {}) {
   const W = 300, H = 300;
-  const L = '#C9C5BE';
-  const { primario: P, tinta: T } = coloresDelClub();
-  let g = `<rect x="6" y="6" width="288" height="278" fill="#FBFAF8" stroke="${L}" stroke-width="1.5"/>`;
+  const L = 'var(--graf-eje)';
+  const P = ROL.primario, T = ROL.tinta;
+  let g = `<rect x="6" y="6" width="288" height="278" fill="var(--graf-cancha)" stroke="${L}" stroke-width="1.5"/>`;
   g += `<rect x="104" y="176" width="92" height="108" fill="none" stroke="${L}" stroke-width="1.5"/>`;
   g += `<circle cx="150" cy="176" r="34" fill="none" stroke="${L}" stroke-width="1.5"/>`;
   g += `<line x1="134" y1="272" x2="166" y2="272" stroke="${T}" stroke-width="2.5"/>`;
@@ -78,8 +86,8 @@ export function cancha(svg, valores, { alto = 200 } = {}) {
     // Muestra chica: contorno punteado. Es una señal que no depende del color
     // ni del hover, así que sobrevive en cualquier pantalla.
     g += `<circle cx="${p.x}" cy="${p.y}" r="21" fill="none" stroke="${P}" stroke-width="1.6"${v?.muestraChica ? ' stroke-dasharray="4 3"' : ''}/>`;
-    g += `<text x="${p.x}" y="${p.y + 5}" text-anchor="middle" font-family="IBM Plex Mono" font-size="14.5" font-weight="600" fill="${op > 0.55 ? '#fff' : T}">${pct == null ? '—' : pct}</text>`;
-    g += `<text x="${p.x}" y="${p.y + 34}" text-anchor="middle" font-family="Barlow Condensed" font-size="10" letter-spacing="1" fill="#6E6B66">${p.corto}</text>`;
+    g += `<text x="${p.x}" y="${p.y + 5}" text-anchor="middle" font-family="IBM Plex Mono" font-size="14.5" font-weight="600" fill="${op > 0.55 ? 'var(--sobre-club)' : T}">${pct == null ? '—' : pct}</text>`;
+    g += `<text x="${p.x}" y="${p.y + 34}" text-anchor="middle" font-family="Barlow Condensed" font-size="10" letter-spacing="1" fill="var(--texto-2)">${p.corto}</text>`;
     if (v) {
       g += `<text x="${p.x}" y="${p.y + 45}" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="${COL_MUTED}">${v.anotados}/${v.intentos}</text>`;
     }
@@ -100,7 +108,7 @@ export function cancha(svg, valores, { alto = 200 } = {}) {
  * son el caso normal, no el borde.
  *
  * datos.etiquetas: string[]  — el eje X ya formateado
- * datos.series: [{ nombre, c: 'primario' | 'tinta' | un color CSS, dash?: boolean, d: (number|null)[],
+ * datos.series: [{ nombre, c: 'primario' | 'tinta' | 'apagado' | un color CSS, dash?: boolean, d: (number|null)[],
  *                   chico?: (boolean)[] }]
  *   `chico[i]` marca el punto i como muestra chica: se dibuja hueco y
  *   punteado. Es opcional — quien no lo pase se dibuja como siempre.
@@ -147,14 +155,13 @@ export function grafico(svg, { etiquetas, series }, {
     : (i) => ml + i * (W - ml - mr) / (n - 1);
   const Y = (v) => mt + (1 - (v - min) / (max - min)) * (H - mt - mb);
 
-  const colores = coloresDelClub();
-  let g = '';
+    let g = '';
   for (let k = 0; k <= 3; k++) {
     const v = min + (max - min) * k / 3, y = Y(v);
-    g += `<line x1="${ml}" y1="${y}" x2="${W - mr}" y2="${y}" stroke="#EAE6DF" stroke-width="1"/>`;
+    g += `<line x1="${ml}" y1="${y}" x2="${W - mr}" y2="${y}" stroke="var(--graf-rejilla)" stroke-width="1"/>`;
     g += `<text x="${ml - 6}" y="${y + 3.5}" text-anchor="end" font-family="IBM Plex Mono" font-size="10" fill="${COL_MUTED}">${v.toFixed(dec)}</text>`;
   }
-  g += `<line x1="${ml}" y1="${Y(min)}" x2="${W - mr}" y2="${Y(min)}" stroke="#C9C5BE" stroke-width="1.2"/>`;
+  g += `<line x1="${ml}" y1="${Y(min)}" x2="${W - mr}" y2="${Y(min)}" stroke="var(--graf-eje)" stroke-width="1.2"/>`;
   // Una fecha ocupa ~30 de los 320 de ancho: con más de 7 se enciman y no se
   // lee ninguna. Se escriben la primera, la última y las del medio cada
   // `salto`; los puntos se dibujan todos igual. Si la anteúltima escrita cae
@@ -164,12 +171,12 @@ export function grafico(svg, { etiquetas, series }, {
   const escribir = (i) => i === 0 || i === n - 1 || (i % salto === 0 && n - 1 - i >= salto / 2);
   etiquetas.forEach((f, i) => {
     if (!escribir(i)) return;
-    g += `<text x="${X(i)}" y="${H - 8}" text-anchor="middle" font-family="Barlow Condensed" font-size="11.5" letter-spacing=".7" fill="#6E6B66">${String(f).toUpperCase()}</text>`;
+    g += `<text x="${X(i)}" y="${H - 8}" text-anchor="middle" font-family="Barlow Condensed" font-size="11.5" letter-spacing=".7" fill="var(--texto-2)">${String(f).toUpperCase()}</text>`;
   });
   g += `<text x="4" y="9" font-family="Barlow Condensed" font-size="10" letter-spacing="1" fill="${COL_MUTED}">${u.toUpperCase()}</text>`;
 
   series.forEach((serie) => {
-    const s = { ...serie, c: colores[serie.c] ?? serie.c };
+    const s = { ...serie, c: ROL[serie.c] ?? serie.c };
     const puntos = s.d
       .map((v, i) => (v == null ? null : { x: X(i), y: Y(v), ultimo: i === s.d.length - 1, chico: s.chico?.[i] === true }))
       .filter(Boolean);
@@ -181,7 +188,7 @@ export function grafico(svg, { etiquetas, series }, {
       // es forma, no color, así que sobrevive en cualquier pantalla y para
       // cualquiera. Sin esto, un 1/2 se ve igual de sólido que un 25/50.
       const chico = p.chico === true;
-      g += `<circle cx="${p.x}" cy="${p.y}" r="${p.ultimo ? 4 : 2.8}" fill="${chico ? '#fff' : (p.ultimo ? s.c : '#fff')}" stroke="${s.c}" stroke-width="1.8"${chico ? ' stroke-dasharray="2 1.6"' : ''}/>`;
+      g += `<circle cx="${p.x}" cy="${p.y}" r="${p.ultimo ? 4 : 2.8}" fill="${chico ? 'var(--sup)' : (p.ultimo ? s.c : 'var(--sup)')}" stroke="${s.c}" stroke-width="1.8"${chico ? ' stroke-dasharray="2 1.6"' : ''}/>`;
     });
   });
 

@@ -124,7 +124,7 @@ async function renderSeccionesDeEquipo(club, plantel) {
     series: [
       { nombre: '2P', c: 'primario', d: evolucion.map((e) => e.dos?.pct ?? null) },
       { nombre: '3P', c: 'tinta', d: evolucion.map((e) => e.tres?.pct ?? null) },
-      { nombre: 'TL', c: '#726E65', dash: true, d: evolucion.map((e) => e.libres?.pct ?? null) },
+      { nombre: 'TL', c: 'apagado', dash: true, d: evolucion.map((e) => e.libres?.pct ?? null) },
     ],
   });
 }

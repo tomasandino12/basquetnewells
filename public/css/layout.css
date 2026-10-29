@@ -17,6 +17,24 @@
   grid-template-areas:"cabecera" "cats" "cuerpo" "nav";
 }
 
+/* ---- fondo con patrón ----
+   Una capa fija detrás de las pantallas: el escudo en un tono, la pelota y "1903",
+   girado como las diagonales de la camiseta. Se pinta con --patron-color y se recorta
+   con la baldosa (public/img/patron.png) como máscara, así la misma imagen sirve para
+   los dos temas. Es más grande que la pantalla para que el giro no deje esquinas
+   vacías, y al ser fija se compone una vez: no repinta al scrollear.
+   Cuelga de .app y no de body a propósito: el portal (.publico) no lleva patrón.
+   Va sólo detrás de las tarjetas, nunca sobre texto (por eso --texto-2 es más oscuro). */
+.app::before{
+  content:"";position:fixed;inset:-50vmax;z-index:-1;pointer-events:none;
+  background:var(--patron-color);
+  -webkit-mask:url(/public/img/patron.png) 0 0 / 480px repeat;mask:url(/public/img/patron.png) 0 0 / 480px repeat;
+  transform:rotate(-12deg);
+}
+/* Sin soporte de mask, la capa sería un velo liso: mejor nada. */
+@supports not ((mask-image:url(x)) or (-webkit-mask-image:url(x))){.app::before{display:none}}
+@media (prefers-reduced-transparency:reduce){.app::before{display:none}}
+
 /* ---- cabecera ---- */
 .cabecera{
   grid-area:cabecera;
@@ -103,7 +121,7 @@
 .cats:empty{display:none}
 .cat{
   flex:0 0 auto;background:var(--sup-1);border-radius:var(--r-m);
-  padding:var(--sp-2) var(--sp-3);min-height:var(--tap);
+  padding:var(--sp-2) var(--sp-3);min-height:var(--tap);min-width:var(--tap);
   display:flex;align-items:center;
 }
 .cat.on{background:var(--primario)}
@@ -139,7 +157,7 @@
    Una sola por pantalla: ver la invariante de navegación del spec. */
 .pie-fijo{
   position:sticky;bottom:0;z-index:2;
-  background:linear-gradient(transparent,var(--papel) 22%);
+  background:linear-gradient(transparent,var(--fondo-app) 22%);
   padding:var(--sp-4) var(--sp-4) var(--sp-3);
   display:flex;flex-direction:column;gap:var(--sp-2);
 }
@@ -195,7 +213,7 @@
 .velo.on{opacity:1;pointer-events:auto;transition-timing-function:var(--ease-salida)}
 .hoja{
   position:fixed;left:0;right:0;bottom:0;z-index:50;
-  background:var(--papel);border-radius:1rem 1rem 0 0;
+  background:var(--fondo-app);border-radius:1rem 1rem 0 0;
   transform:translateY(103%);transition:transform var(--dur-3) var(--ease-salida);
   max-height:88dvh;overflow-y:auto;
   padding-bottom:calc(var(--sp-4) + env(safe-area-inset-bottom));
@@ -204,7 +222,7 @@
 /* Al cerrar, visibility corta de golpe: sólo se ve la animación de entrada, por
    eso hoja y toast usan --ease-salida en los dos sentidos. */
 .hoja:not(.on){visibility:hidden}
-.hoja .asa{width:2.375rem;height:.25rem;background:var(--linea);border-radius:.1875rem;margin:var(--sp-2) auto var(--sp-1)}
+.hoja .asa{width:2.375rem;height:.25rem;background:var(--borde);border-radius:.1875rem;margin:var(--sp-2) auto var(--sp-1)}
 .hoja h2{margin:var(--sp-2) var(--sp-4)}
 .toast{
   position:fixed;left:var(--sp-4);right:var(--sp-4);

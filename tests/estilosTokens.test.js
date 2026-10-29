@@ -28,7 +28,15 @@ function contraste(a, b) {
   const [claro, oscuro] = [luminancia(a), luminancia(b)].sort((x, y) => y - x);
   return (claro + 0.05) / (oscuro + 0.05);
 }
-const valorDeToken = (nombre) => tokens.match(new RegExp(`${nombre}\\s*:\\s*(#[0-9a-fA-F]{3,6})\\b`))?.[1];
+// Un rol (--texto, --sup...) es un alias de un color de paleta: se sigue la
+// cadena de var() hasta el hex.
+function valorDeToken(nombre, vistos = new Set()) {
+  if (vistos.has(nombre)) return undefined;
+  vistos.add(nombre);
+  const m = tokens.match(new RegExp(`${nombre}\\s*:\\s*(#[0-9a-fA-F]{3,6}\\b|var\\((--[\\w-]+)\\))`));
+  if (!m) return undefined;
+  return m[2] ? valorDeToken(m[2], vistos) : m[1];
+}
 
 test('todo var(--x) usado está definido en tokens.css', () => {
   const definidos = new Set([...sinComentarios(tokens).matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]));

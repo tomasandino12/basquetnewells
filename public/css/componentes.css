@@ -15,15 +15,15 @@
   transition:transform var(--dur-1) var(--ease-salida);
 }
 .btn:active{background:var(--primario-osc);transform:scale(.97)}
-.btn:disabled{background:var(--fondo-chip);color:var(--gris);transform:none}
+.btn:disabled{background:var(--fondo-chip-t);color:var(--texto-2);transform:none}
 /* El secundario es negro macizo con letras blancas: rojo y negro son los dos
    colores del club, y un botón blanco sobre papel se perdía en el fondo. Con
    el mouse pasa a rojo. El borde del mismo negro está para que .publico
    (fondo oscuro) pueda pintarlo de otro color sin tener que crearlo. */
 .btn.sec{
-  background:var(--tinta);color:var(--sobre-oscuro);border:1px solid var(--tinta);
+  background:var(--btn-sec-fondo);color:var(--sobre-oscuro);border:1px solid var(--btn-sec-borde);
 }
-.btn.sec:disabled{background:var(--fondo-chip);border-color:var(--linea);color:var(--gris)}
+.btn.sec:disabled{background:var(--fondo-chip-t);border-color:var(--borde);color:var(--texto-2)}
 /* Con mouse el botón se enciende: sube 2px y aparece el brillo del club. Al
    volver usa la duración corta de la base (--dur-1), así suelta rápido. El
    brillo vive en un ::after y sólo cambia de opacity (regla de DESIGN.md).
@@ -43,19 +43,19 @@
 .campo{margin-bottom:var(--sp-4)}
 .campo label{
   font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.11em;
-  text-transform:uppercase;color:var(--gris);font-weight:500;
+  text-transform:uppercase;color:var(--texto-2);font-weight:500;
   display:block;margin-bottom:var(--sp-2);
 }
 .campo input,.campo textarea{
   width:100%;min-height:var(--tap);padding:var(--sp-3);
   border-radius:var(--r-m);border:1px solid var(--borde-control);
-  font-size:var(--fs-160);font-family:var(--ff-mono);background:var(--blanco);
+  font-size:var(--fs-160);font-family:var(--ff-mono);background:var(--sup);
 }
 .campo textarea{resize:vertical}
-.campo .ayuda{font-size:var(--fs-115);color:var(--gris);margin-top:var(--sp-1)}
+.campo .ayuda{font-size:var(--fs-115);color:var(--texto-2);margin-top:var(--sp-1)}
 
 /* ---- tarjetas ---- */
-.tarj{background:var(--blanco);border-radius:var(--r);padding:var(--sp-4);margin-bottom:var(--sp-3);box-shadow:var(--sombra)}
+.tarj{background:var(--sup);border-radius:var(--r);padding:var(--sp-4);margin-bottom:var(--sp-3);box-shadow:var(--sombra)}
 /* Tarjeta tocable: al pasar el mouse sube 2px y aparece la sombra alta. La
    sombra no se anima (repintaría): vive en un ::after que sólo cambia de
    opacidad. En táctil no hay hover, sólo el achique al apretar. */
@@ -80,31 +80,31 @@
 .marcador{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-3)}
 .marcador .lado{flex:1;text-align:center}
 .marcador .n{font-family:var(--ff-mono);font-size:var(--fs-260);font-weight:600}
-.marcador .nom{font-size:var(--fs-115);color:var(--gris);text-transform:uppercase;letter-spacing:.05em;margin-top:.125rem}
-.marcador .vs{font-family:var(--ff-titulo);font-size:var(--fs-135);color:var(--gris-cl);padding:0 var(--sp-2)}
+.marcador .nom{font-size:var(--fs-115);color:var(--texto-2);text-transform:uppercase;letter-spacing:.05em;margin-top:.125rem}
+.marcador .vs{font-family:var(--ff-titulo);font-size:var(--fs-135);color:var(--texto-2);padding:0 var(--sp-2)}
 
 /* ---- opciones seleccionables (elegir equipo, elegir plantel) ---- */
 .opt{
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-1);
-  background:var(--blanco);padding:var(--sp-4) var(--sp-3);border-radius:var(--r);
+  background:var(--sup);padding:var(--sp-4) var(--sp-3);border-radius:var(--r);
   width:100%;text-align:center;box-shadow:var(--sombra);
   border:2px solid transparent;min-height:4rem;transition:transform var(--dur-1) var(--ease-salida);
 }
 .opt:active{transform:scale(.97)}
 .opt.on{border-color:var(--primario);background:var(--primario-cl)}
 .opt .t{font-weight:600;font-size:var(--fs-145);line-height:1.2}
-.opt .d{font-size:var(--fs-115);color:var(--gris);margin-top:.125rem}
+.opt .d{font-size:var(--fs-115);color:var(--texto-2);margin-top:.125rem}
 .equipos{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
 
 /* ---- avisos ---- */
 .al{
-  background:var(--blanco);border-left:3px solid var(--primario);
+  background:var(--sup);border-left:3px solid var(--primario);
   border-radius:0 var(--r) var(--r) 0;padding:var(--sp-3);
   margin-bottom:var(--sp-3);display:flex;gap:var(--sp-3);box-shadow:var(--sombra-alta);
 }
-.al .ico{font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-145);color:var(--primario)}
+.al .ico{font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-145);color:var(--marca-texto)}
 .al .tx{font-size:var(--fs-135);line-height:1.4}
-.al .mt{font-size:var(--fs-115);color:var(--gris);margin-top:.125rem}
+.al .mt{font-size:var(--fs-115);color:var(--texto-2);margin-top:.125rem}
 /* Un aviso con una acción al lado (p. ej. "Revisar" en PLANTEL): el texto cede, el botón no se parte. */
 .al .tx{flex:1;min-width:0}
 .al .btn.chico{flex:0 0 auto;align-self:center;white-space:nowrap}
@@ -119,7 +119,7 @@
 
 /* ---- estado vacío ---- */
 .estado-vacio{
-  background:var(--blanco);border-radius:var(--r);box-shadow:var(--sombra);
+  background:var(--sup);border-radius:var(--r);box-shadow:var(--sombra);
   padding:var(--sp-6) var(--sp-4);text-align:center;margin-bottom:var(--sp-3);
 }
 .estado-vacio h2{margin-bottom:var(--sp-2)}
@@ -133,42 +133,42 @@
   padding:var(--sp-3) 0;min-height:var(--tap);width:100%;cursor:pointer;
 }
 .grupo-h .t{font-family:var(--ff-titulo);font-size:var(--fs-145);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-.grupo-h .n{font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--gris)}
+.grupo-h .n{font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--texto-2)}
 .grupo-cuerpo{display:none}
 .grupo.abierto .grupo-cuerpo{display:block}
 
 /* ---- filas de jugador ---- */
 .jug-fila{
-  display:flex;align-items:center;gap:var(--sp-3);background:var(--blanco);
+  display:flex;align-items:center;gap:var(--sp-3);background:var(--sup);
   padding:var(--sp-3);border-radius:var(--r);margin-bottom:var(--sp-2);box-shadow:var(--sombra);
 }
 .jug-fila .nom{font-weight:600;font-size:var(--fs-145);flex:1}
-.jug-fila .det{font-size:var(--fs-115);color:var(--gris);margin-top:.125rem}
+.jug-fila .det{font-size:var(--fs-115);color:var(--texto-2);margin-top:.125rem}
 .jug-fila .chk{
   min-width:var(--tap);min-height:var(--tap);flex:0 0 auto;
-  border-radius:.375rem;border:2px solid var(--linea);
+  border-radius:.375rem;border:2px solid var(--borde);
   display:flex;align-items:center;justify-content:center;
 }
 .jug-fila .chk.on{background:var(--primario);border-color:var(--primario);color:var(--sobre-club);font-weight:700}
 
-.jug-sugerencia{background:var(--blanco);border-radius:var(--r);padding:var(--sp-3);margin-bottom:var(--sp-2);box-shadow:var(--sombra)}
+.jug-sugerencia{background:var(--sup);border-radius:var(--r);padding:var(--sp-3);margin-bottom:var(--sp-2);box-shadow:var(--sombra)}
 .jug-sugerencia .decision{display:flex;gap:var(--sp-2);margin-top:var(--sp-2)}
 .jug-sugerencia .decision button{
-  flex:1;min-height:var(--tap);padding:var(--sp-2) 0;border-radius:.5rem;background:var(--fondo-chip);
+  flex:1;min-height:var(--tap);padding:var(--sp-2) 0;border-radius:.5rem;background:var(--fondo-chip-t);
   font-family:var(--ff-titulo);font-size:var(--fs-135);font-weight:600;text-transform:uppercase;
 }
 .jug-sugerencia .decision button.on{background:var(--negro);color:var(--sobre-oscuro)}
 
 /* ---- fila de jugador clicable (PLANTEL) ---- */
 .jug{
-  display:flex;align-items:center;gap:var(--sp-3);background:var(--blanco);
+  display:flex;align-items:center;gap:var(--sp-3);background:var(--sup);
   padding:var(--sp-3);border-radius:var(--r);margin-bottom:var(--sp-2);
   box-shadow:var(--sombra);width:100%;text-align:left;min-height:var(--tap);
   transition:transform var(--dur-1) var(--ease-salida);
 }
 .jug:active{transform:scale(.985)}
 .jug .nom{font-weight:600;font-size:var(--fs-145);line-height:1.15}
-.jug .det{font-size:var(--fs-115);color:var(--gris);margin-top:.125rem;font-family:var(--ff-mono)}
+.jug .det{font-size:var(--fs-115);color:var(--texto-2);margin-top:.125rem;font-family:var(--ff-mono)}
 .jug .der{margin-left:auto;display:flex;align-items:center;gap:var(--sp-2)}
 .av{
   width:2.125rem;height:2.125rem;flex:0 0 auto;border-radius:50%;
@@ -177,13 +177,13 @@
 }
 .chip{
   font-family:var(--ff-mono);font-size:var(--fs-115);font-weight:600;
-  padding:.1875rem .375rem;border-radius:var(--r-s);background:var(--fondo-chip);color:var(--gris);white-space:nowrap;
+  padding:.1875rem .375rem;border-radius:var(--r-s);background:var(--fondo-chip-t);color:var(--texto-2);white-space:nowrap;
 }
 .chip.sube{background:var(--sube-fondo);color:var(--sube)}
 .chip.baja{background:var(--baja-fondo);color:var(--baja)}
-.chip.sin{background:var(--fondo-chip);color:var(--gris);font-style:italic}
+.chip.sin{background:var(--fondo-chip-t);color:var(--texto-2);font-style:italic}
 .chip.alerta{background:var(--primario);color:var(--sobre-club)}
-.flecha{color:var(--gris-cl);font-size:var(--fs-170);line-height:1}
+.flecha{color:var(--texto-2);font-size:var(--fs-170);line-height:1}
 
 /* ---- datos de la ficha ---- */
 .datos-ficha{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-3)}
@@ -208,39 +208,39 @@
 
 /* ---- filas de test y recursos (pantallas de ejemplo) ---- */
 .test-fila{
-  display:flex;align-items:center;gap:var(--sp-3);background:var(--blanco);
+  display:flex;align-items:center;gap:var(--sp-3);background:var(--sup);
   padding:var(--sp-3);border-radius:var(--r);margin-bottom:var(--sp-2);
   box-shadow:var(--sombra);width:100%;text-align:left;min-height:var(--tap);
 }
 .test-fila .ic{
-  width:1.875rem;height:1.875rem;border-radius:.5rem;background:var(--fondo-chip);
+  width:1.875rem;height:1.875rem;border-radius:.5rem;background:var(--fondo-chip-t);
   display:flex;align-items:center;justify-content:center;flex:0 0 auto;
-  font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-125);color:var(--gris);
+  font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-125);color:var(--texto-2);
 }
-.test-fila.hecho .ic{background:var(--sube);color:var(--blanco)}
+.test-fila.hecho .ic{background:var(--sube);color:var(--sobre-sube)}
 .test-fila .t{font-weight:600;font-size:var(--fs-145)}
-.test-fila .d{font-size:var(--fs-115);color:var(--gris);margin-top:.125rem;font-family:var(--ff-mono)}
-.rec{background:var(--blanco);border-radius:var(--r);padding:var(--sp-4);margin-bottom:var(--sp-2);box-shadow:var(--sombra)}
+.test-fila .d{font-size:var(--fs-115);color:var(--texto-2);margin-top:.125rem;font-family:var(--ff-mono)}
+.rec{background:var(--sup);border-radius:var(--r);padding:var(--sp-4);margin-bottom:var(--sp-2);box-shadow:var(--sombra)}
 .rec .t{font-weight:600;font-size:var(--fs-145)}
-.rec .d{font-size:var(--fs-125);color:var(--gris);margin-top:.1875rem;line-height:1.4}
+.rec .d{font-size:var(--fs-125);color:var(--texto-2);margin-top:.1875rem;line-height:1.4}
 .rec .m{display:flex;gap:var(--sp-2);margin-top:var(--sp-2);flex-wrap:wrap}
-.tag{font-family:var(--ff-mono);font-size:var(--fs-100);color:var(--gris);background:var(--fondo-chip);padding:.1875rem .4375rem;border-radius:var(--r-s)}
-.tag.rojo{background:var(--primario-tenue);color:var(--primario-osc)}
+.tag{font-family:var(--ff-mono);font-size:var(--fs-100);color:var(--texto-2);background:var(--fondo-chip-t);padding:.1875rem .4375rem;border-radius:var(--r-s)}
+.tag.rojo{background:var(--primario-tenue);color:var(--marca-texto-tinte)}
 
 /* ---- RECURSOS: tarjeta con miniatura, filosofía y grilla ---- */
 /* Tarjeta de filosofía: filete del club a la izquierda, ícono, sello y cita. */
-.rec-filosofia{display:flex;gap:var(--sp-3);align-items:flex-start;background:var(--blanco);border-left:3px solid var(--primario);border-radius:0 var(--r) var(--r) 0;padding:var(--sp-4);margin-bottom:var(--sp-3);box-shadow:var(--sombra)}
-.rec-filo-ico{flex:none;display:grid;place-items:center;width:2.5rem;height:2.5rem;border-radius:var(--r-m);background:var(--primario-tenue);color:var(--primario)}
+.rec-filosofia{display:flex;gap:var(--sp-3);align-items:flex-start;background:var(--sup);border-left:3px solid var(--primario);border-radius:0 var(--r) var(--r) 0;padding:var(--sp-4);margin-bottom:var(--sp-3);box-shadow:var(--sombra)}
+.rec-filo-ico{flex:none;display:grid;place-items:center;width:2.5rem;height:2.5rem;border-radius:var(--r-m);background:var(--primario-tenue);color:var(--marca-texto)}
 .rec-filo-cuerpo{min-width:0}
 .rec-filo-cab{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2)}
 .rec-filo-sello{font-family:var(--ff-titulo);font-size:var(--fs-115);font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--negro);color:var(--blanco);padding:.1875rem var(--sp-2);border-radius:var(--r-s)}
-.rec-filo-sub{font-size:var(--fs-125);font-weight:600;color:var(--gris)}
-.rec-filo-t{font-family:var(--ff-cuerpo);text-transform:none;letter-spacing:0;font-size:var(--fs-170);font-weight:700;line-height:1.25;margin:var(--sp-2) 0 var(--sp-1);color:var(--tinta)}
-.rec-filo-tx{font-size:var(--fs-135);line-height:1.45;color:var(--gris);margin:0}
-.rec-filo-tx strong{color:var(--primario);font-weight:700}
-.rec-filo-nota{font-size:var(--fs-115);color:var(--gris-cl);margin:var(--sp-2) 0 0}
+.rec-filo-sub{font-size:var(--fs-125);font-weight:600;color:var(--texto-2)}
+.rec-filo-t{font-family:var(--ff-cuerpo);text-transform:none;letter-spacing:0;font-size:var(--fs-170);font-weight:700;line-height:1.25;margin:var(--sp-2) 0 var(--sp-1);color:var(--texto)}
+.rec-filo-tx{font-size:var(--fs-135);line-height:1.45;color:var(--texto-2);margin:0}
+.rec-filo-tx strong{color:var(--marca-texto);font-weight:700}
+.rec-filo-nota{font-size:var(--fs-115);color:var(--texto-2);margin:var(--sp-2) 0 0}
 .rec-grilla{display:grid;gap:var(--sp-4)}
-.rec-tarj{display:flex;flex-direction:column;background:var(--blanco);border-radius:var(--r);box-shadow:var(--sombra);overflow:hidden}
+.rec-tarj{display:flex;flex-direction:column;background:var(--sup);border-radius:var(--r);box-shadow:var(--sombra);overflow:hidden}
 .rec-mini{position:relative;display:block;width:100%;aspect-ratio:16/9;border:0;padding:0;background:var(--negro);overflow:hidden}
 .rec-mini img{display:block;width:100%;height:100%;object-fit:cover}
 button.rec-mini{cursor:pointer}
@@ -258,14 +258,14 @@ button.rec-mini:active .rec-play{transform:translate(-50%,-50%) scale(.92)}
 .rec-mini-et{font-family:var(--ff-titulo);font-size:var(--fs-260);font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gris-osc)}
 .rec-cuerpo{display:flex;flex-direction:column;flex:1;padding:var(--sp-4)}
 .rec-cuerpo .t{font-weight:600;font-size:var(--fs-160)}
-.rec-cuerpo .d{font-size:var(--fs-135);color:var(--gris);margin-top:var(--sp-1);line-height:1.4}
+.rec-cuerpo .d{font-size:var(--fs-135);color:var(--texto-2);margin-top:var(--sp-1);line-height:1.4}
 .rec-cuerpo .m{display:flex;gap:var(--sp-2);margin:var(--sp-3) 0;flex-wrap:wrap}
-.rec-eyebrow{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.1em;text-transform:uppercase;color:var(--gris);margin-bottom:var(--sp-1)}
+.rec-eyebrow{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.1em;text-transform:uppercase;color:var(--texto-2);margin-bottom:var(--sp-1)}
 .rec-eyebrow:empty{display:none}
 .rec-datos{display:grid;grid-template-columns:repeat(auto-fit,minmax(7rem,1fr));gap:var(--sp-2);margin-top:var(--sp-3)}
-.rec-dato{display:flex;flex-direction:column;gap:var(--sp-1);background:var(--papel);border-radius:var(--r-s);padding:var(--sp-2) var(--sp-3)}
-.rec-dato .et{font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.08em;text-transform:uppercase;color:var(--gris-cl)}
-.rec-dato .v{font-family:var(--ff-mono);font-size:var(--fs-135);color:var(--tinta)}
+.rec-dato{display:flex;flex-direction:column;gap:var(--sp-1);background:var(--sup-hundida);border-radius:var(--r-s);padding:var(--sp-2) var(--sp-3)}
+.rec-dato .et{font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.08em;text-transform:uppercase;color:var(--texto-2)}
+.rec-dato .v{font-family:var(--ff-mono);font-size:var(--fs-135);color:var(--texto)}
 .rec-acciones{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-3)}
 .rec-acciones:empty{display:none}
 .rec-acciones a.btn{text-decoration:none}
@@ -273,29 +273,29 @@ button.rec-mini:active .rec-play{transform:translate(-50%,-50%) scale(.92)}
    tarjetas de una fila miden lo mismo y los botones se alinean. */
 .rec-cuerpo > .btn.sec{margin-top:auto}
 .rec-alcance{margin-top:var(--sp-3)}
-.rec-alcance-tx{font-size:var(--fs-125);color:var(--gris)}
+.rec-alcance-tx{font-size:var(--fs-125);color:var(--texto-2)}
 .rec-alcance-tx.sin{font-style:italic}
 /* Sin datos la pista va rayada: se ve el lugar de la barra y no se lee como 0 %. */
-.rec-alcance .zona-barra.sin-dato .pista{background:repeating-linear-gradient(135deg,var(--linea) 0 .375rem,transparent .375rem .75rem)}
-.rec-alcance .zona-barra.sin-dato .pct{color:var(--gris-cl)}
+.rec-alcance .zona-barra.sin-dato .pista{background:repeating-linear-gradient(135deg,var(--pista) 0 .375rem,transparent .375rem .75rem)}
+.rec-alcance .zona-barra.sin-dato .pct{color:var(--texto-2)}
 .rec-impacto{margin-top:var(--sp-4)}
 .rec-impacto .eyebrow{margin-top:0}
 .rec-impacto .rec-datos{margin-bottom:var(--sp-2)}
-.btn.contorno{background:transparent;color:var(--tinta);border:1px solid var(--tinta);text-decoration:none}
+.btn.contorno{background:transparent;color:var(--texto);border:1px solid var(--texto);text-decoration:none}
 .campo .etiqueta{
   font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.11em;
-  text-transform:uppercase;color:var(--gris);font-weight:500;
+  text-transform:uppercase;color:var(--texto-2);font-weight:500;
   display:block;margin-bottom:var(--sp-2);
 }
 
 /* ---- gráficos portados del prototipo ---- */
 svg.g{width:100%;display:block;overflow:visible}
 .leyenda{
-  display:flex;gap:var(--sp-4);font-size:var(--fs-115);font-weight:400;color:var(--gris);
+  display:flex;gap:var(--sp-4);font-size:var(--fs-115);font-weight:400;color:var(--texto-2);
   margin-top:var(--sp-2);font-family:var(--ff-mono);flex-wrap:wrap;
 }
 .leyenda i{display:inline-block;width:.875rem;height:.15625rem;background:var(--primario);vertical-align:middle;margin-right:.3125rem}
-.leyenda i.pt{background:none;border-top:.15625rem dashed var(--gris-cl)}
+.leyenda i.pt{background:none;border-top:.15625rem dashed var(--texto-2)}
 
 /* ---- progresión de pesos: un desplegable por bloque del plan ---- */
 .pesos-bloque{margin-bottom:var(--sp-1)}
@@ -304,14 +304,14 @@ svg.g{width:100%;display:block;overflow:visible}
   padding:var(--sp-3) 0;min-height:var(--tap);cursor:pointer;list-style:none;
 }
 .pesos-bloque summary::-webkit-details-marker{display:none}
-.pesos-bloque summary::after{content:"›";font-size:var(--fs-190);color:var(--gris);transition:transform var(--dur-1) var(--ease-salida)}
+.pesos-bloque summary::after{content:"›";font-size:var(--fs-190);color:var(--texto-2);transition:transform var(--dur-1) var(--ease-salida)}
 .pesos-bloque[open] summary::after{transform:rotate(90deg)}
 .pesos-bloque summary .t{font-family:var(--ff-titulo);font-size:var(--fs-145);font-weight:600;text-transform:uppercase;letter-spacing:.05em;flex:1}
-.pesos-bloque summary .n{font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--gris)}
+.pesos-bloque summary .n{font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--texto-2)}
 .pesos-nom{font-weight:600;font-size:var(--fs-145)}
 .pesos-actual{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-3);margin:var(--sp-1) 0 var(--sp-3)}
 .pesos-actual .kg{font-family:var(--ff-mono);font-size:var(--fs-190);font-weight:600}
-.pesos-det{font-size:var(--fs-115);color:var(--gris);text-align:right}
+.pesos-det{font-size:var(--fs-115);color:var(--texto-2);text-align:right}
 
 /* Feedback de presión (auditoría de accesibilidad del prototipo, punto 8) */
 .al,.opt,.test-fila,.jug,.btn{transition:transform var(--dur-1) var(--ease-salida)}
@@ -320,15 +320,15 @@ svg.g{width:100%;display:block;overflow:visible}
 /* Etapa 4 — barras de reparto */
 .barras{display:flex;flex-direction:column;gap:var(--sp-2);margin:var(--sp-3) 0}
 .barra{display:grid;grid-template-columns:minmax(0,7.5rem) 1fr auto;align-items:center;gap:var(--sp-2)}
-.barra .et{font-size:var(--fs-135);color:var(--tinta);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.barra .pista{height:14px;background:var(--linea);border-radius:7px;overflow:hidden}
+.barra .et{font-size:var(--fs-135);color:var(--texto);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.barra .pista{height:14px;background:var(--pista);border-radius:7px;overflow:hidden}
 .barra .relleno{height:100%;background:var(--primario);border-radius:7px;transform-origin:left;animation:llenar-barra var(--dur-3) var(--ease-salida)}
-.barra .val{font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--gris-cl)}
+.barra .val{font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--texto-2)}
 
 /* Etapa 4 — muestra chica: atenuada y marcada. La marca es texto, no sólo
    color, para que no dependa de que alguien distinga dos grises. */
 .poco{opacity:.55}
-.poco-tag{display:inline-block;margin-left:6px;font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.06em;text-transform:uppercase;color:var(--gris-cl)}
+.poco-tag{display:inline-block;margin-left:6px;font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2)}
 
 /* Etapa 4 — acciones dentro de un aviso */
 .acciones-al{display:flex;gap:var(--sp-2);margin-top:10px}
@@ -340,13 +340,13 @@ svg.g{width:100%;display:block;overflow:visible}
 .btn-icono{
   display:flex;align-items:center;justify-content:center;flex:none;
   width:var(--tap);height:var(--tap);padding:0;
-  background:transparent;border:0;border-radius:var(--r-s);color:var(--gris);
+  background:transparent;border:0;border-radius:var(--r-s);color:var(--texto-2);
 }
 .btn-icono svg{width:1.25rem;height:1.25rem}
 .btn-icono:disabled{color:var(--deshabilitado)}
-.btn-icono:focus-visible{color:var(--tinta)}
+.btn-icono:focus-visible{color:var(--texto)}
 @media (hover:hover){
-  .btn-icono:not(:disabled):hover{color:var(--tinta)}
+  .btn-icono:not(:disabled):hover{color:var(--texto)}
 }
 
 /* Ícono con su nombre debajo: para una acción suelta (sin botón de texto
@@ -354,33 +354,33 @@ svg.g{width:100%;display:block;overflow:visible}
 .btn-icono-etq{
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex:none;
   min-width:var(--tap);min-height:var(--tap);padding:var(--sp-1) var(--sp-2);
-  background:transparent;border:0;border-radius:var(--r-s);color:var(--gris);font-size:var(--fs-100);
+  background:transparent;border:0;border-radius:var(--r-s);color:var(--texto-2);font-size:var(--fs-100);
 }
 .btn-icono-etq svg{width:1.25rem;height:1.25rem}
 .btn-icono-etq:disabled{color:var(--deshabilitado)}
-.btn-icono-etq:focus-visible{color:var(--tinta)}
+.btn-icono-etq:focus-visible{color:var(--texto)}
 @media (hover:hover){
-  .btn-icono-etq:not(:disabled):hover{color:var(--tinta)}
+  .btn-icono-etq:not(:disabled):hover{color:var(--texto)}
 }
 
 /* Etapa 4 — carga de la batería en cancha.
    Targets de 48px: se usa de pie, con una mano, mirando a los chicos y no
    a la pantalla. La tira envuelve sola en dos líneas a 375px. */
 .tira{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-.tira .num{min-height:48px;border:1px solid var(--borde-control);border-radius:10px;background:var(--papel);color:var(--tinta);font-family:var(--ff-mono);font-size:var(--fs-160);font-weight:600}
+.tira .num{min-height:48px;border:1px solid var(--borde-control);border-radius:10px;background:var(--sup-hundida);color:var(--texto);font-family:var(--ff-mono);font-size:var(--fs-160);font-weight:600}
 .tira .num.on{background:var(--primario);border-color:var(--primario);color:var(--sobre-club)}
 .posiciones{display:flex;flex-direction:column;gap:var(--sp-4);margin:14px 0}
-.posicion .et{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;font-size:var(--fs-135);color:var(--tinta)}
-.posicion .et .de{font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.06em;text-transform:uppercase;color:var(--gris-cl)}
+.posicion .et{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;font-size:var(--fs-135);color:var(--texto)}
+.posicion .et .de{font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2)}
 .jug-actual{margin:var(--sp-3) 0 var(--sp-1)}
-.jug-actual .nom{font-size:var(--fs-220);font-weight:700;color:var(--tinta)}
-.jug-actual .sub{font-size:var(--fs-125);color:var(--gris-cl)}
+.jug-actual .nom{font-size:var(--fs-220);font-weight:700;color:var(--texto)}
+.jug-actual .sub{font-size:var(--fs-125);color:var(--texto-2)}
 .progreso-tira{display:flex;flex-wrap:wrap;gap:var(--sp-1);margin-bottom:var(--sp-2)}
-.progreso-tira .paso{min-width:var(--tap);min-height:var(--tap);padding:0 var(--sp-1);border-radius:8px;border:1px solid var(--borde-control);background:var(--papel);color:var(--gris-cl);font-family:var(--ff-mono);font-size:var(--fs-115)}
+.progreso-tira .paso{min-width:var(--tap);min-height:var(--tap);padding:0 var(--sp-1);border-radius:8px;border:1px solid var(--borde-control);background:var(--fondo-app);color:var(--texto-2);font-family:var(--ff-mono);font-size:var(--fs-115)}
 .progreso-tira .paso.completo{background:var(--primario);border-color:var(--primario);color:var(--sobre-club)}
-.progreso-tira .paso.parcial{border-color:var(--primario);color:var(--primario)}
+.progreso-tira .paso.parcial{border-color:var(--primario);color:var(--marca-texto)}
 .progreso-tira .paso.ausente{border-style:dashed}
-.progreso-tira .paso.on{outline:2px solid var(--tinta);outline-offset:1px}
+.progreso-tira .paso.on{outline:2px solid var(--texto);outline-offset:1px}
 .acciones-bateria{display:flex;gap:var(--sp-2);margin-top:var(--sp-4)}
 .acciones-bateria .btn{flex:1}
 .acciones-hoja{display:flex;gap:var(--sp-2);margin-top:var(--sp-4)}
@@ -388,117 +388,117 @@ svg.g{width:100%;display:block;overflow:visible}
 
 /* Etapa 4 — evolución del equipo */
 .tabla-ev{display:flex;flex-direction:column;gap:6px;margin-top:10px}
-.fila-ev{display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:var(--sp-2);align-items:baseline;padding:var(--sp-2) 0;border-bottom:1px solid var(--linea);font-size:var(--fs-135)}
-.fila-ev .f{font-family:var(--ff-mono);color:var(--gris-cl)}
-.fila-ev .sin{color:var(--gris-cl)}
+.fila-ev{display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:var(--sp-2);align-items:baseline;padding:var(--sp-2) 0;border-bottom:1px solid var(--borde);font-size:var(--fs-135)}
+.fila-ev .f{font-family:var(--ff-mono);color:var(--texto-2)}
+.fila-ev .sin{color:var(--texto-2)}
 .fila-ev.dos{grid-template-columns:auto 1fr}
 
 /* Etapa 4 — sin datos: la marca de "sin medir"/"sin datos" es itálica en
    cualquier contexto, para no depender de que cada pantalla la re-declare. */
-.sin{color:var(--gris-cl);font-style:italic}
+.sin{color:var(--texto-2);font-style:italic}
 
 /* Etapa 4 — ficha del jugador: series de tiro (práctica vs. partido).
    Práctica y partido se distinguen por color Y por trazo (línea sólida vs.
    punteada), nunca sólo por color. */
 .leyenda .linea-practica,.leyenda .linea-partido{display:inline-flex;align-items:center;gap:.375rem}
-.leyenda .linea-practica::before,.leyenda .linea-partido::before{content:"";display:inline-block;width:.875rem;height:0;border-top:.15625rem solid var(--negro)}
+.leyenda .linea-practica::before,.leyenda .linea-partido::before{content:"";display:inline-block;width:.875rem;height:0;border-top:.15625rem solid var(--texto)}
 .leyenda .linea-partido::before{border-top-color:var(--primario);border-top-style:dashed}
 /* El último dato de cada fuente, a la vista; el historial va en el colapsable. */
 .resumen-serie{display:flex;flex-direction:column;gap:var(--sp-2);margin-top:var(--sp-3)}
 .resumen-fuente{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-1) var(--sp-2)}
-.resumen-fuente .k{font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.06em;text-transform:uppercase;color:var(--gris-cl)}
+.resumen-fuente .k{font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2)}
 /* La etiqueta es también la leyenda de su curva: misma marca que en .leyenda,
    dicha una sola vez. */
 .resumen-fuente .k.linea-practica,.resumen-fuente .k.linea-partido{display:inline-flex;align-items:center;gap:.375rem}
-.resumen-fuente .k.linea-practica::before,.resumen-fuente .k.linea-partido::before{content:"";display:inline-block;width:.875rem;height:0;border-top:.15625rem solid var(--negro)}
+.resumen-fuente .k.linea-practica::before,.resumen-fuente .k.linea-partido::before{content:"";display:inline-block;width:.875rem;height:0;border-top:.15625rem solid var(--texto)}
 .resumen-fuente .k.linea-partido::before{border-top-color:var(--primario);border-top-style:dashed}
 
 /* Etapa 4 — ficha del jugador: partido a partido */
 .tabla-part{display:flex;flex-direction:column;gap:var(--sp-2);margin-top:10px}
-.fila-part{background:var(--blanco);border-radius:var(--r);padding:var(--sp-3);box-shadow:var(--sombra)}
+.fila-part{background:var(--sup);border-radius:var(--r);padding:var(--sp-3);box-shadow:var(--sombra)}
 .fila-part .cab{display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2)}
 .fila-part .riv{font-weight:600;font-size:var(--fs-145)}
-.fila-part .f{font-family:var(--ff-mono);font-size:var(--fs-115);color:var(--gris-cl)}
-.fila-part .nums{display:flex;gap:var(--sp-3);margin-top:var(--sp-1);font-family:var(--ff-mono);font-size:var(--fs-135);color:var(--tinta)}
-.fila-part .tiros{display:flex;gap:var(--sp-3);flex-wrap:wrap;margin-top:6px;font-size:var(--fs-115);color:var(--gris-cl)}
+.fila-part .f{font-family:var(--ff-mono);font-size:var(--fs-115);color:var(--texto-2)}
+.fila-part .nums{display:flex;gap:var(--sp-3);margin-top:var(--sp-1);font-family:var(--ff-mono);font-size:var(--fs-135);color:var(--texto)}
+.fila-part .tiros{display:flex;gap:var(--sp-3);flex-wrap:wrap;margin-top:6px;font-size:var(--fs-115);color:var(--texto-2)}
 
 /* Etapa 4 — evolución del equipo: series de tiro (2P/3P/TL). Mismo patrón
    que .linea-practica/.linea-partido: color Y trazo, nunca sólo color. */
 .leyenda .s2,.leyenda .s3,.leyenda .sl{display:inline-flex;align-items:center;gap:.375rem}
 .leyenda .s2::before,.leyenda .s3::before,.leyenda .sl::before{content:"";display:inline-block;width:.875rem;height:0;border-top:.15625rem solid var(--primario)}
-.leyenda .s3::before{border-top-color:var(--negro)}
-.leyenda .sl::before{border-top-color:var(--gris-cl);border-top-style:dashed}
+.leyenda .s3::before{border-top-color:var(--texto)}
+.leyenda .sl::before{border-top-color:var(--texto-2);border-top-style:dashed}
 
 /* Etapa 4 — RECURSOS: selección múltiple de jugadores para un envío */
 .lista-chk{display:flex;flex-direction:column;max-height:40vh;overflow-y:auto;margin:var(--sp-2) 0}
-.chk-fila{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 2px;border-bottom:1px solid var(--linea);font-size:var(--fs-145)}
+.chk-fila{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 2px;border-bottom:1px solid var(--borde);font-size:var(--fs-145)}
 .chk-fila input{width:22px;height:22px;flex:0 0 auto}
-.enlace-rec{display:inline-block;margin-top:6px;font-size:var(--fs-135);color:var(--primario)}
+.enlace-rec{display:inline-block;margin-top:6px;font-size:var(--fs-135);color:var(--marca-texto)}
 /* Con el teclado abierto, las últimas filas de la lista quedarían debajo de
    él. Este hueco las deja alcanzables scrolleando. */
 .espacio-kb{height:17rem}
 
 /* Histórico de altura y peso en la ficha del jugador (0012) */
 .tabla-corporal{display:flex;flex-direction:column;margin:10px 0}
-.fila-corporal{display:grid;grid-template-columns:3rem repeat(4,minmax(0,1fr)) var(--tap);gap:var(--sp-1) var(--sp-2);align-items:center;padding:10px 0;border-bottom:1px solid var(--linea);font-size:var(--fs-145)}
-.fila-corporal .f{font-family:var(--ff-mono);color:var(--gris-cl);font-size:var(--fs-125)}
-.fila-corporal .sin{color:var(--gris-cl)}
-.fila-corporal .u{color:var(--gris-cl);font-size:var(--fs-115)}
-.fila-corporal.cab{font-family:var(--ff-titulo);font-size:var(--fs-115);line-height:1.15;letter-spacing:.04em;text-transform:uppercase;color:var(--gris-cl);align-items:end}
-.fila-corporal .borrar{min-width:var(--tap);min-height:var(--tap);border:0;border-radius:8px;background:none;color:var(--gris-cl);font-size:var(--fs-145)}
-.aviso-corporal{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);flex-wrap:wrap;margin:var(--sp-3) 0;font-size:var(--fs-135);font-weight:500;color:var(--primario-osc)}
+.fila-corporal{display:grid;grid-template-columns:3rem repeat(4,minmax(0,1fr)) var(--tap);gap:var(--sp-1) var(--sp-2);align-items:center;padding:10px 0;border-bottom:1px solid var(--borde);font-size:var(--fs-145)}
+.fila-corporal .f{font-family:var(--ff-mono);color:var(--texto-2);font-size:var(--fs-125)}
+.fila-corporal .sin{color:var(--texto-2)}
+.fila-corporal .u{color:var(--texto-2);font-size:var(--fs-115)}
+.fila-corporal.cab{font-family:var(--ff-titulo);font-size:var(--fs-115);line-height:1.15;letter-spacing:.04em;text-transform:uppercase;color:var(--texto-2);align-items:end}
+.fila-corporal .borrar{min-width:var(--tap);min-height:var(--tap);border:0;border-radius:8px;background:none;color:var(--texto-2);font-size:var(--fs-145)}
+.aviso-corporal{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);flex-wrap:wrap;margin:var(--sp-3) 0;font-size:var(--fs-135);font-weight:500;color:var(--marca-texto-tinte)}
 .vigentes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-2);margin:10px 0}
-.vigente .k{font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.04em;text-transform:uppercase;color:var(--gris-cl)}
+.vigente .k{font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.04em;text-transform:uppercase;color:var(--texto-2)}
 .vigente .v{font-size:var(--fs-145)}
-.vigente .u{color:var(--gris-cl);font-size:var(--fs-115)}
-.vigente .sin{color:var(--gris-cl)}
-.vigente .d{font-family:var(--ff-mono);font-size:var(--fs-115);color:var(--gris-cl)}
+.vigente .u{color:var(--texto-2);font-size:var(--fs-115)}
+.vigente .sin{color:var(--texto-2)}
+.vigente .d{font-family:var(--ff-mono);font-size:var(--fs-115);color:var(--texto-2)}
 @media (max-width:420px){.vigentes{grid-template-columns:1fr 1fr}}
 .campos-par{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
 /* Card de HOY: zonas ordenadas de peor a mejor, barra en escala 0-100 fija */
 /* Contexto: referencia, no protagonista. */
-.contexto{font-size:var(--fs-125);color:var(--gris-cl);margin-bottom:10px}
+.contexto{font-size:var(--fs-125);color:var(--texto-2);margin-bottom:10px}
 
 /* El número que el entrenador se lleva de la card. Tiene que leerse a un
    metro de distancia, así que es el elemento más grande de la pantalla. */
 .cabecera-tiro{margin:0 0 18px}
-.cabecera-tiro .k{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--gris-cl)}
+.cabecera-tiro .k{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2)}
 /* La cifra héroe: el número que el entrenador se lleva de una card, en el
    tamaño más grande de la pantalla, con la unidad en el color del club.
    tabular-nums para que al cambiar de batería los dígitos no bailen. */
-.cifra{font-family:var(--ff-mono);font-size:var(--fs-cifra);font-weight:600;line-height:1;color:var(--tinta);font-variant-numeric:tabular-nums}
-.cifra .u{font-size:.5em;color:var(--primario);margin-left:.08em}
-.cabecera-tiro .frac{font-family:var(--ff-mono);font-size:var(--fs-135);color:var(--gris-cl);margin-top:2px}
+.cifra{font-family:var(--ff-mono);font-size:var(--fs-cifra);font-weight:600;line-height:1;color:var(--texto);font-variant-numeric:tabular-nums}
+.cifra .u{font-size:.5em;color:var(--marca-texto);margin-left:.08em}
+.cabecera-tiro .frac{font-family:var(--ff-mono);font-size:var(--fs-135);color:var(--texto-2);margin-top:2px}
 .cabecera-tiro .sub{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px var(--sp-3);margin-top:6px}
-.metas-resumen{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.05em;text-transform:uppercase;color:var(--gris-cl)}
+.metas-resumen{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.05em;text-transform:uppercase;color:var(--texto-2)}
 
 /* La lectura de zonas flojas: una línea, no un bloque. Sigue diciendo la
    verdad, incluso cuando la verdad es "no alcanza para elegir una". */
-.foco-linea{font-size:var(--fs-135);color:var(--gris-cl);margin:10px 0}
-.foco-linea b{color:var(--tinta)}
+.foco-linea{font-size:var(--fs-135);color:var(--texto-2);margin:10px 0}
+.foco-linea b{color:var(--texto)}
 
 .zona-pie{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-1) 10px;margin-top:var(--sp-1)}
 .marca-meta{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.05em;text-transform:uppercase}
-.marca-meta.si{color:var(--tinta)}
-.marca-meta.no{color:var(--gris-cl)}
-.acciones-hoy{display:flex;flex-direction:column;gap:var(--sp-2);margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--linea)}
+.marca-meta.si{color:var(--texto)}
+.marca-meta.no{color:var(--texto-2)}
+.acciones-hoy{display:flex;flex-direction:column;gap:var(--sp-2);margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--borde)}
 .acciones-hoy-iconos{display:flex;justify-content:center;gap:var(--sp-4)}
 
 /* Edición de metas */
 .metas-lista{display:flex;flex-direction:column;margin:var(--sp-3) 0}
-.meta-fila{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--linea)}
+.meta-fila{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--borde)}
 .meta-fila .et{display:flex;flex-direction:column;min-width:0}
-.meta-fila .nom{font-size:var(--fs-145);color:var(--tinta)}
-.meta-fila .hoy{font-size:var(--fs-125);color:var(--gris-cl)}
+.meta-fila .nom{font-size:var(--fs-145);color:var(--texto)}
+.meta-fila .hoy{font-size:var(--fs-125);color:var(--texto-2)}
 .campo-meta{display:flex;align-items:center;gap:6px;flex:0 0 auto}
-.campo-meta input{width:4.5rem;min-height:48px;text-align:right;border:1px solid var(--borde-control);border-radius:10px;background:var(--papel);color:var(--tinta);font-family:var(--ff-mono);font-size:var(--fs-160);padding:0 10px}
-.campo-meta .u{font-family:var(--ff-titulo);font-size:var(--fs-135);color:var(--gris-cl)}
+.campo-meta input{width:4.5rem;min-height:48px;text-align:right;border:1px solid var(--borde-control);border-radius:10px;background:var(--fondo-app);color:var(--texto);font-family:var(--ff-mono);font-size:var(--fs-160);padding:0 10px}
+.campo-meta .u{font-family:var(--ff-titulo);font-size:var(--fs-135);color:var(--texto-2)}
 .zonas{display:flex;flex-direction:column;gap:14px;margin:10px 0}
-.zona-cab{display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);font-size:var(--fs-145);color:var(--tinta)}
-.zona-cab .frac{font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--gris-cl)}
+.zona-cab{display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);font-size:var(--fs-145);color:var(--texto)}
+.zona-cab .frac{font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--texto-2)}
 .zona-barra{display:grid;grid-template-columns:1fr 2.75rem;align-items:center;gap:var(--sp-2);margin-top:var(--sp-1)}
-.zona-barra .pista{position:relative;height:16px;background:var(--linea);border-radius:8px;overflow:hidden}
+.zona-barra .pista{position:relative;height:16px;background:var(--pista);border-radius:8px;overflow:hidden}
 .zona-barra .relleno{height:100%;background:var(--primario);border-radius:8px;transform-origin:left;animation:llenar-barra var(--dur-3) var(--ease-salida)}
 /* El ancho ya viene puesto en línea (style="width:X%"): la barra se escala desde
    cero en X en vez de animar el ancho, que repintaría cada frame. */
@@ -506,53 +506,53 @@ svg.g{width:100%;display:block;overflow:visible}
 /* El halo del color del papel es lo que deja ver la marca sobre el relleno negro de
    una zona que ya llegó: sin él, negro sobre negro, la meta desaparece justo cuando
    se cumple. Estático: no se anima. */
-.zona-barra .meta{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--negro);box-shadow:0 0 0 1px var(--papel)}
-.zona-barra .relleno.llego{background:var(--negro)}
-.zona-barra .pct{font-family:var(--ff-mono);font-size:var(--fs-145);font-weight:600;color:var(--tinta);text-align:right}
+.zona-barra .meta{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--texto);box-shadow:0 0 0 1px var(--fondo-app)}
+.zona-barra .relleno.llego{background:var(--texto)}
+.zona-barra .pct{font-family:var(--ff-mono);font-size:var(--fs-145);font-weight:600;color:var(--texto);text-align:right}
 .var{display:inline-block;margin-top:var(--sp-1);font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.05em;text-transform:uppercase}
-.var.sube{color:var(--primario)}
-.var.baja{color:var(--negro)}
-.var.neutra{color:var(--gris-cl)}
-.sep{height:1px;background:var(--linea);margin:18px 0}
-.pie-hoy{margin-top:18px;padding-top:var(--sp-3);border-top:1px solid var(--linea)}
-.pie-hoy .k{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--gris-cl)}
-.pie-hoy .d{font-size:var(--fs-135);color:var(--tinta);margin:var(--sp-1) 0 var(--sp-2)}
-.total-arco{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin:10px 0;padding:10px var(--sp-3);border-radius:var(--r);background:var(--linea)}
-.total-arco .k{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--gris-cl)}
-.total-arco .v{font-size:var(--fs-170);font-weight:700;color:var(--tinta)}
+.var.sube{color:var(--marca-texto)}
+.var.baja{color:var(--texto)}
+.var.neutra{color:var(--texto-2)}
+.sep{height:1px;background:var(--borde);margin:18px 0}
+.pie-hoy{margin-top:18px;padding-top:var(--sp-3);border-top:1px solid var(--borde)}
+.pie-hoy .k{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2)}
+.pie-hoy .d{font-size:var(--fs-135);color:var(--texto);margin:var(--sp-1) 0 var(--sp-2)}
+.total-arco{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin:10px 0;padding:10px var(--sp-3);border-radius:var(--r);background:var(--borde)}
+.total-arco .k{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2)}
+.total-arco .v{font-size:var(--fs-170);font-weight:700;color:var(--texto)}
 
 /* Curvas de evolución. La de HOY no le compite en tamaño al número grande. */
 .curva{display:block;width:100%;margin-top:10px;padding:0;border:0;background:none;text-align:left}
 .curva .chispa{width:100%;display:block}
-.curva-pie{display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--sp-1) 10px;font-size:var(--fs-125);color:var(--gris-cl)}
-.curva-pie .ver{color:var(--primario);white-space:nowrap}
+.curva-pie{display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--sp-1) 10px;font-size:var(--fs-125);color:var(--texto-2)}
+.curva-pie .ver{color:var(--marca-texto);white-space:nowrap}
 .curva-zona{margin:var(--sp-4) 0}
-.btn-zona-recurso{min-height:var(--tap);min-width:var(--tap);border:0;background:none;padding:0 var(--sp-2);font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.05em;text-transform:uppercase;color:var(--primario)}
+.btn-zona-recurso{min-height:var(--tap);min-width:var(--tap);border:0;background:none;padding:0 var(--sp-2);font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.05em;text-transform:uppercase;color:var(--marca-texto)}
 
 /* Etapa 5 — pestañas internas de RECURSOS. No es navegación: no se agrega un
    sexto ítem a la barra de abajo, que en celular ya está al límite. */
-.pestanas{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:0;border-bottom:1px solid var(--linea)}
-.pest{min-height:48px;border:0;background:none;color:var(--gris-cl);font-family:var(--ff-titulo);font-size:var(--fs-160);letter-spacing:.06em;text-transform:uppercase;border-bottom:2px solid transparent}
-.pest.on{color:var(--tinta);border-bottom-color:var(--primario)}
+.pestanas{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:0;border-bottom:1px solid var(--borde)}
+.pest{min-height:48px;border:0;background:none;color:var(--texto-2);font-family:var(--ff-titulo);font-size:var(--fs-160);letter-spacing:.06em;text-transform:uppercase;border-bottom:2px solid transparent}
+.pest.on{color:var(--texto);border-bottom-color:var(--primario)}
 /* En la ficha del jugador las pestañas quedan pegadas arriba al bajar: se
    cambia de pestaña sin volver al principio. El fondo tapa lo que pasa por
    debajo. */
-.pestanas.fija{position:sticky;top:0;z-index:1;background:var(--papel)}
+.pestanas.fija{position:sticky;top:0;z-index:1;background:var(--fondo-app)}
 
 /* Etapa 5 — lista de ejercicios */
 .chips-tema{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
-.chip-tema{min-height:var(--tap);min-width:var(--tap);padding:0 var(--sp-3);border:1px solid var(--borde-control);border-radius:20px;background:var(--papel);color:var(--tinta);font-size:var(--fs-135)}
+.chip-tema{min-height:var(--tap);min-width:var(--tap);padding:0 var(--sp-3);border:1px solid var(--borde-control);border-radius:20px;background:var(--fondo-app);color:var(--texto);font-size:var(--fs-135)}
 .chip-tema.on{background:var(--primario);border-color:var(--primario);color:var(--sobre-club)}
 @media (hover:hover){
-  .chip-tema:not(.on):not(:disabled):hover{background:var(--fondo-chip);border-color:var(--gris-cl)}
+  .chip-tema:not(.on):not(:disabled):hover{background:var(--fondo-chip-t);border-color:var(--texto-2)}
 }
-.ejercicio{display:block;width:100%;text-align:left;padding:var(--sp-3) 0;border:0;border-bottom:1px solid var(--linea);background:none}
+.ejercicio{display:block;width:100%;text-align:left;padding:var(--sp-3) 0;border:0;border-bottom:1px solid var(--borde);background:none}
 .ejercicio .cab{display:flex;align-items:baseline;gap:var(--sp-2)}
-.ejercicio .tema{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--gris-cl)}
-.ejercicio .probado{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.05em;text-transform:uppercase;color:var(--primario)}
-.ejercicio .tit{font-size:var(--fs-160);color:var(--tinta);margin:2px 0}
-.ejercicio .autor{font-size:var(--fs-125);color:var(--gris-cl)}
-.ejercicio .n-var{font-family:var(--ff-mono);color:var(--gris)}
+.ejercicio .tema{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2)}
+.ejercicio .probado{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.05em;text-transform:uppercase;color:var(--marca-texto)}
+.ejercicio .tit{font-size:var(--fs-160);color:var(--texto);margin:2px 0}
+.ejercicio .autor{font-size:var(--fs-125);color:var(--texto-2)}
+.ejercicio .n-var{font-family:var(--ff-mono);color:var(--texto-2)}
 
 /* Etapa 5 — alta de ejercicio: plegado de detalles opcionales */
 #btn-mas-detalles{margin-bottom:var(--sp-3)}
@@ -562,25 +562,25 @@ svg.g{width:100%;display:block;overflow:visible}
    bloques hermanos: los dos usan .eyebrow (base.css), sin distinción de
    peso entre uno y otro. */
 .texto-libre{white-space:pre-wrap}
-.nota{background:var(--blanco);border-radius:var(--r);padding:var(--sp-3);margin-bottom:var(--sp-2);box-shadow:var(--sombra)}
-.nota .meta{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);font-size:var(--fs-125);color:var(--gris-cl)}
-.nota .tx{font-size:var(--fs-135);color:var(--tinta);line-height:1.4;margin-top:.1875rem}
-.nota .nota-borrar{min-width:var(--tap);min-height:var(--tap);border:0;background:none;color:var(--gris-cl);font-size:var(--fs-145);flex:0 0 auto}
+.nota{background:var(--sup);border-radius:var(--r);padding:var(--sp-3);margin-bottom:var(--sp-2);box-shadow:var(--sombra)}
+.nota .meta{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);font-size:var(--fs-125);color:var(--texto-2)}
+.nota .tx{font-size:var(--fs-135);color:var(--texto);line-height:1.4;margin-top:.1875rem}
+.nota .nota-borrar{min-width:var(--tap);min-height:var(--tap);border:0;background:none;color:var(--texto-2);font-size:var(--fs-145);flex:0 0 auto}
 #btn-ej-agregar-nota{margin:var(--sp-2) 0 var(--sp-5)}
 
 /* Variaciones (0052): de la más fácil a la más difícil. El nivel va a la
    izquierda en mono, como una escalera que se lee de arriba abajo. */
 .variaciones{margin-bottom:var(--sp-5)}
-.variacion{display:flex;gap:var(--sp-3);background:var(--blanco);border-radius:var(--r);padding:var(--sp-3);margin-bottom:var(--sp-2);box-shadow:var(--sombra)}
-.variacion .niv{display:flex;flex-direction:column;align-items:center;flex:0 0 auto;min-width:2.75rem;padding-right:var(--sp-3);border-right:1px solid var(--linea)}
-.variacion .niv .k{font-size:var(--fs-100);color:var(--gris);text-transform:uppercase;letter-spacing:.05em}
-.variacion .niv .n{font-family:var(--ff-mono);font-size:var(--fs-190);font-weight:700;color:var(--primario);line-height:1.1}
+.variacion{display:flex;gap:var(--sp-3);background:var(--sup);border-radius:var(--r);padding:var(--sp-3);margin-bottom:var(--sp-2);box-shadow:var(--sombra)}
+.variacion .niv{display:flex;flex-direction:column;align-items:center;flex:0 0 auto;min-width:2.75rem;padding-right:var(--sp-3);border-right:1px solid var(--borde)}
+.variacion .niv .k{font-size:var(--fs-100);color:var(--texto-2);text-transform:uppercase;letter-spacing:.05em}
+.variacion .niv .n{font-family:var(--ff-mono);font-size:var(--fs-190);font-weight:700;color:var(--marca-texto);line-height:1.1}
 .variacion .cuerpo{flex:1;min-width:0}
-.variacion .tit{font-size:var(--fs-145);font-weight:600;color:var(--tinta)}
-.variacion .tx{font-size:var(--fs-135);color:var(--tinta);line-height:1.4;margin-top:.1875rem}
-.variacion .meta{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2);margin-top:var(--sp-2);font-size:var(--fs-125);color:var(--gris)}
+.variacion .tit{font-size:var(--fs-145);font-weight:600;color:var(--texto)}
+.variacion .tx{font-size:var(--fs-135);color:var(--texto);line-height:1.4;margin-top:.1875rem}
+.variacion .meta{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2);margin-top:var(--sp-2);font-size:var(--fs-125);color:var(--texto-2)}
 .variacion .meta .autor{flex:1}
-.variacion .nota-borrar{min-width:var(--tap);min-height:var(--tap);border:0;background:none;color:var(--gris);font-size:var(--fs-145);flex:0 0 auto}
+.variacion .nota-borrar{min-width:var(--tap);min-height:var(--tap);border:0;background:none;color:var(--texto-2);font-size:var(--fs-145);flex:0 0 auto}
 
 /* Task 8: campos opcionales con valor, en un bloque menor que Descripción y Notas */
 .video-embed{position:relative;aspect-ratio:16/9;margin-bottom:var(--sp-4);background:var(--negro-puro);border-radius:var(--r);overflow:hidden}
@@ -588,34 +588,34 @@ svg.g{width:100%;display:block;overflow:visible}
 /* En la hoja el video va de borde a borde (le saca el padding de .pad): en
    vertical el ancho de la pantalla es lo único que lo agranda. */
 .hoja .video-embed{margin-inline:calc(-1 * var(--sp-4));border-radius:0}
-.detalle-menor{margin-top:var(--sp-5);padding-top:var(--sp-3);border-top:1px solid var(--linea)}
+.detalle-menor{margin-top:var(--sp-5);padding-top:var(--sp-3);border-top:1px solid var(--borde)}
 .fila-menor{display:flex;gap:var(--sp-3);padding:.25rem 0;font-size:var(--fs-125)}
-.fila-menor .k{flex:0 0 6rem;color:var(--gris-cl);text-transform:uppercase;letter-spacing:.05em;font-size:var(--fs-100)}
-.fila-menor .v{color:var(--tinta)}
-.fila-menor a{color:var(--primario)}
+.fila-menor .k{flex:0 0 6rem;color:var(--texto-2);text-transform:uppercase;letter-spacing:.05em;font-size:var(--fs-100)}
+.fila-menor .v{color:var(--texto)}
+.fila-menor a{color:var(--marca-texto)}
 
 /* ---- coordinación ---- */
 .panorama{display:grid;gap:var(--sp-4)}
-.tarjeta-cat{background:var(--blanco);border-radius:var(--r);box-shadow:var(--sombra);padding:var(--sp-4);min-width:0}
+.tarjeta-cat{background:var(--sup);border-radius:var(--r);box-shadow:var(--sombra);padding:var(--sp-4);min-width:0}
 .tarjeta-cat .nom{font-family:var(--ff-titulo);font-size:var(--fs-190);font-weight:600;margin-bottom:var(--sp-1)}
-.tarjeta-cat .det{font-size:var(--fs-115);color:var(--gris);margin-top:.125rem}
+.tarjeta-cat .det{font-size:var(--fs-115);color:var(--texto-2);margin-top:.125rem}
 .tarjeta-cat .nom .det{font-family:inherit;font-weight:500;margin-left:var(--sp-2)}
 .tarjeta-cat .chip.sin{display:inline-block;margin-top:var(--sp-2)}
-.serie-cat{border-top:1px solid var(--linea);margin-top:var(--sp-3);padding-top:var(--sp-3)}
-.serie-cat .k{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--gris-cl)}
+.serie-cat{border-top:1px solid var(--borde);margin-top:var(--sp-3);padding-top:var(--sp-3)}
+.serie-cat .k{font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2)}
 .serie-cat .sub{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px var(--sp-3)}
 .fila-ev.tres{grid-template-columns:auto 1fr auto}
-.profe{background:var(--blanco);border-radius:var(--r);box-shadow:var(--sombra);padding:var(--sp-3);margin-bottom:var(--sp-2);display:flex;flex-direction:column;gap:var(--sp-2);min-width:0}
+.profe{background:var(--sup);border-radius:var(--r);box-shadow:var(--sombra);padding:var(--sp-3);margin-bottom:var(--sp-2);display:flex;flex-direction:column;gap:var(--sp-2);min-width:0}
 .profe .nom{font-weight:600;font-size:var(--fs-145)}
-.profe .det{font-size:var(--fs-115);color:var(--gris)}
-.profe-cat{display:flex;align-items:center;gap:var(--sp-3);border-top:1px solid var(--linea);padding-top:var(--sp-2)}
+.profe .det{font-size:var(--fs-115);color:var(--texto-2)}
+.profe-cat{display:flex;align-items:center;gap:var(--sp-3);border-top:1px solid var(--borde);padding-top:var(--sp-2)}
 .profe .btn.chico{align-self:flex-start}
 /* Panel de papeles y pagos de coordinación: una fila por chico que se abre con el detalle. */
 .papel-cab{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-2);width:100%;min-height:var(--tap);padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .papel-chips{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
-.papel-linea{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-2) 0;font-size:var(--fs-135);border-bottom:1px solid var(--linea)}
+.papel-linea{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-2) 0;font-size:var(--fs-135);border-bottom:1px solid var(--borde)}
 .papel-linea.apilada{flex-direction:column;align-items:flex-start;gap:var(--sp-1)}
-.papel-detalle:not([hidden]){display:flex;flex-direction:column;gap:var(--sp-2);border-top:1px solid var(--linea);padding-top:var(--sp-2)}
+.papel-detalle:not([hidden]){display:flex;flex-direction:column;gap:var(--sp-2);border-top:1px solid var(--borde);padding-top:var(--sp-2)}
 .papel-links{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
 .papel-links .btn.chico{text-decoration:none}
 .casilla{width:100%;text-align:left;cursor:pointer}
@@ -629,19 +629,19 @@ svg.g{width:100%;display:block;overflow:visible}
 .perfil-nombre{font-family:var(--ff-titulo);font-size:var(--fs-250);font-weight:700;text-transform:uppercase;line-height:1.05;margin-top:var(--sp-2);overflow-wrap:anywhere}
 .perfil-cab .sin{color:var(--gris-osc);font-style:italic;text-transform:none;font-weight:500;font-size:var(--fs-190)}
 .perfil-cab .det{color:var(--gris-osc);font-size:var(--fs-125);margin-top:var(--sp-1)}
-.perfil-datos{background:var(--blanco);border-radius:var(--r);box-shadow:var(--sombra);padding:0 var(--sp-4);margin-bottom:var(--sp-4)}
-.perfil-fila{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) 0;border-top:1px solid var(--linea)}
+.perfil-datos{background:var(--sup);border-radius:var(--r);box-shadow:var(--sombra);padding:0 var(--sp-4);margin-bottom:var(--sp-4)}
+.perfil-fila{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) 0;border-top:1px solid var(--borde)}
 .perfil-fila:first-child{border-top:0}
 .perfil-fila > div{flex:1;min-width:0}
-.perfil-fila .k{font-family:var(--ff-titulo);font-size:var(--fs-100);font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gris)}
+.perfil-fila .k{font-family:var(--ff-titulo);font-size:var(--fs-100);font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--texto-2)}
 .perfil-fila .v{font-size:var(--fs-145);margin-top:.125rem;overflow-wrap:anywhere}
-.perfil-fila .v .sin{color:var(--gris);font-style:italic}
-.aviso-estimacion{font-size:var(--fs-125);color:var(--gris-cl);font-style:italic;margin:var(--sp-3) 0 var(--sp-5)}
-.perfil-legal{text-align:center;font-size:var(--fs-125);color:var(--gris-cl);margin-top:var(--sp-5)}
+.perfil-fila .v .sin{color:var(--texto-2);font-style:italic}
+.aviso-estimacion{font-size:var(--fs-125);color:var(--texto-2);font-style:italic;margin:var(--sp-3) 0 var(--sp-5)}
+.perfil-legal{text-align:center;font-size:var(--fs-125);color:var(--texto-2);margin-top:var(--sp-5)}
 .perfil-legal a{color:inherit}
 .perfil-guia{margin-bottom:var(--sp-3)}
 .perfil-cats{display:flex;flex-wrap:wrap;gap:var(--sp-1);margin-top:var(--sp-1)}
-.nota-codigos{font-size:var(--fs-125);color:var(--gris)}
+.nota-codigos{font-size:var(--fs-125);color:var(--texto-2)}
 
 /* ---- panorama: batería y partidos (spec 2026-09-13) ---- */
 /* Abrir una tarjeta no estira a las vecinas de la grilla (escritorio). */
@@ -649,33 +649,33 @@ svg.g{width:100%;display:block;overflow:visible}
 
 .serie-cat .fuentes{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin-top:var(--sp-2)}
 .fuente{min-width:0}
-.fuente .k{font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.06em;text-transform:uppercase;color:var(--gris-cl)}
+.fuente .k{font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2)}
 .fuente .numero{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 var(--sp-2);margin-top:.125rem}
 /* Jerarquía, no señal: el mismo rojo con cualquier valor (spec §6). */
-.fuente .n{font-family:var(--ff-mono);font-size:var(--fs-300);font-weight:600;line-height:1;color:var(--primario)}
-.fuente .n .u{font-size:var(--fs-190);color:var(--gris-cl)}
-.fuente .frac{font-family:var(--ff-mono);font-size:var(--fs-135);color:var(--gris-cl)}
-.fuente .vacio{font-size:var(--fs-135);color:var(--gris-cl);margin-top:var(--sp-1)}
+.fuente .n{font-family:var(--ff-mono);font-size:var(--fs-300);font-weight:600;line-height:1;color:var(--marca-texto)}
+.fuente .n .u{font-size:var(--fs-190);color:var(--texto-2)}
+.fuente .frac{font-family:var(--ff-mono);font-size:var(--fs-135);color:var(--texto-2)}
+.fuente .vacio{font-size:var(--fs-135);color:var(--texto-2);margin-top:var(--sp-1)}
 
 /* "Ver detalles", compartido por DATOS, el panorama y la ficha del jugador
    (src/ui/componentes/verDetalles.js). Abre la hoja: el historial fecha por
    fecha no estira la pantalla. */
 .ver-detalles{
   width:100%;min-height:var(--tap);margin-top:var(--sp-3);
-  border-top:1px solid var(--linea);
+  border-top:1px solid var(--borde);
   display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);
   font-family:var(--ff-titulo);font-size:var(--fs-135);font-weight:600;
-  letter-spacing:.06em;text-transform:uppercase;color:var(--tinta);text-align:left;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--texto);text-align:left;
 }
 .ver-detalles .flecha{font-size:var(--fs-200);line-height:1}
 .hoja .tabla-nombrada + .tabla-nombrada{padding-top:var(--sp-4)}
-.hoja .sub-fuente{font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.06em;text-transform:uppercase;color:var(--gris-cl)}
+.hoja .sub-fuente{font-family:var(--ff-titulo);font-size:var(--fs-115);letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2)}
 .hoja .cerrar-detalles{margin-top:var(--sp-5)}
 /* Un ejercicio del detalle de cargas: el nombre puede ser largo ("Barra Ol +
    10 kg…"), así que va en su propio renglón y los números abajo. */
-.fila-carga{padding:var(--sp-2) 0;border-bottom:1px solid var(--linea);font-size:var(--fs-135)}
-.fila-carga .det{font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--gris-cl);margin-top:2px}
-.fila-ev .rival{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gris-cl)}
+.fila-carga{padding:var(--sp-2) 0;border-bottom:1px solid var(--borde);font-size:var(--fs-135)}
+.fila-carga .det{font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--texto-2);margin-top:2px}
+.fila-ev .rival{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--texto-2)}
 /* En la fila de un partido cede el rival, nunca la fracción: un nombre largo
    se corta con puntos suspensivos y "31% · 12/39" queda en una línea. */
 .fila-ev.partido{grid-template-columns:auto auto minmax(0,1fr)}
@@ -687,17 +687,17 @@ svg.g{width:100%;display:block;overflow:visible}
 /* Etapa 7 — plan físico y escalones. Sin breakpoints: a 375px ya entra. */
 .linea-fisico{cursor:pointer}
 .linea-fisico .nom{font-weight:600;font-size:var(--fs-145);line-height:1.2;flex:1}
-.linea-fisico .det{font-size:var(--fs-125);color:var(--gris);margin-top:.25rem}
+.linea-fisico .det{font-size:var(--fs-125);color:var(--texto-2);margin-top:.25rem}
 .linea-fisico .pie-linea{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-3);margin-top:var(--sp-3)}
-.linea-fisico .escalon{font-size:var(--fs-125);color:var(--gris)}
+.linea-fisico .escalon{font-size:var(--fs-125);color:var(--texto-2)}
 .linea-fisico a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
 .escalon-fila{
   display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;gap:var(--sp-2);
-  background:var(--blanco);padding:var(--sp-3);border-radius:var(--r);margin-bottom:var(--sp-2);box-shadow:var(--sombra);
+  background:var(--sup);padding:var(--sp-3);border-radius:var(--r);margin-bottom:var(--sp-2);box-shadow:var(--sombra);
 }
 .escalon-fila.dos{grid-template-columns:minmax(0,1fr) auto}
 .escalon-fila .nom{font-weight:600;font-size:var(--fs-145);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.escalon-fila .det{font-size:var(--fs-115);color:var(--gris);margin-top:.125rem}
+.escalon-fila .det{font-size:var(--fs-115);color:var(--texto-2);margin-top:.125rem}
 .escalon-fila .kg{
   min-width:4.5rem;text-align:center;font-family:var(--ff-mono);font-size:var(--fs-160);font-weight:600;
   min-height:var(--tap);padding:0 var(--sp-2);background:none;border:0;border-radius:.5rem;color:inherit;cursor:pointer;
@@ -705,7 +705,7 @@ svg.g{width:100%;display:block;overflow:visible}
 .escalon-fila .btn.chico{min-width:var(--tap);padding:0}
 
 /* Inventario: el tipo encima de sus filas, y el contador de cantidad. */
-.inv-grupo{margin:var(--sp-4) 0 var(--sp-2);font-weight:700;font-size:var(--fs-160);color:var(--tinta)}
+.inv-grupo{margin:var(--sp-4) 0 var(--sp-2);font-weight:700;font-size:var(--fs-160);color:var(--texto)}
 /* Un botón no se estira solo aunque sea flex: la fila editable ocupa el ancho
    como la de lectura, con la cantidad a la derecha. */
 .inv-fila{width:100%;text-align:left;font:inherit;color:inherit;border:0}
@@ -719,7 +719,7 @@ svg.g{width:100%;display:block;overflow:visible}
 .form-fila-texto{flex:1;min-width:0;min-height:var(--tap);display:block;text-align:left;font:inherit;color:inherit;background:transparent;border:0;padding:var(--sp-2) 0}
 .form-fila-texto .det{display:block;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .fin-sub{display:block;font-weight:400}
-.fin-fecha{flex:0 0 auto;font-size:var(--fs-125);color:var(--gris)}
+.fin-fecha{flex:0 0 auto;font-size:var(--fs-125);color:var(--texto-2)}
 .fin-monto{flex:0 0 auto;font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-145)}
 /* El color acompaña al signo y a la palabra, nunca va solo. */
 .fin-ingreso{color:var(--sube)}
@@ -731,7 +731,7 @@ svg.g{width:100%;display:block;overflow:visible}
 .fin-total{margin:0}
 .fin-total .eyebrow{margin:0 0 var(--sp-1)}
 .fin-cifra{font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-220)}
-.fin-total .det{font-size:var(--fs-115);color:var(--gris);margin:0}
+.fin-total .det{font-size:var(--fs-115);color:var(--texto-2);margin:0}
 
 /* ---- pizarra táctica (jugadas): cancha, fichas y trazos, siempre por clase.
    Un atributo fill/stroke con var() no lo interpreta el SVG: por eso
@@ -812,44 +812,44 @@ svg.pz.pz-icono{width:2.75rem;height:1.375rem;display:inline-block;vertical-alig
 .jed-cab{display:flex;align-items:center;gap:var(--sp-3)}
 .jed-cab-nombre{display:flex;align-items:center;gap:var(--sp-1);flex:1;min-width:0}
 .jed-cab-nombre .nom{font-family:var(--ff-titulo);font-size:var(--fs-190);font-weight:700;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.jed-cab-tipo{font-size:var(--fs-115);color:var(--gris);white-space:nowrap}
+.jed-cab-tipo{font-size:var(--fs-115);color:var(--texto-2);white-space:nowrap}
 .jed-cab-acciones{display:flex;align-items:center;gap:var(--sp-1);flex:none}
 /* La barra de herramientas: fila de íconos que envuelve (mobile y tablet
    vertical); pasa a columna fija al costado de la cancha desde 64rem
    (layout.css, .pant.ancha .jed-barra). */
 .jed-barra{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2)}
-.jed-barra-titulo{font-family:var(--ff-titulo);font-size:var(--fs-115);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);flex:0 0 100%}
-.jed-barra-filete{flex:0 0 100%;border:0;border-top:1px solid var(--linea);margin:var(--sp-1) 0}
+.jed-barra-titulo{font-family:var(--ff-titulo);font-size:var(--fs-115);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2);flex:0 0 100%}
+.jed-barra-filete{flex:0 0 100%;border:0;border-top:1px solid var(--borde);margin:var(--sp-1) 0}
 .jed-herr-btn{
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
   min-width:var(--tap);min-height:var(--tap);padding:var(--sp-1);
-  background:var(--papel);border:1px solid var(--linea);border-radius:var(--r-s);
-  color:var(--gris);font-size:var(--fs-100);text-align:center;
+  background:var(--sup-hundida);border:1px solid var(--borde);border-radius:var(--r-s);
+  color:var(--texto-2);font-size:var(--fs-100);text-align:center;
 }
-.jed-herr-btn:disabled{color:var(--deshabilitado);border-color:var(--linea)}
+.jed-herr-btn:disabled{color:var(--deshabilitado);border-color:var(--borde)}
 .jed-herr-btn .pz.pz-icono{width:1.75rem;height:0.875rem;margin-right:0}
 .jed-herr-letra{font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-160)}
 .jed-fila-cant{display:flex;align-items:center;justify-content:center;gap:var(--sp-1);flex:0 0 100%}
 /* Activa: borde y fondo suave del color de su tipo (no relleno rojo macizo:
    con seis tipos, un solo color de "activo" no distinguía cuál era cuál). */
-.jed-herr-btn.on{border-color:var(--gris);background:var(--fondo-chip)}
-.jed-herr-btn.on[data-herramienta="corte"]{border-color:var(--trazo-corte);background:var(--fondo-chip);background:color-mix(in oklab,var(--trazo-corte) 14%,var(--papel))}
-.jed-herr-btn.on[data-herramienta="dribbling"]{border-color:var(--trazo-dribbling);background:var(--fondo-chip);background:color-mix(in oklab,var(--trazo-dribbling) 14%,var(--papel))}
-.jed-herr-btn.on[data-herramienta="pase"]{border-color:var(--trazo-pase);background:var(--fondo-chip);background:color-mix(in oklab,var(--trazo-pase) 14%,var(--papel))}
-.jed-herr-btn.on[data-herramienta="cortina"]{border-color:var(--trazo-cortina);background:var(--fondo-chip);background:color-mix(in oklab,var(--trazo-cortina) 14%,var(--papel))}
-.jed-herr-btn.on[data-herramienta="tiro"]{border-color:var(--trazo-tiro);background:var(--fondo-chip);background:color-mix(in oklab,var(--trazo-tiro) 14%,var(--papel))}
-.jed-herr-btn.on[data-herramienta="handoff"]{border-color:var(--trazo-handoff);background:var(--fondo-chip);background:color-mix(in oklab,var(--trazo-handoff) 14%,var(--papel))}
-.jed-barra .ayuda{font-size:var(--fs-115);color:var(--gris-cl);flex:0 0 100%}
+.jed-herr-btn.on{border-color:var(--texto-2);background:var(--fondo-chip-t)}
+.jed-herr-btn.on[data-herramienta="corte"]{border-color:var(--trazo-corte);background:var(--fondo-chip-t);background:color-mix(in oklab,var(--trazo-corte) 14%,var(--fondo-app))}
+.jed-herr-btn.on[data-herramienta="dribbling"]{border-color:var(--trazo-dribbling);background:var(--fondo-chip-t);background:color-mix(in oklab,var(--trazo-dribbling) 14%,var(--fondo-app))}
+.jed-herr-btn.on[data-herramienta="pase"]{border-color:var(--trazo-pase);background:var(--fondo-chip-t);background:color-mix(in oklab,var(--trazo-pase) 14%,var(--fondo-app))}
+.jed-herr-btn.on[data-herramienta="cortina"]{border-color:var(--trazo-cortina);background:var(--fondo-chip-t);background:color-mix(in oklab,var(--trazo-cortina) 14%,var(--fondo-app))}
+.jed-herr-btn.on[data-herramienta="tiro"]{border-color:var(--trazo-tiro);background:var(--fondo-chip-t);background:color-mix(in oklab,var(--trazo-tiro) 14%,var(--fondo-app))}
+.jed-herr-btn.on[data-herramienta="handoff"]{border-color:var(--trazo-handoff);background:var(--fondo-chip-t);background:color-mix(in oklab,var(--trazo-handoff) 14%,var(--fondo-app))}
+.jed-barra .ayuda{font-size:var(--fs-115);color:var(--texto-2);flex:0 0 100%}
 /* Hover de cada herramienta de trazo con su propio color (más tenue que
    .on, activa): confirma que es tocable antes de tocarla. */
 @media (hover:hover){
-  .jed-herr-btn:not(:disabled):not(.on):hover{border-color:var(--gris)}
-  .jed-herr-btn:not(:disabled):not(.on):hover[data-herramienta="corte"]{border-color:var(--trazo-corte);background:color-mix(in oklab,var(--trazo-corte) 8%,var(--papel))}
-  .jed-herr-btn:not(:disabled):not(.on):hover[data-herramienta="dribbling"]{border-color:var(--trazo-dribbling);background:color-mix(in oklab,var(--trazo-dribbling) 8%,var(--papel))}
-  .jed-herr-btn:not(:disabled):not(.on):hover[data-herramienta="pase"]{border-color:var(--trazo-pase);background:color-mix(in oklab,var(--trazo-pase) 8%,var(--papel))}
-  .jed-herr-btn:not(:disabled):not(.on):hover[data-herramienta="cortina"]{border-color:var(--trazo-cortina);background:color-mix(in oklab,var(--trazo-cortina) 8%,var(--papel))}
-  .jed-herr-btn:not(:disabled):not(.on):hover[data-herramienta="tiro"]{border-color:var(--trazo-tiro);background:color-mix(in oklab,var(--trazo-tiro) 8%,var(--papel))}
-  .jed-herr-btn:not(:disabled):not(.on):hover[data-herramienta="handoff"]{border-color:var(--trazo-handoff);background:color-mix(in oklab,var(--trazo-handoff) 8%,var(--papel))}
+  .jed-herr-btn:not(:disabled):not(.on):hover{border-color:var(--texto-2)}
+  .jed-herr-btn:not(:disabled):not(.on):hover[data-herramienta="corte"]{border-color:var(--trazo-corte);background:color-mix(in oklab,var(--trazo-corte) 8%,var(--fondo-app))}
+  .jed-herr-btn:not(:disabled):not(.on):hover[data-herramienta="dribbling"]{border-color:var(--trazo-dribbling);background:color-mix(in oklab,var(--trazo-dribbling) 8%,var(--fondo-app))}
+  .jed-herr-btn:not(:disabled):not(.on):hover[data-herramienta="pase"]{border-color:var(--trazo-pase);background:color-mix(in oklab,var(--trazo-pase) 8%,var(--fondo-app))}
+  .jed-herr-btn:not(:disabled):not(.on):hover[data-herramienta="cortina"]{border-color:var(--trazo-cortina);background:color-mix(in oklab,var(--trazo-cortina) 8%,var(--fondo-app))}
+  .jed-herr-btn:not(:disabled):not(.on):hover[data-herramienta="tiro"]{border-color:var(--trazo-tiro);background:color-mix(in oklab,var(--trazo-tiro) 8%,var(--fondo-app))}
+  .jed-herr-btn:not(:disabled):not(.on):hover[data-herramienta="handoff"]{border-color:var(--trazo-handoff);background:color-mix(in oklab,var(--trazo-handoff) 8%,var(--fondo-app))}
 }
 .jed-cuerpo{display:flex;flex-direction:column;gap:var(--sp-4)}
 .jed-cancha{flex:1;min-width:0}
@@ -857,7 +857,7 @@ svg.pz.pz-icono{width:2.75rem;height:1.375rem;display:inline-block;vertical-alig
 .jed-cancha svg.pz{touch-action:none}
 /* Fondo y borde propios: sin esto el panel se leía como una continuación
    de la cancha, no como un bloque aparte (la secuencia de pasos). */
-.jed-panel{display:flex;flex-direction:column;gap:var(--sp-3);background:var(--blanco);border:1px solid var(--linea);border-radius:var(--r);padding:var(--sp-3)}
+.jed-panel{display:flex;flex-direction:column;gap:var(--sp-3);background:var(--sup);border:1px solid var(--borde);border-radius:var(--r);padding:var(--sp-3)}
 .jed-panel-cab{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2)}
 .jed-paso-nav{display:flex;align-items:center;justify-content:center;gap:var(--sp-3)}
 /* La lista de pasos scrollea sola (con muchos pasos no empuja el resto del
@@ -867,29 +867,29 @@ svg.pz.pz-icono{width:2.75rem;height:1.375rem;display:inline-block;vertical-alig
 .jed-paso-item{
   flex:1;min-width:0;display:flex;align-items:center;gap:var(--sp-2);
   min-height:var(--tap);padding:0 var(--sp-2);border:1px solid transparent;border-radius:var(--r-s);
-  background:transparent;color:var(--tinta);text-align:left;
+  background:transparent;color:var(--texto);text-align:left;
 }
-.jed-paso-fila.on .jed-paso-item{background:var(--fondo-chip);border-color:var(--linea)}
+.jed-paso-fila.on .jed-paso-item{background:var(--fondo-chip-t);border-color:var(--borde)}
 .jed-paso-num{
   flex:none;display:flex;align-items:center;justify-content:center;
-  width:1.5rem;height:1.5rem;border-radius:var(--r-full);background:var(--linea);
-  font-family:var(--ff-mono);font-size:var(--fs-100);font-weight:600;color:var(--tinta);
+  width:1.5rem;height:1.5rem;border-radius:var(--r-full);background:var(--pista);
+  font-family:var(--ff-mono);font-size:var(--fs-100);font-weight:600;color:var(--texto);
 }
 .jed-paso-fila.on .jed-paso-num{background:var(--primario);color:var(--sobre-club)}
 .jed-paso-titulo{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--fs-135)}
 @media (hover:hover){
-  .jed-paso-fila:not(.on) .jed-paso-item:hover{background:var(--fondo-chip)}
+  .jed-paso-fila:not(.on) .jed-paso-item:hover{background:var(--fondo-chip-t)}
 }
 .jed-btn-ancho{display:flex;align-items:center;justify-content:center;gap:var(--sp-2)}
 .jed-btn-ancho svg{width:1rem;height:1rem;flex:none}
 
 /* Visor de una jugada a pantalla completa (jugador): tapa todo, sin compartir
    la hoja (que es un panel parcial, pensado para formularios). */
-.jvc{position:fixed;inset:0;z-index:55;background:var(--papel);padding:var(--sp-4);padding-top:calc(var(--sp-4) + env(safe-area-inset-top));overflow-y:auto}
+.jvc{position:fixed;inset:0;z-index:55;background:var(--fondo-app);padding:var(--sp-4);padding-top:calc(var(--sp-4) + env(safe-area-inset-top));overflow-y:auto}
 .jvc[hidden]{display:none}
 .jvc-cerrar{
   display:flex;align-items:center;justify-content:center;margin-left:auto;margin-bottom:var(--sp-2);
-  width:var(--tap);height:var(--tap);border-radius:var(--r-full);background:var(--fondo-chip);font-size:var(--fs-160);color:var(--tinta);
+  width:var(--tap);height:var(--tap);border-radius:var(--r-full);background:var(--fondo-chip-t);font-size:var(--fs-160);color:var(--texto);
 }
 /* El visor no comparte el tope de .pant.on (layout.css) porque .jvc no es
    .cuerpo > .pant: sin esto se estira sin límite en pantallas grandes. */
@@ -914,80 +914,80 @@ svg.pz.pz-icono{width:2.75rem;height:1.375rem;display:inline-block;vertical-alig
 
 /* Visor: cancha arriba, nota, transporte y velocidad debajo. */
 .visor-jugada{display:flex;flex-direction:column;gap:var(--sp-3)}
-.visor-nota{font-size:var(--fs-135);color:var(--gris);min-height:1.2em}
+.visor-nota{font-size:var(--fs-135);color:var(--texto-2);min-height:1.2em}
 .visor-controles{display:flex;align-items:center;gap:var(--sp-2)}
 .visor-controles .visor-jugar{flex:1}
 .visor-velocidades{display:flex;gap:var(--sp-2)}
-.visor-indicador{font-size:var(--fs-115);color:var(--gris-cl)}
+.visor-indicador{font-size:var(--fs-115);color:var(--texto-2)}
 /* La pizarra en la ficha de un ejercicio: la cancha entera de ancho en una compu sería enorme. */
 #ej-pizarra-visor{max-width:32rem;margin-inline:auto}
 .inv-cantidad input{width:5rem;text-align:center}
 
 /* Marcador de cuadros del salto (marcadorCuadros.js): tapa todo, como .jvc, y
    por eso lleva el protocolo en un <details> en vez de abrir la hoja. */
-.marcador-cuadros{position:fixed;inset:0;z-index:60;background:var(--papel);overflow-y:auto;padding:var(--sp-4);padding-top:calc(var(--sp-4) + env(safe-area-inset-top))}
+.marcador-cuadros{position:fixed;inset:0;z-index:60;background:var(--fondo-app);overflow-y:auto;padding:var(--sp-4);padding-top:calc(var(--sp-4) + env(safe-area-inset-top))}
 .marcador-cuerpo{display:flex;flex-direction:column;gap:var(--sp-3);max-width:var(--max-ancho);margin-inline:auto}
 .marcador-video{width:100%;max-height:45vh;object-fit:contain;background:var(--negro-puro);border-radius:var(--r)}
 .marcador-slider{width:100%;min-height:var(--tap);accent-color:var(--primario)}
-.marcador-cuadro{font-size:var(--fs-145);color:var(--gris-cl);text-align:center}
+.marcador-cuadro{font-size:var(--fs-145);color:var(--texto-2);text-align:center}
 .marcador-pasos,.marcador-marcas{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-2)}
 .marcador-marcas{grid-template-columns:repeat(2,1fr)}
 .marcador-resultado{font-size:var(--fs-145);min-height:2.5em}
-.marcador-protocolo summary{min-height:var(--tap);display:flex;align-items:center;cursor:pointer;font-size:var(--fs-145);color:var(--tinta)}
+.marcador-protocolo summary{min-height:var(--tap);display:flex;align-items:center;cursor:pointer;font-size:var(--fs-145);color:var(--texto)}
 .protocolo-salto{display:flex;flex-direction:column}
 
 /* Cronómetro de salida del sprint (cronometroSalida.js): tapa todo, como el
    marcador de cuadros. Claro, como el resto de la app: se usa en la cancha. */
-.crono-salida{position:fixed;inset:0;z-index:60;background:var(--papel);overflow-y:auto;padding:var(--sp-4);padding-top:calc(var(--sp-4) + env(safe-area-inset-top))}
+.crono-salida{position:fixed;inset:0;z-index:60;background:var(--fondo-app);overflow-y:auto;padding:var(--sp-4);padding-top:calc(var(--sp-4) + env(safe-area-inset-top))}
 .crono-cuerpo{display:flex;flex-direction:column;gap:var(--sp-4);max-width:var(--max-ancho);margin-inline:auto;min-height:100%}
 .crono-quien{text-align:center;padding-inline:var(--sp-8)}
-.crono-nombre{font-family:var(--ff-titulo);font-size:var(--fs-220);font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--tinta)}
-.crono-sub{font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--gris-cl)}
-.crono-tiempo{font-family:var(--ff-mono);font-weight:600;font-variant-numeric:tabular-nums;line-height:1;text-align:center;color:var(--tinta);font-size:clamp(4rem,22vw,6.5rem);padding-block:var(--sp-6)}
-.crono-tiempo .u{font-size:.4em;color:var(--primario);margin-left:.1em}
-.crono-marcas{font-family:var(--ff-titulo);font-size:var(--fs-300);text-transform:uppercase;letter-spacing:.06em;text-align:center;color:var(--tinta);padding-block:var(--sp-8)}
+.crono-nombre{font-family:var(--ff-titulo);font-size:var(--fs-220);font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--texto)}
+.crono-sub{font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--texto-2)}
+.crono-tiempo{font-family:var(--ff-mono);font-weight:600;font-variant-numeric:tabular-nums;line-height:1;text-align:center;color:var(--texto);font-size:clamp(4rem,22vw,6.5rem);padding-block:var(--sp-6)}
+.crono-tiempo .u{font-size:.4em;color:var(--marca-texto);margin-left:.1em}
+.crono-marcas{font-family:var(--ff-titulo);font-size:var(--fs-300);text-transform:uppercase;letter-spacing:.06em;text-align:center;color:var(--texto);padding-block:var(--sp-8)}
 .crono-aviso{font-size:var(--fs-145);color:var(--tinta);text-align:center;background:var(--aviso-fondo);border-radius:var(--r);padding:var(--sp-3)}
 .crono-boton{min-height:5rem;font-size:var(--fs-220)}
 .crono-llego{flex:1;min-height:45vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-2);border:0;border-radius:var(--r);background:var(--primario);color:var(--sobre-club);font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-300);text-transform:uppercase;letter-spacing:.05em;touch-action:manipulation;transition:transform var(--dur-1) var(--ease-salida)}
 .crono-llego:active{transform:scale(.98)}
 .crono-llego .ayuda{font-family:var(--ff-cuerpo);font-size:var(--fs-125);font-weight:400;text-transform:none;letter-spacing:0}
 .crono-acciones{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
-.crono-parcial{min-height:1.5em;font-family:var(--ff-mono);font-size:var(--fs-160);text-align:center;color:var(--gris-cl)}
-.crono-desglose{display:flex;justify-content:center;gap:var(--sp-6);font-size:var(--fs-145);color:var(--gris-cl)}
+.crono-parcial{min-height:1.5em;font-family:var(--ff-mono);font-size:var(--fs-160);text-align:center;color:var(--texto-2)}
+.crono-desglose{display:flex;justify-content:center;gap:var(--sp-6);font-size:var(--fs-145);color:var(--texto-2)}
 
 /* ---- medir sprint: tarjeta por jugador con dos intentos y selector de distancia ---- */
-.segmentado{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-1);padding:var(--sp-1);margin-bottom:var(--sp-4);background:var(--fondo-chip);border-radius:var(--r)}
-.segmento{min-height:var(--tap);border-radius:var(--r-m);background:transparent;color:var(--tinta);font-family:var(--ff-titulo);font-size:var(--fs-190);font-weight:700;letter-spacing:.1em;text-transform:uppercase}
-.segmento[aria-pressed="true"]{background:var(--blanco);box-shadow:var(--sombra)}
+.segmentado{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-1);padding:var(--sp-1);margin-bottom:var(--sp-4);background:var(--fondo-chip-t);border-radius:var(--r)}
+.segmento{min-height:var(--tap);border-radius:var(--r-m);background:transparent;color:var(--texto);font-family:var(--ff-titulo);font-size:var(--fs-190);font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.segmento[aria-pressed="true"]{background:var(--sup);box-shadow:var(--sombra)}
 .sprint-tarj{display:grid;gap:var(--sp-3);margin-bottom:var(--sp-3)}
-.sprint-tarj.ausente .nom{color:var(--gris)}
+.sprint-tarj.ausente .nom{color:var(--texto-2)}
 .sprint-cab{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2)}
 .sprint-cab .nom{font-family:var(--ff-titulo);font-size:var(--fs-200);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
 .sprint-celdas{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
 .sprint-celda{display:grid;gap:var(--sp-1);align-content:start}
-.sprint-celda .etq{display:flex;align-items:center;gap:var(--sp-1);min-height:1.5rem;font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+.sprint-celda .etq{display:flex;align-items:center;gap:var(--sp-1);min-height:1.5rem;font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2)}
 .sprint-celda.vacia .sin{display:flex;align-items:center;justify-content:center;min-height:var(--tap)}
 .sprint-correr{min-height:3.5rem;padding:var(--sp-2)}
-.sprint-tiempo{min-height:3.5rem;border-radius:var(--r-m);background:var(--fondo-chip);color:var(--tinta);font-family:var(--ff-mono);font-size:var(--fs-260);font-weight:600;font-variant-numeric:tabular-nums}
-.sprint-tiempo .u{font-size:.5em;color:var(--primario);margin-left:.12em}
-.sprint-desglose{font-family:var(--ff-mono);font-size:var(--fs-115);color:var(--gris)}
+.sprint-tiempo{min-height:3.5rem;border-radius:var(--r-m);background:var(--fondo-chip-t);color:var(--texto);font-family:var(--ff-mono);font-size:var(--fs-260);font-weight:600;font-variant-numeric:tabular-nums}
+.sprint-tiempo .u{font-size:.5em;color:var(--marca-texto);margin-left:.12em}
+.sprint-desglose{font-family:var(--ff-mono);font-size:var(--fs-115);color:var(--texto-2)}
 .sprint-pie{display:flex;gap:var(--sp-2)}
 .sprint-pie .btn{flex:1}
 .tabla-ev + .det{margin-top:var(--sp-4)}
 
 /* ---- medir Yo-Yo: quién corre, la prueba en curso y el resumen ---- */
-.yoyo-elegir{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);width:100%;min-height:var(--tap);padding:var(--sp-2) var(--sp-3);margin-bottom:var(--sp-2);border:1px solid var(--linea);border-radius:var(--r);background:var(--blanco);color:var(--tinta);font-size:var(--fs-145);text-align:left}
+.yoyo-elegir{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);width:100%;min-height:var(--tap);padding:var(--sp-2) var(--sp-3);margin-bottom:var(--sp-2);border:1px solid var(--borde);border-radius:var(--r);background:var(--sup);color:var(--texto);font-size:var(--fs-145);text-align:left}
 .yoyo-elegir[aria-pressed="true"]{background:var(--primario-cl);border-color:var(--primario)}
-.yoyo-cab{display:grid;gap:var(--sp-1);margin-bottom:var(--sp-3);padding:var(--sp-3);background:var(--blanco);border-radius:var(--r);box-shadow:var(--sombra)}
-.yoyo-nivel{font-family:var(--ff-titulo);font-size:var(--fs-300);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--tinta);font-variant-numeric:tabular-nums}
-.yoyo-datos{display:flex;justify-content:space-between;font-size:var(--fs-135);color:var(--gris)}
+.yoyo-cab{display:grid;gap:var(--sp-1);margin-bottom:var(--sp-3);padding:var(--sp-3);background:var(--sup);border-radius:var(--r);box-shadow:var(--sombra)}
+.yoyo-nivel{font-family:var(--ff-titulo);font-size:var(--fs-300);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--texto);font-variant-numeric:tabular-nums}
+.yoyo-datos{display:flex;justify-content:space-between;font-size:var(--fs-135);color:var(--texto-2)}
 .yoyo-grilla{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
-.yoyo-jug{display:grid;gap:var(--sp-2);align-content:start;padding:var(--sp-3);background:var(--blanco);border:1px solid var(--linea);border-radius:var(--r)}
+.yoyo-jug{display:grid;gap:var(--sp-2);align-content:start;padding:var(--sp-3);background:var(--sup);border:1px solid var(--borde);border-radius:var(--r)}
 .yoyo-jug.aviso{background:var(--baja-fondo);border-color:var(--baja)}
-.yoyo-jug.out{background:var(--fondo-chip);color:var(--gris)}
+.yoyo-jug.out{background:var(--fondo-chip-t);color:var(--texto-2)}
 .yoyo-toque{display:grid;gap:var(--sp-1);min-height:4rem;width:100%;padding:0;text-align:left;color:inherit;background:transparent}
 .yoyo-toque .nom{font-size:var(--fs-145);font-weight:600}
-.yoyo-toque .etq{font-family:var(--ff-mono);font-size:var(--fs-115);color:var(--gris)}
+.yoyo-toque .etq{font-family:var(--ff-mono);font-size:var(--fs-115);color:var(--texto-2)}
 .yoyo-jug.aviso .etq{color:var(--baja);font-weight:600}
 .yoyo-pie{flex-direction:row;gap:var(--sp-6)}
 .yoyo-pie .btn{width:auto;min-width:0}
@@ -995,49 +995,49 @@ svg.pz.pz-icono{width:2.75rem;height:1.375rem;display:inline-block;vertical-alig
 .yoyo-pie .btn.sec{flex:1}
 .yoyo-pie .btn:not(.sec){flex:2}
 .yoyo-res{display:grid;gap:var(--sp-3);margin-bottom:var(--sp-3)}
-.yoyo-res.ausente .nom{color:var(--gris)}
+.yoyo-res.ausente .nom{color:var(--texto-2)}
 .yoyo-res-datos{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
-.yoyo-res-datos .etq{display:block;font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+.yoyo-res-datos .etq{display:block;font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2)}
 
 /* ---- medir salto: fila por jugador con hasta 3 intentos ---- */
-.campo select{width:100%;min-height:var(--tap);padding:0 var(--sp-3);border:1px solid var(--borde-control);border-radius:var(--r-m);background:var(--blanco);color:var(--tinta);font-size:var(--fs-145)}
+.campo select{width:100%;min-height:var(--tap);padding:0 var(--sp-3);border:1px solid var(--borde-control);border-radius:var(--r-m);background:var(--sup);color:var(--texto);font-size:var(--fs-145)}
 .salto-acciones{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-4)}
-.salto-fila{display:grid;gap:var(--sp-2);padding:var(--sp-3) 0;border-bottom:1px solid var(--linea)}
-.salto-fila .nom{font-size:var(--fs-145);color:var(--tinta)}
-.salto-fila.ausente .nom{color:var(--gris)}
+.salto-fila{display:grid;gap:var(--sp-2);padding:var(--sp-3) 0;border-bottom:1px solid var(--borde)}
+.salto-fila .nom{font-size:var(--fs-145);color:var(--texto)}
+.salto-fila.ausente .nom{color:var(--texto-2)}
 .salto-ints{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
-.salto-int.si{font-family:var(--ff-mono);background:var(--primario-cl);color:var(--tinta)}
+.salto-int.si{font-family:var(--ff-mono);background:var(--primario-cl);color:var(--texto)}
 
 /* ---- guías (salto y medidas del cuerpo): hoja con cabecera, pasos y bloque clave ---- */
 .tag-metodo{
   display:inline-block;padding:var(--sp-1) var(--sp-2);border-radius:var(--r-s);
-  background:var(--primario-tenue);color:var(--primario-osc);
+  background:var(--primario-tenue);color:var(--marca-texto-tinte);
   font-family:var(--ff-titulo);font-weight:600;font-size:var(--fs-115);
   letter-spacing:.08em;text-transform:uppercase;
 }
 .guia-cab{display:grid;grid-template-columns:auto 1fr;gap:var(--sp-1) var(--sp-3);align-items:center;margin-bottom:var(--sp-4)}
-.guia-cab .ico{grid-row:span 2;width:2.5rem;height:2.5rem;display:flex;align-items:center;justify-content:center;border-radius:var(--r-m);background:var(--fondo-chip);color:var(--primario)}
+.guia-cab .ico{grid-row:span 2;width:2.5rem;height:2.5rem;display:flex;align-items:center;justify-content:center;border-radius:var(--r-m);background:var(--fondo-chip-t);color:var(--marca-texto)}
 .guia-cab .ico svg{width:1.5rem;height:1.5rem}
-.guia-cab .tit{font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-190);color:var(--tinta)}
+.guia-cab .tit{font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-190);color:var(--texto)}
 .guia-cab .tag-metodo{justify-self:start}
-.guia-cab .sub{grid-column:1 / -1;font-size:var(--fs-135);color:var(--gris-cl)}
+.guia-cab .sub{grid-column:1 / -1;font-size:var(--fs-135);color:var(--texto-2)}
 .guia-paso{
   display:grid;grid-template-columns:auto 1fr;gap:var(--sp-1) var(--sp-3);
-  background:var(--blanco);border-radius:var(--r);padding:var(--sp-4);
+  background:var(--sup);border-radius:var(--r);padding:var(--sp-4);
   margin-bottom:var(--sp-3);box-shadow:var(--sombra);
 }
-.guia-paso .num{font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-145);color:var(--primario)}
-.guia-paso .tit{font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-190);color:var(--tinta)}
-.guia-paso .cuerpo{grid-column:2;font-size:var(--fs-135);line-height:1.45;color:var(--tinta)}
+.guia-paso .num{font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-145);color:var(--marca-texto)}
+.guia-paso .tit{font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-190);color:var(--texto)}
+.guia-paso .cuerpo{grid-column:2;font-size:var(--fs-135);line-height:1.45;color:var(--texto)}
 .guia-paso .cuerpo p + p{margin-top:var(--sp-2)}
-.guia-paso .dibujo{grid-column:2;display:flex;gap:var(--sp-3);align-items:center;color:var(--primario)}
+.guia-paso .dibujo{grid-column:2;display:flex;gap:var(--sp-3);align-items:center;color:var(--marca-texto)}
 .guia-paso .dibujo svg{width:3rem;height:3rem;flex:0 0 auto}
 /* figura de perfil: el cuerpo en tinta, la medida en el color del club */
-.guia-paso .dibujo svg.figura{width:5.5rem;height:5.5rem;color:var(--tinta);background:var(--fondo-chip);border-radius:var(--r-m)}
+.guia-paso .dibujo svg.figura{width:5.5rem;height:5.5rem;color:var(--texto);background:var(--fondo-chip-t);border-radius:var(--r-m)}
 .guia-paso .dibujo .medida{stroke:var(--primario)}
 .guia-paso .dibujo .punto{fill:var(--primario);stroke:none}
 .guia-clave{
-  background:var(--blanco);border-left:3px solid var(--primario);
+  background:var(--sup);border-left:3px solid var(--primario);
   border-radius:0 var(--r) var(--r) 0;padding:var(--sp-4);
   margin-bottom:var(--sp-3);box-shadow:var(--sombra-alta);
   font-size:var(--fs-135);line-height:1.45;
@@ -1046,15 +1046,15 @@ svg.pz.pz-icono{width:2.75rem;height:1.375rem;display:inline-block;vertical-alig
 .guia-clave p + p{margin-top:var(--sp-2)}
 .chip-rango{
   display:inline-block;padding:var(--sp-1) var(--sp-2);border-radius:var(--r-s);
-  background:var(--fondo-chip);color:var(--tinta);
+  background:var(--fondo-chip-t);color:var(--texto);
   font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-115);white-space:nowrap;
 }
-.cifra-clave{font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-cifra);line-height:1;color:var(--tinta)}
-.cifra-clave .u{font-size:var(--fs-160);color:var(--primario);margin-left:var(--sp-1)}
-.cifra-clave + .etq{display:block;margin-top:var(--sp-1);font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+.cifra-clave{font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-cifra);line-height:1;color:var(--texto)}
+.cifra-clave .u{font-size:var(--fs-160);color:var(--marca-texto);margin-left:var(--sp-1)}
+.cifra-clave + .etq{display:block;margin-top:var(--sp-1);font-family:var(--ff-titulo);font-size:var(--fs-125);letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2)}
 .lista-guia{list-style:none;display:flex;flex-direction:column;gap:var(--sp-2);margin:var(--sp-2) 0}
 .salto-tarj{margin-bottom:var(--sp-3)}
-.salto-datos{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-3);margin-top:var(--sp-2);font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--gris-cl)}
+.salto-datos{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-3);margin-top:var(--sp-2);font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--texto-2)}
 .salto-tarj.chica .cifra-clave{font-size:var(--fs-260)}
 .eyebrow .btn.chico{margin-left:auto}
 
@@ -1062,11 +1062,11 @@ svg.pz.pz-icono{width:2.75rem;height:1.375rem;display:inline-block;vertical-alig
    contador, para que esté siempre a mano y no compita con Siguiente; así
    abajo quedan dos botones, que a 320px entran sin cortarse. */
 .intro-cab{display:flex;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-3)}
-.intro-ico{width:2.5rem;height:2.5rem;flex:0 0 auto;display:flex;align-items:center;justify-content:center;border-radius:var(--r-m);background:var(--fondo-chip);color:var(--primario)}
+.intro-ico{width:2.5rem;height:2.5rem;flex:0 0 auto;display:flex;align-items:center;justify-content:center;border-radius:var(--r-m);background:var(--fondo-chip-t);color:var(--marca-texto)}
 .intro-ico svg{width:1.5rem;height:1.5rem;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.intro-contador{font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--gris)}
+.intro-contador{font-family:var(--ff-mono);font-size:var(--fs-125);color:var(--texto-2)}
 .intro-cab .btn.chico{margin-left:auto}
-.intro-texto{font-size:var(--fs-160);line-height:1.5;color:var(--tinta)}
+.intro-texto{font-size:var(--fs-160);line-height:1.5;color:var(--texto)}
 .intro .acciones-hoja .btn{padding-inline:var(--sp-2);font-size:var(--fs-170)}
 
 /* ---- pista de una vez (componentes/pista.js): un .al con "Entendido".
@@ -1079,7 +1079,7 @@ svg.pz.pz-icono{width:2.75rem;height:1.375rem;display:inline-block;vertical-alig
 .jed > .al.pista{margin-bottom:0}
 
 /* ---- misiones del partido: una línea por misión, con su botón de quitar ---- */
-.mision-fila{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);padding:var(--sp-1) 0;border-bottom:1px solid var(--linea);font-size:var(--fs-145)}
+.mision-fila{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);padding:var(--sp-1) 0;border-bottom:1px solid var(--borde);font-size:var(--fs-145)}
 .mision-tx{flex:1}
 .mision-fila + .btn{margin-top:var(--sp-3)}
 .tarj .p + .btn{margin-top:var(--sp-2)}
@@ -1109,13 +1109,13 @@ svg.pz.pz-icono{width:2.75rem;height:1.375rem;display:inline-block;vertical-alig
 .asis-tarj{
   display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:var(--sp-2);
   width:100%;min-height:5.5rem;padding:var(--sp-3);text-align:left;
-  background:var(--blanco);border:0.125rem solid var(--borde-control);border-radius:var(--r);box-shadow:var(--sombra);
+  background:var(--sup);border:0.125rem solid var(--borde-control);border-radius:var(--r);box-shadow:var(--sombra);
   transition:transform var(--dur-1) var(--ease-salida);
 }
 .asis-tarj:active{transform:scale(.97)}
 .asis-tarj .nom{font-weight:600;font-size:var(--fs-145);line-height:1.2;overflow-wrap:anywhere}
 .asis-estado{
-  padding:.125rem var(--sp-2);border-radius:var(--r-btn);background:var(--fondo-chip);color:var(--gris);
+  padding:.125rem var(--sp-2);border-radius:var(--r-btn);background:var(--fondo-chip-t);color:var(--texto-2);
   font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-125);letter-spacing:.1em;text-transform:uppercase;
 }
 .asis-tarj[data-estado="presente"]{border-color:var(--sube)}
@@ -1142,3 +1142,12 @@ svg.pz.pz-icono{width:2.75rem;height:1.375rem;display:inline-block;vertical-alig
 /* ---- ASISTENCIA: bloque de la ficha del jugador ---- */
 .ficha-asis{display:flex;align-items:center;gap:var(--sp-3)}
 .ficha-asis-pct{font-size:var(--fs-220);font-weight:600}
+
+/* Interruptor (role="switch"): el botón mide el --tap para el dedo y la pista y la perilla se dibujan adentro.
+   Sólo la perilla se mueve (transform): la pista cambia de color sin animarse. */
+.interruptor{position:relative;flex:none;width:3.5rem;height:var(--tap);padding:0;border:0;background:transparent;cursor:pointer}
+.interruptor::before{content:"";position:absolute;left:.375rem;right:.375rem;top:50%;height:1.5rem;margin-top:-.75rem;border-radius:var(--r-full);background:var(--borde-control)}
+.interruptor::after{content:"";position:absolute;left:.5625rem;top:50%;width:1.125rem;height:1.125rem;margin-top:-.5625rem;border-radius:50%;background:var(--sobre-oscuro);transition:transform var(--dur-2) var(--ease-salida)}
+.interruptor[aria-checked="true"]::before{background:var(--primario)}
+.interruptor[aria-checked="true"]::after{transform:translateX(1.25rem);background:var(--sobre-club)}
+.interruptor:focus-visible{outline:2px solid var(--texto);outline-offset:-2px;border-radius:var(--r-s)}

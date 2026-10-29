@@ -13,6 +13,8 @@ import { abrirGuia } from '../componentes/guia.js';
 import { sincronizarChrome, salir } from '../main.js';
 import { $ } from '../dom.js';
 import { textoDeError } from '../errores.js';
+import { html } from '../html.js';
+import { aplicarTema, guardarTema, temaActual } from '../preferenciaTema.js';
 
 const contenedor = () => $('mi-perfil-contenido');
 
@@ -24,6 +26,20 @@ const contenedor = () => $('mi-perfil-contenido');
 
 function nombreHtml(nombre) {
   return nombre ? escaparHtml(nombre) : '<span class="sin">Sin nombre cargado</span>';
+}
+
+/** El bloque "Apariencia": un interruptor que prende o apaga el tema oscuro de este teléfono. */
+function aparienciaHtml(oscuro) {
+  return html`
+    <section class="perfil-datos">
+      <div class="perfil-fila">
+        <div>
+          <div class="k">Apariencia</div>
+          <div class="v" id="tema-etiqueta">Tema oscuro</div>
+        </div>
+        <button type="button" class="interruptor" id="sw-tema" role="switch" aria-labelledby="tema-etiqueta" aria-checked="${oscuro ? 'true' : 'false'}"></button>
+      </div>
+    </section>`;
 }
 
 /** Las categorías vigentes propias, en orden de catálogo; con año si no son de la temporada actual. */
@@ -156,12 +172,21 @@ export async function renderMiPerfil() {
         </div>
       </section>
 
+      ${aparienciaHtml(temaActual() === 'oscuro')}
+
       <button class="btn sec perfil-guia" id="btn-ver-guia">Ver la guía</button>
       <button class="btn sec" id="btn-cerrar-sesion">Cerrar sesión</button>
       <p class="perfil-legal"><a href="/public/legal/privacidad.html" target="_blank" rel="noopener">Política de privacidad</a> · <a href="/public/legal/terminos.html" target="_blank" rel="noopener">Términos y condiciones</a></p>
     </div>
   `;
   $('btn-editar-nombre').addEventListener('click', abrirEditarNombre);
+  $('sw-tema').addEventListener('click', (e) => {
+    const nuevo = temaActual() === 'oscuro' ? 'claro' : 'oscuro';
+    aplicarTema(nuevo);
+    const guardado = guardarTema(nuevo);
+    e.currentTarget.setAttribute('aria-checked', nuevo === 'oscuro' ? 'true' : 'false');
+    toast(`${nuevo === 'oscuro' ? 'Tema oscuro prendido.' : 'Tema claro.'}${guardado ? '' : ' No se pudo recordar en este teléfono.'}`);
+  });
   // Sin mirar si ya se vio: quien la pide la quiere ver de nuevo.
   $('btn-ver-guia').addEventListener('click', () => {
     abrirGuia({ guiaId: obtenerModo(), roles: obtenerRoles(), usuarioId: cuenta.id });
