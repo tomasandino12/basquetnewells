@@ -53,26 +53,6 @@
   --negro-puro:#000;      /* letterbox del video */
   --placeholder-osc:#9A968E; /* 4.70:1 sobre --sup-2: un placeholder también es texto */
 
-  /* ---- roles: lo que usan las pantallas ----
-     Las pantallas piden el ROL (--texto, --sup...), no el color de paleta: el
-     tema oscuro redefine sólo estos y toda la app cambia sin tocar un selector.
-     La paleta de arriba (--papel, --blanco, --tinta, --gris, --linea) queda
-     para lo que es siempre igual: la pizarra, la impresión, la barra de
-     navegación y el portal. */
-  --fondo-app:var(--papel);         /* el fondo de las pantallas */
-  --sup:var(--blanco);              /* tarjetas y campos */
-  --sup-hundida:var(--papel);       /* un nivel hundido dentro de una tarjeta */
-  --texto:var(--tinta);
-  --texto-2:var(--gris);            /* texto secundario */
-  --borde:var(--linea);             /* separadores */
-  --pista:var(--linea);             /* el carril vacío de una barra */
-  --fondo-chip-t:var(--fondo-chip); /* chips y etiquetas en reposo */
-  /* gráficos (graficos.js): el texto apagado, el eje, la rejilla y el piso de la cancha de tiro */
-  --graf-texto:var(--gris-cl);
-  --graf-eje:var(--deshabilitado);
-  --graf-rejilla:#EAE6DF;
-  --graf-cancha:#FBFAF8;
-
   /* ---- superficies sobre fondo oscuro ---- */
   --sup-1:#22222A;
   --sup-2:#2C2C34;
@@ -132,8 +112,7 @@
   --trazo-handoff:#B8306F;
 
   /* ---- sombra / radio ---- */
-  --sombra:0 1px 2px rgba(19,19,22,.05),0 6px 18px rgba(19,19,22,.05);
-  --sombra-alta:0 2px 4px rgba(19,19,22,.10),0 10px 26px rgba(19,19,22,.14);
+  /* --sombra y --sombra-alta viven con los roles, más abajo: el tema oscuro las cambia. */
   /* Brillo del color del club: anillo + resplandor. Van en un ::after que sólo
      cambia de opacity (nunca se anima el box-shadow). */
   --brillo-club:0 0 0 1px var(--primario),0 10px 28px -6px var(--primario);
@@ -224,6 +203,37 @@
   --lateral-w:14rem;      /* navegación lateral a partir de 1024px */
 }
 
+/* ---- roles: lo que usan las pantallas ----
+   Las pantallas piden el ROL (--texto, --sup...), no el color de paleta: el
+   tema oscuro redefine sólo estos y toda la app cambia sin tocar un selector.
+   La paleta de arriba (--papel, --blanco, --tinta, --gris, --linea) queda para
+   lo que es siempre igual: la pizarra, la impresión, la barra de navegación.
+   `.publico` (el portal y el ingreso) lleva este mismo bloque pegado a sus
+   valores claros: es negro siempre y no cambia con el tema, así que lo que
+   comparte con la app (botones, campos, chips) se ve igual en los dos. */
+:root,.publico{
+  --fondo-app:var(--papel);         /* el fondo de las pantallas */
+  --sup:var(--blanco);              /* tarjetas y campos */
+  --sup-hundida:var(--papel);       /* un nivel hundido dentro de una tarjeta */
+  --texto:var(--tinta);
+  --texto-2:var(--gris);            /* texto secundario */
+  --borde:var(--linea);             /* separadores */
+  --pista:var(--linea);             /* el carril vacío de una barra */
+  --fondo-chip-t:var(--fondo-chip); /* chips y etiquetas en reposo */
+  --btn-sec-fondo:var(--negro);     /* el botón secundario: negro macizo... */
+  --btn-sec-borde:var(--negro);
+  --marca-texto:var(--primario);     /* el rojo del club como texto chico */
+  --marca-texto-tinte:var(--primario-osc); /* ídem, sobre un fondo de --primario-tenue */
+  /* gráficos (graficos.js): el texto apagado, el eje, la rejilla y el piso de la cancha de tiro */
+  --graf-texto:var(--gris-cl);
+  --graf-eje:var(--deshabilitado);
+  --graf-rejilla:#EAE6DF;
+  --graf-cancha:#FBFAF8;
+  /* sobre claro, sombras suaves */
+  --sombra:0 1px 2px rgba(19,19,22,.05),0 6px 18px rgba(19,19,22,.05);
+  --sombra-alta:0 2px 4px rgba(19,19,22,.10),0 10px 26px rgba(19,19,22,.14);
+}
+
 /* Derivados del color del club. El 73,7 % en srgb da exactamente #A00D22 con el
    rojo por defecto; el 9 % en oklab da #FFEDEC (a 2 unidades de #FFEBEE, que
    no es un tinte puro del rojo). Con otro --club, oklab reparte el claro y el
@@ -248,5 +258,46 @@
     --trazo-pase:#5B9CF0;
     --trazo-cortina:#B085E0;
     --trazo-handoff:#F075AE;
+  }
+}
+
+/* ---- tema oscuro (a elección, en Mi perfil) ----
+   public/tema.js pone data-tema="oscuro" en <html> antes de pintar. Los valores
+   salen de las superficies del portal (--pub-*), que ya pasaron la verificación
+   de contraste. Va DESPUÉS del bloque de roles: a igual especificidad gana el
+   último. Sobre oscuro las sombras no se ven: la tarjeta se separa con un
+   borde fino, que va en la propia sombra para no tocar el tamaño de nada. */
+:root[data-tema="oscuro"]{
+  color-scheme:dark;
+  --fondo-app:var(--pub-fondo);
+  --sup:var(--pub-tarjeta);
+  --sup-hundida:#202027;
+  --texto:var(--sobre-oscuro);
+  --texto-2:var(--gris-osc);
+  --borde:var(--pub-borde);
+  --pista:#2A2A33;
+  --fondo-chip-t:#24242C;
+  --btn-sec-fondo:var(--sup-2);     /* ...que sobre fondo oscuro se pierde: sube un escalón y lleva borde */
+  --btn-sec-borde:var(--linea-osc);
+  --marca-texto:var(--club-texto);
+  --marca-texto-tinte:var(--club-texto);
+  --graf-texto:var(--gris-osc);
+  --graf-eje:var(--linea-osc);
+  --graf-rejilla:#24242C;
+  --graf-cancha:#1C1C22;
+  /* los semánticos y los fondos suaves: oscuros, con el texto en su versión clara */
+  --sube:var(--sube-osc);
+  --sube-fondo:#12281F;
+  --baja:var(--dorado);
+  --baja-fondo:#2B2314;
+  --primario-cl:#2B1B20;
+  --primario-tenue:#3A1D24;
+  --sombra:0 0 0 1px var(--pub-borde);
+  --sombra-alta:0 0 0 1px var(--pub-borde),0 10px 26px rgba(0,0,0,.5);
+}
+@supports (color:color-mix(in oklab,red,blue)){
+  :root[data-tema="oscuro"]{
+    --primario-cl:color-mix(in srgb,var(--club) 16%,var(--pub-tarjeta));
+    --primario-tenue:color-mix(in srgb,var(--club) 24%,var(--pub-tarjeta));
   }
 }

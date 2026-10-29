@@ -366,7 +366,9 @@ test('el portal se declara oscuro para que el navegador no le cambie los colores
   assert.match(css, /:root:has\(\.portal-d\),\.portal-d\{color-scheme:dark\}/);
   assert.doesNotMatch(css, /\.publico\{[^}]*color-scheme/, 'sólo el portal, no todo .publico');
   for (const otro of ['tokens', 'base', 'layout', 'componentes']) {
-    assert.doesNotMatch(readFileSync(`public/css/${otro}.css`, 'utf8'), /(^|[^-])color-scheme\s*:\s*dark/, `${otro}.css no declara oscura a la app`);
+    // La app es clara; sólo el tema oscuro, que se elige a mano ([data-tema="oscuro"]), la declara oscura.
+    const sinTemaOscuro = readFileSync(`public/css/${otro}.css`, 'utf8').replace(/[^{}]*data-tema="oscuro"[^{}]*\{[^{}]*\}/g, '');
+    assert.doesNotMatch(sinTemaOscuro, /(^|[^-])color-scheme\s*:\s*dark/, `${otro}.css no declara oscura a la app`);
   }
 });
 

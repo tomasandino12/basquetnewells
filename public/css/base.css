@@ -42,7 +42,7 @@ h2{font-size:var(--fs-titulo-chico)}
   display:flex;align-items:center;gap:var(--sp-2);margin:var(--sp-6) 0 var(--sp-2);
 }
 .eyebrow::before{content:"";width:.5625rem;height:.5625rem;background:var(--primario);flex:0 0 auto}
-.eyebrow .der{margin-left:auto;color:var(--primario);letter-spacing:.05em}
+.eyebrow .der{margin-left:auto;color:var(--marca-texto);letter-spacing:.05em}
 
 /* Título de bloque con una acción a la derecha (p. ej. "Cargar partido"), para
    que la acción esté junto a lo que afecta y no al final de la pantalla. */
