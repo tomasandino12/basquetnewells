@@ -4,7 +4,7 @@ import {
   codigoDelDia, resumenDeAsistencia, semaforo, lesionadoEn, textoDeLesion,
   entrenamientoDesdeFila, lesionDesdeFila,
   estadoInicial, alternar, contarEstados, filasParaGuardar, huboCambios, accionesDeTarjeta,
-  asistenciaDelJugador,
+  asistenciaDelJugador, textoDeAsistenciaDeCategoria,
 } from '../src/data/asistencia.js';
 
 test('codigoDelDia cubre los seis códigos', () => {
@@ -214,4 +214,12 @@ test('asistenciaDelJugador: sin entrenamientos tomados no inventa un 0 %', () =>
   assert.equal(r.resumen.pctAsistencia, null);
   assert.equal(r.nivel, 'sin_datos');
   assert.equal(r.lesionAbierta, null);
+});
+
+test('textoDeAsistenciaDeCategoria: % y entrenamientos, y "—" sin datos', () => {
+  assert.equal(textoDeAsistenciaDeCategoria({ entrenamientos: 24, pct: 77.6 }), '78 % · 24 entrenamientos');
+  assert.equal(textoDeAsistenciaDeCategoria({ entrenamientos: 1, pct: 100 }), '100 % · 1 entrenamiento');
+  assert.equal(textoDeAsistenciaDeCategoria({ entrenamientos: 0, pct: null }), '—');
+  assert.equal(textoDeAsistenciaDeCategoria({ entrenamientos: 3, pct: null }), '—');
+  assert.equal(textoDeAsistenciaDeCategoria(undefined), '—');
 });

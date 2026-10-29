@@ -26,7 +26,7 @@
 | 5 Lesiones en la toma | hecha, probada en el navegador contra la base local | feat(asistencia): justificada y lesiones en la toma |
 | 6 Historial y planilla | hecha, probada en el navegador (planilla leída de vuelta) | feat(asistencia): historial y planilla para el área |
 | 7 Ficha del jugador | hecha (pestaña Físico, primera sección); tests ok, falta verla en el navegador (task 9) | feat(asistencia): bloque en la ficha del jugador |
-| 8 Panorama del coordinador | pendiente | |
+| 8 Panorama del coordinador | hecha (línea en cada tarjeta de categoría); tests ok, falta verla en el navegador (task 9) | feat(asistencia): % por categoría en el panorama |
 | 9 db push y verificación | pendiente | |
 
 ---

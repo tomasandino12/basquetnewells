@@ -216,3 +216,14 @@ export function asistenciaDelJugador(entrenamientos, lesiones, jugadorId) {
     lesionAbierta: suyas.find((l) => l.hasta == null) ?? null,
   };
 }
+
+/**
+ * La línea de asistencia de una categoría en el panorama del coordinador. Sólo
+ * el % general y la cantidad de entrenamientos: nunca un chico ni una lesión.
+ * Sin entrenamientos tomados (o sin fila de esa categoría) es "—", no 0 %.
+ */
+export function textoDeAsistenciaDeCategoria(fila) {
+  if (!fila || fila.pct == null || !fila.entrenamientos) return '—';
+  const n = fila.entrenamientos;
+  return `${Math.round(fila.pct)} % · ${n} entrenamiento${n === 1 ? '' : 's'}`;
+}

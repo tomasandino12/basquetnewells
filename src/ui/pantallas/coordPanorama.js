@@ -1,9 +1,12 @@
 import {
   obtenerPlantelesDelClub, obtenerCatalogoDeCategorias, obtenerTemporadasDelClub,
   obtenerPanoramaDelClub, obtenerMiembrosDelClub, obtenerAsignacionesDelClub, obtenerMisionesDeEquipo,
+  obtenerAsistenciaDelClub,
 } from '../../data/repositorio.js';
 import { armarPanorama, textoSinDatos, hayAlgoParaMostrar } from '../../data/coordinacion.js';
 import { logrosDelEquipo } from '../../data/misiones.js';
+import { textoDeAsistenciaDeCategoria } from '../../data/asistencia.js';
+import { hoyLocal } from '../../data/antropometria.js';
 import { bloqueLogros } from '../componentes/logrosDelEquipo.js';
 import { ejeComun } from '../../data/estadisticas.js';
 import { obtenerClubActual } from '../sesion.js';
@@ -170,7 +173,16 @@ function tablasDeTarjeta(t) {
   return tablas;
 }
 
-function tarjetaHtml(t, logros) {
+// Un plantel es de una temporada: todo lo que tiene entrenamientos es de ésta.
+const DESDE_SIEMPRE = '2000-01-01';
+
+// Sin color ni semáforo: igual que el resto de la pantalla, una categoría no se pinta distinto de otra.
+function asistenciaHtml(fila, cargada) {
+  if (!cargada) return '';
+  return `<div class="det">Asistencia: <span class="mono">${escaparHtml(textoDeAsistenciaDeCategoria(fila))}</span></div>`;
+}
+
+function tarjetaHtml(t, logros, asistencia) {
   const cuerpo = hayAlgoParaMostrar(t)
     ? `${TIPOS.map((tipo) => resumenTipoHtml(t, tipo)).join('')}${verDetallesHtml(`Historial de ${t.categoria}`, tablasDeTarjeta(t))}`
     : `<div class="det sin-tiros">Todavía no hay baterías ni partidos con tiros en ${escaparHtml(t.categoria)}.</div>`;
@@ -179,6 +191,7 @@ function tarjetaHtml(t, logros) {
       <h2 class="nom">${escaparHtml(t.categoria)} <span class="det">${escaparHtml(t.nombreCategoria)}</span></h2>
       ${operativosHtml(t)}
       ${aCargoHtml(t)}
+      ${asistenciaHtml(asistencia?.get(t.plantelId), !!asistencia)}
       ${cuerpo}
       ${logros ? bloqueLogros(logros, { conTarjeta: false }) : ''}
     </article>
@@ -192,8 +205,9 @@ export async function renderPanorama() {
 
   let vista;
   let logrosPorPlantel = null;
+  let asistenciaPorPlantel = null;
   try {
-    const [planteles, catalogo, temporadas, panorama, miembros, asignaciones, equipo] = await Promise.all([
+    const [planteles, catalogo, temporadas, panorama, miembros, asignaciones, equipo, asistencia] = await Promise.all([
       obtenerPlantelesDelClub(club.id),
       obtenerCatalogoDeCategorias(),
       obtenerTemporadasDelClub(club.id),
@@ -203,7 +217,10 @@ export async function renderPanorama() {
       // Sólo lo del equipo: la base no le deja ver misiones de un chico. Un
       // agregado: si falla, el panorama se dibuja igual sin los logros.
       obtenerMisionesDeEquipo(club.id).catch(() => null),
+      // También un agregado (sólo % y cantidad por categoría): si falla, la línea no aparece.
+      obtenerAsistenciaDelClub(club.id, DESDE_SIEMPRE, hoyLocal()).catch(() => null),
     ]);
+    if (asistencia) asistenciaPorPlantel = new Map(asistencia.map((f) => [f.plantelId, f]));
     if (equipo) {
       logrosPorPlantel = new Map();
       for (const l of logrosDelEquipo(equipo.previas, equipo.misiones)) {
@@ -227,7 +244,7 @@ export async function renderPanorama() {
       <div class="eyebrow">Temporada ${escaparHtml(vista.temporada.nombre)}</div>
       <div class="p">Cada categoría contra sí misma a lo largo de la temporada. No se comparan entre sí: son chicos distintos en momentos distintos.</div>
       <div id="panorama-papeles"></div>
-      <div class="panorama">${vista.tarjetas.map((t) => tarjetaHtml(t, logrosPorPlantel ? (logrosPorPlantel.get(t.plantelId) ?? []) : null)).join('')}</div>
+      <div class="panorama">${vista.tarjetas.map((t) => tarjetaHtml(t, logrosPorPlantel ? (logrosPorPlantel.get(t.plantelId) ?? []) : null, asistenciaPorPlantel)).join('')}</div>
     </div>
   `;
 
