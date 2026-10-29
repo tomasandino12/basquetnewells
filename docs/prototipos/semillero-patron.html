@@ -1,356 +1,437 @@
 <!doctype html>
-<html lang="es-AR" data-tema="claro" data-patron="sutil">
+<html lang="es-AR" data-tema="claro" data-patron="a">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Semillero · prototipo de fondo con patrón</title>
-<!-- Prototipo suelto: no lo carga la app. Reusa tokens.css para que los
-     colores y las fuentes sean los mismos que en producción, y sólo agrega
-     lo que se está probando (el patrón, el tema oscuro y los cromos). -->
+<title>Semillero · prototipo de fondo y tema oscuro</title>
+<!-- Prototipo suelto: no lo carga la app. Copia la estructura de la app real
+     (cabecera con categorías, HOY / PLANTEL / DATOS, ficha) para probar sólo
+     tres cosas: el patrón de fondo, el tema oscuro y las tarjetas de jugador.
+     Las baldosas del patrón salen de patron/generar.html. -->
 <link rel="stylesheet" href="/public/css/tokens.css">
 <style>
-/* ---- temas: el claro es el de la app (papel, tarjetas blancas); el oscuro
-   reusa las superficies del portal. Lo único nuevo es --fondo-app (un gris un
-   poco más hondo que --papel, para que el patrón tenga dónde vivir) y
-   --patron (el color del dibujo, con su opacidad ya puesta). */
 :root{
   --fondo-app:#E9E7E2;
   --sup:var(--blanco);
+  --sup-2:var(--fondo-chip);
   --sup-borde:var(--linea);
   --texto:var(--tinta);
-  /* --gris sobre --fondo-app con un trazo del patrón debajo daba 3.85:1: el
-     fondo más hondo y el patrón le comen contraste, así que el gris baja un
-     escalón (4.9:1 en el peor caso, patrón marcado). */
+  /* --gris sobre --fondo-app con el patrón debajo no llega a 4.5:1: baja un escalón */
   --texto-2:#58554F;
-  --rojo-texto:var(--primario-osc);   /* rojo como texto chico sobre claro: 7.6:1 */
-  --heroe:var(--negro);
-  --patron-sutil:rgba(19,19,22,.055);
-  --patron-marcado:rgba(19,19,22,.11);
-  --borde-cromo:#C9C5BE;
+  --rojo-texto:var(--primario-osc);
+  --pista:#E3DFD8;
+  --borde-cromo:#D2CEC7;
+  --patron-color:rgba(19,19,22,.08);
 }
 [data-tema="oscuro"]{
   --fondo-app:var(--pub-fondo);
   --sup:var(--pub-tarjeta);
+  --sup-2:#202027;
   --sup-borde:var(--pub-borde);
   --texto:var(--sobre-oscuro);
   --texto-2:var(--gris-osc);
-  --rojo-texto:var(--club-texto);     /* 4.7:1 sobre --pub-tarjeta */
-  --heroe:#1C0A0D;
-  --patron-sutil:rgba(255,255,255,.03);
-  --patron-marcado:rgba(255,255,255,.07);
-  --borde-cromo:#3A3A44;
-  --fondo-chip:#22222A;
-  --linea:var(--pub-borde);
+  --rojo-texto:var(--club-texto);
+  --pista:#2A2A33;
+  --borde-cromo:#30303A;
+  --patron-color:rgba(255,255,255,.04);
+  --fondo-chip:#24242C;
+  color-scheme:dark;
 }
-[data-patron="sutil"]{--patron:var(--patron-sutil)}
-[data-patron="marcado"]{--patron:var(--patron-marcado)}
-[data-patron="sin"]{--patron:transparent}
+[data-patron="a"]{--baldosa:url(/docs/prototipos/patron/patron-a.png);--baldosa-tam:480px}
+[data-patron="b"]{--baldosa:url(/docs/prototipos/patron/patron-b.png);--baldosa-tam:360px}
+[data-patron="sin"]{--patron-color:transparent}
 
 *{box-sizing:border-box}
-html{color-scheme:light}
-[data-tema="oscuro"]{color-scheme:dark}
-body{
-  margin:0;min-height:100vh;background:var(--fondo-app);color:var(--texto);
-  font-family:var(--ff-cuerpo);font-size:var(--fs-160);line-height:1.45;
-  -webkit-font-smoothing:antialiased;
-}
+[hidden]{display:none!important} /* .btn y .barra-asis ponen display y le ganaban a hidden */
+body{margin:0;min-height:100vh;background:var(--fondo-app);color:var(--texto);font-family:var(--ff-cuerpo);font-size:var(--fs-160);line-height:1.45;-webkit-font-smoothing:antialiased}
 
 /* ---- el patrón ----
-   Va en una capa fija detrás de todo, pintada con --patron y recortada con
-   una máscara SVG: así el mismo dibujo sirve para los dos temas y la
-   intensidad es un token, no un archivo por color. Las tarjetas son opacas,
-   así que el patrón sólo se ve en los huecos y nunca queda debajo de un texto.
-   Dibujo (baldosa de 320px): pelota, "1903" en dígitos de marcador, escudo
-   partido en diagonal, aro con tablero, tres diagonales y cruces de textura. */
+   Capa fija detrás de todo, pintada con --patron-color y recortada con la
+   baldosa como máscara: el mismo PNG sirve para los dos temas. Va girada como
+   las diagonales de la camiseta; la capa es más grande que la pantalla para que
+   el giro no deje esquinas vacías. Se compone una vez: no repinta al scrollear. */
 body::before{
-  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background:var(--patron);
-  --dibujo:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320' viewBox='0 0 320 320' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cg transform='translate(62 74) rotate(-14)'%3E%3Ccircle r='34'/%3E%3Cpath d='M0-34V34M-34 0H34M-23-25C-11-13-11 13-23 25M23-25C11-13 11 13 23 25'/%3E%3C/g%3E%3Cg transform='translate(150 38) rotate(-8)' stroke-width='3.5'%3E%3Cpath d='M6 6L13 0V42'/%3E%3Cpath d='M50 21H28V0H50V42H28'/%3E%3Cpath d='M64 0H86V42H64Z'/%3E%3Cpath d='M100 0H122V42H100M108 21H122'/%3E%3C/g%3E%3Cg transform='translate(206 168) rotate(10)'%3E%3Cpath d='M0 0H52V32C52 52 38 64 26 70C14 64 0 52 0 32Z'/%3E%3Cpath d='M52 4L4 52'/%3E%3C/g%3E%3Cg transform='translate(36 196)'%3E%3Cpath d='M0 86L86 0M16 92L92 16M32 98L98 32'/%3E%3C/g%3E%3Cg transform='translate(268 82)'%3E%3Cpath d='M-20-16H20M0-16V-6'/%3E%3Cellipse cy='0' rx='12' ry='5'/%3E%3Cpath d='M-12 0L-7 18M12 0L7 18M-3 4L-1 18M3 4L1 18'/%3E%3C/g%3E%3Cpath d='M150 140h10M155 135v10M286 286h10M291 281v10M126 300h8M130 296v8M20 20h8M24 16v8' stroke-width='2'/%3E%3C/svg%3E");
-  -webkit-mask-image:var(--dibujo);mask-image:var(--dibujo);
-  -webkit-mask-size:320px;mask-size:320px;
+  content:"";position:fixed;inset:-50vmax;z-index:-1;pointer-events:none;
+  background:var(--patron-color);
+  -webkit-mask:var(--baldosa) 0 0 / var(--baldosa-tam) repeat;mask:var(--baldosa) 0 0 / var(--baldosa-tam) repeat;
+  transform:rotate(-12deg);
 }
 
-/* ---- estructura ---- */
-.cont{max-width:72rem;margin:0 auto;padding:0 var(--sp-4) var(--sp-8)}
-.barra{
-  display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);flex-wrap:wrap;
-  padding:var(--sp-3) 0;
-}
-.marca{display:flex;align-items:center;gap:var(--sp-2)}
-.marca img{width:2.25rem;height:2.25rem}
-.marca b{display:block;font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-220);letter-spacing:.05em;text-transform:uppercase;line-height:1}
-.marca small{display:block;font-size:var(--fs-100);letter-spacing:.14em;text-transform:uppercase;color:var(--texto-2)}
-/* controles del prototipo: no son parte del diseño, van chicos y aparte */
-.ajustes{display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:center;padding-top:var(--sp-2)}
+/* ---- controles del prototipo (no son parte del diseño) ---- */
+.proto{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;justify-content:center;padding:var(--sp-2) var(--sp-4)}
+.proto span{font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--texto-2)}
 .seg{display:inline-flex;border:1px solid var(--borde-cromo);border-radius:var(--r-btn);background:var(--sup);overflow:hidden}
-.seg button{
-  min-height:2.25rem;padding:0 var(--sp-2);border:0;background:transparent;color:var(--texto-2);cursor:pointer;
-  font-family:var(--ff-titulo);font-weight:600;font-size:var(--fs-145);letter-spacing:.08em;text-transform:uppercase;
-}
+.seg button{min-height:2.25rem;padding:0 var(--sp-3);border:0;background:transparent;color:var(--texto-2);cursor:pointer;font-family:var(--ff-titulo);font-weight:600;font-size:var(--fs-135);letter-spacing:.08em;text-transform:uppercase}
 .seg button[aria-pressed="true"]{background:var(--texto);color:var(--fondo-app)}
-.seg-etq{align-self:center;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--texto-2)}
 
-.grilla{display:grid;gap:var(--sp-5)}
-@media (min-width:56rem){.grilla{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);align-items:start}}
+/* ---- la app: misma estructura que la real ---- */
+.app{max-width:30rem;margin:0 auto;min-height:calc(100vh - 3.25rem);display:flex;flex-direction:column}
+.cab{background:var(--negro);color:var(--sobre-oscuro);border-bottom:3px solid var(--primario)}
+.cab-fila{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4)}
+.cab-fila img{width:2.25rem;height:2.25rem}
+.cab-sep{width:1px;align-self:stretch;background:var(--linea-osc)}
+.cab-tit{flex:1;min-width:0}
+.cab-tit b{display:block;font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-230);text-transform:uppercase;letter-spacing:.03em;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cab-tit small{display:block;margin-top:.125rem;font-family:var(--ff-titulo);font-weight:600;font-size:var(--fs-135);letter-spacing:.1em;text-transform:uppercase;color:var(--gris-osc)}
+.cab-yo{display:grid;place-items:center;width:2.75rem;height:2.75rem;border-radius:50%;border:2px solid var(--primario);background:var(--sup-1);font-family:var(--ff-titulo);font-weight:700}
+.cats{display:flex;gap:var(--sp-2);padding:0 var(--sp-4) var(--sp-3);overflow-x:auto}
+.cats button{min-width:2.75rem;min-height:2.75rem;padding:0 var(--sp-3);border:0;border-radius:var(--r-s);background:var(--sup-1);color:var(--sobre-oscuro);font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-160);cursor:pointer}
+.cats button[aria-pressed="true"]{background:var(--primario)}
 
-/* ---- hoy: la banda oscura con corte diagonal, la misma del portal ---- */
-.heroe{
-  position:relative;background:var(--heroe);color:var(--sobre-oscuro);
-  padding:var(--sp-5) var(--sp-5) var(--sp-8);border-radius:var(--r) var(--r) 0 0;
-  clip-path:polygon(0 0,100% 0,100% calc(100% - 1.75rem),0 100%);
-  margin-bottom:var(--sp-5);
-}
-.heroe::after{content:"";position:absolute;left:0;top:0;bottom:0;width:.375rem;background:var(--primario)}
-.ey{font-family:var(--ff-titulo);font-weight:600;font-size:var(--fs-145);letter-spacing:.18em;text-transform:uppercase;color:var(--gris-osc);margin:0}
-.heroe h1{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;font-size:clamp(2.25rem,1.6rem + 3vw,3.5rem);line-height:.9;letter-spacing:.005em;margin:var(--sp-1) 0 var(--sp-2)}
-.heroe p.lugar{margin:0;color:var(--gris-osc);font-size:var(--fs-145)}
-.heroe-fila{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:var(--sp-4);margin-top:var(--sp-5)}
-.marcador{display:flex;align-items:baseline;gap:var(--sp-1);font-family:var(--ff-titulo);font-weight:700;line-height:.8;font-variant-numeric:tabular-nums}
-.marcador b{font-size:clamp(4rem,3rem + 5vw,6rem);letter-spacing:-.02em}
-.marcador span{font-size:var(--fs-260);color:var(--gris-osc)}
-.marcador-etq{display:block;font-family:var(--ff-titulo);font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:var(--fs-125);color:var(--gris-osc);margin-top:var(--sp-2)}
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);min-height:3rem;padding:0 var(--sp-5);
-  border:0;border-radius:var(--r-btn);cursor:pointer;text-decoration:none;
-  font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-190);letter-spacing:.06em;text-transform:uppercase;
-  background:var(--primario);color:var(--sobre-club);transition:transform .12s ease;
-}
-.btn:active{transform:scale(.97);background:var(--primario-osc)}
-.btn.sec{background:transparent;color:var(--sobre-oscuro);border:1px solid var(--gris-osc)}
+main{flex:1;padding:var(--sp-4) var(--sp-4) calc(var(--sp-8) + 4rem)}
+.vista[hidden]{display:none}
 
-/* ---- secciones ---- */
-.sec-tit{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--sp-3);flex-wrap:wrap;margin:0 0 var(--sp-3)}
-.sec-tit h2{margin:0;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:var(--fs-titulo-chico);line-height:1}
-.sec-tit h2::after{content:"";display:block;width:2rem;height:.25rem;background:var(--primario);margin-top:var(--sp-2)}
-.ayuda{margin:0 0 var(--sp-3);font-size:var(--fs-135);color:var(--texto-2)}
+.nav{position:sticky;bottom:0;display:grid;grid-template-columns:repeat(3,1fr);background:var(--negro);border-top:3px solid var(--primario)}
+.nav button{display:grid;justify-items:center;gap:.25rem;min-height:3.75rem;padding:var(--sp-2) 0;border:0;background:transparent;color:var(--gris-osc);font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-125);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.nav button::before{content:"";width:.875rem;height:.875rem;border-radius:50%;border:2px solid currentColor}
+.nav button[aria-current="page"]{color:var(--sobre-oscuro)}
+.nav button[aria-current="page"]::before{border-color:var(--primario);background:var(--primario)}
 
-/* chips de qué número mostrar (el "overlay" de los planteles de SofaScore) */
-.chips{display:flex;gap:var(--sp-2);width:100%}
-@media (min-width:30rem){.chips{width:auto}}
-.chips button{
-  flex:1;min-height:2.75rem;padding:0 var(--sp-4);cursor:pointer;
-  border:1px solid var(--borde-cromo);border-radius:var(--r-full);background:var(--sup);color:var(--texto);
-  font-family:var(--ff-titulo);font-weight:600;font-size:var(--fs-145);letter-spacing:.08em;text-transform:uppercase;
-}
-.chips button[aria-pressed="true"]{background:var(--primario);border-color:var(--primario);color:var(--sobre-club)}
+/* ---- piezas compartidas ---- */
+.tarjeta{background:var(--sup);border:1px solid var(--sup-borde);border-radius:var(--r);padding:var(--sp-4);margin-bottom:var(--sp-4)}
+.meta-linea{margin:0 0 var(--sp-2);font-size:var(--fs-135);color:var(--texto-2)}
+.etq{margin:0;font-family:var(--ff-titulo);font-weight:600;font-size:var(--fs-125);letter-spacing:.12em;text-transform:uppercase;color:var(--texto-2)}
+.h2{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin:var(--sp-5) 0 var(--sp-3);font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-titulo-chico);text-transform:uppercase;letter-spacing:.03em;line-height:1}
+.h2::before{content:"";width:.625rem;height:.625rem;background:var(--primario);flex:none}
+.h2 span{flex:1}
+.h2 small{font-size:var(--fs-160);color:var(--rojo-texto);letter-spacing:.04em}
+.cifra{display:flex;align-items:baseline;gap:.125rem;font-family:var(--ff-titulo);font-weight:700;line-height:.85;font-variant-numeric:tabular-nums}
+.cifra b{font-size:var(--tam,4rem);letter-spacing:-.015em}
+/* La unidad chica en rojo puro sobre tarjeta oscura da 3.47:1: ahí va --club-texto. */
+.cifra small{font-size:calc(var(--tam,4rem) * .42);color:var(--primario)}
+[data-tema="oscuro"] .cifra small{color:var(--club-texto)}
+.cifra.sin b{font-weight:500;color:var(--texto-2)}
+.frac{font-family:var(--ff-mono);font-size:var(--fs-135);color:var(--texto-2)}
+.sube{color:var(--sube)}
+[data-tema="oscuro"] .sube{color:var(--sube-osc)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);min-height:3rem;padding:0 var(--sp-5);border:0;border-radius:var(--r-btn);cursor:pointer;font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-190);letter-spacing:.06em;text-transform:uppercase;background:var(--primario);color:var(--sobre-club);transition:transform .12s ease}
+.btn:active{transform:scale(.97)}
+.btn.sec{background:transparent;color:var(--texto);border:1px solid var(--borde-control)}
+.btn.chico{min-height:2.75rem;padding:0 var(--sp-4);font-size:var(--fs-160)}
+.btn.ancho{width:100%}
 
-/* ---- cromos ----
-   Una tarjeta por jugador, con el dorsal grande de fondo, borde marcado y la
-   esquina cortada como una figurita. Tocarla marca presente/ausente: es la
-   tarea de la cancha, así que la tarjeta entera es el botón. */
-.cromos{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));gap:var(--sp-3);list-style:none;margin:0;padding:0}
+/* ---- HOY ---- */
+.asis{position:relative;overflow:hidden;background:var(--negro);color:var(--sobre-oscuro);border-radius:var(--r);padding:var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-5);margin-bottom:var(--sp-4)}
+.asis::before{content:"";position:absolute;left:0;top:0;bottom:0;width:.3125rem;background:var(--primario)}
+.asis .etq{color:var(--gris-osc)}
+.asis-fila{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--sp-3);margin-top:var(--sp-2)}
+.asis-tit{margin:var(--sp-1) 0 0;font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-260);text-transform:uppercase;line-height:1}
+.asis .cifra{--tam:3rem}
+.asis .cifra small{color:var(--gris-osc)}
+.idea{position:absolute;top:var(--sp-3);right:var(--sp-3);padding:.125rem var(--sp-2);border:1px dashed var(--dorado);border-radius:var(--r-btn);color:var(--dorado);font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-100);letter-spacing:.1em;text-transform:uppercase}
+
+.zona{padding:var(--sp-3) 0;border-top:1px solid var(--sup-borde)}
+.zona:first-child{border-top:0;padding-top:0}
+.zona-cab{display:flex;justify-content:space-between;align-items:baseline}
+.zona-cab b{font-weight:600}
+.zona-fila{display:flex;align-items:center;gap:var(--sp-3);margin-top:var(--sp-2)}
+.pista{position:relative;flex:1;height:.875rem;background:var(--pista);border-radius:var(--r-full);overflow:visible}
+.pista i{position:absolute;inset:0 auto 0 0;border-radius:var(--r-full);background:var(--primario)}
+.pista i.llego{background:var(--texto)}
+.pista u{position:absolute;top:-.25rem;bottom:-.25rem;width:2px;background:var(--texto)}
+.zona-fila .pct{min-width:3rem;text-align:right;font-family:var(--ff-mono);font-weight:600}
+.zona-pie{display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-4);margin-top:var(--sp-2);font-family:var(--ff-titulo);font-weight:600;font-size:var(--fs-125);letter-spacing:.08em;text-transform:uppercase;color:var(--texto-2)}
+.zona-pie a{display:inline-block;padding:.875rem 0;margin:-.875rem 0;color:var(--rojo-texto);text-decoration:none} /* 44px de alto para el dedo sin mover el renglón */
+
+/* ---- PLANTEL: cromos ----
+   Dorsal grande de fondo, esquina cortada como una figurita y un filete de
+   estado arriba. Fuera de asistencia, tocar abre la ficha; en asistencia,
+   marca presente o ausente. */
+.cromos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3);list-style:none;margin:0;padding:0}
 .cromo{
-  position:relative;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto 1fr auto;column-gap:var(--sp-2);
-  width:100%;min-height:11.5rem;padding:var(--sp-3);text-align:left;cursor:pointer;overflow:hidden;
+  position:relative;display:grid;grid-template-columns:auto 1fr;column-gap:var(--sp-2);align-content:start;
+  width:100%;min-height:10.5rem;padding:var(--sp-3);text-align:left;cursor:pointer;overflow:hidden;
   background:var(--sup);color:var(--texto);font:inherit;
   border:2px solid var(--borde-cromo);border-radius:var(--r-s);
-  clip-path:polygon(0 0,calc(100% - 1rem) 0,100% 1rem,100% 100%,0 100%);
+  clip-path:polygon(0 0,calc(100% - .875rem) 0,100% .875rem,100% 100%,0 100%);
   transition:transform .14s ease,border-color .14s ease;
 }
 .cromo:active{transform:scale(.97)}
 .cromo:focus-visible{outline:3px solid var(--primario);outline-offset:2px}
-.cromo::before{ /* filete de estado arriba */
-  content:"";position:absolute;left:0;right:0;top:0;height:.3125rem;background:var(--estado,var(--borde-cromo));
-}
-.dorsal{
-  position:absolute;right:.25rem;bottom:-.75rem;font-family:var(--ff-titulo);font-weight:700;font-size:6.5rem;line-height:1;
-  color:var(--texto);opacity:.06;pointer-events:none;font-variant-numeric:tabular-nums;
-}
-.avatar{
-  grid-row:1 / span 2;display:grid;place-items:center;width:2.75rem;height:2.75rem;margin-top:var(--sp-1);
-  border-radius:50%;background:var(--texto);color:var(--fondo-app);
-  font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-190);letter-spacing:.02em;
-}
-.nombre{align-self:end;margin-top:var(--sp-1);font-weight:700;font-size:var(--fs-145);line-height:1.15}
-.pos{font-size:var(--fs-115);letter-spacing:.1em;text-transform:uppercase;color:var(--texto-2)}
-.cifra{grid-column:1 / -1;align-self:end;display:flex;align-items:baseline;gap:.125rem;margin-top:var(--sp-3);font-family:var(--ff-titulo);font-weight:700;line-height:.85;font-variant-numeric:tabular-nums}
-.cifra b{font-size:3rem;letter-spacing:-.01em}
-.cifra small{font-size:var(--fs-200);color:var(--primario)}
-.cifra.sin b{font-weight:500;color:var(--texto-2)}
-.cifra-etq{grid-column:1 / -1;font-size:var(--fs-115);color:var(--texto-2)}
-.pie{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:var(--sp-1);margin-top:var(--sp-2)}
-.estado,.lesion{
-  padding:.125rem var(--sp-2);border-radius:var(--r-btn);
-  font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-125);letter-spacing:.1em;text-transform:uppercase;
-  background:var(--estado-fondo,var(--fondo-chip));color:var(--estado-texto,var(--texto-2));
-}
-.cromo[data-estado="presente"]{--estado:var(--sube);--estado-fondo:var(--sube-fondo);--estado-texto:var(--sube);border-color:var(--sube)}
-.cromo[data-estado="ausente"]{border-style:dashed}
-.cromo[data-estado="ausente"] .avatar{background:transparent;color:var(--texto-2);border:2px dashed var(--borde-cromo)}
-.cromo[data-lesion]{--estado:var(--baja)}
-[data-tema="oscuro"] .cromo[data-estado="presente"]{--estado:var(--sube-osc);--estado-fondo:rgba(79,214,156,.14);--estado-texto:var(--sube-osc);border-color:#2C7A58}
-.lesion{background:var(--baja-fondo);color:var(--baja)}
-[data-tema="oscuro"] .lesion{background:rgba(242,179,61,.14);color:var(--dorado)}
+.cromo::before{content:"";position:absolute;left:0;right:0;top:0;height:.25rem;background:var(--estado,transparent)}
+.dorsal{position:absolute;right:.125rem;bottom:-1rem;font-family:var(--ff-titulo);font-weight:700;font-size:6rem;line-height:1;color:var(--texto);opacity:.06;pointer-events:none}
+.av{display:grid;place-items:center;width:2.5rem;height:2.5rem;border-radius:50%;background:var(--texto);color:var(--fondo-app);font-family:var(--ff-mono);font-weight:600;font-size:var(--fs-125)}
+.cromo .nom{align-self:center;font-weight:600;font-size:var(--fs-145);line-height:1.2}
+.cromo .cifra{--tam:2.75rem;grid-column:1 / -1;margin-top:var(--sp-4)}
+.cromo .sub{grid-column:1 / -1;margin-top:var(--sp-1);font-size:var(--fs-115);color:var(--texto-2)}
+.cromo .med{grid-column:1 / -1;font-family:var(--ff-mono);font-size:var(--fs-115);color:var(--texto-2)}
+.cromo .med i{font-style:italic}
+.estado{grid-column:1 / -1;justify-self:start;margin-top:var(--sp-2);padding:.125rem var(--sp-2);border-radius:var(--r-btn);font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-125);letter-spacing:.1em;text-transform:uppercase;background:var(--fondo-chip);color:var(--texto-2)}
+.en-asis .cromo[data-estado="presente"]{--estado:var(--sube);border-color:var(--sube)}
+.en-asis .cromo[data-estado="presente"] .estado{background:var(--sube-fondo);color:var(--sube)}
+.en-asis .cromo[data-estado="ausente"]{border-style:dashed}
+.en-asis .cromo[data-estado="ausente"] .av{background:transparent;color:var(--texto-2);border:2px dashed var(--borde-control)}
+[data-tema="oscuro"] .en-asis .cromo[data-estado="presente"]{--estado:var(--sube-osc);border-color:#2C7A58}
+[data-tema="oscuro"] .en-asis .cromo[data-estado="presente"] .estado{background:rgba(79,214,156,.14);color:var(--sube-osc)}
+.plantel-cab{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-3)}
+.plantel-cab .h2{margin:0}
+.barra-asis{position:sticky;bottom:4.25rem;display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-top:var(--sp-4);padding:var(--sp-3) var(--sp-4);background:var(--negro);color:var(--sobre-oscuro);border-radius:var(--r-s);box-shadow:var(--sombra-alta)}
+.barra-asis .cifra{--tam:2.25rem}
+.barra-asis .cifra small{color:var(--gris-osc)}
 
-/* ---- último partido: tablero ---- */
-.tablero{background:var(--sup);border:2px solid var(--borde-cromo);border-radius:var(--r-s);overflow:hidden}
-.tablero-cab{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:var(--sp-3);padding:var(--sp-4);background:var(--negro);color:var(--sobre-oscuro)}
-.equipo{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:var(--fs-145);color:var(--gris-osc)}
-.equipo:last-child{text-align:right}
-.tanteo{display:flex;align-items:center;gap:var(--sp-2);font-family:var(--ff-titulo);font-weight:700;font-size:3.5rem;line-height:.85;font-variant-numeric:tabular-nums}
-.tanteo i{font-style:normal;color:var(--gris-osc);font-size:var(--fs-260)}
-.tanteo .gana{color:var(--sobre-oscuro);border-bottom:.25rem solid var(--primario)}
-.tanteo .pierde{color:var(--gris-osc)}
-.tablero-dato{margin:0;padding:var(--sp-2) var(--sp-4);font-size:var(--fs-115);letter-spacing:.1em;text-transform:uppercase;color:var(--texto-2);border-bottom:1px solid var(--sup-borde)}
-.stats{display:grid;grid-template-columns:repeat(2,1fr);margin:0}
-.stat{padding:var(--sp-4);border-top:1px solid var(--sup-borde)}
-.stat:nth-child(odd){border-right:1px solid var(--sup-borde)}
-.stat:nth-child(-n+2){border-top:0}
-.stat dt{font-size:var(--fs-115);letter-spacing:.1em;text-transform:uppercase;color:var(--texto-2)}
-.stat dd{margin:var(--sp-1) 0 0;display:flex;align-items:baseline;gap:.125rem;font-family:var(--ff-titulo);font-weight:700;font-size:2.75rem;line-height:.85;font-variant-numeric:tabular-nums}
-.stat dd small{font-size:var(--fs-190);color:var(--primario)}
-.stat .var{display:block;margin-top:var(--sp-2);font-family:var(--ff-mono);font-size:var(--fs-115);color:var(--texto-2)}
-.stat .var.mal{color:var(--rojo-texto)}
-.barrita{height:.375rem;margin-top:var(--sp-2);background:var(--fondo-chip);border-radius:var(--r-full);overflow:hidden}
-.barrita i{display:block;height:100%;background:var(--primario)}
+/* ---- FICHA ---- */
+.ficha-cab{position:relative;overflow:hidden;background:var(--sup);border:2px solid var(--borde-cromo);border-radius:var(--r-s);padding:var(--sp-4);margin-bottom:var(--sp-4);clip-path:polygon(0 0,calc(100% - 1.25rem) 0,100% 1.25rem,100% 100%,0 100%)}
+.ficha-cab::before{content:"";position:absolute;left:0;right:0;top:0;height:.3125rem;background:var(--primario)}
+.ficha-cab .dorsal{font-size:9rem;bottom:-1.75rem}
+.ficha-id{display:flex;align-items:center;gap:var(--sp-3)}
+.ficha-id .av{width:3.5rem;height:3.5rem;font-size:var(--fs-190)}
+.ficha-id b{display:block;font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-260);text-transform:uppercase;line-height:1}
+.ficha-id small{display:block;margin-top:.25rem;font-size:var(--fs-135);color:var(--texto-2)}
+.ficha-nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:var(--sp-4);border-top:1px solid var(--sup-borde)}
+.ficha-nums div{padding-top:var(--sp-3)}
+.ficha-nums div + div{padding-left:var(--sp-3);border-left:1px solid var(--sup-borde)}
+.ficha-nums .cifra{--tam:2.5rem;margin-top:var(--sp-1)}
+.partidos{display:flex;align-items:flex-end;gap:var(--sp-2);height:7rem;margin-top:var(--sp-3)}
+.partidos div{flex:1;min-width:0;display:grid;justify-items:center;align-content:end;gap:.25rem;height:100%}
+.partidos i{display:block;width:100%;border-radius:var(--r-btn) var(--r-btn) 0 0;background:var(--texto)}
+.partidos div:last-child i{background:var(--primario)}
+.partidos b{font-family:var(--ff-mono);font-size:var(--fs-115)}
+.partidos span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--fs-100);color:var(--texto-2);text-transform:uppercase;letter-spacing:.06em}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+.dos .tarjeta{margin:0}
+.dos .cifra{--tam:2.75rem;margin:var(--sp-2) 0 var(--sp-1)}
+.acciones{display:grid;gap:var(--sp-2);margin-top:var(--sp-4)}
+.volver{display:inline-flex;align-items:center;min-height:2.75rem;margin:-.5rem 0 var(--sp-2);padding:0;border:0;background:none;color:var(--texto);font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-160);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 
-.aviso-proto{margin-top:var(--sp-6);font-size:var(--fs-115);color:var(--texto-2);text-align:center}
+.fuera{padding:var(--sp-8) var(--sp-4);text-align:center;color:var(--texto-2)}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<div class="cont">
-    <div class="ajustes" aria-label="Opciones del prototipo">
-      <div class="seg" role="group" aria-label="Tema">
-        <button type="button" data-tema-btn="claro" aria-pressed="true">Claro</button>
-        <button type="button" data-tema-btn="oscuro" aria-pressed="false">Oscuro</button>
-      </div>
-      <span class="seg-etq">Patrón</span>
-      <div class="seg" role="group" aria-label="Intensidad del patrón">
-        <button type="button" data-patron-btn="sin" aria-pressed="false">Sin</button>
-        <button type="button" data-patron-btn="sutil" aria-pressed="true">Sutil</button>
-        <button type="button" data-patron-btn="marcado" aria-pressed="false">Marcado</button>
-      </div>
-    </div>
-  <header class="barra">
-    <div class="marca">
+<div class="proto" aria-label="Opciones del prototipo">
+  <span>Tema</span>
+  <div class="seg" role="group" aria-label="Tema">
+    <button type="button" data-tema-btn="claro" aria-pressed="true">Claro</button>
+    <button type="button" data-tema-btn="oscuro" aria-pressed="false">Oscuro</button>
+  </div>
+  <span>Patrón</span>
+  <div class="seg" role="group" aria-label="Patrón">
+    <button type="button" data-patron-btn="a" aria-pressed="true">A</button>
+    <button type="button" data-patron-btn="b" aria-pressed="false">B</button>
+    <button type="button" data-patron-btn="sin" aria-pressed="false">Sin</button>
+  </div>
+</div>
+
+<div class="app">
+  <header class="cab">
+    <div class="cab-fila">
       <img src="/public/escudo.png" alt="" width="36" height="36">
-      <div><b>Semillero</b><small>U13 · Masculino</small></div>
+      <span class="cab-sep"></span>
+      <div class="cab-tit"><b id="cab-titulo">Hoy</b><small>Newell's Old Boys</small></div>
+      <span class="cab-yo" aria-label="Tu perfil">TA</span>
+    </div>
+    <div class="cats" role="group" aria-label="Categoría">
+      <button type="button" aria-pressed="false">U13</button>
+      <button type="button" aria-pressed="false">U15</button>
+      <button type="button" aria-pressed="true">U17M</button>
+      <button type="button" aria-pressed="false">U21</button>
     </div>
   </header>
 
-  <section class="heroe" aria-labelledby="tit-hoy">
-    <p class="ey">Hoy · jueves 29/10</p>
-    <h1 id="tit-hoy">Entrenamiento 18:30</h1>
-    <p class="lugar">Cancha 2 · Plan: defensa de ayuda y contraataque</p>
-    <div class="heroe-fila">
-      <div>
-        <div class="marcador" aria-live="polite"><b id="presentes">0</b><span>/ <span id="total">0</span></span></div>
-        <span class="marcador-etq">Presentes</span>
-      </div>
-      <a class="btn" href="#plantel">Tomar asistencia</a>
-    </div>
-  </section>
-
-  <div class="grilla">
-    <section id="plantel" aria-labelledby="tit-plantel">
-      <div class="sec-tit">
-        <h2 id="tit-plantel">Plantel</h2>
-        <div class="chips" role="group" aria-label="Qué número mostrar">
-          <button type="button" data-metrica="asis" aria-pressed="true">Asistencia</button>
-          <button type="button" data-metrica="tiro" aria-pressed="false">Tiro</button>
-          <button type="button" data-metrica="salto" aria-pressed="false">Salto</button>
+  <main>
+    <!-- HOY: lo mismo que la pantalla real, más la idea de asistencia arriba -->
+    <section class="vista" id="v-hoy" aria-label="Hoy">
+      <div class="asis">
+        <span class="idea">Idea nueva</span>
+        <p class="etq">Entrenamiento · hoy 18:30</p>
+        <p class="asis-tit">Cancha 2</p>
+        <div class="asis-fila">
+          <div class="cifra"><b id="hoy-presentes">0</b><small>/ <span class="total">0</span></small></div>
+          <button type="button" class="btn chico" data-ir="plantel" data-asis>Tomar asistencia</button>
         </div>
       </div>
-      <p class="ayuda">Tocá una tarjeta para marcar presente o ausente.</p>
+
+      <div class="tarjeta">
+        <p class="meta-linea">U17M · batería del 10/09 · 14 jugadores midieron</p>
+        <p class="etq">Tiro de campo · todo el arco</p>
+        <div class="cifra" style="--tam:4.5rem;margin:var(--sp-2) 0"><b>30</b><small>%</small></div>
+        <span class="frac">213/700 tiros</span>
+        <p class="zona-pie" style="margin-top:var(--sp-3)"><span class="sube">▲ +8 pp</span><span>3 de 5 zonas llegó a su meta</span></p>
+      </div>
+
+      <h2 class="h2"><span>Por zona</span><small>vs 04/08</small></h2>
+      <div class="tarjeta" id="zonas"></div>
+
+      <h2 class="h2"><span>Tiros libres</span></h2>
+      <div class="tarjeta">
+        <div class="cifra" style="--tam:3.25rem"><b>62</b><small>%</small></div>
+        <span class="frac">87/140 · meta 65%</span>
+      </div>
+    </section>
+
+    <section class="vista" id="v-plantel" aria-label="Plantel" hidden>
+      <div class="plantel-cab">
+        <h2 class="h2"><span>Plantel</span></h2>
+        <button type="button" class="btn sec chico" id="btn-asis">Tomar asistencia</button>
+      </div>
+      <p class="meta-linea" id="plantel-ayuda">Tocá una tarjeta para ver la ficha.</p>
       <ul class="cromos" id="cromos"></ul>
-    </section>
-
-    <section aria-labelledby="tit-partido">
-      <div class="sec-tit"><h2 id="tit-partido">Último partido</h2></div>
-      <div class="tablero">
-        <div class="tablero-cab">
-          <span class="equipo">Newell's</span>
-          <span class="tanteo" aria-label="58 a 51"><span class="gana">58</span><i>–</i><span class="pierde">51</span></span>
-          <span class="equipo">Rival</span>
-        </div>
-        <p class="tablero-dato">Sáb 24/10 · Local · Fecha 9</p>
-        <dl class="stats">
-          <div class="stat"><dt>Tiro de campo</dt><dd>41<small>%</small></dd><div class="barrita"><i style="width:41%"></i></div><span class="var">+4 vs. promedio</span></div>
-          <div class="stat"><dt>Libres</dt><dd>62<small>%</small></dd><div class="barrita"><i style="width:62%"></i></div><span class="var">=  promedio</span></div>
-          <div class="stat"><dt>Asistencias</dt><dd>12</dd><span class="var">+3 vs. promedio</span></div>
-          <div class="stat"><dt>Pérdidas</dt><dd>15</dd><span class="var mal">+5 vs. promedio</span></div>
-        </dl>
+      <div class="barra-asis" id="barra-asis" hidden>
+        <div><p class="etq" style="color:var(--gris-osc)">Presentes</p><div class="cifra"><b id="pl-presentes">0</b><small>/ <span class="total">0</span></small></div></div>
+        <button type="button" class="btn chico" id="btn-guardar-asis">Guardar</button>
       </div>
     </section>
-  </div>
 
-  <p class="aviso-proto">Prototipo con datos inventados. No lo carga la app.</p>
+    <section class="vista" id="v-ficha" aria-label="Ficha del jugador" hidden></section>
+
+    <section class="vista" id="v-datos" aria-label="Datos" hidden>
+      <p class="fuera">DATOS queda fuera de este prototipo.</p>
+    </section>
+  </main>
+
+  <nav class="nav" aria-label="Navegación principal">
+    <button type="button" data-ir="hoy" aria-current="page">Hoy</button>
+    <button type="button" data-ir="plantel">Plantel</button>
+    <button type="button" data-ir="datos">Datos</button>
+  </nav>
 </div>
 
 <script>
-// Datos inventados: ningún nombre es de un chico real. null = "sin medir".
+// Datos inventados: ningún nombre es de un chico real. null = "no se sabe".
 const JUGADORES = [
-  {n:'Bauti R.',  d:4,  pos:'Base',     asis:92, tiro:44, salto:38},
-  {n:'Tiago F.',  d:7,  pos:'Escolta',  asis:85, tiro:39, salto:41},
-  {n:'Joaco M.',  d:9,  pos:'Alero',    asis:78, tiro:null, salto:35},
-  {n:'Valen S.',  d:10, pos:'Ala pívot',asis:96, tiro:51, salto:null, lesion:true},
-  {n:'Nico P.',   d:11, pos:'Pívot',    asis:70, tiro:48, salto:33},
-  {n:'Santi G.',  d:13, pos:'Base',     asis:88, tiro:36, salto:40},
-  {n:'Fran L.',   d:15, pos:'Alero',    asis:64, tiro:41, salto:37},
-  {n:'Lauti C.',  d:23, pos:'Escolta',  asis:90, tiro:null, salto:null},
+  {id:1, ap:'Acosta',   n:'Bruno',   d:4,  alt:171, peso:61,   tiro:44,   libres:70,   salto:38,   edad:16},
+  {id:2, ap:'Benítez',  n:'Tiago',   d:5,  alt:null,peso:null, tiro:null, libres:null, salto:null, edad:16},
+  {id:3, ap:'Correa',   n:'Joaquín', d:7,  alt:174, peso:64,   tiro:31,   libres:58,   salto:41,   edad:17},
+  {id:4, ap:'Domínguez',n:'Valentín',d:8,  alt:182, peso:72,   tiro:39,   libres:66,   salto:null, edad:16},
+  {id:5, ap:'Escobar',  n:'Nicolás', d:9,  alt:176, peso:66,   tiro:27,   libres:61,   salto:35,   edad:17},
+  {id:6, ap:'Ferreyra', n:'Santino', d:10, alt:169, peso:60,   tiro:35,   libres:74,   salto:40,   edad:16},
+  {id:7, ap:'Giménez',  n:'Franco',  d:11, alt:null,peso:null, tiro:22,   libres:null, salto:null, edad:16},
+  {id:8, ap:'Herrera',  n:'Lautaro', d:12, alt:188, peso:79,   tiro:42,   libres:55,   salto:44,   edad:17},
 ];
-const METRICAS = {
-  asis: {etq:'Asistencia del mes', unidad:'%'},
-  tiro: {etq:'Tiro de campo',      unidad:'%'},
-  salto:{etq:'Salto vertical',     unidad:'cm'},
-};
-const estado = {metrica:'asis', presentes:new Set([4,7,10,11,13])};
+const ZONAS = [
+  ['Esquina derecha', 27, 30, '38/140', '+3'], ['Frontal', 29, 30, '41/140', '+3'],
+  ['45° izquierda', 31, 30, '43/140', '+3'], ['45° derecha', 32, 30, '45/140', '+3'],
+  ['Esquina izquierda', 34, 30, '48/140', '+5'],
+];
+// Rivales genéricos: el prototipo no nombra clubes reales.
+const PARTIDOS = [['F1', 8], ['F2', 12], ['F3', 6], ['F4', 14], ['F5', 10], ['F6', 16]];
 
-function iniciales(n){ return n.split(/\s+/).map(p => p[0]).join('').slice(0,2).toUpperCase(); }
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ini = j => (j.ap[0] + j.n[0]).toUpperCase();
+const cifra = (v, u, tam) => v == null
+  ? `<div class="cifra sin"${tam ? ` style="--tam:${tam}"` : ''}><b>—</b></div>`
+  : `<div class="cifra"${tam ? ` style="--tam:${tam}"` : ''}><b>${v}</b><small>${u}</small></div>`;
 
-function cromo(j){
-  const li = document.createElement('li');
-  const b = document.createElement('button');
-  b.type = 'button';
-  b.className = 'cromo';
-  b.dataset.dorsal = j.d;
-  if (j.lesion) b.dataset.lesion = '';
-  const presente = estado.presentes.has(j.d);
-  b.dataset.estado = presente ? 'presente' : 'ausente';
-  b.setAttribute('aria-pressed', String(presente));
-  const m = METRICAS[estado.metrica], v = j[estado.metrica];
-  b.innerHTML = `
-    <span class="dorsal" aria-hidden="true"></span>
-    <span class="avatar" aria-hidden="true"></span>
-    <span class="nombre"></span>
-    <span class="pos"></span>
-    <span class="cifra${v == null ? ' sin' : ''}"><b></b>${v == null ? '' : '<small></small>'}</span>
-    <span class="cifra-etq"></span>
-    <span class="pie"><span class="estado"></span></span>`;
-  b.querySelector('.dorsal').textContent = j.d;
-  b.querySelector('.avatar').textContent = iniciales(j.n);
-  b.querySelector('.nombre').textContent = j.n;
-  b.querySelector('.pos').textContent = `#${j.d} · ${j.pos}`;
-  b.querySelector('.cifra b').textContent = v == null ? '—' : v;
-  if (v != null) b.querySelector('.cifra small').textContent = m.unidad;
-  b.querySelector('.cifra-etq').textContent = v == null ? `${m.etq}: sin medir` : m.etq;
-  b.querySelector('.estado').textContent = presente ? 'Presente' : 'Ausente';
-  if (j.lesion){
-    const l = document.createElement('span');
-    l.className = 'lesion';
-    l.textContent = 'Lesión';
-    b.querySelector('.pie').append(l);
+const estado = {vista:'hoy', asis:false, presentes:new Set([1,3,6,8,4])};
+
+function pintarZonas(){
+  document.getElementById('zonas').innerHTML = ZONAS.map(([nom, pct, meta, frac, dif]) => `
+    <div class="zona">
+      <div class="zona-cab"><b>${esc(nom)}</b><span class="frac">${frac}</span></div>
+      <div class="zona-fila">
+        <div class="pista"><i class="${pct >= meta ? 'llego' : ''}" style="width:${pct}%"></i><u style="left:${meta}%"></u></div>
+        <span class="pct">${pct}%</span>
+      </div>
+      <div class="zona-pie">
+        <a href="#">Mandar un recurso</a>
+        <span>${pct >= meta ? '✓ Llegó a la meta' : `Meta ${meta}%`}</span>
+        <span class="sube">▲ ${dif} pp</span>
+      </div>
+    </div>`).join('');
+}
+
+function pintarPlantel(){
+  const ul = document.getElementById('cromos');
+  ul.classList.toggle('en-asis', estado.asis);
+  ul.innerHTML = JUGADORES.map(j => {
+    const p = estado.presentes.has(j.id);
+    const med = j.alt == null ? '<i>altura y peso sin medir</i>' : `${j.alt} cm · ${j.peso} kg`;
+    return `<li><button type="button" class="cromo" data-id="${j.id}" data-estado="${p ? 'presente' : 'ausente'}"${estado.asis ? ` aria-pressed="${p}"` : ''}>
+      <span class="dorsal" aria-hidden="true">${j.d}</span>
+      <span class="av" aria-hidden="true">${ini(j)}</span>
+      <span class="nom">${esc(j.ap)}, ${esc(j.n)}</span>
+      ${cifra(j.tiro, '%')}
+      <span class="sub">Tiro de campo</span>
+      <span class="med">${med}</span>
+      ${estado.asis ? `<span class="estado">${p ? 'Presente' : 'Ausente'}</span>` : ''}
+    </button></li>`;
+  }).join('');
+  document.getElementById('barra-asis').hidden = !estado.asis;
+  document.getElementById('btn-asis').hidden = estado.asis;
+  document.getElementById('plantel-ayuda').textContent = estado.asis
+    ? 'Tocá cada tarjeta para marcar presente o ausente.'
+    : 'Tocá una tarjeta para ver la ficha.';
+  contar();
+}
+
+function contar(){
+  document.querySelectorAll('.total').forEach(e => e.textContent = JUGADORES.length);
+  document.getElementById('hoy-presentes').textContent = estado.presentes.size;
+  document.getElementById('pl-presentes').textContent = estado.presentes.size;
+}
+
+function pintarFicha(j){
+  const maxPts = Math.max(...PARTIDOS.map(p => p[1]));
+  document.getElementById('v-ficha').innerHTML = `
+    <button type="button" class="volver" data-ir="plantel">‹ Plantel</button>
+    <div class="ficha-cab">
+      <span class="dorsal" aria-hidden="true">${j.d}</span>
+      <div class="ficha-id">
+        <span class="av" aria-hidden="true">${ini(j)}</span>
+        <div><b>${esc(j.ap)}, ${esc(j.n)}</b><small>U17M · ${j.edad} años · ${j.alt == null ? 'sin medir' : `${j.alt} cm · ${j.peso} kg`}</small></div>
+      </div>
+      <div class="ficha-nums">
+        <div><p class="etq">Tiro</p>${cifra(j.tiro, '%', '2.5rem')}</div>
+        <div><p class="etq">Libres</p>${cifra(j.libres, '%', '2.5rem')}</div>
+        <div><p class="etq">Salto</p>${cifra(j.salto, 'cm', '2.5rem')}</div>
+      </div>
+    </div>
+
+    <h2 class="h2"><span>Tiro por posición</span></h2>
+    <div class="tarjeta">${ZONAS.slice(0, 3).map(([nom, pct, meta, frac]) => `
+      <div class="zona">
+        <div class="zona-cab"><b>${esc(nom)}</b><span class="frac">${frac}</span></div>
+        <div class="zona-fila"><div class="pista"><i class="${pct >= meta ? 'llego' : ''}" style="width:${pct}%"></i><u style="left:${meta}%"></u></div><span class="pct">${pct}%</span></div>
+      </div>`).join('')}
+    </div>
+
+    <h2 class="h2"><span>Partido a partido</span><small>puntos</small></h2>
+    <div class="tarjeta">
+      <div class="partidos">${PARTIDOS.map(([r, pts]) => `
+        <div><b>${pts}</b><i style="height:${Math.round(pts / maxPts * 70)}%"></i><span>${esc(r)}</span></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="dos">
+      <div class="tarjeta"><p class="etq">Salto · Abalakov</p>${cifra(j.salto, 'cm')}<span class="frac">${j.salto == null ? 'sin medir' : '+3 cm vs. junio'}</span></div>
+      <div class="tarjeta"><p class="etq">Altura</p>${cifra(j.alt, 'cm')}<span class="frac">${j.alt == null ? 'sin medir' : 'medido 10/09'}</span></div>
+    </div>
+
+    <div class="acciones">
+      <button type="button" class="btn ancho">Datos de emergencia</button>
+      <button type="button" class="btn sec ancho">Sacar del plantel</button>
+    </div>`;
+}
+
+const TITULOS = {hoy:'Hoy', plantel:'Plantel', datos:'Datos'};
+function ir(vista, j){
+  estado.vista = vista;
+  document.querySelectorAll('.vista').forEach(v => v.hidden = v.id !== `v-${vista}`);
+  const nav = vista === 'ficha' ? 'plantel' : vista;
+  document.querySelectorAll('.nav button').forEach(b => {
+    if (b.dataset.ir === nav) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
+  document.getElementById('cab-titulo').textContent = vista === 'ficha' ? `${j.ap}, ${j.n}` : TITULOS[vista];
+  if (vista === 'plantel') pintarPlantel();
+  if (vista === 'ficha') pintarFicha(j);
+  scrollTo(0, 0);
+}
+
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-ir]');
+  if (a){ if (a.hasAttribute('data-asis')) estado.asis = true; ir(a.dataset.ir); return; }
+  const c = e.target.closest('.cromo');
+  if (c){
+    const id = Number(c.dataset.id);
+    if (!estado.asis) return ir('ficha', JUGADORES.find(j => j.id === id));
+    estado.presentes.has(id) ? estado.presentes.delete(id) : estado.presentes.add(id);
+    pintarPlantel();
+    document.querySelector(`.cromo[data-id="${id}"]`).focus();
   }
-  li.append(b);
-  return li;
-}
-
-function pintar(){
-  document.getElementById('cromos').replaceChildren(...JUGADORES.map(cromo));
-  document.getElementById('presentes').textContent = estado.presentes.size;
-  document.getElementById('total').textContent = JUGADORES.length;
-}
-
-document.getElementById('cromos').addEventListener('click', e => {
-  const b = e.target.closest('.cromo');
-  if (!b) return;
-  const d = Number(b.dataset.dorsal);
-  estado.presentes.has(d) ? estado.presentes.delete(d) : estado.presentes.add(d);
-  pintar();
-  document.querySelector(`.cromo[data-dorsal="${d}"]`).focus();
 });
+document.getElementById('btn-asis').addEventListener('click', () => { estado.asis = true; pintarPlantel(); });
+document.getElementById('btn-guardar-asis').addEventListener('click', () => { estado.asis = false; pintarPlantel(); });
 
 function grupo(atributo, alElegir){
   document.querySelectorAll(`[${atributo}]`).forEach(btn => btn.addEventListener('click', () => {
@@ -360,13 +441,16 @@ function grupo(atributo, alElegir){
 }
 grupo('data-tema-btn',   v => document.documentElement.dataset.tema = v);
 grupo('data-patron-btn', v => document.documentElement.dataset.patron = v);
-grupo('data-metrica',    v => { estado.metrica = v; pintar(); });
 
-// Para las capturas: ?tema=oscuro&patron=marcado
+// Para las capturas: ?tema=oscuro&patron=b&vista=plantel&asis=1 (o vista=ficha)
 const q = new URLSearchParams(location.search);
 if (q.get('tema'))   document.querySelector(`[data-tema-btn="${q.get('tema')}"]`)?.click();
 if (q.get('patron')) document.querySelector(`[data-patron-btn="${q.get('patron')}"]`)?.click();
-pintar();
+estado.asis = q.get('asis') === '1';
+pintarZonas();
+contar();
+const v = q.get('vista');
+if (v === 'ficha') ir('ficha', JUGADORES[0]); else if (v) ir(v);
 </script>
 </body>
 </html>

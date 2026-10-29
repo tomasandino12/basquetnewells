@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<title>Generador del patrón de fondo</title>
+<!-- Arma las baldosas del patrón con piezas reales (el escudo de
+     public/escudo.png, "1903" en Barlow Condensed y la pelota de Tabler Icons,
+     MIT) y las deja en canvas para sacarles captura con fondo transparente.
+     Todo va en negro: el color y la intensidad los pone el CSS con una máscara. -->
+<link rel="stylesheet" href="/public/css/tokens.css">
+<style>
+  body{margin:0;background:transparent;display:grid;gap:24px;justify-items:start}
+  canvas{display:block}
+</style>
+</head>
+<body>
+<canvas id="a"></canvas>
+<canvas id="b"></canvas>
+<script type="module">
+const ESCALA = 2; // la baldosa se dibuja al doble para que no se vea borrosa en pantallas densas
+
+// Tabler Icons "ball-basketball" (grilla de 24).
+const PELOTA = [
+  'M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0',
+  'M5.65 5.65l12.7 12.7',
+  'M5.65 18.35l12.7 -12.7',
+  'M12 3a9 9 0 0 0 9 9',
+  'M3 12a9 9 0 0 1 9 9',
+].map(d => new Path2D(d));
+
+function cargar(src){
+  return new Promise((ok, mal) => { const i = new Image(); i.onload = () => ok(i); i.onerror = mal; i.src = src; });
+}
+
+// El escudo en un solo tono: la mitad negra opaca, la roja a media opacidad y
+// las letras caladas. Así el patrón muestra el escudo entero y no una mancha.
+function escudoTonal(img, alto){
+  const lado = Math.round(alto * ESCALA);
+  const c = new OffscreenCanvas(lado, lado);
+  const x = c.getContext('2d');
+  x.drawImage(img, 0, 0, lado, lado);
+  const d = x.getImageData(0, 0, lado, lado);
+  for (let i = 0; i < d.data.length; i += 4){
+    const [r, g, b, a] = [d.data[i], d.data[i+1], d.data[i+2], d.data[i+3]];
+    const lum = (0.2126*r + 0.7152*g + 0.0722*b) / 255;
+    d.data[i] = d.data[i+1] = d.data[i+2] = 0;
+    d.data[i+3] = a * Math.pow(1 - lum, 1.6);
+  }
+  x.putImageData(d, 0, 0);
+  return c;
+}
+
+function pelota(x, cx, cy, tam, giro = 0){
+  x.save();
+  x.translate(cx, cy);
+  x.rotate(giro);
+  const s = tam / 24;
+  x.scale(s, s);
+  x.translate(-12, -12);
+  x.lineWidth = 1.75; // con menos, la pelota pesa menos que el escudo y el año
+  x.lineCap = 'round';
+  x.lineJoin = 'round';
+  x.strokeStyle = '#000';
+  PELOTA.forEach(p => x.stroke(p));
+  x.restore();
+}
+
+function anio(x, cx, cy, tam){
+  x.save();
+  x.font = `700 ${tam}px "Barlow Condensed"`;
+  x.letterSpacing = `${tam * 0.04}px`;
+  x.textAlign = 'center';
+  x.textBaseline = 'middle';
+  x.fillStyle = '#000';
+  x.fillText('1903', cx, cy);
+  x.restore();
+}
+
+function escudo(x, e, cx, cy, alto){
+  x.drawImage(e, cx - alto/2, cy - alto/2, alto, alto);
+}
+
+// Dibuja un motivo en (cx, cy) y, si toca un borde, también del otro lado:
+// así la baldosa empalma sin cortes cuando se repite.
+function conEmpalme(ancho, alto, cx, cy, radio, dibujar){
+  for (const dx of [0, -ancho, ancho]) for (const dy of [0, -alto, alto]){
+    const x = cx + dx, y = cy + dy;
+    if (x + radio < 0 || x - radio > ancho || y + radio < 0 || y - radio > alto) continue;
+    dibujar(x, y);
+  }
+}
+
+function lienzo(id, ancho, alto){
+  const c = document.getElementById(id);
+  c.width = ancho * ESCALA; c.height = alto * ESCALA;
+  // Se muestra a tamaño real de píxeles: la captura sale al doble y el CSS la achica con mask-size.
+  const x = c.getContext('2d');
+  x.scale(ESCALA, ESCALA);
+  return x;
+}
+
+await document.fonts.load('700 40px "Barlow Condensed"');
+const img = await cargar('/public/escudo.png');
+
+// A: tres motivos en una red escalonada (escudo → pelota → 1903 en cada diagonal).
+{
+  const W = 480, H = 320, x = lienzo('a', W, H), e = escudoTonal(img, 64);
+  const filaArriba = [[80, 'escudo'], [240, 'pelota'], [400, 'anio']];
+  const filaAbajo  = [[0, 'pelota'], [160, 'anio'], [320, 'escudo']];
+  const pinta = (tipo) => (cx, cy) => {
+    if (tipo === 'escudo') escudo(x, e, cx, cy, 64);
+    if (tipo === 'pelota') pelota(x, cx, cy, 50, -0.2);
+    if (tipo === 'anio')   anio(x, cx, cy, 38);
+  };
+  filaArriba.forEach(([cx, t]) => conEmpalme(W, H, cx, 80, 40, pinta(t)));
+  filaAbajo.forEach(([cx, t])  => conEmpalme(W, H, cx, 240, 40, pinta(t)));
+}
+
+// B: más sobrio, como el jacquard de una camiseta: escudo y año alternados,
+// sin pelota, con más aire.
+{
+  const W = 360, H = 360, x = lienzo('b', W, H), e = escudoTonal(img, 56);
+  conEmpalme(W, H, 90, 90, 36, (cx, cy) => escudo(x, e, cx, cy, 56));
+  conEmpalme(W, H, 270, 270, 36, (cx, cy) => escudo(x, e, cx, cy, 56));
+  conEmpalme(W, H, 270, 90, 40, (cx, cy) => anio(x, cx, cy, 34));
+  conEmpalme(W, H, 90, 270, 40, (cx, cy) => anio(x, cx, cy, 34));
+}
+document.body.dataset.listo = '1';
+</script>
+</body>
+</html>
