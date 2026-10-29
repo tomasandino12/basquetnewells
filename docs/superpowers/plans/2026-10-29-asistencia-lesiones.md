@@ -25,9 +25,9 @@
 | 4 Tomar asistencia | hecha, probada en el navegador a 375 px contra la base local | feat(asistencia): pantalla Tomar asistencia |
 | 5 Lesiones en la toma | hecha, probada en el navegador contra la base local | feat(asistencia): justificada y lesiones en la toma |
 | 6 Historial y planilla | hecha, probada en el navegador (planilla leída de vuelta) | feat(asistencia): historial y planilla para el área |
-| 7 Ficha del jugador | hecha (pestaña Físico, primera sección); tests ok, falta verla en el navegador (task 9) | feat(asistencia): bloque en la ficha del jugador |
-| 8 Panorama del coordinador | hecha (línea en cada tarjeta de categoría); tests ok, falta verla en el navegador (task 9) | feat(asistencia): % por categoría en el panorama |
-| 9 db push y verificación | pendiente | |
+| 7 Ficha del jugador | hecha (pestaña Físico, primera sección), probada en el navegador a 375 px contra la base local | feat(asistencia): bloque en la ficha del jugador |
+| 8 Panorama del coordinador | hecha (línea en cada tarjeta de categoría), probada en el navegador como coordinador | feat(asistencia): % por categoría en el panorama |
+| 9 db push y verificación | 0064 aplicada a la base real (29/10); ficha y panorama verificados en el navegador contra la base local; falta el recorrido completo de la toma (ver pendientes) y el pendiente legal antes de mergear | |
 
 ---
 
