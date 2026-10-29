@@ -196,3 +196,23 @@ export function resumenDelDia(entrenamiento) {
     tomados: entrenamiento.filas.length,
   };
 }
+
+/**
+ * Lo que muestra la ficha de un chico: sus totales de la temporada, el nivel del
+ * semáforo y la lesión abierta si la hay. Un día sin fila suyo (todavía no
+ * estaba en el plantel, o no se lo tomó) no cuenta: resumenDeAsistencia lo ignora.
+ */
+export function asistenciaDelJugador(entrenamientos, lesiones, jugadorId) {
+  const suyas = (lesiones ?? []).filter((l) => l.jugadorId === jugadorId);
+  const dias = (entrenamientos ?? []).map((e) => ({
+    hubo: e.hubo,
+    estado: e.filas.find((f) => f.jugadorId === jugadorId)?.estado ?? null,
+    lesionado: lesionadoEn(suyas, e.fecha),
+  }));
+  const resumen = resumenDeAsistencia(dias);
+  return {
+    resumen,
+    nivel: semaforo(resumen.pctAsistencia),
+    lesionAbierta: suyas.find((l) => l.hasta == null) ?? null,
+  };
+}

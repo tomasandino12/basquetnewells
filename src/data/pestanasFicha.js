@@ -18,6 +18,7 @@ export const PESTANAS_FICHA = Object.freeze([
 
 /** Sección de la ficha → pestaña donde se muestra. */
 export const SECCIONES_FICHA = Object.freeze({
+  asistencia: 'fisico',
   corporal: 'fisico',
   salto: 'fisico',
   sprint: 'fisico',

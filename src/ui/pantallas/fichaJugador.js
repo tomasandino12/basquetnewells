@@ -5,7 +5,9 @@ import {
   obtenerEstadisticasDelPlantel, obtenerPartidosDelPlantel, obtenerEnviosDeJugador, obtenerMisionesDelJugador,
   obtenerMedicionesCorporalesDeJugador, crearMedicionCorporal, borrarMedicionCorporal,
   actualizarFechaNacimiento, obtenerCargasDelPlantel, sacarDelPlantel, obtenerHistoriaDelJugador,
+  obtenerEntrenamientos, obtenerLesionesDelPlantel,
 } from '../../data/repositorio.js';
+import { asistenciaDelJugador, textoDeLesion } from '../../data/asistencia.js';
 import {
   serieDeTiroDelJugador, ultimaBateriaDeJugador, ultimaBateriaConDatosDeJugador, historialDePartidosDelJugador,
   ejeComun, compararPorcentajes,
@@ -323,7 +325,7 @@ function seccionRecursos(envios) {
 
 const CARGANDO = {
   corporal: 'Cargando mediciones…', salto: 'Cargando…', bateria: 'Cargando…',
-  partidos: 'Cargando…', temporadas: 'Cargando historia…', recursos: 'Cargando…',
+  partidos: 'Cargando…', temporadas: 'Cargando historia…', recursos: 'Cargando…', asistencia: 'Cargando…',
 };
 
 /**
@@ -438,6 +440,7 @@ export async function renderFicha() {
   cargarCorporal(club.id, jugador.id);
   cargarCargas(club.id, plantel.id, jugador.id);
   cargarTemporadas(jugador.id);
+  cargarAsistencia(plantel.id, jugador.id);
 
   // Todo lo de acá abajo va en su propio try/catch: los datos básicos ya
   // están pintados arriba, así que un error de red trayendo la historia no
@@ -618,6 +621,56 @@ async function cargarTemporadas(idJugador) {
   // La ficha pudo cambiar de jugador mientras esto cargaba.
   if (idJugador !== jugadorId || !sec('temporadas')) return;
   sec('temporadas').innerHTML = seccionTemporadas(datos);
+}
+
+/* ---------- Asistencia a los entrenamientos ---------- */
+
+const NIVEL_ASISTENCIA = {
+  excelente: { texto: 'Excelente', clase: 'sube' },
+  regular: { texto: 'Regular', clase: 'baja' },
+  alerta: { texto: 'Alerta', clase: 'alerta' },
+};
+
+// Un plantel es de una temporada: todo lo que tiene entrenamientos es de ésta.
+const DESDE_SIEMPRE = '2000-01-01';
+
+function seccionAsistencia({ resumen, nivel, lesionAbierta }) {
+  const r = resumen;
+  const lesion = lesionAbierta ? html`<div class="p" id="ficha-lesion">${textoDeLesion(lesionAbierta)}</div>` : '';
+  // Sin entrenamientos tomados no hay porcentaje: no se muestra un 0 que parezca que faltó siempre.
+  if (nivel === 'sin_datos') {
+    return html`<div class="eyebrow">Asistencia</div><div class="p">Sin asistencia tomada.</div>${lesion}`;
+  }
+  const n = NIVEL_ASISTENCIA[nivel];
+  return html`
+    <div class="eyebrow">Asistencia · temporada</div>
+    <div class="ficha-asis">
+      <span class="mono ficha-asis-pct">${Math.round(r.pctAsistencia)} %</span>
+      <span class="chip ${n.clase}">${n.texto}</span>
+    </div>
+    <div class="det">${r.asistidos} de ${r.total} entrenamientos${r.justificadas ? html` · ${r.justificadas} falta${r.justificadas === 1 ? '' : 's'} justificada${r.justificadas === 1 ? '' : 's'}` : ''}</div>
+    ${lesion}
+  `;
+}
+
+async function cargarAsistencia(plantelId, idJugador) {
+  if (!sec('asistencia')) return;
+  let datos;
+  try {
+    const [entrenamientos, lesiones] = await Promise.all([
+      obtenerEntrenamientos(plantelId, DESDE_SIEMPRE, hoyLocal()),
+      obtenerLesionesDelPlantel(plantelId),
+    ]);
+    datos = asistenciaDelJugador(entrenamientos, lesiones, idJugador);
+  } catch (e) {
+    if (idJugador === jugadorId && sec('asistencia')) {
+      sec('asistencia').innerHTML = avisoInline(textoDeError(e, 'No se pudo cargar la asistencia.'));
+    }
+    return;
+  }
+  // La ficha pudo cambiar de jugador mientras esto cargaba.
+  if (idJugador !== jugadorId || !sec('asistencia')) return;
+  sec('asistencia').innerHTML = seccionAsistencia(datos);
 }
 
 async function cargarCargas(clubId, plantelId, idJugador) {

@@ -4,6 +4,7 @@ import {
   codigoDelDia, resumenDeAsistencia, semaforo, lesionadoEn, textoDeLesion,
   entrenamientoDesdeFila, lesionDesdeFila,
   estadoInicial, alternar, contarEstados, filasParaGuardar, huboCambios, accionesDeTarjeta,
+  asistenciaDelJugador,
 } from '../src/data/asistencia.js';
 
 test('codigoDelDia cubre los seis códigos', () => {
@@ -181,4 +182,36 @@ test('el menú de la tarjeta ofrece justificada y lesión según el caso', () =>
   // Un período ya cerrado que cubre ese día: no se superpone otro.
   assert.equal(accionesDeTarjeta({ estado: null, lesiones: cerrada, fecha: '2026-10-10' }).lesionar, false);
   assert.equal(accionesDeTarjeta({ estado: null, lesiones: cerrada, fecha: hoy }).lesionar, true);
+});
+
+test('asistenciaDelJugador: sólo cuenta sus filas, marca sus lesiones y no mezcla las de otro', () => {
+  const entrenamientos = [
+    { fecha: '2026-10-05', hubo: true, filas: [{ jugadorId: 'a', estado: 'presente' }, { jugadorId: 'b', estado: 'ausente' }] },
+    { fecha: '2026-10-07', hubo: false, filas: [] },
+    { fecha: '2026-10-09', hubo: true, filas: [{ jugadorId: 'a', estado: 'ausente' }] },
+    { fecha: '2026-10-12', hubo: true, filas: [{ jugadorId: 'b', estado: 'presente' }] },
+  ];
+  const lesiones = [
+    { id: 1, jugadorId: 'a', desde: '2026-10-08', hasta: null, zona: 'tobillo', lado: 'derecho', tipo: null },
+    { id: 2, jugadorId: 'b', desde: '2026-10-01', hasta: '2026-10-04', zona: null, lado: null, tipo: null },
+  ];
+  const r = asistenciaDelJugador(entrenamientos, lesiones, 'a');
+  assert.equal(r.resumen.total, 2);
+  assert.equal(r.resumen.asistidos, 1);
+  assert.equal(r.resumen.sinEntrenamiento, 1);
+  assert.equal(r.resumen.diasLesion, 1, 'sólo el 9/10 cae dentro de su lesión');
+  assert.equal(r.nivel, 'alerta');
+  assert.equal(r.lesionAbierta.id, 1);
+});
+
+test('asistenciaDelJugador: sin entrenamientos tomados no inventa un 0 %', () => {
+  const r = asistenciaDelJugador(
+    [{ fecha: '2026-10-05', hubo: true, filas: [{ jugadorId: 'b', estado: 'presente' }] }],
+    [],
+    'a',
+  );
+  assert.equal(r.resumen.total, 0);
+  assert.equal(r.resumen.pctAsistencia, null);
+  assert.equal(r.nivel, 'sin_datos');
+  assert.equal(r.lesionAbierta, null);
 });
