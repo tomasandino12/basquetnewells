@@ -1,15 +1,20 @@
 import {
   obtenerJugadoresDelPlantel, obtenerEntrenamientos, obtenerLesionesDelPlantel, guardarAsistencia,
+  abrirLesion, darAlta,
 } from '../../data/repositorio.js';
 import {
   ETIQUETAS, estadoInicial, alternar, contarEstados, filasParaGuardar, huboCambios,
+  lesionadoEn, accionesDeTarjeta,
 } from '../../data/asistencia.js';
 import { hoyLocal } from '../../data/antropometria.js';
 import { obtenerClubActual, obtenerPlantelActivo } from '../sesion.js';
 import { toast } from '../nav.js';
 import { ir, volver } from '../main.js';
 import { confirmarEnHoja } from '../componentes/confirmar.js';
-import { html } from '../html.js';
+import { abrirHoja, cerrarHoja } from '../componentes/hoja.js';
+import { abrirHojaLesion } from '../componentes/hojaLesion.js';
+import { ICONO } from '../componentes/iconos.js';
+import { html, crudo } from '../html.js';
 import { $ } from '../dom.js';
 import { avisoDeError, mensajeAlGuardar, mostrarAviso } from '../errores.js';
 
@@ -47,7 +52,7 @@ export async function renderAsistencia() {
       obtenerLesionesDelPlantel(plantel.id).catch(() => []),
     ]);
     jugadores.sort((a, b) => a.nombreLimpio.localeCompare(b.nombreLimpio, 'es'));
-    dia = { plantel, jugadores, lesiones, fecha: pedida ?? hoyLocal() };
+    dia = { club, plantel, jugadores, lesiones, fecha: pedida ?? hoyLocal() };
     await cargarDia(dia.fecha);
   } catch (e) {
     dia = null;
@@ -72,13 +77,19 @@ async function cargarDia(fecha) {
 const hayCambios = () => dia != null
   && (dia.hubo !== dia.huboInicial || (dia.hubo && huboCambios(dia.inicial, dia.tarjetas)));
 
+// El menú es un botón aparte, hermano de la tarjeta: un botón adentro de otro
+// no es HTML válido y el toque de la tarjeta (presente/ausente) es el frecuente.
 function tarjetaHtml(t, jugador) {
-  return html`<li><button type="button" class="asis-tarj" data-id="${t.jugadorId}"
-      data-estado="${t.estado ?? 'sin-tomar'}" aria-pressed="${String(t.estado === 'presente')}">
-    <span class="nom">${jugador.nombreLimpio}</span>
-    <span class="asis-estado">${textoEstado(t.estado)}</span>
-    ${t.lesionado ? html`<span class="chip baja">Lesionado</span>` : ''}
-  </button></li>`;
+  return html`<li class="asis-item">
+    <button type="button" class="asis-tarj" data-id="${t.jugadorId}"
+        data-estado="${t.estado ?? 'sin-tomar'}" aria-pressed="${String(t.estado === 'presente')}">
+      <span class="nom">${jugador.nombreLimpio}</span>
+      <span class="asis-estado">${textoEstado(t.estado)}</span>
+      ${t.lesionado ? html`<span class="chip baja">Lesionado</span>` : ''}
+    </button>
+    <button type="button" class="btn-icono asis-menu" data-menu="${t.jugadorId}"
+        aria-label="Justificada o lesión de ${jugador.nombreLimpio}" title="Justificada o lesión">${crudo(ICONO.lapiz)}</button>
+  </li>`;
 }
 
 function cuerpoDelDia() {
@@ -119,7 +130,19 @@ function pintar() {
   $('in-asis-fecha').addEventListener('change', cambiarFecha);
   $('btn-sin-entrenamiento')?.addEventListener('click', alternarSinEntrenamiento);
   $('btn-guardar-asistencia').addEventListener('click', guardar);
+  ligarTarjetas();
+  actualizarBarra();
+}
+
+function ligarTarjetas() {
   contenedor().querySelectorAll('.asis-tarj').forEach((b) => b.addEventListener('click', () => tocar(b)));
+  contenedor().querySelectorAll('.asis-menu').forEach((b) => b.addEventListener('click', () => abrirMenu(b.dataset.menu)));
+}
+
+/** Repinta sólo las tarjetas (no la fecha ni la barra): lo usa lo que cambia por fuera del día. */
+function repintarTarjetas() {
+  $('asis-cuerpo').innerHTML = cuerpoDelDia().toString();
+  ligarTarjetas();
   actualizarBarra();
 }
 
@@ -131,6 +154,81 @@ function tocar(boton) {
   boton.setAttribute('aria-pressed', String(t.estado === 'presente'));
   boton.querySelector('.asis-estado').textContent = textoEstado(t.estado);
   actualizarBarra();
+}
+
+const lesionesDe = (jugadorId) => dia.lesiones.filter((l) => l.jugadorId === jugadorId);
+
+/**
+ * El menú de una tarjeta: falta justificada (se guarda con el día) y lesión
+ * (se guarda al instante: es del jugador, no de este entrenamiento, y no se
+ * pierde si se sale sin guardar la asistencia).
+ */
+function abrirMenu(jugadorId) {
+  const t = dia.tarjetas.find((x) => x.jugadorId === jugadorId);
+  const jugador = dia.jugadores.find((j) => j.id === jugadorId);
+  const { justificada, lesionar, altaDe } = accionesDeTarjeta({
+    estado: t.estado, lesiones: lesionesDe(jugadorId), fecha: dia.fecha,
+  });
+  abrirHoja({
+    titulo: jugador.nombreLimpio,
+    cuerpo: html`
+      <div class="asis-opciones">
+        ${justificada ? html`<button type="button" class="btn sec" id="menu-justificada">Falta justificada</button>` : ''}
+        ${lesionar ? html`<button type="button" class="btn sec" id="menu-lesion">Se lesionó</button>` : ''}
+        ${altaDe ? html`<button type="button" class="btn sec" id="menu-alta">Dar el alta</button>` : ''}
+      </div>
+      <div id="menu-aviso"></div>
+      <div class="acciones-hoja"><button type="button" class="btn sec" id="menu-cerrar">Cerrar</button></div>
+    `.toString(),
+  });
+  $('menu-cerrar').addEventListener('click', cerrarHoja);
+  $('menu-justificada')?.addEventListener('click', () => {
+    t.estado = 'justificada';
+    cerrarHoja();
+    repintarTarjetas();
+  });
+  $('menu-lesion')?.addEventListener('click', () => {
+    abrirHojaLesion({
+      nombre: jugador.nombreLimpio,
+      fecha: dia.fecha,
+      alGuardar: async (marcas) => {
+        await abrirLesion({ clubId: dia.club.id, jugadorId, desde: dia.fecha, ...marcas });
+        await refrescarLesiones();
+      },
+    });
+  });
+  $('menu-alta')?.addEventListener('click', async () => {
+    const boton = $('menu-alta');
+    if (boton.disabled) return;
+    boton.disabled = true;
+    try {
+      await darAlta(altaDe, dia.fecha);
+    } catch (e) {
+      mostrarAviso($('menu-aviso'), mensajeAlGuardar(e, { generico: 'No se pudo dar el alta.' }));
+      boton.disabled = false;
+      return;
+    }
+    await refrescarLesiones();
+    cerrarHoja();
+    toast('Alta registrada');
+  });
+}
+
+/**
+ * Relee las lesiones del plantel y vuelve a marcar a los lesionados de este
+ * día. Lo marcado de asistencia no se toca: vive en dia.tarjetas.
+ */
+async function refrescarLesiones() {
+  try {
+    dia.lesiones = await obtenerLesionesDelPlantel(dia.plantel.id);
+  } catch {
+    // La lesión ya se escribió: avisar que falló el guardado haría reintentar
+    // y chocar con "una abierta por jugador".
+    toast('Se guardó, pero no se pudo actualizar la lista. Volvé a abrir la pantalla.');
+    return;
+  }
+  dia.tarjetas.forEach((t) => { t.lesionado = lesionadoEn(lesionesDe(t.jugadorId), dia.fecha); });
+  repintarTarjetas();
 }
 
 function actualizarBarra() {

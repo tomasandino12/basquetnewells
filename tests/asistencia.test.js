@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   codigoDelDia, resumenDeAsistencia, semaforo, lesionadoEn, textoDeLesion,
   entrenamientoDesdeFila, lesionDesdeFila,
-  estadoInicial, alternar, contarEstados, filasParaGuardar, huboCambios,
+  estadoInicial, alternar, contarEstados, filasParaGuardar, huboCambios, accionesDeTarjeta,
 } from '../src/data/asistencia.js';
 
 test('codigoDelDia cubre los seis códigos', () => {
@@ -159,4 +159,26 @@ test('huboCambios detecta lo marcado y no cuenta lo igual', () => {
   const inicial = [{ jugadorId: 'a', estado: null }, { jugadorId: 'b', estado: 'presente' }];
   assert.equal(huboCambios(inicial, inicial.map((x) => ({ ...x }))), false);
   assert.equal(huboCambios(inicial, [{ jugadorId: 'a', estado: 'presente' }, inicial[1]]), true);
+});
+
+test('el menú de la tarjeta ofrece justificada y lesión según el caso', () => {
+  const abierta = [{ id: 'l1', desde: '2026-10-12', hasta: null }];
+  const cerrada = [{ id: 'l2', desde: '2026-10-01', hasta: '2026-10-20' }];
+  const hoy = '2026-10-28';
+
+  assert.deepEqual(accionesDeTarjeta({ estado: null, lesiones: [], fecha: hoy }),
+    { justificada: true, lesionar: true, altaDe: null });
+  assert.equal(accionesDeTarjeta({ estado: 'justificada', lesiones: [], fecha: hoy }).justificada, false);
+
+  // Con una lesión abierta no se ofrece "Se lesionó" y sí el alta.
+  assert.deepEqual(accionesDeTarjeta({ estado: 'ausente', lesiones: abierta, fecha: hoy }),
+    { justificada: true, lesionar: false, altaDe: 'l1' });
+
+  // Corregir un día anterior a la lesión abierta: ni lesión nueva ni alta.
+  assert.deepEqual(accionesDeTarjeta({ estado: null, lesiones: abierta, fecha: '2026-10-05' }),
+    { justificada: true, lesionar: false, altaDe: null });
+
+  // Un período ya cerrado que cubre ese día: no se superpone otro.
+  assert.equal(accionesDeTarjeta({ estado: null, lesiones: cerrada, fecha: '2026-10-10' }).lesionar, false);
+  assert.equal(accionesDeTarjeta({ estado: null, lesiones: cerrada, fecha: hoy }).lesionar, true);
 });

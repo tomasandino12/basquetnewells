@@ -168,3 +168,21 @@ export function huboCambios(inicial, actual) {
   const antes = new Map(inicial.map((t) => [t.jugadorId, t.estado]));
   return actual.some((t) => (antes.get(t.jugadorId) ?? null) !== t.estado);
 }
+
+/**
+ * Qué ofrece el menú de la tarjeta de un chico en la toma de `fecha`.
+ * - justificada: mientras no lo esté ya.
+ * - lesionar: sólo sin ninguna lesión abierta (a lo sumo una por jugador, lo
+ *   exige la base) y sin estar lesionado ese día por un período ya cerrado.
+ * - altaDe: el id de la lesión abierta a la que se le puede dar el alta ese
+ *   día; null si no hay o si empezó después de `fecha` (se corrige un día
+ *   viejo y el alta no puede ser anterior al comienzo).
+ */
+export function accionesDeTarjeta({ estado, lesiones, fecha }) {
+  const abierta = (lesiones ?? []).find((l) => l.hasta == null) ?? null;
+  return {
+    justificada: estado !== 'justificada',
+    lesionar: !abierta && !lesionadoEn(lesiones, fecha),
+    altaDe: abierta && abierta.desde <= fecha ? abierta.id : null,
+  };
+}
