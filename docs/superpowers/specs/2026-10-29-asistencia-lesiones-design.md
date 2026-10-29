@@ -27,7 +27,7 @@ Tres tablas nuevas, con el patrón de `0026_material.sql` (`revoke all`, `grant`
 
 **Permisos (RLS).** Leer y escribir `entrenamiento` y `asistencia`: `puede_ver_plantel` / `puede_escribir_plantel` del plantel. `lesion`: el profe que tiene al jugador en un plantel suyo con pertenencia vigente. El profe puede corregir días pasados (una falta pasa a justificada cuando la familia avisa). Familias y jugadores no ven nada en esta versión.
 
-**Coordinador.** Desde 0018 el coordinador ve sólo agregados, nunca filas de un chico. Se mantiene en la app: una función `asistencia_del_club(club, desde, hasta)` (`security definer`) devuelve por categoría el % de asistencia, la cantidad de alertas y la cantidad de lesionados hoy, sin nombres. **A confirmar en la revisión:** la planilla del club entero que pide el área lleva nombres. Propuesta: una segunda función `planilla_asistencia_del_club`, sólo para coordinador, que devuelve las filas por chico únicamente para exportar, y queda registrada como excepción explícita a 0018. La otra opción es que cada profe exporte la suya y el coordinador las junte.
+**Coordinador.** Sigue la regla de 0018: ve sólo agregados, nunca filas de un chico. Una función `asistencia_del_club(club, desde, hasta)` (`security definer`, sólo `es_coordinador_de`) devuelve por categoría **sólo el % general de asistencia** y la cantidad de entrenamientos, sin nombres ni lesiones. La planilla con nombres la exporta cada profe de su plantel (decidido por Tomás el 29/10).
 
 ## 3. Lógica pura (`src/data/asistencia.js`)
 
@@ -35,19 +35,19 @@ Tres tablas nuevas, con el patrón de `0026_material.sql` (`revoke all`, `grant`
 - `resumenDeAsistencia(dias)` → total de entrenamientos, asistidos, días sin entrenamiento, justificadas, días de lesión, % de lesión y % de asistencia = presentes / días con entrenamiento (nunca más de 100).
 - `semaforo(pct)` → `alerta` (< 70 %), `regular` (< 85 %), `excelente`, o `sin datos` si no hay días.
 - `lesionadoEn(lesiones, fecha)`.
-- `filasDePlanilla(...)` → la matriz de la hoja: Jugador, DNI, SOCIO NUM, % Asistencia, Estado, una columna por fecha (`d/m`) y al final las seis columnas de totales, con los mismos encabezados que el original. **DNI y SOCIO NUM salen vacíos**: la app no guarda DNI a propósito (ver 0060).
+- `filasDePlanilla(...)` (en `src/data/planillaAsistencia.js`) → la matriz de la hoja: Jugador, DNI, SOCIO NUM, % Asistencia, Estado, una columna por fecha (`d/m`) y al final las seis columnas de totales, con los mismos encabezados que el original. **DNI y SOCIO NUM salen vacíos**: la app no guarda DNI a propósito (ver 0060).
 
 ## 4. Pantallas
 
 - **Plantel → "Tomar asistencia"** (también como acceso en Hoy). Es la del prototipo `docs/prototipos/semillero-patron.html`: un toque alterna presente o ausente. Un menú chico en cada tarjeta ofrece: justificada, se lesionó (abre la hoja de zona/lado/tipo, todo opcional) y dar el alta. El lesionado aparece marcado de entrada y sólo se elige si vino. Arriba va el botón "No hubo entrenamiento". "Guardar" manda todo en una sola llamada (RPC `guardar_asistencia`).
 - **Historial del plantel**: lista de días con presentes sobre total; tocar uno lo abre para corregir.
-- **Ficha del jugador**: % con semáforo, faltas justificadas y "Lesionado desde el 12/10 · tobillo derecho". La asistencia entra en la historia del jugador como una fuente más (`FUENTES` en `historiaJugador.js`).
-- **Panorama del coordinador**: % y alertas por categoría.
-- **Exportar**: "Bajar planilla" arma el `.xlsx` en el navegador con el `xlsx` ya vendorizado. Una hoja por categoría, con el mismo nombre de hoja ("U15 - MASCULINO (2012 y 2011)").
+- **Ficha del jugador**: % con semáforo, faltas justificadas y "Lesionado desde el 12/10 · tobillo derecho".
+- **Panorama del coordinador**: el % general de cada categoría.
+- **Exportar**: en el historial del plantel, "Bajar planilla" arma el `.xlsx` en el navegador con el `xlsx` ya vendorizado. Una hoja por plantel exportado, nombrada como en el original ("U15 - MASCULINO (2012 y 2011)"); un profe con dos planteles baja un archivo con las dos hojas.
 
 ## 5. Fuera de esta versión
 
-Familias viendo la asistencia, análisis de lesiones, sugerencia de ejercicios por zona, horarios fijos de entrenamiento y notificaciones.
+Familias viendo la asistencia; sumarla a la historia del jugador (`FUENTES` de `historiaJugador.js`, que pide reemplazar la RPC de 0056); análisis de lesiones; sugerencia de ejercicios por zona, horarios fijos de entrenamiento y notificaciones.
 
 ## 6. Pendientes aparte
 
