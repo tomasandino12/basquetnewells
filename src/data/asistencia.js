@@ -92,7 +92,7 @@ export function semaforo(pct) {
   return 'excelente';
 }
 
-const diaMes = (iso) => {
+export const diaMes = (iso) => {
   const [, m, d] = iso.split('-');
   return `${Number(d)}/${Number(m)}`;
 };
@@ -184,5 +184,15 @@ export function accionesDeTarjeta({ estado, lesiones, fecha }) {
     justificada: estado !== 'justificada',
     lesionar: !abierta && !lesionadoEn(lesiones, fecha),
     altaDe: abierta && abierta.desde <= fecha ? abierta.id : null,
+  };
+}
+
+/** Un día de la lista del historial: cuántos vinieron de los que se tomaron. */
+export function resumenDelDia(entrenamiento) {
+  if (!entrenamiento.hubo) return { hubo: false, presentes: 0, tomados: 0 };
+  return {
+    hubo: true,
+    presentes: entrenamiento.filas.filter((f) => f.estado === 'presente').length,
+    tomados: entrenamiento.filas.length,
   };
 }

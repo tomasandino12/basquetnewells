@@ -155,6 +155,7 @@ export async function renderPlantel() {
       <div id="plantel-misiones"></div>
       <div class="eyebrow">${escaparHtml(plantel.categoria)} <span class="der">${jugadores.length} jugador${jugadores.length === 1 ? '' : 'es'}</span></div>
       <div class="campo"><button class="btn chico" id="btn-asistencia">Tomar asistencia</button></div>
+      <div class="campo"><button class="btn sec chico" id="btn-historial-asistencia">Historial de asistencia</button></div>
       <div class="campo"><button class="btn sec chico" id="btn-emergencias-plantel">Datos de emergencia</button></div>
       <div class="lista-2col" id="plantel-lista">${jugadores.map((j) => filaJugador(j, porJugador.get(j.id) ?? null)).join('')}</div>
       ${logros ? bloqueLogros(logros) : ''}
@@ -166,6 +167,7 @@ export async function renderPlantel() {
   $('btn-importar-emergencias').addEventListener('click', () => abrirImportarEmergencias({ plantel, jugadores, alCambiar: () => {} }));
   $('btn-emergencias-plantel').addEventListener('click', () => abrirEmergencias({ plantel }));
   $('btn-asistencia').addEventListener('click', () => abrirAsistencia());
+  $('btn-historial-asistencia').addEventListener('click', () => ir('p-asistencia-historial', { push: true }));
   cargarBloqueMisiones('plantel-misiones', club, plantel, { lista: true });
   ligarSolicitudes(solicitudes, jugadores, club, plantel);
   contenedor().querySelectorAll('[data-jugador]').forEach((boton) => {

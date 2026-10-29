@@ -24,7 +24,7 @@
 | 3 Repo | hecha | feat(asistencia): repo y verificación SQL |
 | 4 Tomar asistencia | hecha, probada en el navegador a 375 px contra la base local | feat(asistencia): pantalla Tomar asistencia |
 | 5 Lesiones en la toma | hecha, probada en el navegador contra la base local | feat(asistencia): justificada y lesiones en la toma |
-| 6 Historial y planilla | pendiente | |
+| 6 Historial y planilla | hecha, probada en el navegador (planilla leída de vuelta) | feat(asistencia): historial y planilla para el área |
 | 7 Ficha del jugador | pendiente | |
 | 8 Panorama del coordinador | pendiente | |
 | 9 db push y verificación | pendiente | |
