@@ -20,6 +20,7 @@ import { renderJugadaEditor, iniciarJugadaEditor, confirmarSalidaEditor } from '
 import { renderMetas } from './metas.js';
 import { renderPrevia } from './previa.js';
 import { renderMisionesPartido } from './misionesPartido.js';
+import { renderAsistencia, confirmarSalidaAsistencia } from './asistencia.js';
 import { renderPanorama } from './coordPanorama.js';
 import { renderProfes } from './coordProfes.js';
 import { renderInventarioCoordinacion, renderInventarioLectura } from './inventario.js';
@@ -69,6 +70,7 @@ export function registrarPantallas() {
   registrarPantalla('p-metas', { titulo: 'Metas', render: renderMetas });
   registrarPantalla('p-previa', { titulo: 'Misiones', render: renderPrevia });
   registrarPantalla('p-misiones-partido', { titulo: 'Evaluar misiones', render: renderMisionesPartido });
+  registrarPantalla('p-asistencia', { titulo: 'Asistencia', render: renderAsistencia, confirmarSalida: confirmarSalidaAsistencia });
   registrarPantalla('p-coord-panorama', { titulo: 'Panorama', render: renderPanorama });
   registrarPantalla('p-coord-profes', { titulo: 'Profes', render: renderProfes });
   registrarPantalla('p-coord-inventario', { titulo: 'Inventario', render: renderInventarioCoordinacion });

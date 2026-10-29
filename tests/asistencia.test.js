@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   codigoDelDia, resumenDeAsistencia, semaforo, lesionadoEn, textoDeLesion,
   entrenamientoDesdeFila, lesionDesdeFila,
+  estadoInicial, alternar, contarEstados, filasParaGuardar, huboCambios,
 } from '../src/data/asistencia.js';
 
 test('codigoDelDia cubre los seis códigos', () => {
@@ -115,4 +116,47 @@ test('los mappers pasan a camelCase y respetan el null', () => {
     lesionDesdeFila({ id: 'l1', jugador_id: 'j1', desde: '2026-10-12', hasta: null, zona: null, lado: null, tipo: null }),
     { id: 'l1', jugadorId: 'j1', desde: '2026-10-12', hasta: null, zona: null, lado: null, tipo: null },
   );
+});
+
+test('estado inicial: lesionado aparece marcado y sin fila queda sin tomar', () => {
+  const jugadores = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+  const filas = [{ jugadorId: 'b', estado: 'justificada' }];
+  const lesiones = [
+    { jugadorId: 'a', desde: '2026-10-12', hasta: null },
+    { jugadorId: 'c', desde: '2026-09-01', hasta: '2026-09-20' },
+  ];
+  assert.deepEqual(estadoInicial(jugadores, filas, lesiones, '2026-10-28'), [
+    { jugadorId: 'a', estado: null, lesionado: true },
+    { jugadorId: 'b', estado: 'justificada', lesionado: false },
+    { jugadorId: 'c', estado: null, lesionado: false },
+  ]);
+  // Un día viejo marca a quien estaba lesionado entonces, no a quien lo está hoy.
+  assert.equal(estadoInicial(jugadores, [], lesiones, '2026-09-10')[2].lesionado, true);
+  assert.equal(estadoInicial(jugadores, [], lesiones, '2026-09-10')[0].lesionado, false);
+});
+
+test('un toque alterna presente y ausente, y la justificada pasa a presente', () => {
+  assert.equal(alternar(null), 'presente');
+  assert.equal(alternar('presente'), 'ausente');
+  assert.equal(alternar('ausente'), 'presente');
+  assert.equal(alternar('justificada'), 'presente');
+});
+
+test('contar y guardar: los sin tomar no llevan fila', () => {
+  const t = [
+    { jugadorId: 'a', estado: 'presente' },
+    { jugadorId: 'b', estado: 'ausente' },
+    { jugadorId: 'c', estado: null },
+  ];
+  assert.deepEqual(contarEstados(t), { total: 3, presentes: 1, sinTomar: 1 });
+  assert.deepEqual(filasParaGuardar(t), [
+    { jugadorId: 'a', estado: 'presente' },
+    { jugadorId: 'b', estado: 'ausente' },
+  ]);
+});
+
+test('huboCambios detecta lo marcado y no cuenta lo igual', () => {
+  const inicial = [{ jugadorId: 'a', estado: null }, { jugadorId: 'b', estado: 'presente' }];
+  assert.equal(huboCambios(inicial, inicial.map((x) => ({ ...x }))), false);
+  assert.equal(huboCambios(inicial, [{ jugadorId: 'a', estado: 'presente' }, inicial[1]]), true);
 });

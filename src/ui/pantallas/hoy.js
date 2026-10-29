@@ -19,8 +19,19 @@ import { $ } from '../dom.js';
 import { textoDeError } from '../errores.js';
 import { saludoSegunHora } from '../../data/saludo.js';
 import { cargarBloqueMisiones } from './misionesAcceso.js';
+import { abrirAsistencia } from './asistencia.js';
+import { html } from '../html.js';
 
 const contenedor = () => $('hoy-contenido');
+
+/** Acceso rápido a la toma de asistencia del plantel elegido; va en las tres versiones de HOY. */
+function accesoAsistenciaHtml(categoria) {
+  return html`<div class="al"><div class="tx">Entrenamiento de hoy<div class="mt">${categoria}</div></div><button type="button" class="btn sec chico" id="btn-hoy-asistencia">Tomar asistencia</button></div>`.toString();
+}
+
+function ligarAccesoAsistencia() {
+  $('btn-hoy-asistencia')?.addEventListener('click', () => abrirAsistencia());
+}
 
 /**
  * HOY se arma sola con lo que haya. El piloto arranca sin una sola medición,
@@ -166,7 +177,8 @@ export async function renderHoy() {
     .sort((a, b) => b.fecha.localeCompare(a.fecha));
 
   if (!sesionesTiro.length) {
-    contenedor().innerHTML = `<div class="pad"><h2 class="h2">${saludoSegunHora(new Date().getHours())}</h2><div id="hoy-misiones"></div>${estadoVacioHtml(plantel.categoria)}</div>`;
+    contenedor().innerHTML = `<div class="pad"><h2 class="h2">${saludoSegunHora(new Date().getHours())}</h2>${accesoAsistenciaHtml(plantel.categoria)}<div id="hoy-misiones"></div>${estadoVacioHtml(plantel.categoria)}</div>`;
+    ligarAccesoAsistencia();
     cargarBloqueMisiones('hoy-misiones', club, plantel);
     $('btn-vacio-plantel').addEventListener('click', () => ir('p-plantel'));
     $('btn-vacio-partido').addEventListener('click', () => ir('p-datos'));
@@ -221,12 +233,14 @@ export async function renderHoy() {
     contenedor().innerHTML = `
       <div class="pad">
         <h2 class="h2">${saludoSegunHora(new Date().getHours())}</h2>
+        ${accesoAsistenciaHtml(plantel.categoria)}
         <div id="hoy-misiones"></div>
         <div class="p">Hubo una batería el ${escaparHtml(formatearFechaCorta(actual.fecha))} en ${escaparHtml(plantel.categoria)}, pero quedó sin ninguna medición: todos los jugadores figuran como ausentes.</div>
         <button class="btn" id="btn-hoy-medir">Hacer una medición</button>
       </div>
     `;
     $('btn-hoy-medir').addEventListener('click', () => ir('p-medir'));
+    ligarAccesoAsistencia();
     cargarBloqueMisiones('hoy-misiones', club, plantel);
     return;
   }
@@ -255,6 +269,7 @@ export async function renderHoy() {
   // proyecto los trata como series aparte y nunca los mezcla.
   contenedor().innerHTML = `
     <div class="pad">
+      ${accesoAsistenciaHtml(plantel.categoria)}
       <div id="hoy-misiones"></div>
       <div class="contexto">${escaparHtml(plantel.categoria)} · batería del ${escaparHtml(formatearFechaCorta(actual.fecha))} · ${jugadoresQueMidieron} jugador${jugadoresQueMidieron === 1 ? '' : 'es'} midió${jugadoresQueMidieron === 1 ? '' : 'eron'}</div>
 
@@ -293,6 +308,7 @@ export async function renderHoy() {
     </div>
   `;
 
+  ligarAccesoAsistencia();
   cargarBloqueMisiones('hoy-misiones', club, plantel);
   $('btn-hoy-medir').addEventListener('click', () => ir('p-medir'));
   $('btn-hoy-plantel')?.addEventListener('click', () => ir('p-plantel'));

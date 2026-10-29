@@ -22,7 +22,7 @@
 | 1 Lógica pura | hecha | feat(asistencia): lógica pura |
 | 2 Migración 0064 | hecha; probada en la base local (11 casos, tests/verificarAsistencia.sql), sin aplicar a la real | feat(asistencia): migración 0064 |
 | 3 Repo | hecha | feat(asistencia): repo y verificación SQL |
-| 4 Tomar asistencia | pendiente | |
+| 4 Tomar asistencia | hecha, probada en el navegador a 375 px contra la base local | feat(asistencia): pantalla Tomar asistencia |
 | 5 Lesiones en la toma | pendiente | |
 | 6 Historial y planilla | pendiente | |
 | 7 Ficha del jugador | pendiente | |

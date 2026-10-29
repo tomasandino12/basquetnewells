@@ -127,3 +127,44 @@ export function lesionDesdeFila(f) {
     tipo: f.tipo,
   };
 }
+
+/**
+ * Cómo arranca la toma de un día: una tarjeta por chico. Sin fila queda en
+ * null ("sin tomar"), nunca en ausente: nadie dijo que faltó. `lesionado` sale
+ * de las lesiones a esa fecha, así el día de una corrección vieja marca a quien
+ * estaba lesionado entonces y no a quien lo está hoy.
+ */
+export function estadoInicial(jugadores, filas, lesiones, fecha) {
+  const estados = new Map((filas ?? []).map((f) => [f.jugadorId, f.estado]));
+  const lesionesDe = new Map();
+  for (const l of lesiones ?? []) {
+    lesionesDe.set(l.jugadorId, [...(lesionesDe.get(l.jugadorId) ?? []), l]);
+  }
+  return jugadores.map((j) => ({
+    jugadorId: j.id,
+    estado: estados.get(j.id) ?? null,
+    lesionado: lesionadoEn(lesionesDe.get(j.id), fecha),
+  }));
+}
+
+/** Un toque: de presente pasa a ausente; de cualquier otro (incluido sin tomar) a presente. */
+export function alternar(estado) {
+  return estado === 'presente' ? 'ausente' : 'presente';
+}
+
+export function contarEstados(tarjetas) {
+  const presentes = tarjetas.filter((t) => t.estado === 'presente').length;
+  const sinTomar = tarjetas.filter((t) => t.estado == null).length;
+  return { total: tarjetas.length, presentes, sinTomar };
+}
+
+/** Lo que se manda a guardar: los chicos sin tomar no llevan fila. */
+export function filasParaGuardar(tarjetas) {
+  return tarjetas.filter((t) => t.estado != null).map((t) => ({ jugadorId: t.jugadorId, estado: t.estado }));
+}
+
+/** ¿Hay algo marcado distinto de lo que se cargó? Para avisar antes de perderlo. */
+export function huboCambios(inicial, actual) {
+  const antes = new Map(inicial.map((t) => [t.jugadorId, t.estado]));
+  return actual.some((t) => (antes.get(t.jugadorId) ?? null) !== t.estado);
+}
