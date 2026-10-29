@@ -53,6 +53,26 @@
   --negro-puro:#000;      /* letterbox del video */
   --placeholder-osc:#9A968E; /* 4.70:1 sobre --sup-2: un placeholder también es texto */
 
+  /* ---- roles: lo que usan las pantallas ----
+     Las pantallas piden el ROL (--texto, --sup...), no el color de paleta: el
+     tema oscuro redefine sólo estos y toda la app cambia sin tocar un selector.
+     La paleta de arriba (--papel, --blanco, --tinta, --gris, --linea) queda
+     para lo que es siempre igual: la pizarra, la impresión, la barra de
+     navegación y el portal. */
+  --fondo-app:var(--papel);         /* el fondo de las pantallas */
+  --sup:var(--blanco);              /* tarjetas y campos */
+  --sup-hundida:var(--papel);       /* un nivel hundido dentro de una tarjeta */
+  --texto:var(--tinta);
+  --texto-2:var(--gris);            /* texto secundario */
+  --borde:var(--linea);             /* separadores */
+  --pista:var(--linea);             /* el carril vacío de una barra */
+  --fondo-chip-t:var(--fondo-chip); /* chips y etiquetas en reposo */
+  /* gráficos (graficos.js): el texto apagado, el eje, la rejilla y el piso de la cancha de tiro */
+  --graf-texto:var(--gris-cl);
+  --graf-eje:var(--deshabilitado);
+  --graf-rejilla:#EAE6DF;
+  --graf-cancha:#FBFAF8;
+
   /* ---- superficies sobre fondo oscuro ---- */
   --sup-1:#22222A;
   --sup-2:#2C2C34;

@@ -59,6 +59,8 @@ export async function descargarPaso(svg, { nombre, paso, totalPasos }) {
   canvas.width = ANCHO_PNG;
   canvas.height = ALTO_TITULO + altoCancha;
   const ctx = canvas.getContext('2d');
+  // El PNG es siempre claro (un papel que se imprime o se manda por WhatsApp),
+  // sea cual sea el tema de la app: por eso estos literales no son roles.
   ctx.fillStyle = '#F3F1ED';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 

@@ -157,10 +157,11 @@ test('los glifos de la pantalla Medir son decorativos para el lector de pantalla
   assert.doesNotMatch(fuente, /<div class="ic?o?">/);
 });
 
-test('una serie con c: "primario" no deja la palabra en el SVG', () => {
+test('una serie con c: "primario" no deja el nombre pelado como color en el SVG', () => {
   const svg = svgFalso();
   grafico(svg, { etiquetas: ['05/03', '10/03'], series: [{ nombre: 'x', c: 'primario', d: [10, 20] }] });
-  assert.ok(!svg.innerHTML.includes('primario'));
+  assert.ok(!/(fill|stroke)="primario"/.test(svg.innerHTML));
+  assert.ok(svg.innerHTML.includes('stroke="var(--primario)"'));
   assert.ok(svg.innerHTML.includes('<polyline'));
 });
 

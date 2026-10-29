@@ -7,9 +7,9 @@ html{-webkit-text-size-adjust:100%}
 html,body{margin:0;padding:0}
 
 body{
-  background:var(--papel);
+  background:var(--fondo-app);
   font-family:var(--ff-cuerpo);
-  color:var(--tinta);
+  color:var(--texto);
   font-size:var(--fs-160);
   line-height:1.45;
   min-height:100dvh;
@@ -31,14 +31,14 @@ h1{font-size:var(--fs-titulo)}
 h2{font-size:var(--fs-titulo-chico)}
 
 /* Título de sección, portado del prototipo */
-.h2{font-family:var(--ff-titulo);font-size:var(--fs-titulo-chico);font-weight:700;text-transform:uppercase;letter-spacing:.03em;line-height:1;color:var(--tinta);margin:var(--sp-6) 0 var(--sp-3)}
+.h2{font-family:var(--ff-titulo);font-size:var(--fs-titulo-chico);font-weight:700;text-transform:uppercase;letter-spacing:.03em;line-height:1;color:var(--texto);margin:var(--sp-6) 0 var(--sp-3)}
 /* Barra roja debajo: corta la pantalla en bloques que se ven desde lejos. */
 .h2::after{content:"";display:block;width:2.5rem;height:.1875rem;background:var(--primario);margin-top:var(--sp-2)}
-.p{font-size:var(--fs-135);color:var(--gris);line-height:1.45}
+.p{font-size:var(--fs-135);color:var(--texto-2);line-height:1.45}
 
 .eyebrow{
   font-family:var(--ff-titulo);font-size:var(--fs-190);font-weight:700;
-  letter-spacing:.1em;text-transform:uppercase;color:var(--tinta);
+  letter-spacing:.1em;text-transform:uppercase;color:var(--texto);
   display:flex;align-items:center;gap:var(--sp-2);margin:var(--sp-6) 0 var(--sp-2);
 }
 .eyebrow::before{content:"";width:.5625rem;height:.5625rem;background:var(--primario);flex:0 0 auto}
