@@ -19,7 +19,7 @@
 ## Estado
 | Task | Estado | Commit |
 |---|---|---|
-| 1 Lógica pura | pendiente | |
+| 1 Lógica pura | hecha | feat(asistencia): lógica pura |
 | 2 Migración 0064 | pendiente | |
 | 3 Repo | pendiente | |
 | 4 Tomar asistencia | pendiente | |
