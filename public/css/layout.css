@@ -17,6 +17,24 @@
   grid-template-areas:"cabecera" "cats" "cuerpo" "nav";
 }
 
+/* ---- fondo con patrón ----
+   Una capa fija detrás de las pantallas: el escudo en un tono, la pelota y "1903",
+   girado como las diagonales de la camiseta. Se pinta con --patron-color y se recorta
+   con la baldosa (public/img/patron.png) como máscara, así la misma imagen sirve para
+   los dos temas. Es más grande que la pantalla para que el giro no deje esquinas
+   vacías, y al ser fija se compone una vez: no repinta al scrollear.
+   Cuelga de .app y no de body a propósito: el portal (.publico) no lleva patrón.
+   Va sólo detrás de las tarjetas, nunca sobre texto (por eso --texto-2 es más oscuro). */
+.app::before{
+  content:"";position:fixed;inset:-50vmax;z-index:-1;pointer-events:none;
+  background:var(--patron-color);
+  -webkit-mask:url(/public/img/patron.png) 0 0 / 480px repeat;mask:url(/public/img/patron.png) 0 0 / 480px repeat;
+  transform:rotate(-12deg);
+}
+/* Sin soporte de mask, la capa sería un velo liso: mejor nada. */
+@supports not ((mask-image:url(x)) or (-webkit-mask-image:url(x))){.app::before{display:none}}
+@media (prefers-reduced-transparency:reduce){.app::before{display:none}}
+
 /* ---- cabecera ---- */
 .cabecera{
   grid-area:cabecera;

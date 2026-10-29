@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 
 /**
  * Las pantallas piden el ROL de un color (--texto, --sup, --borde...) y no el
@@ -86,4 +86,31 @@ test('el HTML de la app carga tema.js en el <head> y sin defer ni async (si no, 
   const cabeza = pagina.slice(0, pagina.indexOf('</head>'));
   assert.match(cabeza, /<script src="\/public\/tema\.js"><\/script>/);
   assert.doesNotMatch(pagina, /<script[^>]*tema\.js[^>]*(defer|async)/);
+});
+
+test('--patron-color está definido en los dos temas', () => {
+  assert.ok(enRaiz.has('--patron-color'), 'falta en :root');
+  assert.ok(enOscuro.has('--patron-color'), 'falta en [data-tema="oscuro"]');
+});
+
+// El patrón es del fondo de la app. El portal es negro liso y no lo lleva: si el patrón
+// se colgara de body o de :root, se vería también detrás del portal.
+test('el portal (.publico) no lleva el patrón', () => {
+  const conPatron = [];
+  for (const archivo of ['base', 'layout', 'componentes', 'publico']) {
+    for (const { selector, cuerpo } of reglas(leer(archivo))) {
+      if (/--patron-color|patron\.png/.test(cuerpo)) conPatron.push({ archivo, selector });
+    }
+  }
+  assert.ok(conPatron.length > 0, 'hay una capa con el patrón');
+  for (const { archivo, selector } of conPatron) {
+    assert.match(selector, /^\.app::before$/, `${archivo}.css: ${selector} pinta el patrón fuera de .app`);
+  }
+  assert.ok(existsSync('public/img/patron.png'), 'falta la baldosa public/img/patron.png');
+});
+
+test('sin soporte de mask o con prefers-reduced-transparency, el patrón no se pinta', () => {
+  const layout = sinComentarios(leer('layout'));
+  assert.match(layout, /@supports not \(\(mask-image:url\(x\)\) or \(-webkit-mask-image:url\(x\)\)\)\{\.app::before\{display:none\}\}/);
+  assert.match(layout, /@media \(prefers-reduced-transparency:reduce\)\{\.app::before\{display:none\}\}/);
 });

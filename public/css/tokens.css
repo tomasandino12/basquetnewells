@@ -212,23 +212,24 @@
    valores claros: es negro siempre y no cambia con el tema, así que lo que
    comparte con la app (botones, campos, chips) se ve igual en los dos. */
 :root,.publico{
-  --fondo-app:var(--papel);         /* el fondo de las pantallas */
+  --fondo-app:#E9E7E2;              /* el fondo de las pantallas: un escalón más oscuro que --papel, para que el patrón se note */
   --sup:var(--blanco);              /* tarjetas y campos */
   --sup-hundida:var(--papel);       /* un nivel hundido dentro de una tarjeta */
   --texto:var(--tinta);
-  --texto-2:var(--gris);            /* texto secundario */
+  --texto-2:#58554F;                /* texto secundario: --gris no llega a 4.5:1 sobre --fondo-app con el patrón debajo */
   --borde:var(--linea);             /* separadores */
   --pista:var(--linea);             /* el carril vacío de una barra */
   --fondo-chip-t:var(--fondo-chip); /* chips y etiquetas en reposo */
   --btn-sec-fondo:var(--negro);     /* el botón secundario: negro macizo... */
   --btn-sec-borde:var(--negro);
-  --marca-texto:var(--primario);     /* el rojo del club como texto chico */
+  --marca-texto:var(--primario-osc); /* el rojo del club como texto chico: --primario puro no llega a 4.5:1 sobre --fondo-app con el patrón */
   --marca-texto-tinte:var(--primario-osc); /* ídem, sobre un fondo de --primario-tenue */
   /* gráficos (graficos.js): el texto apagado, el eje, la rejilla y el piso de la cancha de tiro */
   --graf-texto:var(--gris-cl);
   --graf-eje:var(--deshabilitado);
   --graf-rejilla:#EAE6DF;
   --graf-cancha:#FBFAF8;
+  --patron-color:rgba(19,19,22,.08); /* la tinta del patrón de fondo (layout.css) */
   /* sobre claro, sombras suaves */
   --sombra:0 1px 2px rgba(19,19,22,.05),0 6px 18px rgba(19,19,22,.05);
   --sombra-alta:0 2px 4px rgba(19,19,22,.10),0 10px 26px rgba(19,19,22,.14);
@@ -292,6 +293,7 @@
   --baja-fondo:#2B2314;
   --primario-cl:#2B1B20;
   --primario-tenue:#3A1D24;
+  --patron-color:rgba(255,255,255,.04);
   --sombra:0 0 0 1px var(--pub-borde);
   --sombra-alta:0 0 0 1px var(--pub-borde),0 10px 26px rgba(0,0,0,.5);
 }

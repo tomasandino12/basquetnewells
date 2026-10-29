@@ -130,7 +130,7 @@
 .fila:nth-child(6)::before{animation-delay:1350ms}
 /* Sin fill backwards: en el retardo la fila está sin marcar (opacity 0) y no en el "from". */
 @keyframes barre-fila{from{opacity:.4}}
-.flecha{color:var(--gris-osc);font-size:var(--fs-190)}
+.publico .flecha{color:var(--gris-osc);font-size:var(--fs-190)} /* con ".publico": suelta, le pisaba el color a las flechas de la app */
 .chips-j{display:flex;flex-wrap:wrap;gap:var(--sp-2);flex:1 1 12rem}
 .chips-j span{
   font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-115);color:var(--sobre-oscuro);

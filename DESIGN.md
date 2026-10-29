@@ -171,7 +171,7 @@ Las pantallas piden el **rol** de un color y no el de la paleta; el tema oscuro 
 | `--texto` / `--texto-2` | `--tinta` / `--gris` → `--sobre-oscuro` / `--gris-osc` | Texto principal y secundario. |
 | `--borde` / `--pista` | `--linea` → `--pub-borde` / `#2A2A33` | Separadores y el carril vacío de una barra. |
 | `--fondo-chip-t` | `--fondo-chip` → `#24242C` | Chips y etiquetas en reposo. |
-| `--marca-texto` / `--marca-texto-tinte` | `--primario` / `--primario-osc` → `--club-texto` | El color del club como **texto chico** (el rojo puro llega a 3.8:1 sobre oscuro). |
+| `--marca-texto` / `--marca-texto-tinte` | `--primario-osc` → `--club-texto` | El color del club como **texto chico**: el rojo puro llega a 3.8:1 sobre oscuro y a 4.2:1 sobre el fondo con patrón. |
 | `--btn-sec-fondo` / `--btn-sec-borde` | `--negro` → `--sup-2` / `--linea-osc` | El `.btn.sec`: negro macizo en claro; en oscuro se perdería, así que sube un escalón y lleva borde. |
 | `--graf-*` | texto, eje, rejilla y piso de la cancha de tiro | Los gráficos de `graficos.js`, que pintan con `var(--…)`. |
 | `--sombra`, `--sombra-alta` | sombra suave → anillo de `--pub-borde` | Sobre oscuro las sombras no se ven: la tarjeta se separa con un borde fino dentro de la propia sombra. |
@@ -183,6 +183,16 @@ En oscuro también cambian `--sube`, `--baja`, `--sube-fondo`, `--baja-fondo`, `
 - `public/tema.js` aplica el tema antes de pintar (script clásico en el `<head>, sin `defer`; es un archivo porque la CSP sólo acepta scripts de `'self'`). `src/data/tema.js` tiene la regla pura y `src/ui/preferenciaTema.js` el cambio en vivo.
 - Una imagen con fondo blanco (un escudo rival, por ejemplo) va sobre una placa clara, no suelta sobre el fondo oscuro.
 - `node scripts/verificacion-visual/herramienta.mjs contraste` (con `TEMA=oscuro` para el otro tema) mide el contraste de cada texto, los desbordes y los toques < 44 px de la galería.
+
+### Fondo con patrón
+
+Detrás de las pantallas de la app hay un patrón: el escudo en un tono, la pelota y "1903", girado −12° como las diagonales de la camiseta. Es **una capa fija** (`.app::before` en `layout.css`) recortada con la baldosa `public/img/patron.png` (480 px) y pintada con `--patron-color` (tinta al 8 % en claro, blanco al 4 % en oscuro): una sola imagen sirve para los dos temas.
+
+- **Dónde va:** sólo detrás de las tarjetas, nunca sobre texto. Por eso en claro `--fondo-app` es `#E9E7E2` y `--texto-2` `#58554F`: `--gris` sobre el fondo con patrón no llega a 4.5:1, y la herramienta `contraste` mide el peor caso (con y sin patrón).
+- **Dónde no va:** el portal y el ingreso (`.publico`) son negro liso: el patrón cuelga de `.app` y no de `body` justamente para eso (lo vigila `tests/contratoTokens.test.js`). Tampoco en la pizarra ni en lo que se imprime o exporta.
+- **Se apaga solo** sin soporte de `mask` y con `prefers-reduced-transparency`.
+- **No cuesta scroll:** al ser fija se compone una vez; `herramienta.mjs recorrido` da los mismos frames largos con y sin patrón.
+- **Rehacer la baldosa:** `docs/prototipos/patron/generar.html` (se abre servido, en `localhost:5173`) genera el PNG.
 
 ## Componentes
 
