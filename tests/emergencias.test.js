@@ -64,6 +64,33 @@ test('afección desconocida avisa y no se guarda', () => {
   assert.deepEqual(r.desconocidas, ['gripe']);
 });
 
+test('las casillas con otra redacción se reconocen por la palabra clave', () => {
+  const r = leerAfecciones('Meningitis (antecedente), Problemas cardíacos o taquicardia, DESMAYOS, Pérdida de conocimiento por golpe');
+  assert.deepEqual(r.alertas, ['meningitis', 'taquicardia', 'desmayos', 'perdida_conocimiento']);
+  assert.deepEqual(r.desconocidas, []);
+  // Etiqueta cortada por Forms.
+  assert.deepEqual(leerAfecciones('Pérdida de conocim').desconocidas, ['perdida de conocim']);
+  assert.deepEqual(leerAfecciones('Perdida de conocimiento').alertas, ['perdida_conocimiento']);
+});
+
+test('"Epilepsia o convulsiones" marca las dos casillas que existen en la lista', () => {
+  assert.deepEqual(leerAfecciones('Epilepsia o convulsiones').alertas, ['epilepsia', 'convulsiones']);
+  assert.deepEqual(leerAfecciones('Convulsiones').alertas, ['convulsiones']);
+});
+
+test('"Ninguna" no es alerta ni casilla rara', () => {
+  assert.deepEqual(leerAfecciones('Ninguna'), { alertas: [], desconocidas: [] });
+});
+
+test('una casilla sin código en la lista se avisa, no se pierde en silencio', () => {
+  // "Alergia grave" todavía no tiene código en la base (lista de 0059).
+  const r = leerAfecciones('Asma, Alergia grave');
+  assert.deepEqual(r.alertas, ['asma']);
+  assert.deepEqual(r.desconocidas, ['alergia grave']);
+  const c = cruzarEmergencias([filaParseada({ afecciones: 'Alergia grave' })], [{ id: 'j1', nombreLimpio: 'Zztest Uno', fechaNacimiento: '2012-05-06' }]);
+  assert.match(c.advertencias[0], /alergia grave/);
+});
+
 test('texto largo se recorta con aviso', () => {
   assert.deepEqual(recortar('  ', 10), { texto: null, recortado: false });
   assert.deepEqual(recortar('corto', 10), { texto: 'corto', recortado: false });

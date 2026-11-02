@@ -21,24 +21,43 @@ export const AFECCIONES = [
 
 
 const sinAcentos = (t) => String(t ?? '').toLowerCase().normalize('NFD').replace(new RegExp('[\u0300-\u036f]', 'g'), '').replace(/\s+/g, ' ').trim();
-const CODIGO_POR_ETIQUETA = new Map([
-  ...AFECCIONES.map(([codigo, etiqueta]) => [sinAcentos(etiqueta), codigo]),
-  // Forms puede cortar la etiqueta larga al exportar.
-  ['perdida de conocimiento', 'perdida_conocimiento'],
-]);
+// Cada casilla se reconoce por una palabra clave, no por el texto entero: el
+// formulario cambia la redacción de una temporada a otra ("Epilepsia o
+// convulsiones", "Meningitis (antecedente)", "Problemas cardíacos o
+// taquicardia") y Forms a veces corta las etiquetas largas. `codigos` son los
+// candidatos: sólo cuentan los que existen en AFECCIONES, así la misma regla
+// sirve con la lista vieja (0059) y con la nueva sin tocar este archivo. Si
+// ninguno existe, la casilla se avisa como desconocida en vez de perderse.
+const REGLAS = [
+  [/desmay/, ['desmayos']],
+  [/epilep/, ['epilepsia_convulsiones', 'epilepsia']],
+  [/convuls/, ['epilepsia_convulsiones', 'convulsiones']],
+  [/cardiac|cardiaco|taquicard/, ['cardiaco', 'taquicardia']],
+  [/meningit/, ['meningitis']],
+  [/diabet/, ['diabetes']],
+  [/\basm/, ['asma']],
+  [/alergi/, ['alergia_grave']],
+  [/conocimiento/, ['perdida_conocimiento']],
+];
+// "Ninguna" es una respuesta válida: no es una alerta ni una casilla rara.
+const NINGUNA = /^(ninguna|ninguno|no|nada)\b/;
+const CODIGOS_VALIDOS = new Set(AFECCIONES.map(([codigo]) => codigo));
 
 /**
  * Lo que exporta Forms en una pregunta de casillas ("Desmayos, Asma") → los
- * códigos de la lista cerrada, sin repetidos. Lo que no está en la lista no
- * se guarda: se devuelve en `desconocidas` para avisar.
+ * códigos de la lista cerrada, sin repetidos. Lo que no se puede asociar a un
+ * código de la lista no se guarda: se devuelve en `desconocidas` para avisar.
  */
 export function leerAfecciones(texto) {
   const alertas = [];
   const desconocidas = [];
   for (const parte of String(texto ?? '').split(/[,;]/).map(sinAcentos).filter(Boolean)) {
-    const codigo = CODIGO_POR_ETIQUETA.get(parte);
-    if (!codigo) desconocidas.push(parte);
-    else if (!alertas.includes(codigo)) alertas.push(codigo);
+    if (NINGUNA.test(parte)) continue;
+    const codigos = [...new Set(REGLAS
+      .filter(([patron]) => patron.test(parte))
+      .flatMap(([, candidatos]) => candidatos.filter((c) => CODIGOS_VALIDOS.has(c))))];
+    if (!codigos.length) desconocidas.push(parte);
+    for (const codigo of codigos) if (!alertas.includes(codigo)) alertas.push(codigo);
   }
   return { alertas, desconocidas };
 }
