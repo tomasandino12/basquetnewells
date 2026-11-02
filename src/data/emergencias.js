@@ -21,39 +21,51 @@ export const AFECCIONES = [
 
 
 const sinAcentos = (t) => String(t ?? '').toLowerCase().normalize('NFD').replace(new RegExp('[\u0300-\u036f]', 'g'), '').replace(/\s+/g, ' ').trim();
-const CODIGO_POR_ETIQUETA = new Map([
-  ...AFECCIONES.map(([codigo, etiqueta]) => [sinAcentos(etiqueta), codigo]),
-  // Forms puede cortar la etiqueta larga al exportar.
-  ['perdida de conocimiento', 'perdida_conocimiento'],
-  // Cómo se llamaban las casillas en 2026 y variantes probables del texto de
-  // 2027: así una planilla vieja o una etiqueta escrita algo distinta no se
-  // pierde. Epilepsia y convulsiones son una sola afección desde 2027.
-  ['taquicardia', 'cardiaco'],
-  ['cardiaco', 'cardiaco'],
-  ['problemas cardiacos', 'cardiaco'],
-  ['convulsiones', 'epilepsia_convulsiones'],
-  ['epilepsia', 'epilepsia_convulsiones'],
-  ['epilepsia/convulsiones', 'epilepsia_convulsiones'],
-  ['epilepsia o convulsiones', 'epilepsia_convulsiones'],
-  ['alergia', 'alergia_grave'],
-  ['alergias graves', 'alergia_grave'],
-]);
+// Cada casilla se reconoce por una palabra clave, no por el texto entero: el
+// formulario cambia la redacción de una temporada a otra ("Epilepsia o
+// convulsiones", "Meningitis (antecedente)", "Problemas cardíacos o
+// taquicardia") y Forms a veces corta las etiquetas largas. Sólo cuentan los
+// códigos que existen en AFECCIONES; si ninguno existe, la casilla se avisa
+// como desconocida en vez de perderse.
+const REGLAS = [
+  [/desmay/, ['desmayos']],
+  [/epilep/, ['epilepsia_convulsiones', 'epilepsia']],
+  [/convuls/, ['epilepsia_convulsiones', 'convulsiones']],
+  [/cardiac|cardiaco|taquicard/, ['cardiaco', 'taquicardia']],
+  [/meningit/, ['meningitis']],
+  [/diabet/, ['diabetes']],
+  [/\basm/, ['asma']],
+  [/alergi/, ['alergia_grave']],
+  [/conocimiento/, ['perdida_conocimiento']],
+];
+// "Ninguna" sola es una respuesta válida: no es una alerta ni una casilla rara.
+const NINGUNA = /^(ninguna|ninguno|no|nada)$/;
+// Una frase que empieza negando puede esconder una alerta real ("No tiene asma
+// pero sí diabetes"). Nunca se descarta: se guarda lo que nombra y se pide
+// revisarla, porque una alerta de más se ve y una que falta no.
+const NEGACION = /^(ninguna|ninguno|no|nunca|nada|sin)\b/;
+const CODIGOS_VALIDOS = new Set(AFECCIONES.map(([codigo]) => codigo));
 
 /**
  * Lo que exporta Forms en una pregunta de casillas ("Desmayos, Asma") → los
- * códigos de la lista cerrada, sin repetidos. Lo que no está en la lista no
- * se guarda: se devuelve en `desconocidas` para avisar.
+ * códigos de la lista cerrada, sin repetidos. Lo que no se puede asociar a un
+ * código de la lista no se guarda: se devuelve en `desconocidas` para avisar.
+ * Lo que se guardó de una frase con negación vuelve en `dudosas` para revisarlo.
  */
 export function leerAfecciones(texto) {
   const alertas = [];
   const desconocidas = [];
+  const dudosas = [];
   for (const parte of String(texto ?? '').split(/[,;]/).map(sinAcentos).filter(Boolean)) {
-    if (parte === 'ninguna') continue; // casilla "Ninguna" = lista vacía, no es una afección desconocida
-    const codigo = CODIGO_POR_ETIQUETA.get(parte);
-    if (!codigo) desconocidas.push(parte);
-    else if (!alertas.includes(codigo)) alertas.push(codigo);
+    if (NINGUNA.test(parte)) continue;
+    const codigos = [...new Set(REGLAS
+      .filter(([patron]) => patron.test(parte))
+      .flatMap(([, candidatos]) => candidatos.filter((c) => CODIGOS_VALIDOS.has(c))))];
+    if (!codigos.length) desconocidas.push(parte);
+    else if (NEGACION.test(parte)) dudosas.push(parte);
+    for (const codigo of codigos) if (!alertas.includes(codigo)) alertas.push(codigo);
   }
-  return { alertas, desconocidas };
+  return { alertas, desconocidas, dudosas };
 }
 
 /** Recorta al límite de la base. Devuelve { texto, recortado }; '' → null. */
@@ -94,8 +106,9 @@ export function cruzarEmergencias(filas, jugadores) {
       });
       continue;
     }
-    const { alertas, desconocidas } = leerAfecciones(f.afecciones);
+    const { alertas, desconocidas, dudosas } = leerAfecciones(f.afecciones);
     if (desconocidas.length) advertencias.push(`fila ${f.fila}: afección que no está en la lista, no se guarda (${desconocidas.join(', ')}). Revisala en la planilla.`);
+    if (dudosas.length) advertencias.push(`fila ${f.fila}: revisá esta respuesta, se guardó la alerta pero puede decir que no la tiene (${dudosas.join(', ')}).`);
     const campos = {
       telefonoAdulto: recortar(f.telefonoAdulto, LIMITE.telefono),
       contactoUrgencia: recortar(f.contactoUrgencia, LIMITE.contactoUrgencia),
