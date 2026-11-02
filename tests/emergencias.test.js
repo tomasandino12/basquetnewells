@@ -58,10 +58,77 @@ test('afecciones de Forms a la lista cerrada', () => {
   assert.equal(leerAfecciones(AFECCIONES.map(([, e]) => e).join(', ')).alertas.length, 8);
 });
 
+test('lista 2027: epilepsia y convulsiones son una sola; cardíaco y alergia grave entran', () => {
+  assert.deepEqual(leerAfecciones('Epilepsia / convulsiones, Problema cardíaco, Alergia grave').alertas,
+    ['epilepsia_convulsiones', 'cardiaco', 'alergia_grave']);
+  // Etiquetas de 2026: se convierten, y las dos de epilepsia no se duplican.
+  assert.deepEqual(leerAfecciones('Taquicardia, Convulsiones, Epilepsia').alertas,
+    ['cardiaco', 'epilepsia_convulsiones']);
+  assert.deepEqual(leerAfecciones('Ninguna').alertas, []);
+});
+
 test('afección desconocida avisa y no se guarda', () => {
   const r = leerAfecciones('Asma, Gripe');
   assert.deepEqual(r.alertas, ['asma']);
   assert.deepEqual(r.desconocidas, ['gripe']);
+});
+
+test('las casillas con otra redacción se reconocen por la palabra clave', () => {
+  const r = leerAfecciones('Meningitis (antecedente), Problemas cardíacos o taquicardia, DESMAYOS, Pérdida de conocimiento por golpe');
+  assert.deepEqual(r.alertas, ['meningitis', 'cardiaco', 'desmayos', 'perdida_conocimiento']);
+  assert.deepEqual(r.desconocidas, []);
+  // Etiqueta cortada por Forms.
+  assert.deepEqual(leerAfecciones('Pérdida de conocim').desconocidas, ['perdida de conocim']);
+  assert.deepEqual(leerAfecciones('Perdida de conocimiento').alertas, ['perdida_conocimiento']);
+});
+
+test('"Epilepsia o convulsiones" es una sola afección', () => {
+  assert.deepEqual(leerAfecciones('Epilepsia o convulsiones').alertas, ['epilepsia_convulsiones']);
+  assert.deepEqual(leerAfecciones('Convulsiones').alertas, ['epilepsia_convulsiones']);
+  assert.deepEqual(leerAfecciones('Alergia grave').alertas, ['alergia_grave']);
+});
+
+test('"Ninguna" sola no es alerta ni casilla rara', () => {
+  for (const texto of ['Ninguna', 'ninguno', 'No', 'Nada']) {
+    assert.deepEqual(leerAfecciones(texto), { alertas: [], desconocidas: [], dudosas: [] }, texto);
+  }
+});
+
+test('una respuesta que empieza con "no" jamás pierde una alerta en silencio', () => {
+  const r = leerAfecciones('No tiene asma pero sí diabetes');
+  assert.deepEqual(r.alertas, ['diabetes', 'asma']);
+  assert.deepEqual(r.desconocidas, []);
+  assert.deepEqual(r.dudosas, ['no tiene asma pero si diabetes']);
+
+  const c = leerAfecciones('No recuerda si tuvo convulsiones');
+  assert.deepEqual(c.alertas, ['epilepsia_convulsiones']);
+  assert.deepEqual(c.dudosas, ['no recuerda si tuvo convulsiones']);
+});
+
+test('negar una afección guarda la alerta y pide revisarla', () => {
+  const r = leerAfecciones('Sin alergias, nada de asma, epilepsia');
+  assert.deepEqual(r.alertas, ['alergia_grave', 'asma', 'epilepsia_convulsiones']);
+  assert.deepEqual(r.dudosas, ['sin alergias', 'nada de asma']);
+  assert.deepEqual(r.desconocidas, []);
+});
+
+test('una respuesta con "no" sin ninguna afección se avisa, no se pierde', () => {
+  const r = leerAfecciones('No sabe');
+  assert.deepEqual(r.alertas, []);
+  assert.deepEqual(r.desconocidas, ['no sabe']);
+});
+
+test('una casilla sin código en la lista se avisa, no se pierde en silencio', () => {
+  const r = leerAfecciones('Asma, Hernia');
+  assert.deepEqual(r.alertas, ['asma']);
+  assert.deepEqual(r.desconocidas, ['hernia']);
+  const c = cruzarEmergencias([filaParseada({ afecciones: 'Hernia' })], PLANTEL);
+  assert.match(c.advertencias[0], /hernia/);
+});
+
+test('la respuesta dudosa aparece en las advertencias de la importación', () => {
+  const c = cruzarEmergencias([filaParseada({ afecciones: 'No tiene asma pero sí diabetes' })], PLANTEL);
+  assert.ok(c.advertencias.some((a) => /revisá/i.test(a) && /no tiene asma/.test(a)), c.advertencias.join(' | '));
 });
 
 test('texto largo se recorta con aviso', () => {
@@ -125,7 +192,8 @@ test('el teléfono escrito a mano se vuelve un link para llamar', () => {
 });
 
 test('las alertas se muestran con su etiqueta y en el orden de la lista', () => {
-  assert.deepEqual(etiquetasDeAlertas(['asma', 'epilepsia']), ['Epilepsia', 'Asma']);
+  assert.deepEqual(etiquetasDeAlertas(['alergia_grave', 'epilepsia_convulsiones', 'asma']),
+    ['Asma', 'Epilepsia / convulsiones', 'Alergia grave']);
   assert.deepEqual(etiquetasDeAlertas([]), []);
   assert.deepEqual(etiquetasDeAlertas(undefined), []);
 });

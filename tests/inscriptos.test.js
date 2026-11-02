@@ -80,6 +80,24 @@ test('mapearCategoria cubre las 11 opciones del formulario', () => {
   }
 });
 
+test('mapearCategoria ignora los años entre paréntesis: valen otros años o ninguno', () => {
+  const casos = [
+    ['U13 - MIXTO (2015 y 2014)', 'Masculino', 'U13M'],
+    ['U13 - MIXTO', 'Masculino', 'U13M'],
+    ['U15 - MASCULINO (2013 y 2012)', '', 'U15M'],
+    ['u17 - masculino  (2011 y 2010)', '', 'U17M'],
+    ['U21 - MASCULINO (2009, 2008, 2007 y 2006)', '', 'U21M'],
+    ['U21 - MASCULINO', '', 'U21M'],
+    ['U21 - FEMENINO (2009 y 2008)', '', null],
+    ['MAYORES FEMENINO (2005 y anteriores)', '', 'MAY_F'],
+  ];
+  for (const [texto, rama, esperado] of casos) {
+    assert.equal(mapearCategoria(texto, rama).codigo, esperado, texto);
+  }
+  // Sin paréntesis una categoría que no existe sigue siendo desconocida.
+  assert.match(mapearCategoria('U19 - MASCULINO (2008)', '').motivo, /desconocida/);
+});
+
 test('mapearCategoria: en MASCULINO/FEMENINO manda la categoría, no la rama', () => {
   assert.equal(mapearCategoria('U15 - MASCULINO (2012 y 2011)', 'Femenino').codigo, 'U15M');
   assert.equal(mapearCategoria('U15 - FEMENINO (2012 y 2011)', 'Masculino').codigo, null);

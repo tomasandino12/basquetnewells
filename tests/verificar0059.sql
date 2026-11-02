@@ -101,14 +101,14 @@ begin
     perform set_config('request.jwt.claims', json_build_object('sub', v_pa, 'role', 'authenticated')::text, true);
     v_res := importar_emergencias(jsonb_build_object('plantelId', v_u17, 'filas', jsonb_build_array(
       jsonb_build_object('jugadorId', v_a, 'telefonoAdulto', ' 341 555-0000 ', 'contactoUrgencia', 'ZZTEST tía 341 555-0001',
-                         'alertas', jsonb_build_array('asma', 'epilepsia'), 'alergias', '', 'obraSocial', 'ZZTEST OS'),
+                         'alertas', jsonb_build_array('asma', 'epilepsia_convulsiones'), 'alergias', '', 'obraSocial', 'ZZTEST OS'),
       jsonb_build_object('jugadorId', v_b, 'telefonoAdulto', '341 555-0002'))));
     txt := '';
     if v_res <> '{"guardados": 2}'::jsonb then txt := txt || 'devolvió ' || v_res::text || '; '; end if;
     select * into r from emergencia_jugador where jugador_id = v_a;
     if r.telefono_adulto is distinct from '341 555-0000' then txt := txt || 'no recortó el teléfono; '; end if;
     if r.alergias is not null then txt := txt || 'texto vacío no quedó NULL; '; end if;
-    if r.alertas <> array['asma', 'epilepsia'] then txt := txt || 'alertas: ' || r.alertas::text || '; '; end if;
+    if r.alertas <> array['asma', 'epilepsia_convulsiones'] then txt := txt || 'alertas: ' || r.alertas::text || '; '; end if;
     if r.actualizado_por <> v_pa then txt := txt || 'no selló actualizado_por; '; end if;
     -- Reimportar pisa lo anterior.
     perform importar_emergencias(jsonb_build_object('plantelId', v_u17, 'filas', jsonb_build_array(
