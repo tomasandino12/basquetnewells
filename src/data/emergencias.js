@@ -7,16 +7,16 @@ import { LIMITE } from './limites.js';
 
 // Las casillas de "¿Ha sufrido alguna de estas afecciones?" del formulario
 // del club, con el código que guarda la base. El mismo orden y los mismos
-// códigos que el check de 0059: tests/contratoEmergencia.test.js los compara.
+// códigos que el check de 0065: tests/contratoEmergencia.test.js los compara.
 export const AFECCIONES = [
   ['desmayos', 'Desmayos'],
-  ['taquicardia', 'Taquicardia'],
-  ['convulsiones', 'Convulsiones'],
-  ['epilepsia', 'Epilepsia'],
-  ['meningitis', 'Meningitis'],
-  ['diabetes', 'Diabetes'],
-  ['perdida_conocimiento', 'Pérdida de conocimiento traumática'],
   ['asma', 'Asma'],
+  ['diabetes', 'Diabetes'],
+  ['epilepsia_convulsiones', 'Epilepsia / convulsiones'],
+  ['cardiaco', 'Problema cardíaco'],
+  ['alergia_grave', 'Alergia grave'],
+  ['meningitis', 'Meningitis'],
+  ['perdida_conocimiento', 'Pérdida de conocimiento traumática'],
 ];
 
 
@@ -25,6 +25,18 @@ const CODIGO_POR_ETIQUETA = new Map([
   ...AFECCIONES.map(([codigo, etiqueta]) => [sinAcentos(etiqueta), codigo]),
   // Forms puede cortar la etiqueta larga al exportar.
   ['perdida de conocimiento', 'perdida_conocimiento'],
+  // Cómo se llamaban las casillas en 2026 y variantes probables del texto de
+  // 2027: así una planilla vieja o una etiqueta escrita algo distinta no se
+  // pierde. Epilepsia y convulsiones son una sola afección desde 2027.
+  ['taquicardia', 'cardiaco'],
+  ['cardiaco', 'cardiaco'],
+  ['problemas cardiacos', 'cardiaco'],
+  ['convulsiones', 'epilepsia_convulsiones'],
+  ['epilepsia', 'epilepsia_convulsiones'],
+  ['epilepsia/convulsiones', 'epilepsia_convulsiones'],
+  ['epilepsia o convulsiones', 'epilepsia_convulsiones'],
+  ['alergia', 'alergia_grave'],
+  ['alergias graves', 'alergia_grave'],
 ]);
 
 /**
@@ -36,6 +48,7 @@ export function leerAfecciones(texto) {
   const alertas = [];
   const desconocidas = [];
   for (const parte of String(texto ?? '').split(/[,;]/).map(sinAcentos).filter(Boolean)) {
+    if (parte === 'ninguna') continue; // casilla "Ninguna" = lista vacía, no es una afección desconocida
     const codigo = CODIGO_POR_ETIQUETA.get(parte);
     if (!codigo) desconocidas.push(parte);
     else if (!alertas.includes(codigo)) alertas.push(codigo);

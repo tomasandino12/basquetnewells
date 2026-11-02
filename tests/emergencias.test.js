@@ -58,6 +58,15 @@ test('afecciones de Forms a la lista cerrada', () => {
   assert.equal(leerAfecciones(AFECCIONES.map(([, e]) => e).join(', ')).alertas.length, 8);
 });
 
+test('lista 2027: epilepsia y convulsiones son una sola; cardíaco y alergia grave entran', () => {
+  assert.deepEqual(leerAfecciones('Epilepsia / convulsiones, Problema cardíaco, Alergia grave').alertas,
+    ['epilepsia_convulsiones', 'cardiaco', 'alergia_grave']);
+  // Etiquetas de 2026: se convierten, y las dos de epilepsia no se duplican.
+  assert.deepEqual(leerAfecciones('Taquicardia, Convulsiones, Epilepsia').alertas,
+    ['cardiaco', 'epilepsia_convulsiones']);
+  assert.deepEqual(leerAfecciones('Ninguna').alertas, []);
+});
+
 test('afección desconocida avisa y no se guarda', () => {
   const r = leerAfecciones('Asma, Gripe');
   assert.deepEqual(r.alertas, ['asma']);
@@ -125,7 +134,8 @@ test('el teléfono escrito a mano se vuelve un link para llamar', () => {
 });
 
 test('las alertas se muestran con su etiqueta y en el orden de la lista', () => {
-  assert.deepEqual(etiquetasDeAlertas(['asma', 'epilepsia']), ['Epilepsia', 'Asma']);
+  assert.deepEqual(etiquetasDeAlertas(['alergia_grave', 'epilepsia_convulsiones', 'asma']),
+    ['Asma', 'Epilepsia / convulsiones', 'Alergia grave']);
   assert.deepEqual(etiquetasDeAlertas([]), []);
   assert.deepEqual(etiquetasDeAlertas(undefined), []);
 });

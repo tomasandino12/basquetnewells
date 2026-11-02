@@ -7,11 +7,27 @@ import { AFECCIONES } from '../src/data/emergencias.js';
 // la seguridad de la tabla, sólo en el SQL. Si alguien cambia un lado, falla.
 const sql = readFileSync('supabase/migrations/0059_temporada_y_emergencia.sql', 'utf8').replace(/\r\n/g, '\n');
 
+// La lista de 2027 reemplazó a la de 0059 (que queda como historia aplicada).
+const sql65 = readFileSync('supabase/migrations/0065_afecciones_2027.sql', 'utf8').replace(/\r\n/g, '\n');
+
 test('afecciones iguales en SQL y JS', () => {
-  const m = /alertas text\[\] not null default '\{\}' check \(alertas <@ array\[([\s\S]*?)\]::text\[\]\)/.exec(sql);
+  const m = /add constraint emergencia_jugador_alertas_check\s+check \(alertas <@ array\[([\s\S]*?)\]::text\[\]\)/.exec(sql65);
   assert.ok(m, 'no encontré el check de alertas');
   const enBase = [...m[1].matchAll(/'(\w+)'/g)].map((x) => x[1]);
   assert.deepEqual(enBase, AFECCIONES.map(([codigo]) => codigo));
+});
+
+test('0065 convierte las alertas viejas antes de poner el check nuevo', () => {
+  const suelta = sql65.indexOf('drop constraint emergencia_jugador_alertas_check');
+  const convierte = sql65.indexOf('update emergencia_jugador');
+  const pone = sql65.indexOf('add constraint emergencia_jugador_alertas_check');
+  assert.ok(suelta > 0 && convierte > suelta && pone > convierte, 'orden: soltar check, convertir, poner check');
+  // El trigger de sellado pisa actualizado_por con NULL en una migración.
+  assert.ok(sql65.indexOf('disable trigger emergencia_sellar') < convierte);
+  assert.ok(sql65.lastIndexOf('enable trigger emergencia_sellar') > pone);
+  for (const [viejo, nuevo] of [['taquicardia', 'cardiaco'], ['convulsiones', 'epilepsia_convulsiones'], ['epilepsia', 'epilepsia_convulsiones']]) {
+    assert.match(sql65, new RegExp(`when '${viejo}' then '${nuevo}'`), viejo);
+  }
 });
 
 test('confirmar_pases inserta la pertenencia nueva antes de cerrar las viejas', () => {
