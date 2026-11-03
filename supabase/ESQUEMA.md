@@ -1,11 +1,21 @@
 # ESQUEMA.md — Modelo de datos
 
-Estado al día de la migración `0019_nombre_y_categorias.sql`, más la sección de
-escalones de fuerza de `0023_escalones_fuerza.sql`, el inventario de
-`0026_material.sql`, la cuenta de jugador de `0029` y `0030` y los errores del
-cliente de `0031_error_cliente.sql` y las jugadas de `0035_jugadas.sql`. Las tablas del plan físico de 0020–0022
-todavía no están documentadas acá (ver la Tarea 7 del
-plan de import), y `recurso`/`envio_recurso`/`apertura_recurso` (0009, 0033, 0034) tampoco tienen sección propia todavía.
+**Este archivo está desactualizado.** El detalle llega hasta la migración
+`0019_nombre_y_categorias.sql`, más la sección de escalones de fuerza de
+`0023_escalones_fuerza.sql`, el inventario de `0026_material.sql`, la cuenta de
+jugador de `0029` y `0030`, los errores del cliente de `0031_error_cliente.sql` y
+las jugadas de `0035_jugadas.sql`. La última migración es `0065`.
+
+Sin sección propia todavía (la fuente de verdad es la migración):
+- plan físico, 0020–0022;
+- `recurso`/`envio_recurso`/`apertura_recurso`, 0009, 0033 y 0034;
+- temporada y datos de emergencia (`emergencia_jugador`), 0059, con la lista de
+  afecciones de 0065;
+- estado de inscripción desde Google (`conexion_google`, `estado_inscripcion`), 0060;
+- destinos de formularios del portal, 0061–0063; asistencia y lesiones, 0064.
+
+Las reglas de seguridad de 0059 y 0060 las vigilan `tests/contratoEmergencia.test.js`
+y `tests/contratoEstadoInscripcion.test.js`.
 
 - `recurso`: desde 0042, quien lo creó puede borrarlo (`recurso_borrar_lo_propio`); se lleva puesto `envio_recurso` y `apertura_recurso` por `on delete cascade`.
 

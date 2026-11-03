@@ -9,6 +9,10 @@
 | Panorama agregado y Profes | no | sí | sí, con el botón **Coordinar** |
 | Habilitar, asignar, quitar | nunca | a otros, en su club | a otros, en su club |
 | Finanzas (rubros y movimientos, 0054) | nada | carga, edita y borra (borrado lógico, con rastro) | igual que el coordinador |
+| Datos de emergencia (0059) | los de sus categorías asignadas: ve, importa y corrige; no borra | sólo lectura, de todo el club (Profes → *Datos de emergencia*) | sus categorías, y todo el club en lectura |
+| Cambio de temporada (0059) | no | abre la temporada, asigna profes y confirma los pases | sí |
+| Estado de inscripción desde Google (0060) | no | ve el estado y rota o desconecta la conexión | sí |
+| Asistencia y lesiones (0064) | sus categorías asignadas | no la lee | sus categorías asignadas |
 
 Todo esto lo hace cumplir la base (RLS), no la interfaz. Detalle en
 `supabase/ESQUEMA.md`.
@@ -40,7 +44,12 @@ Lo que **no** se hace desde la app, a propósito:
 - Darle el rol de entrenador a alguien que ya es coordinador (ni a uno mismo).
 - Sacar a alguien del club entero.
 
-## Estado de producción al 2026-09-13
+## Estado de producción al 2026-09-13 (histórico)
+
+> **Histórico, no es el estado de hoy.** Es la foto que se tomó antes de escribir
+> 0017, cuando había un solo club y tres cuentas. Hoy hay más migraciones (hasta
+> 0065) y la tabla de abajo está vencida: para saber quién es qué, corré la
+> consulta del paso 1.
 
 Diagnóstico corrido antes de escribir 0017:
 
@@ -277,9 +286,12 @@ consultas que esté vigente**: si cambiás el formulario (editándolo o marcando
 como "Quiero jugar"), el QR ya impreso sigue funcionando. Si no hay ninguno
 abierto, la persona ve un mensaje claro con el enlace al portal.
 
-**El cartel está como BORRADOR ("no imprimir hasta definir el dominio")**: el QR
-lleva escrito el dominio, y si el portal cambia de dominio los carteles impresos
-quedan apuntando al viejo. Antes de imprimir, escaneá el cartel con un celular.
+**El dominio ya está definido: `basquetnewells.com.ar`.** El cartel guardado en
+`docs/cartel-qr/` puede seguir con la franja de BORRADOR de cuando no lo estaba:
+antes de imprimir, regeneralo con el dominio definitivo (`npm run cartel-qr --
+https://basquetnewells.com.ar/consultas`, ver su `LEEME.md`) y escaneá el cartel
+con un celular. El QR lleva escrito el dominio: un cartel impreso con otro
+quedaría apuntando al viejo.
 
 ### Logos de sponsors
 

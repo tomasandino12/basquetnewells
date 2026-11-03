@@ -71,6 +71,28 @@ test('empujar_estado_google es la única función ejecutable por anon', () => {
   }
 });
 
+test('las funciones definer fijan el search_path', () => {
+  const definer = [...sql.matchAll(/create function (\w+)\([^)]*\)[\s\S]*?as \$fn\$/g)].filter((m) => /security definer/.test(m[0]));
+  assert.ok(definer.length >= 5, 'esperaba al menos cinco funciones definer');
+  for (const m of definer) assert.match(m[0], /set search_path = ''/, m[1]);
+});
+
+test('lo que lee o administra la conexión exige ser coordinador del club', () => {
+  for (const f of ['rotar_conexion_google', 'desconectar_google', 'estado_inscripcion_del_club', 'conexion_google_del_club']) {
+    const cuerpo = new RegExp(`create function ${f}\\([\\s\\S]*?\\$fn\\$;`).exec(sql)?.[0] ?? '';
+    assert.match(cuerpo, /if not public\.es_coordinador_de\(p_club_id\)/, f);
+  }
+});
+
+test('empujar_estado_google valida el token antes de tocar una tabla', () => {
+  const cuerpo = /create function empujar_estado_google\([\s\S]*?\$fn\$;/.exec(sql)[0];
+  const valida = cuerpo.indexOf("p_token !~ '^[A-Za-z0-9_-]{43}$'");
+  const busca = cuerpo.indexOf('from public.conexion_google');
+  assert.ok(valida > 0 && busca > valida, 'el formato del token se chequea primero');
+  // El token se guarda hasheado: nunca se compara en claro.
+  assert.match(cuerpo, /token_hash = encode\(extensions\.digest\(p_token, 'sha256'\), 'hex'\)/);
+});
+
 test('el envío rechaza textos con un DNI', () => {
   assert.equal([...sql.matchAll(/~ '\[0-9\]\{7\}'/g)].length, 2);
   assert.match(sql, /raise exception 'PARECE_DNI'/);
