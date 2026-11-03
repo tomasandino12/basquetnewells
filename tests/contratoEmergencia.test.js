@@ -68,6 +68,29 @@ test('la emergencia nunca se guarda en el celular', () => {
   }
 });
 
+test('el cliente no puede cambiar a quién pertenece una emergencia', () => {
+  const m = /grant update \(([^)]*)\) on emergencia_jugador to authenticated;/.exec(sql);
+  assert.ok(m, 'no encuentro el grant de update');
+  assert.doesNotMatch(m[1], /\b(jugador_id|club_id)\b/);
+});
+
+test('escribir una emergencia exige poder escribir el plantel; el coordinador sólo lee', () => {
+  const politica = (nombre) => new RegExp(`create policy ${nombre} on emergencia_jugador[\\s\\S]*?;`).exec(sql)?.[0] ?? '';
+  assert.match(politica('emergencia_ver'), /es_coordinador_de/);
+  for (const nombre of ['emergencia_cargar', 'emergencia_corregir']) {
+    const p = politica(nombre);
+    assert.match(p, /puede_escribir_plantel/, nombre);
+    assert.doesNotMatch(p, /es_coordinador_de/, nombre);
+  }
+});
+
+test('las funciones del cambio de temporada solo las abre el coordinador', () => {
+  for (const f of ['abrir_temporada', 'pases_de_temporada', 'confirmar_pases']) {
+    const cuerpo = new RegExp(`create function ${f}\\([\\s\\S]*?\\$fn\\$;`).exec(sql)?.[0] ?? '';
+    assert.match(cuerpo, /if not public\.es_coordinador_de\(p_club_id\)/, f);
+  }
+});
+
 test('la hoja de emergencias se vacía al cerrar', () => {
   for (const a of ['src/ui/pantallas/emergencias.js', 'src/ui/pantallas/importarEmergencias.js']) {
     assert.match(readFileSync(a, 'utf8'), /alCerrar: vaciar/, a);
