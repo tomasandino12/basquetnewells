@@ -43,6 +43,7 @@ import { html, crudo } from '../html.js';
 import { renderResponsables } from './responsablesJugador.js';
 import { abrirEmergencias } from './emergencias.js';
 import { $ } from '../dom.js';
+import { iniciales } from './plantel.js';
 import { avisoDeError, textoDeError, mensajeAlGuardar, mostrarAviso, avisoInline } from '../errores.js';
 import { renderAccesoDeJugador } from './aprobarJugador.js';
 import {
@@ -415,8 +416,13 @@ export async function renderFicha() {
   const categorias = pertenencias.map((p) => p.categoria).filter(Boolean);
   contenedor().innerHTML = `
     <div class="ficha-top">
-      <div class="nom">${escaparHtml(jugador.nombreLimpio)}</div>
-      <div class="sub">${categorias.length ? escaparHtml(categorias.join(' · ')) : 'Sin categoría vigente'}</div>
+      <div class="ficha-top-id">
+        <div class="av grande" aria-hidden="true">${escaparHtml(iniciales(jugador.nombreLimpio))}</div>
+        <div>
+          <div class="nom">${escaparHtml(jugador.nombreLimpio)}</div>
+          <div class="sub">${categorias.length ? escaparHtml(categorias.join(' · ')) : 'Sin categoría vigente'}</div>
+        </div>
+      </div>
       <div class="ficha-top-cab">
         <div class="datos-ficha" id="ficha-cabecera-datos">
           ${dato('Edad', edadEnAnios(jugador.fechaNacimiento), 'años')}
