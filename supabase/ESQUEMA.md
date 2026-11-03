@@ -327,7 +327,7 @@ El profe toma asistencia y marca lesiones como períodos con alta; la app arma l
 
 ## Políticas RLS
 
-Hasta 0015 la autorización era sólo por club: quien tenía una fila en `miembro_club` veía **todos los planteles**. Desde 0016 pasa por la asignación, y **lectura y escritura son ejes separados**. Desde 0018 el coordinador no lee datos individuales.
+Hasta 0015 la autorización era sólo por club: quien tenía una fila en `miembro_club` veía **todos los planteles**. Desde 0016 pasa por la asignación, y **lectura y escritura son ejes separados**. Desde 0018 el coordinador no lee datos individuales, con una excepción deliberada: las fichas de emergencia (`emergencia_jugador`, policy `emergencia_ver` de 0059), que ve en sólo lectura.
 
 | | Entrenador | Coordinador (sólo) | Los dos roles |
 |---|---|---|---|

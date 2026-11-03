@@ -37,7 +37,7 @@ Flujo de dependencias: **pantalla → `repositorio.js` → `repos/<área>` → `
 - Refactor y feature no van en el mismo commit.
 
 ## Reglas del proyecto
-- **La seguridad la impone RLS, no la interfaz.** Roles: entrenador (sus planteles asignados), coordinador (agregados del club), o ambos.
+- **La seguridad la impone RLS, no la interfaz.** Roles: entrenador (sus planteles asignados), coordinador (agregados del club, más las fichas de emergencia en sólo lectura: decisión de Tomás 03/11, policy `emergencia_ver` de 0059), o ambos. Fuera de las emergencias, el coordinador puro no lee datos individuales de menores (0018).
 - **Una migración aplicada no se edita** (lo bloquea un hook): se agrega una nueva. Tabla nueva = `revoke all` + `grant` mínimo por columna + RLS + trigger de sellado. Patrón: `0026_material.sql`. Skill `/nueva-migracion`.
 - `NULL` es "no se sabe", nunca `0`. Un jugador es único por club, no por categoría.
 - **Texto que escribe un usuario**: su largo va en `src/data/limites.js` (y `maxlength` en el campo) y en un `check (char_length(...))` de la migración; `tests/contratoLimites.test.js` compara los dos. **Números tecleados**: siempre `decimalEstricto` de `src/data/numeros.js`, nunca `Number(texto)` (`Number("1e2")` da 100).
