@@ -3,10 +3,11 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
-// La app vieja se sirve sin armado desde /public y /src. Esto se arma aparte
-// y sale a `web/dist`, que nada despliega todavía: mudar una pantalla a React
-// es una decisión de un paso posterior, no un efecto de esta carpeta.
+// La app vieja se sirve sin armado desde /public y /src. Esto se arma en el deploy
+// de Vercel y se publica aparte, en /nueva, para que Tomás vaya viendo la mudanza
+// (vercel.json). Mudar una pantalla de la app vieja a React sigue siendo un paso aparte.
 export default defineConfig({
+  base: '/nueva/',
   plugins: [react(), tailwindcss()],
   // Que /src/data de la app vieja (lógica pura) se pueda importar tal cual.
   // fileURLToPath y no .pathname: en Windows .pathname da «/C:/…» y el atajo no anda.

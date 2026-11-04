@@ -1,8 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd web && npm ci",
+  "buildCommand": "cd web && npm run build && cd .. && rm -rf nueva && mv web/dist nueva && rm -rf web",
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/", "destination": "/public/portal.html" },
     { "source": "/app", "destination": "/public/index.html" },
+    { "source": "/nueva", "destination": "/nueva/index.html" },
     { "source": "/consultas", "destination": "/public/consultas.html" },
     { "source": "/robots.txt", "destination": "/public/robots.txt" },
     { "source": "/sitemap.xml", "destination": "/public/sitemap.xml" },
@@ -16,6 +20,8 @@
   "headers": [
     { "source": "/", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
     { "source": "/app", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/nueva", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/nueva/index.html", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
     { "source": "/consultas", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
     { "source": "/public/consultas.html", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
     { "source": "/public/index.html", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },

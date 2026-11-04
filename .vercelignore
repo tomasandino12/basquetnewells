@@ -15,12 +15,14 @@ tests/
 backups/
 scripts/
 google/
-web/
+# web/ se sube para armarse en el deploy (vercel.json), sin lo que se instala ni lo armado en la compu.
+web/node_modules/
+web/dist/
 *.md
 
 # Ni el manifiesto de npm ni sus versiones: el navegador usa public/vendor/.
-package.json
-package-lock.json
+/package.json
+/package-lock.json
 .env
 .env.*
 .claude/

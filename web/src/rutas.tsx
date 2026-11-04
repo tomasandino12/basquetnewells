@@ -33,5 +33,5 @@ export const rutas: RouteObject[] = [
   { path: '*', element: <Navigate to="/" replace /> },
 ];
 
-// Hash y no ruta limpia: web/ todavía no se publica y un servidor estático no sabe reenviar rutas.
+// Hash y no ruta limpia: se publica estático en /nueva y así no hace falta reenviar cada ruta.
 export const crearRouter = () => createHashRouter(rutas);
