@@ -185,6 +185,31 @@
 .chip.alerta{background:var(--primario);color:var(--sobre-club)}
 .flecha{color:var(--texto-2);font-size:var(--fs-170);line-height:1}
 
+/* ---- PLANTEL: tarjeta compacta de jugador ----
+   Dos por fila en el celular y tantas como entren en la compu. Sólo datos de
+   básquet: altura, peso, asistencia y lesión. */
+.plantel-acciones{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-3)}
+.plantel-acciones .btn{width:auto}
+.plantel-grilla{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}
+.jug-c{
+  display:grid;grid-template-columns:auto minmax(0,1fr);align-content:start;align-items:center;
+  gap:var(--sp-2) var(--sp-2);background:var(--sup);padding:var(--sp-3);border-radius:var(--r);
+  box-shadow:var(--sombra);width:100%;text-align:left;min-height:var(--tap);position:relative;
+  transition:transform var(--dur-1) var(--ease-salida);
+}
+.jug-c:active{transform:scale(.985)}
+.jug-c-nom{font-weight:600;font-size:var(--fs-135);line-height:1.15;overflow-wrap:anywhere}
+.jug-c-datos{grid-column:1 / -1;display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-1) var(--sp-2);font-family:var(--ff-mono);font-size:var(--fs-115);color:var(--texto-2)}
+.jug-c-datos:empty{display:none}
+.jug-c-dato b{color:var(--texto);font-weight:600}
+@media (min-width:40rem){
+  .plantel-grilla{grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:var(--sp-3)}
+  .jug-c-nom{font-size:var(--fs-145)}
+}
+@media (hover:hover){
+  .jug-c:hover{box-shadow:var(--sombra-alta)}
+}
+
 /* ---- datos de la ficha ---- */
 .datos-ficha{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-3)}
 .dato{flex:1 1 7rem;background:var(--sup-1);border-radius:var(--r-m);padding:var(--sp-2) var(--sp-3)}
@@ -196,6 +221,19 @@
 .dato .v.sin{color:var(--gris-osc);font-style:italic;font-size:var(--fs-135)}
 .ficha-top{background:var(--negro);color:var(--sobre-oscuro);padding:var(--sp-4)}
 .ficha-top-cab{display:flex;align-items:center;gap:var(--sp-1)}
+.ficha-top-acciones{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-top:var(--sp-3)}
+.ficha-top-acciones .btn{width:auto}
+.datos-ficha:empty{display:none}
+/* Acceso y familia: trámites del alta, al final y sin competir con los datos de básquet. */
+.ficha-tramites:empty,.ficha-tramites > :empty{display:none}
+/* En compu cada pestaña reparte sus secciones en columnas en vez de una pila de 1400px de alto. */
+@media (min-width:64rem){
+  .ficha-top{padding:var(--sp-5) var(--sp-6)}
+  #p-ficha [role="tabpanel"]:not([hidden]){
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(26rem,1fr));gap:0 var(--sp-6);align-items:start;
+  }
+  #p-ficha [role="tabpanel"] > :empty{display:none}
+}
 .ficha-top .nom{flex:1;min-width:0;font-family:var(--ff-titulo);font-size:var(--fs-titulo);font-weight:700;line-height:1;text-transform:uppercase}
 .ficha-top .sub{font-size:var(--fs-115);color:var(--gris-osc);margin-top:var(--sp-2);font-family:var(--ff-mono)}
 /* El lápiz y el tacho van sobre --negro: heredan --gris-osc en vez de
@@ -1121,6 +1159,11 @@ svg.pz.pz-icono{width:2.75rem;height:1.375rem;display:inline-block;vertical-alig
 .asis-tarj[data-estado="presente"]{border-color:var(--sube)}
 .asis-tarj[data-estado="presente"] .asis-estado{background:var(--sube-fondo);color:var(--sube)}
 .asis-tarj[data-estado="ausente"],.asis-tarj[data-estado="justificada"]{border-style:dashed}
+
+/* En pantallas anchas las tarjetas se reparten solas en las columnas que entren. */
+@media (min-width:40rem){
+  .asis-grilla{grid-template-columns:repeat(auto-fill,minmax(14rem,1fr))}
+}
 
 /* Barra fija: cuántos vinieron y Guardar. Va dentro de .pie-fijo. */
 #asis-aviso:empty{display:none}

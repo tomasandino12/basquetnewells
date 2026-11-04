@@ -371,6 +371,10 @@
      (hoy, el editor de jugadas). La cabecera sigue alineada a --max-ancho: en
      estas pantallas el título queda un poco más adentro que la barra, y se acepta. */
   .cuerpo > .pant.ancha.on{max-width:none}
+  /* .pant.amplia: lista de jugadores, ficha y asistencia. Son pantallas de
+     tarjetas que en compu piden más columnas, no una columna de 832px con
+     blanco a los lados. Tope a 80rem para que el ojo no recorra 1400px. */
+  .cuerpo > .pant.amplia.on{max-width:80rem}
   /* Título y chips arrancan en el mismo margen izquierdo que el contenido: el
      borde de la columna centrada (la misma cuenta que .pant.on) más el
      padding de .pad. Antes centraban sin ese padding y el título, empujado

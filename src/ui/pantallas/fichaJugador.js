@@ -8,6 +8,7 @@ import {
   obtenerEntrenamientos, obtenerLesionesDelPlantel,
 } from '../../data/repositorio.js';
 import { asistenciaDelJugador, textoDeLesion } from '../../data/asistencia.js';
+import { datosDeTarjeta } from '../../data/tarjetaJugador.js';
 import {
   serieDeTiroDelJugador, ultimaBateriaDeJugador, ultimaBateriaConDatosDeJugador, historialDePartidosDelJugador,
   ejeComun, compararPorcentajes,
@@ -65,13 +66,35 @@ export function abrirFicha(id) {
 }
 
 function dato(k, valor, unidad) {
-  const sin = valor == null;
   return `
     <div class="dato">
       <div class="k">${escaparHtml(k)}</div>
-      <div class="v ${sin ? 'sin' : ''}">${sin ? 'sin medir' : escaparHtml(String(valor)) + (unidad ? `<small> ${unidad}</small>` : '')}</div>
+      <div class="v">${escaparHtml(String(valor))}${unidad ? `<small> ${unidad}</small>` : ''}</div>
     </div>
   `;
+}
+
+// Lo que el encabezado muestra del jugador. Se completa a medida que llegan
+// las mediciones y la asistencia; hasta entonces, sólo la edad.
+let cabecera = { jugador: null, medicion: null, asistencia: null };
+
+/**
+ * Edad, altura, peso y asistencia, nada más. Lo que no se sabe no se dibuja:
+ * al profe no le sirve un cartel de "sin medir" y los datos de básquet entran
+ * en una sola fila.
+ */
+function pintarDatosCabecera() {
+  const el = $('ficha-cabecera-datos');
+  if (!el || !cabecera.jugador) return;
+  const d = datosDeTarjeta(cabecera);
+  const edad = edadEnAnios(cabecera.jugador.fechaNacimiento);
+  el.innerHTML = [
+    edad == null ? '' : dato('Edad', edad, 'años'),
+    d.alturaCm == null ? '' : dato('Altura', d.alturaCm, 'cm'),
+    d.pesoKg == null ? '' : dato('Peso', d.pesoKg, 'kg'),
+    d.pctAsistencia == null ? '' : dato('Asistencia', d.pctAsistencia, '%'),
+    d.lesionado ? '<div class="dato"><div class="k">Estado</div><div class="v">Lesionado</div></div>' : '',
+  ].join('');
 }
 
 /**
@@ -413,23 +436,29 @@ export async function renderFicha() {
   }
 
   const categorias = pertenencias.map((p) => p.categoria).filter(Boolean);
+  cabecera = { jugador, medicion: null, asistencia: null };
+  // El acceso y la familia son trámites del alta, no del entrenamiento: van
+  // al final, debajo de los datos de básquet.
   contenedor().innerHTML = `
     <div class="ficha-top">
       <div class="nom">${escaparHtml(jugador.nombreLimpio)}</div>
-      <div class="sub">${categorias.length ? escaparHtml(categorias.join(' · ')) : 'Sin categoría vigente'}</div>
+      ${categorias.length ? `<div class="sub">${escaparHtml(categorias.join(' · '))}</div>` : ''}
       <div class="ficha-top-cab">
-        <div class="datos-ficha" id="ficha-cabecera-datos">
-          ${dato('Edad', edadEnAnios(jugador.fechaNacimiento), 'años')}
-        </div>
+        <div class="datos-ficha" id="ficha-cabecera-datos"></div>
         ${botonIcono({ id: 'btn-ficha-nacimiento', icono: ICONO.lapiz, etiqueta: 'Editar fecha de nacimiento' })}
       </div>
-      <button class="btn chico" id="btn-ficha-emergencia">Datos de emergencia</button>
-      <button class="btn sec chico" id="btn-ficha-sacar">Sacar del plantel</button>
+      <div class="ficha-top-acciones">
+        <button class="btn chico" id="btn-ficha-emergencia">Datos de emergencia</button>
+        <button class="btn sec chico" id="btn-ficha-sacar">Sacar del plantel</button>
+      </div>
     </div>
-    <div class="pad" id="ficha-acceso"></div>
-    <div class="pad" id="ficha-familia"></div>
     ${pestanasHtml(pestanaAlEntrar(ultimaPestana))}
+    <div class="pad ficha-tramites">
+      <div id="ficha-acceso"></div>
+      <div id="ficha-familia"></div>
+    </div>
   `;
+  pintarDatosCabecera();
   iniciarPestanas();
 
   $('btn-ficha-nacimiento').addEventListener('click', () => abrirEditarNacimiento(jugador));
@@ -550,8 +579,7 @@ function abrirEditarNacimiento(jugador) {
     }
 
     jugador.fechaNacimiento = valor;
-    const cabecera = $('ficha-cabecera-datos');
-    if (cabecera) cabecera.innerHTML = dato('Edad', edadEnAnios(valor), 'años');
+    pintarDatosCabecera();
     cerrarHoja();
     toast(valor ? 'Fecha de nacimiento guardada' : 'Fecha de nacimiento borrada');
   });
@@ -671,6 +699,8 @@ async function cargarAsistencia(plantelId, idJugador) {
   // La ficha pudo cambiar de jugador mientras esto cargaba.
   if (idJugador !== jugadorId || !sec('asistencia')) return;
   sec('asistencia').innerHTML = seccionAsistencia(datos);
+  cabecera.asistencia = datos;
+  pintarDatosCabecera();
 }
 
 async function cargarCargas(clubId, plantelId, idJugador) {
@@ -752,6 +782,10 @@ function renderCorporal(clubId, idJugador, mediciones) {
   const cont = sec('corporal');
   if (!cont) return;
   const ordenadas = ordenarMediciones(mediciones);
+  if (cabecera.jugador?.id === idJugador) {
+    cabecera.medicion = vigentePorCampo(ordenadas);
+    pintarDatosCabecera();
+  }
 
   cont.innerHTML = `
     ${vigentesHtml(ordenadas)}

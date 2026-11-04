@@ -1,6 +1,6 @@
 import {
   obtenerJugadoresDelPlantel, obtenerMedicionesCorporalesDelClub, obtenerSolicitudesDelPlantel,
-  obtenerMisionesDeEquipo,
+  obtenerMisionesDeEquipo, obtenerEntrenamientos, obtenerLesionesDelPlantel,
 } from '../../data/repositorio.js';
 import { vigentePorJugador } from '../../data/antropometria.js';
 import { obtenerClubActual, obtenerPlantelActivo, obtenerPlanteles } from '../sesion.js';
@@ -16,6 +16,13 @@ import { logrosDelEquipo } from '../../data/misiones.js';
 import { bloqueLogros } from '../componentes/logrosDelEquipo.js';
 import { cargarBloqueMisiones } from './misionesAcceso.js';
 import { abrirAsistencia } from './asistencia.js';
+import { asistenciaDelJugador } from '../../data/asistencia.js';
+import { datosDeTarjeta, claseDeNivel } from '../../data/tarjetaJugador.js';
+import { hoyLocal } from '../../data/antropometria.js';
+import { html } from '../html.js';
+
+// Un plantel es de una temporada: todo lo que tiene entrenamientos es de ésta.
+const DESDE_SIEMPRE = '2000-01-01';
 
 const contenedor = () => $('plantel-contenido');
 
@@ -39,28 +46,24 @@ export function iniciales(nombreLimpio) {
   return ((apellido[0] ?? '') + (nombre[0] ?? '')).toUpperCase() || '?';
 }
 
-/** NULL = "sin medir", nunca cero (Etapa 3, Decisión 8). */
-export function textoMedicion(vigente) {
-  if (vigente == null) return 'Sin medir';
-  const altura = vigente.alturaCm == null ? null : `${vigente.alturaCm.valor} cm`;
-  const peso = vigente.pesoKg == null ? null : `${vigente.pesoKg.valor} kg`;
-  if (altura == null && peso == null) return 'Sin medir';
-  return [altura ?? 'altura sin medir', peso ?? 'peso sin medir'].join(' · ');
-}
-
-function filaJugador(j, medicion) {
-  const sinMedir = medicion == null || (medicion.alturaCm == null && medicion.pesoKg == null);
-  return `
-    <button class="jug" data-jugador="${j.id}">
-      <div class="av">${escaparHtml(iniciales(j.nombreLimpio))}</div>
-      <div>
-        <div class="nom">${escaparHtml(j.nombreLimpio)}</div>
-        <div class="det">${escaparHtml(textoMedicion(medicion))}</div>
-      </div>
-      <div class="der">
-        ${sinMedir ? '<span class="chip sin">sin medir</span>' : ''}
-        <span class="flecha">›</span>
-      </div>
+/**
+ * Una tarjeta por chico, sólo con datos de básquet. Lo que no se sabe (sin
+ * medir, sin asistencia tomada) no se dibuja: al profe no le sirve un cartel de
+ * "sin dato" y la lista queda corta para no tener que scrollear.
+ */
+function tarjetaJugador(j, medicion, asistencia) {
+  const d = datosDeTarjeta({ medicion, asistencia });
+  const clase = claseDeNivel(d.nivelAsistencia);
+  return html`
+    <button class="jug-c" data-jugador="${j.id}">
+      <span class="av">${iniciales(j.nombreLimpio)}</span>
+      <span class="jug-c-nom">${j.nombreLimpio}</span>
+      <span class="jug-c-datos">
+        ${d.alturaCm == null ? '' : html`<span class="jug-c-dato"><b>${d.alturaCm}</b> cm</span>`}
+        ${d.pesoKg == null ? '' : html`<span class="jug-c-dato"><b>${d.pesoKg}</b> kg</span>`}
+        ${d.pctAsistencia == null ? '' : html`<span class="chip ${clase ?? ''}" title="Asistencia a los entrenamientos">${d.pctAsistencia} % asist.</span>`}
+        ${d.lesionado ? html`<span class="chip baja">Lesionado</span>` : ''}
+      </span>
     </button>
   `;
 }
@@ -120,19 +123,25 @@ export async function renderPlantel() {
   let mediciones = [];
   let solicitudes = [];
   let logros = [];
+  let entrenamientos = [];
+  let lesiones = [];
   try {
     // Las mediciones van juntas con el plantel para poder marcar quién está
     // sin medir. Si sólo fallara esta consulta la lista igual se dibuja: es
     // preferible un plantel sin el detalle de altura que ningún plantel.
     // Los logros son un agregado, como las solicitudes: si no se pueden leer
     // el plantel se dibuja igual, sin ese bloque.
-    [jugadores, mediciones, solicitudes, logros] = await Promise.all([
+    // La asistencia de la tarjeta también es un agregado: sin ella, la
+    // tarjeta se dibuja sin ese chip.
+    [jugadores, mediciones, solicitudes, logros, entrenamientos, lesiones] = await Promise.all([
       obtenerJugadoresDelPlantel(club.id, plantel.id),
       obtenerMedicionesCorporalesDelClub(club.id).catch(() => []),
       obtenerSolicitudesDelPlantel(plantel.id).catch(() => []),
       obtenerMisionesDeEquipo(club.id, plantel.id)
         .then(({ previas, misiones }) => logrosDelEquipo(previas, misiones))
         .catch(() => null),
+      obtenerEntrenamientos(plantel.id, DESDE_SIEMPRE, hoyLocal()).catch(() => []),
+      obtenerLesionesDelPlantel(plantel.id).catch(() => []),
     ]);
   } catch (e) {
     $('plantel-estado').textContent = textoDeError(e, 'No se pudo cargar el plantel.');
@@ -154,10 +163,12 @@ export async function renderPlantel() {
       ${avisoDeSolicitudesHtml(solicitudes)}
       <div id="plantel-misiones"></div>
       <div class="eyebrow">${escaparHtml(plantel.categoria)} <span class="der">${jugadores.length} jugador${jugadores.length === 1 ? '' : 'es'}</span></div>
-      <div class="campo"><button class="btn chico" id="btn-asistencia">Tomar asistencia</button></div>
-      <div class="campo"><button class="btn sec chico" id="btn-historial-asistencia">Historial de asistencia</button></div>
-      <div class="campo"><button class="btn sec chico" id="btn-emergencias-plantel">Datos de emergencia</button></div>
-      <div class="lista-2col" id="plantel-lista">${jugadores.map((j) => filaJugador(j, porJugador.get(j.id) ?? null)).join('')}</div>
+      <div class="plantel-acciones">
+        <button class="btn chico" id="btn-asistencia">Tomar asistencia</button>
+        <button class="btn sec chico" id="btn-historial-asistencia">Historial de asistencia</button>
+        <button class="btn sec chico" id="btn-emergencias-plantel">Datos de emergencia</button>
+      </div>
+      <div class="plantel-grilla" id="plantel-lista">${jugadores.map((j) => tarjetaJugador(j, porJugador.get(j.id) ?? null, asistenciaDelJugador(entrenamientos, lesiones, j.id)).toString()).join('')}</div>
       ${logros ? bloqueLogros(logros) : ''}
     </div>
     <div class="pie-fijo"><button class="btn sec" id="btn-agregar-jugador">Agregar jugador a mano</button><button class="btn sec" id="btn-importar-inscriptos">Importar inscriptos</button><button class="btn sec" id="btn-importar-emergencias">Importar emergencias</button></div>
