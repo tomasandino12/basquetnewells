@@ -5,9 +5,11 @@ import { join } from 'node:path';
 
 /**
  * La mudanza a React convive con la app actual sin tocarla: lo nuevo vive en
- * web/, fuera de lo que el navegador carga (/public y /src), no se sube al
- * deploy y no cambia cómo se sirve la app. Si un test de acá falla, alguien
- * mezcló la mudanza con lo que ve la gente.
+ * web/, fuera de lo que el navegador carga (/public y /src). Desde el 04/11
+ * Vercel lo arma en cada deploy y lo publica aparte, en /nueva, para que Tomás
+ * vaya viendo los cambios (nadie usa la app todavía). La app vieja se sigue
+ * sirviendo igual. Si un test de acá falla, alguien mezcló la mudanza con lo
+ * que ve la gente.
  */
 
 const leer = (p) => readFileSync(p, 'utf8');
@@ -18,17 +20,27 @@ const archivos = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) 
   return e.isDirectory() ? archivos(p) : [p];
 });
 
-test('web/ queda afuera del deploy', () => {
+test('web/ se sube al deploy sin lo instalado ni lo armado en la compu', () => {
   const lineas = leer('.vercelignore').split(/\r?\n/).map((l) => l.trim());
-  assert.ok(lineas.includes('web/'), '.vercelignore tiene que listar web/');
+  assert.ok(!lineas.includes('web/'), 'web/ tiene que subirse: Vercel la arma');
+  for (const l of ['web/node_modules/', 'web/dist/', '/package.json', '/package-lock.json']) {
+    assert.ok(lineas.includes(l), `.vercelignore tiene que listar ${l}`);
+  }
+  assert.ok(!lineas.includes('package.json'), 'sin «/», package.json deja afuera también web/package.json');
 });
 
-test('el deploy sigue siendo estático: sin armado, sin framework, sin rutas hacia web/', () => {
+test('el deploy arma web/ y la publica solo en /nueva, sin dejar el código ni lo instalado', () => {
   const v = json('vercel.json');
-  for (const clave of ['buildCommand', 'outputDirectory', 'framework', 'installCommand']) {
-    assert.equal(v[clave], undefined, `vercel.json no debe fijar ${clave}`);
-  }
-  assert.ok(!JSON.stringify(v).includes('web/'), 'vercel.json no enruta hacia web/');
+  assert.equal(v.framework, undefined);
+  assert.equal(v.outputDirectory, '.', 'la app vieja se sirve desde la raíz (/public y /src)');
+  assert.equal(v.installCommand, 'cd web && npm ci');
+  assert.equal(v.buildCommand, 'cd web && npm run build && cd .. && rm -rf nueva && mv web/dist nueva && rm -rf web');
+  const destino = Object.fromEntries(v.rewrites.map((r) => [r.source, r.destination]));
+  assert.equal(destino['/'], '/public/portal.html');
+  assert.equal(destino['/app'], '/public/index.html');
+  assert.equal(destino['/nueva'], '/nueva/index.html');
+  assert.ok(!JSON.stringify(v.rewrites).includes('web/'), 'nada se sirve directo desde web/');
+  assert.match(leer('web/vite.config.ts'), /base: '\/nueva\/'/, 'lo armado tiene que pedir sus archivos en /nueva/');
 });
 
 test('la app vieja no carga nada de web/ ni de React', () => {
