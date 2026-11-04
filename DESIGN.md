@@ -272,6 +272,10 @@ abrirHoja({ titulo: jugador.nombre, cuerpo: html`<div class="tarj">…</div>` })
 
 **Pestañas internas** — `.pestanas` (`role="tablist"`) con un `.pest` por pestaña (`role="tab"`, `aria-selected`, `.on` con el filete del club abajo): partir una pantalla larga sin sumar ítems a la barra de abajo. Las usan RECURSOS y la ficha del jugador (Físico, Tiro, Partidos, Historia; reparto en `src/data/pestanasFicha.js`). Con `.fija` quedan pegadas arriba al bajar (`position:sticky` dentro de `.cuerpo`). No confundir con `.segmentado`, que elige una opción dentro de un formulario.
 
+**Piezas base en React (`web/`)** — la mudanza lleva estos tokens al tema de Tailwind en `web/src/estilos.css` (claro y `[data-tema='oscuro']`; `web/src/estilos.test.ts` los compara con este documento) y arma las piezas al estilo shadcn en `web/src/components/ui/`: `Boton` (principal, secundario, contorno), `Card`/`CardBoton`, `Hoja`, `Pestanas`, `Campo` (etiqueta, ayuda y error enlazados), `Aviso` (filete + ícono; el error es `role="alert"`), `Vacio`, `Cargando` (formas quietas, sin loop) y `FilaJugador`. Se ven todas en `web/index.html#piezas`, en los dos temas, con datos inventados.
+- **Fila de jugador (asistencia)**: se toca la fila entera y se pinta de `--club` (una capa con `opacity`, no se repinta la fila). Al ausente se le pregunta *Avisó / No avisó* y se le puede marcar *Lesión*. El número de camiseta es chico y de ancho fijo: el nombre manda, porque la camiseta cambia. Nunca lleva datos de coordinación (cuota al día, apto médico).
+- **Aspecto**: sin cajas dentro de cajas, sin etiquetas técnicas y sin decorado; lo que identifica es el nombre, el rojo del club y el filete. Un solo color de marca.
+
 ## Checklist para una pantalla o función nueva
 
 1. `npm run test:q` en verde: nada de colores literales, `var(--x)` inexistentes ni transiciones prohibidas.
