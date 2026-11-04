@@ -11,6 +11,8 @@ export default defineConfig({
   // Que /src/data de la app vieja (lógica pura) se pueda importar tal cual.
   // fileURLToPath y no .pathname: en Windows .pathname da «/C:/…» y el atajo no anda.
   resolve: { alias: { '@datos': fileURLToPath(new URL('../src/data', import.meta.url)) } },
+  // Las fuentes se reusan de /public de la app vieja, que queda fuera de web/.
+  server: { fs: { allow: ['..'] } },
   build: { outDir: 'dist', emptyOutDir: true },
   test: { environment: 'jsdom', include: ['src/**/*.test.{ts,tsx}'] },
 });
