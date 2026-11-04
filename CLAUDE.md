@@ -7,6 +7,13 @@ App móvil para clubes formadores de básquet (piloto: Newell's, multi-club desd
 - Supabase (Postgres + RLS + Auth). Deploy estático en Vercel; `.vercelignore` deja afuera docs, supabase, tests y `*.md`.
 - Tests con `node --test`, un archivo por módulo en `tests/` (se descubren solos: `tests/*.test.js`).
 
+## Mudanza a React (`web/`)
+La interfaz se muda de a poco a React; el plan y las etapas los lleva la Oficina Virtual. Lo nuevo vive en `web/` (Vite + React 19 + TypeScript + Tailwind 4, piezas al estilo shadcn con `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge` y `lucide-react`; rutas con `react-router` 7, datos con `@tanstack/react-query`, animaciones con `motion`; pruebas con Vitest y Testing Library). `src/data`, `src/parser` y `supabase/` no se mudan: `web/` importa la lógica pura con el atajo `@datos/…` y pide datos sólo por `repositorio.js`, como la app vieja.
+- `web/` queda fuera del deploy (`.vercelignore`) hasta la etapa que conecte la app publicada; `tests/contratoMudanzaReact.test.js` lo vigila.
+- Comandos: `npm --prefix web test` (Vitest), `npm --prefix web run check` (tipos) y `npm --prefix web run build`.
+- **Paquetes:** versiones exactas, sin scripts de instalación (`web/.npmrc`), con al menos dos semanas de publicadas y compatibles con Node 22.14. Un agente no instala: si falta uno, lo pide con nombre, versión y para qué.
+- Una pantalla mudándose a la vez. Tokens de color y tipografía, los de `DESIGN.md`.
+
 ## Comandos
 - `npm run test:q` — toda la suite, salida mínima (~300 bytes). **Usar este.** Si algo falla, correr sólo ese archivo: `node --test tests/<archivo>.test.js`.
 - `npm test` — la misma suite con salida TAP de ~60 KB. Evitarlo: gasta ~15k tokens por corrida.
