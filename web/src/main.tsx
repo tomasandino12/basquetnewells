@@ -1,8 +1,11 @@
 import { createRoot } from 'react-dom/client';
-import { Piezas } from './pantallas/Piezas';
-import { Plantel } from './pantallas/Plantel';
+import { RouterProvider } from 'react-router';
+import { Proveedores } from './datos/contexto';
+import { crearRouter } from './rutas';
 import './estilos.css';
 
-// Pantallas escondidas: nadie las enlaza desde la app vieja. `#piezas` muestra las piezas base.
-const Pantalla = window.location.hash === '#piezas' ? Piezas : Plantel;
-createRoot(document.getElementById('raiz')!).render(<Pantalla />);
+createRoot(document.getElementById('raiz')!).render(
+  <Proveedores>
+    <RouterProvider router={crearRouter()} />
+  </Proveedores>,
+);

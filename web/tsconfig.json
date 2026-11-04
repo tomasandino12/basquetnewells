@@ -10,7 +10,7 @@
     "noEmit": true,
     "skipLibCheck": true,
     "isolatedModules": true,
-    "paths": { "@datos/*": ["../src/data/*"] }
+    "paths": { "@datos/*": ["../src/data/*"], "@ui/*": ["../src/ui/*"] }
   },
   "include": ["src"]
 }
