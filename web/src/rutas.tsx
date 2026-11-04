@@ -1,5 +1,6 @@
 import { Navigate, Outlet, createHashRouter, useLocation, type RouteObject } from 'react-router';
 import { Consulta } from './components/ui/consulta';
+import { Marco } from './laboratorio';
 import { useSesion } from './datos/contexto';
 import { Entrar } from './pantallas/Entrar';
 import { Piezas } from './pantallas/Piezas';
@@ -26,16 +27,19 @@ export function RequiereSesion() {
 }
 
 export const rutas: RouteObject[] = [
-  { path: '/entrar', element: <Entrar /> },
-  // Pantallas escondidas, con datos de ejemplo: nadie las enlaza desde la app vieja.
-  { path: '/piezas', element: <Piezas /> },
-  { path: '/maqueta/plantel', element: <Plantel /> },
-  { element: <RequiereSesion />, children: [
-      { path: '/', element: <Planteles /> },
-      { path: '/plantel/:plantelId', element: <PlantelDelClub /> },
-    ],
-  },
-  { path: '*', element: <Navigate to="/" replace /> },
+  // El menú de arriba (laboratorio.tsx) va en todas: así se llega a cada pantalla sin saberse la dirección.
+  { element: <Marco />, children: [
+    { path: '/entrar', element: <Entrar /> },
+    // Pantallas con datos de ejemplo: las enlaza el menú de /nueva, nunca la app vieja.
+    { path: '/piezas', element: <Piezas /> },
+    { path: '/maqueta/plantel', element: <Plantel /> },
+    { element: <RequiereSesion />, children: [
+        { path: '/', element: <Planteles /> },
+        { path: '/plantel/:plantelId', element: <PlantelDelClub /> },
+      ],
+    },
+    { path: '*', element: <Navigate to="/" replace /> },
+  ] },
 ];
 
 // Hash y no ruta limpia: se publica estático en /nueva y así no hace falta reenviar cada ruta.
