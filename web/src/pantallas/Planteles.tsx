@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router';
 import { Card } from '../components/ui/card';
 import { Consulta } from '../components/ui/consulta';
 import { Vacio } from '../components/ui/estados';
@@ -51,7 +52,9 @@ export function Planteles() {
                   <ul aria-label="Planteles" className="grid gap-3 sm:grid-cols-2">
                     {visibles.map((p) => (
                       <li key={p.id}>
-                        <Card className="p-4 font-titulo text-2xl font-semibold uppercase">{p.categoria}</Card>
+                        <Link to={`/plantel/${p.id}`} className="block rounded-tarjeta outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
+                          <Card className="p-4 font-titulo text-2xl font-semibold uppercase">{p.categoria}</Card>
+                        </Link>
                       </li>
                     ))}
                   </ul>

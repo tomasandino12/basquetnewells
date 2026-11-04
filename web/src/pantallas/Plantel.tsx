@@ -1,6 +1,7 @@
 import { MotionConfig } from 'motion/react';
 import { Moon, Search, Sun } from 'lucide-react';
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useEscritorio } from '../lib/useEscritorio';
 import { Card } from '../components/ui/card';
 import { ChipBoton } from '../components/ui/chip';
 import { Hoja } from '../components/ui/sheet';
@@ -9,21 +10,6 @@ import type { Jugador, Posicion } from '../plantel/tipos';
 import { POSICIONES, filtrarPlantel, nombreCompleto } from '../plantel/vista';
 import { FichaJugador } from './FichaJugador';
 import { TarjetaJugador } from './TarjetaJugador';
-
-// Desde 64rem (el corte de escritorio de layout.css) la ficha va en un panel fijo.
-const ESCRITORIO = '(min-width: 64rem)';
-
-function useEscritorio(): boolean {
-  return useSyncExternalStore(
-    (aviso) => {
-      const m = window.matchMedia?.(ESCRITORIO);
-      m?.addEventListener('change', aviso);
-      return () => m?.removeEventListener('change', aviso);
-    },
-    () => window.matchMedia?.(ESCRITORIO).matches ?? false,
-    () => false,
-  );
-}
 
 interface Props {
   jugadores?: Jugador[];
