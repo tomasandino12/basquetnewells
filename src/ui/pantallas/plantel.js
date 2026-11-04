@@ -51,9 +51,9 @@ export function textoMedicion(vigente) {
 function filaJugador(j, medicion) {
   const sinMedir = medicion == null || (medicion.alturaCm == null && medicion.pesoKg == null);
   return `
-    <button class="jug jug-card" data-jugador="${j.id}">
-      <div class="av grande">${escaparHtml(iniciales(j.nombreLimpio))}</div>
-      <div class="jug-datos">
+    <button class="jug" data-jugador="${j.id}">
+      <div class="av">${escaparHtml(iniciales(j.nombreLimpio))}</div>
+      <div>
         <div class="nom">${escaparHtml(j.nombreLimpio)}</div>
         <div class="det">${escaparHtml(textoMedicion(medicion))}</div>
       </div>
@@ -157,7 +157,7 @@ export async function renderPlantel() {
       <div class="campo"><button class="btn chico" id="btn-asistencia">Tomar asistencia</button></div>
       <div class="campo"><button class="btn sec chico" id="btn-historial-asistencia">Historial de asistencia</button></div>
       <div class="campo"><button class="btn sec chico" id="btn-emergencias-plantel">Datos de emergencia</button></div>
-      <div class="jug-grilla" id="plantel-lista">${jugadores.map((j) => filaJugador(j, porJugador.get(j.id) ?? null)).join('')}</div>
+      <div class="lista-2col" id="plantel-lista">${jugadores.map((j) => filaJugador(j, porJugador.get(j.id) ?? null)).join('')}</div>
       ${logros ? bloqueLogros(logros) : ''}
     </div>
     <div class="pie-fijo"><button class="btn sec" id="btn-agregar-jugador">Agregar jugador a mano</button><button class="btn sec" id="btn-importar-inscriptos">Importar inscriptos</button><button class="btn sec" id="btn-importar-emergencias">Importar emergencias</button></div>
