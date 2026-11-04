@@ -4,6 +4,7 @@ import { useSesion } from './datos/contexto';
 import { Entrar } from './pantallas/Entrar';
 import { Piezas } from './pantallas/Piezas';
 import { Plantel } from './pantallas/Plantel';
+import { PlantelDelClub } from './pantallas/PlantelDelClub';
 import { Planteles } from './pantallas/Planteles';
 
 /** Todo lo que lleva datos reales pasa por acá: sin sesión se va a /entrar y vuelve a donde quería ir. */
@@ -29,7 +30,11 @@ export const rutas: RouteObject[] = [
   // Pantallas escondidas, con datos de ejemplo: nadie las enlaza desde la app vieja.
   { path: '/piezas', element: <Piezas /> },
   { path: '/maqueta/plantel', element: <Plantel /> },
-  { element: <RequiereSesion />, children: [{ path: '/', element: <Planteles /> }] },
+  { element: <RequiereSesion />, children: [
+      { path: '/', element: <Planteles /> },
+      { path: '/plantel/:plantelId', element: <PlantelDelClub /> },
+    ],
+  },
   { path: '*', element: <Navigate to="/" replace /> },
 ];
 

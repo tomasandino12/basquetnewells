@@ -25,6 +25,58 @@ export interface Roles {
   esCoordinador: boolean;
 }
 
+export interface JugadorDelPlantel {
+  id: string;
+  nombreClave: string;
+  /** «Apellido, Nombre», como lo deja la importación. */
+  nombreLimpio: string;
+  fechaNacimiento: string | null;
+}
+
+/** Una fila por fecha; lo que no se midió ese día es null (no se sabe), nunca 0. */
+export interface MedicionCorporal {
+  jugadorId: string;
+  fechaMedicion: string;
+  alturaCm: number | null;
+  pesoKg: number | null;
+  piernaCm: number | null;
+  piernaFlexionadaCm: number | null;
+}
+
+export type EstadoAsistencia = 'presente' | 'ausente' | 'justificada';
+
+export interface Entrenamiento {
+  id: string;
+  fecha: string;
+  hubo: boolean;
+  filas: { jugadorId: string; estado: EstadoAsistencia }[];
+}
+
+export interface Lesion {
+  id: string;
+  jugadorId: string;
+  desde: string;
+  /** El día del alta; null mientras sigue lesionado. */
+  hasta: string | null;
+  zona: string | null;
+  lado: string | null;
+  tipo: string | null;
+}
+
+export interface SesionMedicion {
+  id: string;
+  fecha: string;
+  tipo: string;
+}
+
+export interface MedicionTiro {
+  sesionId: string;
+  jugadorId: string;
+  posicion: string;
+  anotados: number | null;
+  intentos: number | null;
+}
+
 export interface Repositorio {
   obtenerSesionActual(): Promise<Sesion | null>;
   iniciarSesion(email: string, password: string): Promise<Sesion>;
@@ -36,6 +88,23 @@ export interface Repositorio {
   obtenerPlantelesDelClub(clubId: string): Promise<PlantelDelClub[]>;
   obtenerMisRoles(clubId: string): Promise<Roles>;
   obtenerMisPlantelesAsignados(clubId: string): Promise<Set<string>>;
+  obtenerJugadoresDelPlantel(clubId: string, plantelId: string): Promise<JugadorDelPlantel[]>;
+  obtenerMedicionesCorporalesDelClub(clubId: string): Promise<MedicionCorporal[]>;
+  obtenerSolicitudesDelPlantel(plantelId: string): Promise<unknown[]>;
+  obtenerEntrenamientos(plantelId: string, desde: string, hasta: string): Promise<Entrenamiento[]>;
+  obtenerLesionesDelPlantel(plantelId: string): Promise<Lesion[]>;
+  obtenerSesionesDeMedicion(clubId: string, plantelId: string): Promise<SesionMedicion[]>;
+  obtenerMedicionesTiroDelPlantel(clubId: string, plantelId: string): Promise<MedicionTiro[]>;
+  /** `estado: null` desmarca a ese chico; los que no vienen quedan como estaban. */
+  guardarAsistencia(datos: {
+    plantelId: string;
+    fecha: string;
+    hubo: boolean;
+    filas: { jugadorId: string; estado: EstadoAsistencia | null }[];
+  }): Promise<string>;
+  abrirLesion(datos: { clubId: string; jugadorId: string; desde: string }): Promise<void>;
+  darAlta(lesionId: string, hasta: string): Promise<void>;
+  sacarDelPlantel(clubId: string, jugadorId: string, plantelId: string): Promise<void>;
 }
 
 export type CargarRepositorio = () => Promise<Repositorio>;

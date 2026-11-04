@@ -20,6 +20,17 @@ export function repositorioInventado(piso: Partial<Repositorio> = {}): Repositor
     ],
     obtenerMisRoles: async () => ({ esEntrenador: false, esCoordinador: true }),
     obtenerMisPlantelesAsignados: async () => new Set<string>(),
+    obtenerJugadoresDelPlantel: async () => [],
+    obtenerMedicionesCorporalesDelClub: async () => [],
+    obtenerSolicitudesDelPlantel: async () => [],
+    obtenerEntrenamientos: async () => [],
+    obtenerLesionesDelPlantel: async () => [],
+    obtenerSesionesDeMedicion: async () => [],
+    obtenerMedicionesTiroDelPlantel: async () => [],
+    guardarAsistencia: async () => 'e-1',
+    abrirLesion: async () => {},
+    darAlta: async () => {},
+    sacarDelPlantel: async () => {},
     ...piso,
   };
 }

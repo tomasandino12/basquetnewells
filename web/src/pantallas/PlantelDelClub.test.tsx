@@ -1,0 +1,334 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { hoyLocal } from '@datos/antropometria.js';
+import { desmarcarSesionCerrada } from '../datos/errores';
+import { renderConDatos, repositorioInventado } from '../datos/renderDePrueba';
+import type { Repositorio } from '../datos/repositorio';
+import { rutas } from '../rutas';
+
+const HOY = hoyLocal() as string;
+
+function simular(escritorio: boolean) {
+  vi.stubGlobal('matchMedia', (consulta: string) => ({
+    matches: escritorio,
+    media: consulta,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }));
+}
+
+afterEach(() => {
+  cleanup();
+  desmarcarSesionCerrada();
+  vi.unstubAllGlobals();
+});
+
+// Nombres inventados: nunca datos de chicos reales.
+const JUGADORES = [
+  { id: 'j-1', nombreClave: 'acosta bruno', nombreLimpio: 'Acosta, Bruno', fechaNacimiento: '2013-03-02' },
+  { id: 'j-2', nombreClave: 'benitez tomas', nombreLimpio: 'Benítez, Tomás', fechaNacimiento: null },
+  { id: 'j-3', nombreClave: 'echeverria montenegro gael', nombreLimpio: 'Echeverría Montenegro, Gael Alejandro', fechaNacimiento: null },
+];
+
+function repo(piso: Partial<Repositorio> = {}) {
+  return repositorioInventado({
+    obtenerMisRoles: async () => ({ esEntrenador: true, esCoordinador: false }),
+    obtenerMisPlantelesAsignados: async () => new Set(['p-1']),
+    obtenerJugadoresDelPlantel: async () => JUGADORES,
+    obtenerMedicionesCorporalesDelClub: async () => [
+      { jugadorId: 'j-1', fechaMedicion: '2026-10-01', alturaCm: 158, pesoKg: 47.5, piernaCm: null, piernaFlexionadaCm: null },
+    ],
+    obtenerEntrenamientos: async () => [
+      { id: 'e-1', fecha: HOY, hubo: true, filas: [{ jugadorId: 'j-1', estado: 'presente' }] },
+    ],
+    obtenerSesionesDeMedicion: async () => [{ id: 's-1', fecha: '2026-10-20', tipo: 'tiro' }],
+    obtenerMedicionesTiroDelPlantel: async () => [
+      { sesionId: 's-1', jugadorId: 'j-1', posicion: 'frontal', anotados: 6, intentos: 10 },
+      { sesionId: 's-1', jugadorId: 'j-1', posicion: 'esq_izq', anotados: 4, intentos: 10 },
+    ],
+    ...piso,
+  });
+}
+
+const abrir = (r: Repositorio = repo()) => renderConDatos(rutas, { repo: r, ruta: '/plantel/p-1' });
+const filas = async () => within(await screen.findByRole('list', { name: 'Jugadores del plantel' })).getAllByRole('listitem');
+
+describe('Plantel con datos: encabezado y lista', () => {
+  it('muestra la carga y después la categoría con la cantidad y los presentes de hoy', async () => {
+    simular(true);
+    abrir();
+    expect(screen.getByRole('status')).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Sub 13' })).toBeTruthy();
+    expect(screen.getByText('3 jugadores · hoy 1 presente')).toBeTruthy();
+  });
+
+  it('con un solo jugador dice «1 jugador»', async () => {
+    simular(true);
+    abrir(repo({ obtenerJugadoresDelPlantel: async () => [JUGADORES[0]], obtenerEntrenamientos: async () => [] }));
+    expect(await screen.findByText('1 jugador · hoy 0 presentes')).toBeTruthy();
+  });
+
+  it('una fila por jugador, ordenada por apellido, con altura, peso, tiro y asistencia', async () => {
+    simular(true);
+    abrir();
+    const lista = await filas();
+    expect(lista).toHaveLength(3);
+    expect(lista[0].textContent).toContain('Acosta, Bruno');
+    expect(lista[0].textContent).toContain('158 cm · 47,5 kg');
+    expect(lista[0].textContent).toContain('Tiro 50%');
+    expect(lista[0].textContent).toContain('Asist. 100%');
+  });
+
+  it('lo que no se sabe es una raya, nunca un cero', async () => {
+    simular(true);
+    abrir();
+    const sinDatos = (await filas())[1];
+    expect(sinDatos.textContent).toContain('— · —');
+    expect(sinDatos.textContent).toContain('Tiro —');
+    expect(sinDatos.textContent).toContain('Asist. —');
+    expect(sinDatos.textContent).not.toMatch(/\b0\b/);
+  });
+
+  it('el apellido largo se corta con puntos suspensivos', async () => {
+    simular(true);
+    abrir();
+    const larga = (await filas())[2];
+    expect(larga.querySelector('.truncate')).toBeTruthy();
+  });
+
+  it('un chico con lesión abierta se marca en la lista', async () => {
+    simular(true);
+    abrir(repo({ obtenerLesionesDelPlantel: async () => [{ id: 'l-1', jugadorId: 'j-2', desde: HOY, hasta: null, zona: null, lado: null, tipo: null }] }));
+    const lista = await filas();
+    expect(within(lista[1]).getByLabelText('Lesionado')).toBeTruthy();
+    expect(within(lista[0]).queryByLabelText('Lesionado')).toBeNull();
+  });
+
+  it('no muestra cuota, apto médico ni nada de coordinación', async () => {
+    simular(true);
+    const { container } = abrir();
+    await filas();
+    expect(container.textContent).not.toMatch(/al día|apto|pagó|deuda|cuota/i);
+  });
+
+  it('la búsqueda achica la lista y avisa si no hay coincidencias', async () => {
+    simular(true);
+    const u = userEvent.setup();
+    abrir();
+    await filas();
+    await u.type(screen.getByRole('searchbox'), 'benitez');
+    expect(await filas()).toHaveLength(1);
+    await u.type(screen.getByRole('searchbox'), 'zzz');
+    expect(screen.getByText('Ningún jugador coincide con la búsqueda.')).toBeTruthy();
+  });
+});
+
+describe('Plantel con datos: asistencia dentro de la lista', () => {
+  it('el tilde marca presente con una sola fila y sin abrir la ficha', async () => {
+    simular(false);
+    const guardarAsistencia = vi.fn(async () => 'e-1');
+    const u = userEvent.setup();
+    abrir(repo({ guardarAsistencia }));
+    await filas();
+    await u.click(screen.getByRole('button', { name: 'Marcar presente a Benítez, Tomás' }));
+    await waitFor(() => expect(guardarAsistencia).toHaveBeenCalledTimes(1));
+    expect(guardarAsistencia).toHaveBeenCalledWith({ plantelId: 'p-1', fecha: HOY, hubo: true, filas: [{ jugadorId: 'j-2', estado: 'presente' }] });
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('tocar el tilde de un presente lo desmarca', async () => {
+    simular(false);
+    const guardarAsistencia = vi.fn(async () => 'e-1');
+    const u = userEvent.setup();
+    abrir(repo({ guardarAsistencia }));
+    await filas();
+    const tilde = screen.getByRole('button', { name: 'Marcar presente a Acosta, Bruno' });
+    expect(tilde.getAttribute('aria-pressed')).toBe('true');
+    await u.click(tilde);
+    await waitFor(() => expect(guardarAsistencia).toHaveBeenCalled());
+    expect(guardarAsistencia).toHaveBeenCalledWith(expect.objectContaining({ filas: [{ jugadorId: 'j-1', estado: null }] }));
+  });
+
+  it('si no se puede guardar, lo cuenta', async () => {
+    simular(false);
+    const u = userEvent.setup();
+    abrir(repo({ guardarAsistencia: async () => { throw new Error('boom'); } }));
+    await filas();
+    await u.click(screen.getByRole('button', { name: 'Marcar presente a Benítez, Tomás' }));
+    expect(await screen.findByText('No se pudo guardar la asistencia')).toBeTruthy();
+  });
+});
+
+describe('Plantel con datos: ficha en compu', () => {
+  it('abre con el primero en el panel y cambia al tocar otra fila', async () => {
+    simular(true);
+    const u = userEvent.setup();
+    abrir();
+    expect(await screen.findByRole('article', { name: 'Ficha de Bruno Acosta' })).toBeTruthy();
+    await u.click(screen.getByRole('button', { name: 'Ficha de Benítez, Tomás' }));
+    expect(screen.getByRole('article', { name: 'Ficha de Tomás Benítez' })).toBeTruthy();
+    expect(screen.queryByRole('article', { name: 'Ficha de Bruno Acosta' })).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('Presente, Avisó y Faltó guardan presente, justificada y ausente', async () => {
+    simular(true);
+    const guardarAsistencia = vi.fn(async () => 'e-1');
+    const u = userEvent.setup();
+    abrir(repo({ guardarAsistencia }));
+    const ficha = within(await screen.findByRole('article', { name: 'Ficha de Bruno Acosta' }));
+    await u.click(ficha.getByRole('radio', { name: 'Avisó' }));
+    await waitFor(() => expect(guardarAsistencia).toHaveBeenCalledTimes(1));
+    expect(guardarAsistencia).toHaveBeenLastCalledWith(expect.objectContaining({ filas: [{ jugadorId: 'j-1', estado: 'justificada' }] }));
+    await u.click(ficha.getByRole('radio', { name: 'Faltó' }));
+    await waitFor(() => expect(guardarAsistencia).toHaveBeenCalledTimes(2));
+    expect(guardarAsistencia).toHaveBeenLastCalledWith(expect.objectContaining({ filas: [{ jugadorId: 'j-1', estado: 'ausente' }] }));
+  });
+
+  it('«Marcar lesión» abre una lesión de hoy', async () => {
+    simular(true);
+    const abrirLesion = vi.fn(async () => {});
+    const u = userEvent.setup();
+    abrir(repo({ abrirLesion }));
+    await u.click(await screen.findByRole('button', { name: /Marcar lesión/ }));
+    await waitFor(() => expect(abrirLesion).toHaveBeenCalledWith({ clubId: 'c-1', jugadorId: 'j-1', desde: HOY }));
+  });
+
+  it('con una lesión abierta dice desde cuándo y deja dar el alta', async () => {
+    simular(true);
+    const darAlta = vi.fn(async () => {});
+    const u = userEvent.setup();
+    abrir(repo({ darAlta, obtenerLesionesDelPlantel: async () => [{ id: 'l-9', jugadorId: 'j-1', desde: '2026-10-12', hasta: null, zona: 'tobillo', lado: 'derecho', tipo: null }] }));
+    expect(await screen.findByText(/Lesionado desde el 12\/10 · tobillo derecho/)).toBeTruthy();
+    await u.click(screen.getByRole('button', { name: 'Dar el alta' }));
+    await waitFor(() => expect(darAlta).toHaveBeenCalledWith('l-9', HOY));
+  });
+
+  it('Sacar del plantel pide confirmación y Cancelar no saca a nadie', async () => {
+    simular(true);
+    const sacarDelPlantel = vi.fn(async () => {});
+    const u = userEvent.setup();
+    abrir(repo({ sacarDelPlantel }));
+    await u.click(await screen.findByRole('button', { name: 'Sacar del plantel' }));
+    expect(screen.getByText(/Su ficha y su historia se conservan/)).toBeTruthy();
+    await u.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(sacarDelPlantel).not.toHaveBeenCalled();
+    await u.click(screen.getByRole('button', { name: 'Sacar del plantel' }));
+    await u.click(screen.getByRole('button', { name: 'Sí, sacarlo' }));
+    await waitFor(() => expect(sacarDelPlantel).toHaveBeenCalledWith('c-1', 'j-1', 'p-1'));
+  });
+
+  it('las pestañas son Físico, Tiro, Partidos e Historia y abre en Físico', async () => {
+    simular(true);
+    abrir();
+    const ficha = within(await screen.findByRole('article', { name: 'Ficha de Bruno Acosta' }));
+    expect(ficha.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Físico', 'Tiro', 'Partidos', 'Historia']);
+    expect(ficha.getByRole('tab', { name: 'Físico' }).getAttribute('aria-selected')).toBe('true');
+    expect(ficha.getByText('Altura')).toBeTruthy();
+  });
+
+  it('la pestaña Tiro dibuja la curva con su escala y los valores por zona', async () => {
+    simular(true);
+    const u = userEvent.setup();
+    abrir();
+    const ficha = within(await screen.findByRole('article', { name: 'Ficha de Bruno Acosta' }));
+    await u.click(ficha.getByRole('tab', { name: 'Tiro' }));
+    expect(ficha.getByRole('img', { name: /Curva de tiro por zona/ })).toBeTruthy();
+    expect(ficha.getByText('100%')).toBeTruthy();
+    expect(ficha.getByText('60% (6/10)')).toBeTruthy();
+  });
+
+  it('Tiro de un chico que nunca tiró lo dice sin inventar datos', async () => {
+    simular(true);
+    const u = userEvent.setup();
+    abrir();
+    await u.click(await screen.findByRole('button', { name: 'Ficha de Benítez, Tomás' }));
+    await u.click(screen.getByRole('tab', { name: 'Tiro' }));
+    expect(screen.getByText('Todavía no tiene baterías de tiro.')).toBeTruthy();
+  });
+});
+
+describe('Plantel con datos: celular', () => {
+  it('arranca sin ficha, la abre en una hoja y se cierra con Escape', async () => {
+    simular(false);
+    const u = userEvent.setup();
+    abrir();
+    await filas();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await u.click(screen.getByRole('button', { name: 'Ficha de Benítez, Tomás' }));
+    const hoja = screen.getByRole('dialog');
+    expect(within(hoja).getByRole('article', { name: 'Ficha de Tomás Benítez' })).toBeTruthy();
+    await u.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});
+
+describe('Plantel con datos: estados y permisos', () => {
+  it('un plantel sin jugadores ofrece las tres formas de armarlo', async () => {
+    simular(true);
+    abrir(repo({ obtenerJugadoresDelPlantel: async () => [] }));
+    expect(await screen.findByText('Sub 13 todavía no tiene jugadores')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Cargar un partido de la CABB' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Agregar jugador a mano' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Importar inscriptos' })).toBeTruthy();
+  });
+
+  it('si falla la lista de chicos, lo cuenta con salida; si fallan los agregados, la lista se dibuja igual', async () => {
+    simular(true);
+    abrir(repo({
+      obtenerMedicionesCorporalesDelClub: async () => { throw new Error('x'); },
+      obtenerEntrenamientos: async () => { throw new Error('x'); },
+      obtenerLesionesDelPlantel: async () => { throw new Error('x'); },
+      obtenerMedicionesTiroDelPlantel: async () => { throw new Error('x'); },
+      obtenerSolicitudesDelPlantel: async () => { throw new Error('x'); },
+    }));
+    expect(await filas()).toHaveLength(3);
+    expect(screen.queryByRole('alert')).toBeNull();
+    cleanup();
+    abrir(repo({ obtenerJugadoresDelPlantel: async () => { throw new Error('x'); } }));
+    expect(await screen.findByRole('alert')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Reintentar/ })).toBeTruthy();
+  });
+
+  it('las solicitudes pendientes se avisan con singular y plural; sin pendientes no hay aviso', async () => {
+    simular(true);
+    abrir(repo({ obtenerSolicitudesDelPlantel: async () => [{}] }));
+    expect(await screen.findByText('1 chico pidió entrar a esta categoría')).toBeTruthy();
+    cleanup();
+    abrir(repo({ obtenerSolicitudesDelPlantel: async () => [{}, {}] }));
+    expect(await screen.findByText('2 chicos pidieron entrar a esta categoría')).toBeTruthy();
+    cleanup();
+    abrir();
+    await filas();
+    expect(screen.queryByText(/pidi/)).toBeNull();
+  });
+
+  it('el entrenador no entra a una categoría que no tiene asignada', async () => {
+    simular(true);
+    abrir(repo({ obtenerMisPlantelesAsignados: async () => new Set(['p-2']) }));
+    expect(await screen.findByText('No encontramos esa categoría')).toBeTruthy();
+  });
+
+  it('la coordinación sola no ve a los chicos: se le explica en vez de mostrar una lista vacía', async () => {
+    simular(true);
+    const pedirJugadores = vi.fn(async () => JUGADORES);
+    abrir(repo({ obtenerMisRoles: async () => ({ esEntrenador: false, esCoordinador: true }), obtenerJugadoresDelPlantel: pedirJugadores }));
+    expect(await screen.findByText('Los chicos los ve el cuerpo técnico')).toBeTruthy();
+    expect(pedirJugadores).not.toHaveBeenCalled();
+  });
+
+  it('quien es entrenador y coordinador a la vez sí ve a los chicos', async () => {
+    simular(true);
+    abrir(repo({ obtenerMisRoles: async () => ({ esEntrenador: true, esCoordinador: true }) }));
+    expect(await filas()).toHaveLength(3);
+  });
+
+  it('desde la lista de planteles se llega al plantel', async () => {
+    simular(true);
+    const u = userEvent.setup();
+    renderConDatos(rutas, { repo: repo() });
+    await u.click(await screen.findByRole('link', { name: 'Sub 13' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Sub 13' })).toBeTruthy();
+  });
+});
