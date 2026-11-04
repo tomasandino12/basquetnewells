@@ -1,4 +1,5 @@
-import { defineConfig } from 'vite';
+import { fileURLToPath } from 'node:url';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
@@ -7,8 +8,9 @@ import tailwindcss from '@tailwindcss/vite';
 // es una decisión de un paso posterior, no un efecto de esta carpeta.
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  // Que /src de la app vieja (lógica pura) se pueda importar tal cual.
-  resolve: { alias: { '@datos': new URL('../src/data', import.meta.url).pathname } },
+  // Que /src/data de la app vieja (lógica pura) se pueda importar tal cual.
+  // fileURLToPath y no .pathname: en Windows .pathname da «/C:/…» y el atajo no anda.
+  resolve: { alias: { '@datos': fileURLToPath(new URL('../src/data', import.meta.url)) } },
   build: { outDir: 'dist', emptyOutDir: true },
   test: { environment: 'jsdom', include: ['src/**/*.test.{ts,tsx}'] },
 });
