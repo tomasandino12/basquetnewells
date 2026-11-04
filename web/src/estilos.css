@@ -15,6 +15,8 @@
   --club: #D9122E;
   --sobre-club: #fff;
   --club-texto: #B80F26;      /* el color del club como texto sobre claro */
+  --club-osc: #A00D22;        /* botón apretado y hover */
+  --club-cl: #FFEBEE;         /* fondo suave de una opción elegida */
   --fondo: #F3F1ED;
   --sup: #fff;
   --sup-2: #EFECE6;
@@ -22,12 +24,21 @@
   --tinta: #131316;
   --gris: #6E6B66;
   --borde-control: #85817A;
+  --sube: #15794F;
+  --sube-fondo: #E1F0E9;
+  --baja: #985E0C;
+  --baja-fondo: #F6ECD9;
   --velo: rgba(19, 19, 22, .5);
   --sombra: 0 1px 2px rgba(19, 19, 22, .06), 0 2px 8px rgba(19, 19, 22, .05);
+  /* Movimiento (DESIGN.md): sólo transform y opacity, con estas duraciones. */
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 280ms;
 }
 
 [data-tema='oscuro'] {
   --club-texto: #E34D62;
+  --club-cl: #3A1118;
   --fondo: #0D0D10;
   --sup: #17171C;
   --sup-2: #1F1F26;
@@ -35,6 +46,10 @@
   --tinta: #F5F4F2;
   --gris: #A9A5A0;
   --borde-control: #6B6B76;
+  --sube: #4FD69C;
+  --sube-fondo: #12281F;
+  --baja: #E0A94F;
+  --baja-fondo: #2E2312;
   --velo: rgba(0, 0, 0, .65);
   --sombra: none;
 }
@@ -43,6 +58,16 @@
   --color-club: var(--club);
   --color-sobre-club: var(--sobre-club);
   --color-club-texto: var(--club-texto);
+  --color-club-osc: var(--club-osc);
+  --color-club-cl: var(--club-cl);
+  --color-sube: var(--sube);
+  --color-sube-fondo: var(--sube-fondo);
+  --color-baja: var(--baja);
+  --color-baja-fondo: var(--baja-fondo);
+  --radius-tarjeta: 0.6875rem;
+  --radius-btn: 0.125rem;
+  --radius-campo: 0.5625rem;
+  --radius-chip: 0.3125rem;
   --color-fondo: var(--fondo);
   --color-sup: var(--sup);
   --color-sup-2: var(--sup-2);
