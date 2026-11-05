@@ -1,4 +1,6 @@
 import { registrarPantalla } from '../main.js';
+import { abrirEnNueva } from '../pantallaNueva.js';
+import { obtenerPlantelActivo } from '../sesion.js';
 import { renderDatos, iniciarDatos } from './datos.js';
 import { renderPlantel, setAbrirFicha, setAbrirAltaManual } from './plantel.js';
 import { renderFicha, abrirFicha } from './fichaJugador.js';
@@ -90,7 +92,11 @@ export function registrarPantallas() {
   registrarPantalla('p-jug-jugadas', { titulo: 'Jugadas', render: renderJugJugadas });
   // Modo familia (0057): sus chicos y nada más.
   registrarPantalla('p-fam-chicos', { titulo: 'Mis chicos', render: renderFamChicos });
-  setAbrirFicha(abrirFicha);
+  // Con el interruptor de Mi perfil prendido la ficha se abre en la versión nueva; si no, la de siempre.
+  setAbrirFicha(async (jugadorId) => {
+    if (await abrirEnNueva({ plantelId: obtenerPlantelActivo()?.id, jugadorId })) return;
+    abrirFicha(jugadorId);
+  });
   setAbrirEjercicio(abrirEjercicio);
   setAbrirJugada(abrirJugada);
   iniciarJugadaEditor();

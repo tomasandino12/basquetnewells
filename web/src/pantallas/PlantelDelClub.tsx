@@ -1,6 +1,6 @@
 import { ArrowLeft, Search, ShieldCheck, Users } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { hoyLocal } from '@datos/antropometria.js';
 import { Aviso } from '../components/ui/aviso';
 import { Consulta } from '../components/ui/consulta';
@@ -94,7 +94,9 @@ function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: string;
   const escritorio = useEscritorio();
   const asistencia = useMarcarAsistencia(plantelId, hoy);
   const [texto, setTexto] = useState('');
-  const [elegido, setElegido] = useState<string | null>(null);
+  // La app de siempre abre la ficha de un jugador con ?jugador=: arranca ya elegido.
+  const [pedido] = useSearchParams();
+  const [elegido, setElegido] = useState<string | null>(pedido.get('jugador'));
 
   const filas = useMemo(() => (datos.data ? armarFilas({ ...datos.data, hoy }) : undefined), [datos.data, hoy]);
   const visibles = useMemo(() => (filas ? buscarEnFilas(filas, texto) : []), [filas, texto]);

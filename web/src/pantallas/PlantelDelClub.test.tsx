@@ -264,6 +264,22 @@ describe('Plantel con datos: celular', () => {
   });
 });
 
+describe('Plantel con datos: ficha pedida desde la app de siempre', () => {
+  it('en celular, ?jugador= abre la hoja con esa ficha', async () => {
+    simular(false);
+    renderConDatos(rutas, { repo: repo(), ruta: '/plantel/p-1?jugador=j-1' });
+    const hoja = await screen.findByRole('dialog');
+    expect(within(hoja).getByRole('article', { name: /^Ficha de / })).toBeTruthy();
+  });
+
+  it('un jugador que no está en el plantel se ignora: no abre nada en celular', async () => {
+    simular(false);
+    renderConDatos(rutas, { repo: repo(), ruta: '/plantel/p-1?jugador=otro-plantel' });
+    await filas();
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});
+
 describe('Plantel con datos: estados y permisos', () => {
   it('un plantel sin jugadores ofrece las tres formas de armarlo', async () => {
     simular(true);

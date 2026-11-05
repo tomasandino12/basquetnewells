@@ -51,6 +51,35 @@ test('la app vieja no carga nada de web/ ni de React', () => {
   assert.deepEqual(rotos, [], `src/ no importa de React ni de web/:\n  ${rotos.join('\n  ')}`);
 });
 
+test('desde /app sólo se llega a /nueva por pantallaNueva.js, detrás del interruptor y con respaldo', () => {
+  // Etapa 2: la app vieja puede abrir Plantel y la ficha nuevas. Es la única puerta.
+  const puertas = archivos('src').filter((p) => /\.(js|html)$/.test(p))
+    .filter((p) => /['"`]\/nueva\b/.test(leer(p))).map((p) => p.replaceAll('\\', '/')).sort();
+  assert.deepEqual(puertas, ['src/data/interruptorNueva.js'], 'la dirección de /nueva vive en un solo módulo');
+  const ui = archivos('src/ui').filter((p) => /\.js$/.test(p))
+    .filter((p) => /pantallaNueva\.js/.test(leer(p))).map((p) => p.replaceAll('\\', '/')).sort();
+  assert.deepEqual(ui, ['src/ui/main.js', 'src/ui/pantallas/miPerfil.js', 'src/ui/pantallas/registro.js']);
+  const puerta = leer('src/ui/pantallaNueva.js');
+  assert.match(puerta, /if \(!nuevaPrendida\(\)\) return false/, 'apagado no hace nada');
+  assert.match(puerta, /method: 'HEAD'/, 'comprueba que /nueva responda antes de irse (respaldo)');
+  const m = leer('src/data/interruptorNueva.js');
+  assert.match(m, /normalizarNueva\(valor\)[\s\S]*valor === 'si' \? 'si' : 'no'/, 'apagado por defecto');
+});
+
+test('el rebote a /nueva sólo ocurre al tocar la pestaña Plantel, nunca al arrancar', () => {
+  const main = leer('src/ui/main.js');
+  assert.equal((main.match(/abrirEnNueva\(/g) ?? []).length, 1, 'un solo uso en main.js');
+  assert.match(main, /onTab: async \(id\) => \{\s*if \(id === 'p-plantel' && await abrirEnNueva/);
+});
+
+test('/nueva queda fuera del service worker de /app y no se cachea en el navegador', () => {
+  const v = json('vercel.json');
+  const sw = v.headers.find((h) => h.source === '/public/sw.js').headers.find((x) => x.key === 'Service-Worker-Allowed');
+  assert.equal(sw.value, '/app', 'el service worker no intercepta /nueva: sin copia sin conexión');
+  const sinCache = v.headers.filter((h) => h.headers.some((x) => x.key === 'Cache-Control' && x.value === 'no-store')).map((h) => h.source);
+  assert.ok(sinCache.includes('/nueva') && sinCache.includes('/nueva/index.html'));
+});
+
 test('el package.json de la raíz no cambió de forma: sin React y con versiones exactas', () => {
   const p = json('package.json');
   const todas = { ...p.dependencies, ...p.devDependencies };
