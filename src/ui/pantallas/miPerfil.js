@@ -15,6 +15,7 @@ import { $ } from '../dom.js';
 import { textoDeError } from '../errores.js';
 import { html } from '../html.js';
 import { aplicarTema, guardarTema, temaActual } from '../preferenciaTema.js';
+import { guardarNueva, nuevaPrendida } from '../pantallaNueva.js';
 
 const contenedor = () => $('mi-perfil-contenido');
 
@@ -38,6 +39,23 @@ function aparienciaHtml(oscuro) {
           <div class="v" id="tema-etiqueta">Tema oscuro</div>
         </div>
         <button type="button" class="interruptor" id="sw-tema" role="switch" aria-labelledby="tema-etiqueta" aria-checked="${oscuro ? 'true' : 'false'}"></button>
+      </div>
+    </section>`;
+}
+
+/**
+ * El interruptor de las pantallas nuevas (Plantel y ficha): sólo para quien entrena, que es
+ * quien las usa, y apagado por defecto. Es de este teléfono, como el tema.
+ */
+function nuevaHtml(prendida) {
+  return html`
+    <section class="perfil-datos">
+      <div class="perfil-fila">
+        <div>
+          <div class="k">Probar pantallas nuevas</div>
+          <div class="v" id="nueva-etiqueta">Plantel y ficha del jugador</div>
+        </div>
+        <button type="button" class="interruptor" id="sw-nueva" role="switch" aria-labelledby="nueva-etiqueta" aria-checked="${prendida ? 'true' : 'false'}"></button>
       </div>
     </section>`;
 }
@@ -173,6 +191,7 @@ export async function renderMiPerfil() {
       </section>
 
       ${aparienciaHtml(temaActual() === 'oscuro')}
+      ${roles.esEntrenador ? nuevaHtml(nuevaPrendida()) : ''}
 
       <button class="btn sec perfil-guia" id="btn-ver-guia">Ver la guía</button>
       <button class="btn sec" id="btn-cerrar-sesion">Cerrar sesión</button>
@@ -186,6 +205,15 @@ export async function renderMiPerfil() {
     const guardado = guardarTema(nuevo);
     e.currentTarget.setAttribute('aria-checked', nuevo === 'oscuro' ? 'true' : 'false');
     toast(`${nuevo === 'oscuro' ? 'Tema oscuro prendido.' : 'Tema claro.'}${guardado ? '' : ' No se pudo recordar en este teléfono.'}`);
+  });
+  $('sw-nueva')?.addEventListener('click', (e) => {
+    const nuevo = !nuevaPrendida();
+    const guardado = guardarNueva(nuevo);
+    // Si el teléfono no dejó guardar, el interruptor queda como estaba: no prometer lo que no se cumple.
+    if (guardado) e.currentTarget.setAttribute('aria-checked', nuevo ? 'true' : 'false');
+    toast(guardado
+      ? (nuevo ? 'Plantel y ficha se abren en la versión nueva. Si no carga, queda la de siempre.' : 'Volvemos a la versión de siempre.')
+      : 'No se pudo guardar en este teléfono.');
   });
   // Sin mirar si ya se vio: quien la pide la quiere ver de nuevo.
   $('btn-ver-guia').addEventListener('click', () => {

@@ -18,8 +18,9 @@ import {
 import { crearHistorial } from './historial.js';
 import {
   setClubActual, obtenerClubActual, setPlanteles, limpiarSesion, setRoles, obtenerModo, setModo,
-  setCuenta, setFichaJugador, setPlantelActivoId, obtenerRoles, obtenerCuenta, setChicos,
+  setCuenta, setFichaJugador, setPlantelActivoId, obtenerRoles, obtenerCuenta, setChicos, obtenerPlantelActivo,
 } from './sesion.js';
+import { abrirEnNueva } from './pantallaNueva.js';
 import { GUIAS, guiaParaAbrir } from '../data/guias.js';
 import { claveGuia, yaVista } from './guiaVista.js';
 import { abrirGuia } from './componentes/guia.js';
@@ -449,7 +450,11 @@ async function iniciar() {
   descartarBorradoresAnteriores();
   iniciarPublico({ onEntrar: entrarConSesion, onReintentarClub: entrarConSesion });
   iniciarChrome({
-    onTab: (id) => ir(id),
+    // Sólo al tocar la pestaña, nunca al arrancar: así volver desde /nueva no rebota de nuevo.
+    onTab: async (id) => {
+      if (id === 'p-plantel' && await abrirEnNueva({ plantelId: obtenerPlantelActivo()?.id })) return;
+      await ir(id);
+    },
     onPlantel: (id) => cambiarPlantel(id),
     onVolver: () => volver(),
     onInicio: () => ir(pantallaDeInicio()),
