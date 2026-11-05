@@ -71,6 +71,47 @@ export function useDatosDelPlantel(clubId: string | undefined, plantelId: string
   });
 }
 
+/**
+ * Lo que necesita la pantalla Hoy. Las sesiones y el tiro son de lo que trata la pantalla y pueden
+ * dar error; los chicos, las mediciones corporales y las metas degradan solos (sin ellos la pantalla
+ * se dibuja igual, sin esa parte).
+ */
+export function useDatosDeHoy(clubId: string | undefined, plantelId: string | undefined) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['hoy', clubId, plantelId],
+    enabled: clubId !== undefined && plantelId !== undefined,
+    queryFn: async () => {
+      const repo = await cargar();
+      const [sesiones, mediciones, jugadores, corporales, metas] = await Promise.all([
+        repo.obtenerSesionesDeMedicion(clubId!, plantelId!),
+        repo.obtenerMedicionesTiroDelPlantel(clubId!, plantelId!),
+        repo.obtenerJugadoresDelPlantel(clubId!, plantelId!).catch(() => null),
+        repo.obtenerMedicionesCorporalesDelClub(clubId!).catch(() => null),
+        repo.obtenerMetasDelPlantel(clubId!, plantelId!).catch(() => ({})),
+      ]);
+      return { sesiones, mediciones, jugadores, corporales, metas };
+    },
+  });
+}
+
+/** Las previas y los partidos para la tarjeta de misiones; es un agregado: si falla, Hoy no la dibuja. */
+export function useMisionesDeHoy(clubId: string, plantelId: string) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['misiones', clubId, plantelId],
+    retry: false,
+    queryFn: async () => {
+      const repo = await cargar();
+      const [previas, partidos] = await Promise.all([
+        repo.obtenerPreviasDelPlantel(clubId, plantelId),
+        repo.obtenerPartidosDelPlantel(clubId, plantelId),
+      ]);
+      return { previas, partidos };
+    },
+  });
+}
+
 /** Cada cambio vuelve a pedir el plantel: la pantalla muestra lo que quedó guardado, no lo que se tocó. */
 function useEscritura<V>(escribir: (repo: Repositorio, v: V) => Promise<unknown>) {
   const cargar = useCargarRepositorio();

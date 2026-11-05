@@ -3,6 +3,7 @@ import { Consulta } from './components/ui/consulta';
 import { Marco } from './laboratorio';
 import { useSesion } from './datos/contexto';
 import { Entrar } from './pantallas/Entrar';
+import { Hoy } from './pantallas/Hoy';
 import { Piezas } from './pantallas/Piezas';
 import { Plantel } from './pantallas/Plantel';
 import { PlantelDelClub } from './pantallas/PlantelDelClub';
@@ -36,6 +37,7 @@ export const rutas: RouteObject[] = [
     { element: <RequiereSesion />, children: [
         { path: '/', element: <Planteles /> },
         { path: '/plantel/:plantelId', element: <PlantelDelClub /> },
+        { path: '/hoy/:plantelId', element: <Hoy /> },
       ],
     },
     { path: '*', element: <Navigate to="/" replace /> },
