@@ -360,8 +360,13 @@
    detalles dorados y un cuadrado girado de adorno (como en la propuesta de
    v0). Sin foto y con el botón dorado: el rojo queda para el hero (un solo
    bloque rojo por pantalla). */
-.portal-rec{position:relative;overflow:hidden;margin-top:var(--sp-8);background:var(--pub-oro-fondo);border-block:1px solid var(--dorado-borde);scroll-margin-top:var(--sp-4)}
-.portal-rec::before{content:"";position:absolute;top:-6rem;right:-6rem;width:18rem;height:18rem;border:1.75rem solid var(--dorado-suave);transform:rotate(45deg)}
+.portal-rec{position:relative;overflow:hidden;isolation:isolate;margin-top:var(--sp-8);background:var(--pub-oro-fondo);border-block:1px solid var(--dorado-borde);scroll-margin-top:var(--sp-4)}
+/* Relieve de curvas de nivel (public/js/relieve.js): reemplaza al cuadrado girado.
+   En los costados vacíos se apaga hacia el texto (--fade lo calcula el script);
+   donde no hay costados (celular), queda en la esquina de arriba a la derecha. */
+.portal-rec canvas.topo{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
+.portal-rec.m-costados canvas.topo{-webkit-mask-image:linear-gradient(to right,var(--mascara-1) 0,var(--mascara-55) calc(var(--fade) * .55),transparent var(--fade),transparent calc(100% - var(--fade)),var(--mascara-55) calc(100% - var(--fade) * .55),var(--mascara-1) 100%);mask-image:linear-gradient(to right,var(--mascara-1) 0,var(--mascara-55) calc(var(--fade) * .55),transparent var(--fade),transparent calc(100% - var(--fade)),var(--mascara-55) calc(100% - var(--fade) * .55),var(--mascara-1) 100%)}
+.portal-rec.m-esquina canvas.topo{-webkit-mask-image:radial-gradient(circle at 100% 0,var(--mascara-1) 0,var(--mascara-45) 35%,transparent 70%);mask-image:radial-gradient(circle at 100% 0,var(--mascara-1) 0,var(--mascara-45) 35%,transparent 70%)}
 .portal-rec-cuerpo{position:relative;max-width:64rem;margin-inline:auto;padding:var(--sp-8) var(--sp-4);display:grid;gap:var(--sp-6)}
 .portal-rec .portal-st{color:var(--dorado)}
 .portal-rec h2{font-size:clamp(2.25rem,1.5rem + 3.2vw,3.75rem);line-height:.92;margin:0 0 var(--sp-3);text-wrap:balance}

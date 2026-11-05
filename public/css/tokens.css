@@ -74,6 +74,15 @@
   --pub-oro-fondo:#15130F;
   --dorado-borde:rgba(242,179,61,.25);
   --dorado-suave:rgba(242,179,61,.1);
+  /* Relieve de curvas de nivel de esa franja (public/js/relieve.js): las líneas
+     que lee el script y los tres niveles de la máscara que lo apaga hacia el texto. */
+  --oro-base:rgba(242,179,61,.15);
+  --oro-index:rgba(242,179,61,.32);
+  --oro-hot:#FFCF6E;
+  --fade:0px; /* el script lo pisa en la franja con el ancho real de los costados */
+  --mascara-1:#000;
+  --mascara-55:rgba(0,0,0,.55);
+  --mascara-45:rgba(0,0,0,.45);
   /* Velos del hero del portal: el color de --pub-fondo con distinta opacidad.
      Cada uno lleva su propio cero (no "transparent") para que el degradé no
      pase por un gris. */
