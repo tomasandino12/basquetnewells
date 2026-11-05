@@ -118,6 +118,9 @@ function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: string;
         return (
           <>
             <header className="mb-4">
+              <Link to={`/hoy/${plantelId}`} className="float-right inline-flex min-h-11 items-center text-sm font-semibold underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
+                Resumen de hoy
+              </Link>
               <h1 className="font-titulo text-4xl leading-none font-semibold">{categoria}</h1>
               <p className="mt-1 text-sm text-gris">
                 {todos.length} {todos.length === 1 ? 'jugador' : 'jugadores'}

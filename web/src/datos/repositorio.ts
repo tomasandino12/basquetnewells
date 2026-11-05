@@ -77,6 +77,24 @@ export interface MedicionTiro {
   intentos: number | null;
 }
 
+/** Meta del cuerpo técnico por zona (porcentaje). Una zona que no está en el mapa no tiene meta: no es 0 %. */
+export type MetasDeZona = Record<string, number>;
+
+export interface PreviaDelPlantel {
+  id: string;
+  fecha: string;
+  rival: string | null;
+  plantelId: string;
+  partidoId: string | null;
+  evaluada: boolean;
+}
+
+export interface PartidoDelPlantel {
+  id: string;
+  fecha: string;
+  rivalNombre: string | null;
+}
+
 export interface Repositorio {
   obtenerSesionActual(): Promise<Sesion | null>;
   iniciarSesion(email: string, password: string): Promise<Sesion>;
@@ -95,6 +113,9 @@ export interface Repositorio {
   obtenerLesionesDelPlantel(plantelId: string): Promise<Lesion[]>;
   obtenerSesionesDeMedicion(clubId: string, plantelId: string): Promise<SesionMedicion[]>;
   obtenerMedicionesTiroDelPlantel(clubId: string, plantelId: string): Promise<MedicionTiro[]>;
+  obtenerMetasDelPlantel(clubId: string, plantelId: string): Promise<MetasDeZona>;
+  obtenerPreviasDelPlantel(clubId: string, plantelId: string): Promise<PreviaDelPlantel[]>;
+  obtenerPartidosDelPlantel(clubId: string, plantelId: string): Promise<PartidoDelPlantel[]>;
   /** `estado: null` desmarca a ese chico; los que no vienen quedan como estaban. */
   guardarAsistencia(datos: {
     plantelId: string;
