@@ -2,6 +2,8 @@ import { Navigate, Outlet, createHashRouter, useLocation, type RouteObject } fro
 import { Consulta } from './components/ui/consulta';
 import { Marco } from './laboratorio';
 import { useSesion } from './datos/contexto';
+import { Asistencia } from './pantallas/Asistencia';
+import { AsistenciaHistorial } from './pantallas/AsistenciaHistorial';
 import { Entrar } from './pantallas/Entrar';
 import { Hoy } from './pantallas/Hoy';
 import { Piezas } from './pantallas/Piezas';
@@ -38,6 +40,8 @@ export const rutas: RouteObject[] = [
         { path: '/', element: <Planteles /> },
         { path: '/plantel/:plantelId', element: <PlantelDelClub /> },
         { path: '/hoy/:plantelId', element: <Hoy /> },
+        { path: '/asistencia/:plantelId', element: <Asistencia /> },
+        { path: '/asistencia/:plantelId/historial', element: <AsistenciaHistorial /> },
       ],
     },
     { path: '*', element: <Navigate to="/" replace /> },

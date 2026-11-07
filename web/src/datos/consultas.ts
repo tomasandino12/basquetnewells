@@ -128,6 +128,73 @@ export function useMarcarAsistencia(plantelId: string, fecha: string) {
   );
 }
 
+// La toma de asistencia. Las claves empiezan con «plantel»: lo que se guarda en la ficha o en la lista
+// (una lesión, un alta) las vuelve a pedir. Cada consulta es una cosa, así un cambio de lesiones no pisa lo marcado.
+
+/** Los chicos del plantel, ordenados por nombre por quien los usa. Si falla, no hay toma de asistencia. */
+export function useJugadoresDeAsistencia(clubId: string | undefined, plantelId: string | undefined) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['plantel', 'asistencia', 'jugadores', clubId, plantelId],
+    enabled: clubId !== undefined && plantelId !== undefined,
+    queryFn: async () => (await cargar()).obtenerJugadoresDelPlantel(clubId!, plantelId!),
+  });
+}
+
+/** La marca de lesionado es un agregado: si no se puede leer, se toma asistencia igual, sin esa marca. */
+export function useLesionesDeAsistencia(plantelId: string | undefined) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['plantel', 'asistencia', 'lesiones', plantelId],
+    enabled: plantelId !== undefined,
+    queryFn: async () => (await cargar()).obtenerLesionesDelPlantel(plantelId!).catch(() => []),
+  });
+}
+
+/** Lo ya guardado de un día. Siempre fresco: lo marcado se mide contra esto, no contra una copia vieja. */
+export function useEntrenamientoDelDia(plantelId: string | undefined, fecha: string) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['plantel', 'asistencia', 'dia', plantelId, fecha],
+    enabled: plantelId !== undefined,
+    staleTime: 0,
+    gcTime: 0,
+    queryFn: async () => (await (await cargar()).obtenerEntrenamientos(plantelId!, fecha, fecha))[0] ?? null,
+  });
+}
+
+export function useHistorialDeAsistencia(plantelId: string | undefined, hoy: string) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['plantel', 'asistencia', 'historial', plantelId],
+    enabled: plantelId !== undefined,
+    staleTime: 0,
+    queryFn: async () => (await cargar()).obtenerEntrenamientos(plantelId!, DESDE_SIEMPRE, hoy),
+  });
+}
+
+export interface DiaAGuardar {
+  hubo: boolean;
+  filas: { jugadorId: string; estado: EstadoAsistencia }[];
+}
+
+/** Todo el día junto (una sola escritura): si falla, lo marcado queda en la pantalla para reintentar. */
+export function useGuardarDia(plantelId: string, fecha: string) {
+  return useEscritura<DiaAGuardar>((repo, d) => repo.guardarAsistencia({ plantelId, fecha, ...d }));
+}
+
+export interface LesionNueva {
+  jugadorId: string;
+  zona: string | null;
+  lado: string | null;
+  tipo: string | null;
+}
+
+/** La lesión se guarda al instante: es del jugador, no de este entrenamiento. */
+export function useRegistrarLesion(clubId: string, desde: string) {
+  return useEscritura<LesionNueva>((repo, l) => repo.abrirLesion({ clubId, desde, ...l }));
+}
+
 export function useAbrirLesion(clubId: string, desde: string) {
   return useEscritura<string>((repo, jugadorId) => repo.abrirLesion({ clubId, jugadorId, desde }));
 }

@@ -11,10 +11,12 @@ interface HojaProps {
   children: ReactNode;
   /** Sobre el rojo oscuro del club (la ficha del jugador): el fondo y la cruz cambian de color. */
   rojo?: boolean;
+  /** Lo que lee el lector de pantalla en la cruz; por defecto es el de la ficha. */
+  etiquetaCerrar?: string;
 }
 
 /** Hoja inferior para celular: se cierra con la cruz, el velo o Escape. */
-export function Hoja({ abierta, alCambiar, titulo, descripcion, children, rojo = false }: HojaProps) {
+export function Hoja({ abierta, alCambiar, titulo, descripcion, children, rojo = false, etiquetaCerrar = 'Cerrar la ficha' }: HojaProps) {
   return (
     <Dialog.Root open={abierta} onOpenChange={alCambiar}>
       <Dialog.Portal>
@@ -28,7 +30,7 @@ export function Hoja({ abierta, alCambiar, titulo, descripcion, children, rojo =
           <Dialog.Title className="sr-only">{titulo}</Dialog.Title>
           <Dialog.Description className="sr-only">{descripcion}</Dialog.Description>
           <Dialog.Close
-            aria-label="Cerrar la ficha"
+            aria-label={etiquetaCerrar}
             className={cn(
               'absolute top-1 right-1 z-10 grid size-11 place-items-center rounded-full text-gris outline-offset-[-4px] focus-visible:outline-2 focus-visible:outline-tinta',
               rojo && 'text-sobre-club focus-visible:outline-sobre-club',

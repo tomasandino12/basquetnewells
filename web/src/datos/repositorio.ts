@@ -123,7 +123,15 @@ export interface Repositorio {
     hubo: boolean;
     filas: { jugadorId: string; estado: EstadoAsistencia | null }[];
   }): Promise<string>;
-  abrirLesion(datos: { clubId: string; jugadorId: string; desde: string }): Promise<void>;
+  /** zona, lado y tipo son opcionales: null es «no se sabe». */
+  abrirLesion(datos: {
+    clubId: string;
+    jugadorId: string;
+    desde: string;
+    zona?: string | null;
+    lado?: string | null;
+    tipo?: string | null;
+  }): Promise<void>;
   darAlta(lesionId: string, hasta: string): Promise<void>;
   sacarDelPlantel(clubId: string, jugadorId: string, plantelId: string): Promise<void>;
 }

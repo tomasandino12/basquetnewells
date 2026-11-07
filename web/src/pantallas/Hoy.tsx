@@ -105,7 +105,7 @@ function ContenidoDeHoy({ clubId, plantelId, categoria }: { clubId: string; plan
                   <p className="text-sm text-gris">Entrenamiento de hoy</p>
                   <p className="truncate font-titulo text-xl font-semibold">{categoria}</p>
                 </div>
-                <Link to={`/plantel/${plantelId}`} className={ENLACE_BOTON}>
+                <Link to={`/asistencia/${plantelId}`} className={ENLACE_BOTON}>
                   <ClipboardCheck aria-hidden className="size-4" />
                   Tomar asistencia
                 </Link>
