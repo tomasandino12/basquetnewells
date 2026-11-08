@@ -34,6 +34,13 @@ export function repositorioInventado(piso: Partial<Repositorio> = {}): Repositor
     abrirLesion: async () => {},
     darAlta: async () => {},
     sacarDelPlantel: async () => {},
+    obtenerPlanesFisicos: async () => [],
+    obtenerPlanFisico: async () => [],
+    obtenerPasos: async () => [],
+    crearPaso: async ({ clave, nombre, paso }) => ({ id: 'pa-nuevo', clave, nombre, paso }),
+    editarPaso: async (id, paso) => ({ id, clave: 'x', nombre: 'x', paso }),
+    obtenerEscalonesActuales: async () => [],
+    moverEscalon: async ({ jugadorId, kg }) => ({ jugadorId, kg, desde: new Date().toISOString() }),
     ...piso,
   };
 }
