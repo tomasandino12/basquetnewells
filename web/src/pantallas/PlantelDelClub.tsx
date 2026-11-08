@@ -1,6 +1,6 @@
 import { ArrowLeft, Search, ShieldCheck, Users } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router';
 import { hoyLocal } from '@datos/antropometria.js';
 import { Aviso } from '../components/ui/aviso';
 import { Consulta } from '../components/ui/consulta';
@@ -96,6 +96,8 @@ function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: string;
   const [texto, setTexto] = useState('');
   // La app de siempre abre la ficha de un jugador con ?jugador=: arranca ya elegido.
   const [pedido] = useSearchParams();
+  // Al guardar la toma de asistencia se vuelve acá con el aviso de que quedó guardada.
+  const avisoDeToma = (useLocation().state as { aviso?: string } | null)?.aviso;
   const [elegido, setElegido] = useState<string | null>(pedido.get('jugador'));
 
   const filas = useMemo(() => (datos.data ? armarFilas({ ...datos.data, hoy }) : undefined), [datos.data, hoy]);
@@ -118,15 +120,25 @@ function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: string;
         return (
           <>
             <header className="mb-4">
-              <Link to={`/hoy/${plantelId}`} className="float-right inline-flex min-h-11 items-center text-sm font-semibold underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
-                Resumen de hoy
-              </Link>
+              <div className="float-right flex flex-col items-end">
+                <Link to={`/hoy/${plantelId}`} className="inline-flex min-h-11 items-center text-sm font-semibold underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
+                  Resumen de hoy
+                </Link>
+                <Link to={`/asistencia/${plantelId}`} className="inline-flex min-h-11 items-center text-sm font-semibold underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
+                  Tomar asistencia
+                </Link>
+                <Link to={`/asistencia/${plantelId}/historial`} className="inline-flex min-h-11 items-center text-sm font-semibold underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
+                  Historial de asistencia
+                </Link>
+              </div>
               <h1 className="font-titulo text-4xl leading-none font-semibold">{categoria}</h1>
               <p className="mt-1 text-sm text-gris">
                 {todos.length} {todos.length === 1 ? 'jugador' : 'jugadores'}
                 {todos.length > 0 && ` · hoy ${presentes} ${presentes === 1 ? 'presente' : 'presentes'}`}
               </p>
             </header>
+
+            {avisoDeToma && <Aviso tono="ok" titulo={avisoDeToma} className="mb-4" />}
 
             {d.solicitudes > 0 && (
               <Aviso titulo={d.solicitudes === 1 ? '1 chico pidió entrar a esta categoría' : `${d.solicitudes} chicos pidieron entrar a esta categoría`} className="mb-4">
@@ -194,7 +206,7 @@ function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: string;
             {todos.length > 0 && (
               <section aria-label="Más acciones del plantel" className="mt-8 flex flex-wrap gap-2 border-t border-linea pt-4">
                 <p className="w-full text-sm text-gris">Todavía en la app anterior:</p>
-                {['Historial de asistencia', 'Datos de emergencia', 'Agregar a mano', 'Importar inscriptos', 'Importar emergencias'].map((t) => (
+                {['Datos de emergencia', 'Agregar a mano', 'Importar inscriptos', 'Importar emergencias'].map((t) => (
                   <a
                     key={t}
                     href={APP_ANTERIOR}
