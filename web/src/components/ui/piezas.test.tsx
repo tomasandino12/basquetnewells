@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { Aviso } from './aviso';
 import { Boton } from './button';
 import { Campo } from './campo';
+import { Panel } from './card';
 import { Cargando, Vacio } from './estados';
 import { ListaPestanas, PanelPestana, Pestana, Pestanas } from './pestanas';
 
@@ -19,6 +20,39 @@ describe('Boton', () => {
     expect(b.getAttribute('type')).toBe('button');
     await u.click(b);
     expect(toques).toBe(0);
+  });
+
+  it('el principal es lima con letra bordó y su flecha no se lee', () => {
+    render(<Boton flecha>Tomar asistencia</Boton>);
+    const b = screen.getByRole('button', { name: 'Tomar asistencia' });
+    expect(b.className).toContain('bg-lima');
+    expect(b.className).toContain('text-sobre-lima');
+    expect(b.querySelector('svg[aria-hidden="true"]')).toBeTruthy();
+  });
+
+  it('sin flecha no dibuja ícono', () => {
+    render(<Boton>Guardar</Boton>);
+    expect(screen.getByRole('button').querySelector('svg')).toBeNull();
+  });
+
+  it('el de línea no tiene relleno y usa el rojo de texto', () => {
+    render(<Boton variante="linea">Ver historial</Boton>);
+    const c = screen.getByRole('button').className;
+    expect(c).toContain('bg-transparent');
+    expect(c).toContain('text-club-texto');
+  });
+
+  it('el del club es rojo vivo con letra blanca', () => {
+    render(<Boton variante="club">Borrar</Boton>);
+    expect(screen.getByRole('button').className).toContain('bg-club');
+  });
+});
+
+describe('Panel', () => {
+  it('tiene título como encabezado y es una región con ese nombre', () => {
+    render(<Panel titulo="Tiro de campo">contenido</Panel>);
+    expect(screen.getByRole('heading', { name: 'Tiro de campo' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Tiro de campo' })).toBeTruthy();
   });
 });
 

@@ -3,7 +3,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
 import { Campo } from '../components/ui/campo';
-import { Card } from '../components/ui/card';
+import { Card, Panel } from '../components/ui/card';
 import { Cargando, Vacio } from '../components/ui/estados';
 import { FilaJugador, type Aviso as TipoAviso } from '../components/ui/fila-jugador';
 import { ListaPestanas, PanelPestana, Pestana, Pestanas } from '../components/ui/pestanas';
@@ -14,6 +14,54 @@ interface Marca {
   presente: boolean;
   aviso: TipoAviso | null;
   lesion: boolean;
+}
+
+/** La paleta cálida por familias (DESIGN.md, «Sistema de la app nueva»): cada muestra con su rol. */
+const PALETA: { familia: string; muestras: { nombre: string; clase: string; rol: string }[] }[] = [
+  { familia: 'Base', muestras: [
+    { nombre: 'Fondo', clase: 'bg-fondo', rol: 'crema' },
+    { nombre: 'Tarjeta', clase: 'bg-sup', rol: 'hueso' },
+    { nombre: 'Hundido', clase: 'bg-sup-2', rol: 'arena' },
+    { nombre: 'Tinta', clase: 'bg-tinta', rol: 'texto' },
+  ] },
+  { familia: 'Rojos', muestras: [
+    { nombre: 'Club', clase: 'bg-club', rol: 'escudo y acentos' },
+    { nombre: 'Profundo', clase: 'bg-club-texto', rol: 'texto rojo' },
+    { nombre: 'Cereza', clase: 'bg-cereza', rol: 'piezas fuertes' },
+    { nombre: 'Bordó', clase: 'bg-bordo', rol: 'menú' },
+  ] },
+  { familia: 'Naranjas y marrones', muestras: [
+    { nombre: 'Tomate', clase: 'bg-tomate', rol: 'gráficos' },
+    { nombre: 'Quemado', clase: 'bg-quemado', rol: 'gráficos' },
+    { nombre: 'Caramelo', clase: 'bg-caramelo', rol: 'etiquetas' },
+    { nombre: 'Cuero', clase: 'bg-cuero', rol: 'etiquetas' },
+  ] },
+  { familia: 'Destacados', muestras: [
+    { nombre: 'Ámbar', clase: 'bg-ambar', rol: 'mejor marca' },
+    { nombre: 'Sol', clase: 'bg-sol', rol: 'dato clave' },
+    { nombre: 'Lima', clase: 'bg-lima', rol: 'la acción principal' },
+  ] },
+];
+
+function Paleta() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {PALETA.map((f) => (
+        <Card key={f.familia} className="p-3">
+          <h3 className="mb-2 text-sm font-semibold">{f.familia}</h3>
+          <ul className="flex flex-col gap-1.5">
+            {f.muestras.map((m) => (
+              <li key={m.nombre} className="flex items-center gap-2.5 text-sm">
+                <span aria-hidden className={`size-7 shrink-0 rounded-[0.3125rem] border border-linea ${m.clase}`} />
+                <span className="font-medium">{m.nombre}</span>
+                <span className="text-gris">· {m.rol}</span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ))}
+    </div>
+  );
 }
 
 function Seccion({ titulo, children }: { titulo: string; children: ReactNode }) {
@@ -41,7 +89,7 @@ export function Piezas() {
   const presentes = asistenciaDemo.filter((j) => marca(j.id).presente).length;
 
   return (
-    <div className="min-h-svh bg-fondo text-tinta">
+    <div className="entra min-h-svh text-tinta">
       <main className="mx-auto flex w-full max-w-[24.375rem] flex-col gap-8 px-4 py-5 sm:max-w-3xl sm:px-6 lg:max-w-5xl">
         <header className="flex items-end justify-between gap-4">
           <div>
@@ -57,6 +105,29 @@ export function Piezas() {
             {oscuro ? <Sun aria-hidden className="size-5" /> : <Moon aria-hidden className="size-5" />}
           </button>
         </header>
+
+        <Seccion titulo="Paleta">
+          <Paleta />
+        </Seccion>
+
+        <Seccion titulo="Panel con cifra">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Panel titulo="Asistencia del mes">
+              <p className="cifra font-titulo text-6xl leading-none font-bold tracking-tight">
+                87<span className="ml-1 text-3xl text-club-texto">%</span>
+              </p>
+              <p className="mt-2 text-sm text-gris">
+                <span className="mr-1.5 rounded-[0.3125rem] bg-ambar px-1.5 py-0.5 text-xs font-semibold text-sobre-lima">Mejor del año</span>
+                12 de 14 entrenamientos.
+              </p>
+            </Panel>
+            <div className="flex flex-col justify-center gap-3 rounded-[0.6875rem] bg-bordo p-4 text-sobre-bordo">
+              <p className="text-sm opacity-80">Entrenamiento de hoy · 18:30</p>
+              <p className="font-titulo text-4xl leading-none font-bold uppercase">U13 · Microestadio</p>
+              <Boton flecha className="self-start">Tomar asistencia</Boton>
+            </div>
+          </div>
+        </Seccion>
 
         <div className="flex flex-col gap-8 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-10">
           <Seccion titulo="Asistencia">
@@ -83,7 +154,9 @@ export function Piezas() {
           <div className="flex flex-col gap-8">
             <Seccion titulo="Botones">
               <div className="flex flex-wrap gap-3">
-                <Boton>Guardar</Boton>
+                <Boton flecha>Tomar asistencia</Boton>
+                <Boton variante="linea">Ver historial</Boton>
+                <Boton variante="club">Borrar</Boton>
                 <Boton variante="secundario">Ver ficha</Boton>
                 <Boton variante="contorno">Cancelar</Boton>
                 <Boton disabled>Guardando…</Boton>

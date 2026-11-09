@@ -1,9 +1,28 @@
-import type { ComponentProps } from 'react';
+import { useId, type ComponentProps, type ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 
-/** Superficie base: papel claro en el tema claro, tarjeta oscura en el otro. */
+/** Superficie base: hueso en el tema claro, tarjeta bordó oscura en el otro. */
 export function Card({ className, ...props }: ComponentProps<'div'>) {
   return <div className={cn('rounded-[0.6875rem] border border-linea bg-sup shadow-tarjeta', className)} {...props} />;
+}
+
+/**
+ * Bloque de datos (de la rama del rediseño viejo): todo lo que se lee —cifras, barras, renglones— va
+ * adentro de un panel, nunca suelto sobre el fondo con textura. El título va en Barlow, chico y con aire.
+ */
+export function Panel({ titulo, accion, className, children, ...props }: Omit<ComponentProps<'section'>, 'title'> & { titulo: string; accion?: ReactNode }) {
+  const id = useId();
+  return (
+    <section aria-labelledby={id} className={cn('rounded-[0.6875rem] border border-linea bg-sup p-4 shadow-tarjeta', className)} {...props}>
+      <div className="mb-3 flex items-center justify-between gap-3 border-b border-linea pb-2">
+        <h2 id={id} className="font-titulo text-lg leading-none font-semibold tracking-[.12em] text-gris uppercase">
+          {titulo}
+        </h2>
+        {accion}
+      </div>
+      {children}
+    </section>
+  );
 }
 
 /**
