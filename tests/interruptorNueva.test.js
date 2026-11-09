@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CLAVE_NUEVA, RUTA_NUEVA, direccionNueva, normalizarNueva } from '../src/data/interruptorNueva.js';
+import { CLAVE_NUEVA, CLAVE_PLANTEL, direccionNueva, normalizarNueva, plantelSeguro } from '../src/data/interruptorNueva.js';
 
 test("prendido por defecto: sólo 'no' lo apaga", () => {
   assert.equal(normalizarNueva('no'), 'no');
@@ -9,31 +9,26 @@ test("prendido por defecto: sólo 'no' lo apaga", () => {
   }
 });
 
-test('Hoy va al resumen nuevo del plantel', () => {
-  assert.equal(direccionNueva({ plantelId: 'abc-123', pantalla: 'hoy' }), '/app#/hoy/abc-123');
-  assert.equal(direccionNueva({ plantelId: '../x', pantalla: 'hoy' }), '/app#/');
-});
-
-test('la clave guardada es la de siempre', () => {
+test('las claves guardadas son las de siempre', () => {
   assert.equal(CLAVE_NUEVA, 'semillero.nueva');
+  assert.equal(CLAVE_PLANTEL, 'semillero.plantel');
 });
 
-test('la dirección lleva al plantel, y a la ficha si hay jugador', () => {
-  assert.equal(direccionNueva({ plantelId: 'abc-123' }), '/app#/plantel/abc-123');
-  assert.equal(direccionNueva({ plantelId: 'abc-123', jugadorId: 'j_9' }), '/app#/plantel/abc-123?jugador=j_9');
+test('direcciones limpias, sin ids: Hoy y Plantel', () => {
+  assert.equal(direccionNueva({ pantalla: 'hoy' }), '/app/hoy');
+  assert.equal(direccionNueva({ plantelId: 'abc-123', pantalla: 'hoy' }), '/app/hoy', 'la categoría no va en la dirección');
+  assert.equal(direccionNueva({ plantelId: 'abc-123' }), '/app/plantel');
+  assert.equal(direccionNueva(), '/app/plantel');
 });
 
-test('sin plantel o con un id raro va a la lista de planteles', () => {
-  for (const plantelId of [undefined, null, '', 'a/b', '../app', 'x?y=1', 'a#b', 'https://malo.com', 'x'.repeat(65), 5]) {
-    assert.equal(direccionNueva({ plantelId }), `${RUTA_NUEVA}#/`, JSON.stringify(plantelId));
+test('la ficha va con ?jugador= (la nueva lo cambia por el nombre) y un id raro se ignora', () => {
+  assert.equal(direccionNueva({ jugadorId: 'j_9' }), '/app/plantel?jugador=j_9');
+  assert.equal(direccionNueva({ jugadorId: 'a&b=1' }), '/app/plantel');
+});
+
+test('sólo se guarda una categoría con forma de id', () => {
+  assert.equal(plantelSeguro('abc-123'), 'abc-123');
+  for (const v of [undefined, null, '', 'a/b', '../app', 'x?y=1', 'a#b', 'https://malo.com', 'x'.repeat(65), 5]) {
+    assert.equal(plantelSeguro(v), null, JSON.stringify(v));
   }
-  assert.equal(direccionNueva(), `${RUTA_NUEVA}#/`);
-});
-
-test('un jugador con id raro se ignora, el plantel queda', () => {
-  assert.equal(direccionNueva({ plantelId: 'p1', jugadorId: 'a&b=1' }), '/app#/plantel/p1');
-});
-
-test('la dirección siempre es del mismo origen', () => {
-  assert.ok(direccionNueva({ plantelId: 'p1' }).startsWith('/app#'));
 });

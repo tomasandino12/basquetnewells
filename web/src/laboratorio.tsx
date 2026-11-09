@@ -1,8 +1,10 @@
-import { Activity, ArrowUpRight, CalendarCheck, ClipboardCheck, LayoutGrid, LineChart, Moon, MoreHorizontal, PlaySquare, Ruler, Sun, Users, type LucideIcon } from 'lucide-react';
+import { Activity, ArrowUpRight, LogOut, CalendarCheck, ClipboardCheck, LineChart, Moon, MoreHorizontal, PlaySquare, Ruler, Sun, Users, type LucideIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { NavLink, Outlet, matchPath, useLocation } from 'react-router';
+import { NavLink, Outlet, useLocation } from 'react-router';
 import escudo from '../../public/escudo.png';
 import { cn } from './lib/cn';
+import { useSesion } from './datos/contexto';
+import { useSalir } from './datos/consultas';
 import { aplicarTema, guardarTema, leerTema, type Tema } from './tema';
 import { APP_DE_SIEMPRE } from './clasica';
 
@@ -13,21 +15,16 @@ interface Enlace {
 }
 
 /**
- * Las pantallas reales del menú. Sin plantel elegido sólo hay Planteles; con uno (sale de la
- * dirección), las de esa categoría. Cada pantalla nueva que se muda se suma acá (una prueba
+ * Las pantallas reales del menú. La categoría no va en la dirección (se elige arriba, con los
+ * chips, como en la app de siempre). Cada pantalla nueva que se muda se suma acá (una prueba
  * controla que toda ruta directa esté en el menú o en EJEMPLOS).
  */
-export function enlacesDelMenu(plantelId: string | undefined): Enlace[] {
-  const base: Enlace[] = [{ a: '/', nombre: 'Planteles', icono: LayoutGrid }];
-  if (!plantelId) return base;
-  return [
-    ...base,
-    { a: `/hoy/${plantelId}`, nombre: 'Hoy', icono: Activity },
-    { a: `/plantel/${plantelId}`, nombre: 'Plantel', icono: Users },
-    { a: `/asistencia/${plantelId}`, nombre: 'Asistencia', icono: ClipboardCheck },
-    { a: `/fisico/${plantelId}`, nombre: 'Físico', icono: CalendarCheck },
-  ];
-}
+export const ENLACES_DEL_MENU: Enlace[] = [
+  { a: '/hoy', nombre: 'Hoy', icono: Activity },
+  { a: '/plantel', nombre: 'Plantel', icono: Users },
+  { a: '/asistencia', nombre: 'Asistencia', icono: ClipboardCheck },
+  { a: '/fisico', nombre: 'Físico', icono: CalendarCheck },
+];
 
 /**
  * Lo que todavía no se mudó: se abre en la app de siempre (/app/clasica), así no se pierde
@@ -79,14 +76,26 @@ export const EJEMPLOS = [
   { a: '/maqueta/hoy', nombre: 'Maqueta de Hoy' },
 ];
 
-const CON_PLANTEL = ['/hoy/:plantelId/*', '/plantel/:plantelId/*', '/asistencia/:plantelId/*', '/fisico/:plantelId/*'];
-
-function plantelDe(ruta: string): string | undefined {
-  for (const patron of CON_PLANTEL) {
-    const m = matchPath(patron, ruta);
-    if (m?.params.plantelId) return m.params.plantelId;
-  }
-  return undefined;
+/** Salir de la cuenta: estaba en la lista de planteles, que ya no existe. Sólo con sesión. */
+function BotonSalir({ compacto }: { compacto?: boolean }) {
+  const { estado } = useSesion();
+  const salir = useSalir();
+  if (estado !== 'con-sesion') return null;
+  return (
+    <button
+      type="button"
+      disabled={salir.isPending}
+      onClick={() => salir.mutate()}
+      aria-label={compacto ? 'Salir' : undefined}
+      className={cn(
+        'flex items-center gap-3 rounded-[0.5rem] text-sobre-negro opacity-70 outline-offset-2 focus-visible:outline-2 focus-visible:outline-lima [@media(hover:hover)]:hover:opacity-100',
+        compacto ? 'size-11 justify-center' : 'min-h-11 px-3 text-[0.9375rem]',
+      )}
+    >
+      <LogOut aria-hidden className="size-5" strokeWidth={1.8} />
+      {!compacto && <span>Salir</span>}
+    </button>
+  );
 }
 
 function BotonTema({ tema, alCambiar, className }: { tema: Tema; alCambiar: () => void; className?: string }) {
@@ -112,7 +121,6 @@ function ItemMenu({ enlace, compacto }: { enlace: Enlace; compacto?: boolean }) 
   return (
     <NavLink
       to={enlace.a}
-      end
       className={({ isActive }) =>
         cn(
           'group relative flex items-center gap-3 rounded-[0.5rem] text-sobre-negro outline-offset-2 focus-visible:outline-2 focus-visible:outline-lima',
@@ -155,7 +163,7 @@ function Ejemplos() {
 /** El marco de todas las pantallas: menú negro al costado en compu y abajo en el celular. */
 export function Marco() {
   const { pathname } = useLocation();
-  const enlaces = enlacesDelMenu(plantelDe(pathname));
+  const enlaces = ENLACES_DEL_MENU;
   const [tema, setTema] = useState<Tema>(leerTema);
 
   useEffect(() => aplicarTema(tema), [tema]);
@@ -184,7 +192,10 @@ export function Marco() {
           </ul>
           <DeSiempre />
         </nav>
-        <BotonTema tema={tema} alCambiar={cambiarTema} className="mt-auto" />
+        <div className="mt-auto flex items-center justify-between">
+          <BotonSalir />
+          <BotonTema tema={tema} alCambiar={cambiarTema} />
+        </div>
       </aside>
 
       {/* Celular: arriba el escudo y el tema; abajo el menú al alcance del pulgar. */}
@@ -193,7 +204,10 @@ export function Marco() {
           <img src={escudo} alt="" width={24} height={24} className="size-6" />
           <p className="font-titulo text-lg leading-none font-bold tracking-wide text-sobre-negro uppercase">Semillero</p>
         </div>
-        <BotonTema tema={tema} alCambiar={cambiarTema} />
+        <div className="flex items-center">
+          <BotonSalir compacto />
+          <BotonTema tema={tema} alCambiar={cambiarTema} />
+        </div>
       </header>
       <nav aria-label="Menú de la app" className="fixed inset-x-0 bottom-0 z-20 border-t-2 border-club bg-negro pb-[env(safe-area-inset-bottom)] lg:hidden">
         <ul className="flex">

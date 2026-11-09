@@ -39,15 +39,26 @@ export function normalizarNueva(valor) {
 const ID_SEGURO = /^[\w-]{1,64}$/;
 
 /**
- * La dirección de la pantalla nueva. /nueva usa rutas con # (se publica estático).
- * Sin plantel o con un id raro va a la lista de planteles; un jugador sin plantel
- * no tiene dónde abrirse. El id se valida y no se concatena crudo: la dirección
- * termina en un cambio de location y no tiene que poder llevar a otro lado.
+ * La categoría con la que se trabaja (los chips de arriba). La nueva la lee del
+ * teléfono y no de la dirección: Tomás no quiere ver ids en /app. Esta app la
+ * escribe justo antes de pasar a la nueva (ver pantallaNueva.js).
  */
-export function direccionNueva({ plantelId, jugadorId, pantalla = 'plantel' } = {}) {
-  if (typeof plantelId !== 'string' || !ID_SEGURO.test(plantelId)) return `${RUTA_NUEVA}#/`;
-  if (pantalla === 'hoy') return `${RUTA_NUEVA}#/hoy/${plantelId}`;
-  const base = `${RUTA_NUEVA}#/plantel/${plantelId}`;
+export const CLAVE_PLANTEL = 'semillero.plantel';
+
+/** Sólo un id con forma de id: lo que se guarda termina eligiendo qué datos se piden. */
+export function plantelSeguro(plantelId) {
+  return typeof plantelId === 'string' && ID_SEGURO.test(plantelId) ? plantelId : null;
+}
+
+/**
+ * La dirección de la pantalla nueva, limpia: /app/hoy, /app/plantel. La ficha de
+ * un jugador va con ?jugador=<id> y la nueva la cambia por su nombre apenas abre.
+ * El id se valida y no se concatena crudo: la dirección termina en un cambio de
+ * location y no tiene que poder llevar a otro lado.
+ */
+export function direccionNueva({ jugadorId, pantalla = 'plantel' } = {}) {
+  if (pantalla === 'hoy') return `${RUTA_NUEVA}/hoy`;
+  const base = `${RUTA_NUEVA}/plantel`;
   if (typeof jugadorId !== 'string' || !ID_SEGURO.test(jugadorId)) return base;
   return `${base}?jugador=${jugadorId}`;
 }

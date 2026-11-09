@@ -58,12 +58,12 @@ afterEach(() => {
 test('prendido por defecto: sin tocar nada, el plantel abre en la nueva', async () => {
   assert.equal(nuevaPrendida(), true);
   assert.equal(await abrirEnNueva({ plantelId: 'p1' }), true);
-  assert.deepEqual(destinos, ['/app#/plantel/p1']);
+  assert.deepEqual(destinos, ['/app/plantel']);
 });
 
 test('Hoy abre el resumen nuevo', async () => {
   assert.equal(await abrirEnNueva({ plantelId: 'p1', pantalla: 'hoy' }), true);
-  assert.deepEqual(destinos, ['/app#/hoy/p1']);
+  assert.deepEqual(destinos, ['/app/hoy']);
 });
 
 test('apagado: no pide nada y no se va de la pantalla vieja', async () => {
@@ -78,15 +78,21 @@ test('prendido y con /nueva respondiendo: va al plantel nuevo', async () => {
   assert.equal(guardarNueva(true), true);
   assert.equal(nuevaPrendida(), true);
   assert.equal(await abrirEnNueva({ plantelId: 'p1' }), true);
-  assert.deepEqual(destinos, ['/app#/plantel/p1']);
+  assert.deepEqual(destinos, ['/app/plantel']);
   assert.equal(pedidos[0].url, '/app');
   assert.equal(pedidos[0].opciones.method, 'HEAD');
+});
+
+test('antes de pasar deja la categoría en el teléfono: la dirección no lleva ids', async () => {
+  assert.equal(await abrirEnNueva({ plantelId: 'p1', pantalla: 'hoy' }), true);
+  assert.equal(guardado.get('semillero.plantel'), 'p1');
+  assert.deepEqual(destinos, ['/app/hoy']);
 });
 
 test('prendido, la ficha se abre en la nueva con el jugador', async () => {
   guardarNueva(true);
   assert.equal(await abrirEnNueva({ plantelId: 'p1', jugadorId: 'j1' }), true);
-  assert.deepEqual(destinos, ['/app#/plantel/p1?jugador=j1']);
+  assert.deepEqual(destinos, ['/app/plantel?jugador=j1']);
 });
 
 test('respaldo: sin conexión se queda en la pantalla vieja', async () => {
@@ -124,7 +130,7 @@ test('si el teléfono no deja usar localStorage queda apagado y no rompe', async
 
 test('al entrar a la de siempre pasa a la nueva con replace', async () => {
   assert.equal(await abrirAlEntrar({ plantelId: 'p1', pantalla: 'plantel' }), true);
-  assert.deepEqual(reemplazos, ['/app#/plantel/p1']);
+  assert.deepEqual(reemplazos, ['/app/plantel']);
   assert.deepEqual(destinos, [], 'replace: la de siempre no queda en el historial');
 });
 

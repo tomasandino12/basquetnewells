@@ -1,5 +1,6 @@
 import { ChevronRight, Dumbbell } from 'lucide-react';
 import { Link, useParams } from 'react-router';
+import { usePlantelId } from '../plantel/activo';
 import { agruparPorBloque, pasoDeLinea } from '@datos/escalones.js';
 import { Consulta } from '../components/ui/consulta';
 import { Vacio } from '../components/ui/estados';
@@ -11,11 +12,12 @@ import { ConPlantel } from './ConPlantel';
 
 /** Una sesión del plan: sus ejercicios por bloque, en el orden del archivo. Tocar uno abre los escalones de ese ejercicio. */
 export function FisicoSesion() {
-  const { plantelId, planId, sesionId } = useParams();
+  const { planId, sesionId } = useParams();
+  const plantelId = usePlantelId();
   return (
     <ConPlantel
       plantelId={plantelId}
-      volver={{ a: `/fisico/${plantelId}`, texto: 'Plan de fuerza' }}
+      volver={{ a: `/fisico`, texto: 'Plan de fuerza' }}
       soloCuerpoTecnico="La coordinación ve el plan de fuerza en la app anterior."
     >
       {(p) => <Sesion {...p} planId={planId!} sesionId={sesionId!} />}
@@ -35,7 +37,7 @@ function Sesion({ clubId, plantelId, planId, sesionId }: { clubId: string; plant
         const sesion = lista.find((s) => s.id === sesionId);
         if (!sesion) {
           return (
-            <Vacio icono={Dumbbell} titulo="No encontramos esa sesión" accion={<Link to={`/fisico/${plantelId}`} className="text-sm font-semibold underline">Ir al plan</Link>}>
+            <Vacio icono={Dumbbell} titulo="No encontramos esa sesión" accion={<Link to={`/fisico`} className="text-sm font-semibold underline">Ir al plan</Link>}>
               Puede que el plan se haya cambiado. Volvé al plan y elegí la sesión de nuevo.
             </Vacio>
           );
@@ -61,7 +63,7 @@ function Sesion({ clubId, plantelId, planId, sesionId }: { clubId: string; plant
                       <TarjetaDeEjercicio
                         key={l.id}
                         linea={l}
-                        a={`/fisico/${plantelId}/plan/${planId}/sesion/${sesionId}/ejercicio/${l.id}`}
+                        a={`/fisico/plan/${planId}/sesion/${sesionId}/ejercicio/${l.id}`}
                         paso={(pasoDeLinea(l.nombreOriginal, pasos.data ?? []) as PasoFuerza | null)?.paso ?? null}
                       />
                     ))}

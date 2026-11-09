@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import type { RouteObject } from 'react-router';
 import { desmarcarSesionCerrada } from './datos/errores';
 import { renderConDatos, repositorioInventado } from './datos/renderDePrueba';
-import { EJEMPLOS, enlacesDelMenu } from './laboratorio';
+import { EJEMPLOS, ENLACES_DEL_MENU } from './laboratorio';
 import { rutas } from './rutas';
 
 afterEach(() => {
@@ -18,13 +18,14 @@ const caminos = (lista: RouteObject[]): string[] =>
 
 describe('menú de la app', () => {
   it('cada pantalla que se abre directo está en el menú o en los ejemplos', () => {
-    const directas = caminos(rutas).filter((c) => c !== '*' && c !== '/entrar' && !c.includes(':'));
-    const alcanzables = [...enlacesDelMenu(undefined).map((e) => e.a), ...EJEMPLOS.map((e) => e.a)];
+    // El historial se abre desde Asistencia y desde el plantel, no desde el menú.
+    const directas = caminos(rutas).filter((c) => !['*', '/', '/entrar', '/asistencia/historial'].includes(c) && !c.includes(':'));
+    const alcanzables = [...ENLACES_DEL_MENU.map((e) => e.a), ...EJEMPLOS.map((e) => e.a)];
     expect([...alcanzables].sort()).toEqual([...directas].sort());
   });
 
-  it('con un plantel elegido lleva a Hoy, Plantel, Asistencia y Físico de ese plantel', () => {
-    expect(enlacesDelMenu('p1').map((e) => e.a)).toEqual(['/', '/hoy/p1', '/plantel/p1', '/asistencia/p1', '/fisico/p1']);
+  it('lleva a Hoy, Plantel, Asistencia y Físico sin ids en la dirección', () => {
+    expect(ENLACES_DEL_MENU.map((e) => e.a)).toEqual(['/hoy', '/plantel', '/asistencia', '/fisico']);
   });
 
   it('los ejemplos no van en el menú: van aparte y lo dicen', async () => {

@@ -51,7 +51,9 @@ function repo(piso: Partial<Repositorio> = {}) {
   });
 }
 
-const abrir = (r: Repositorio = repo()) => renderConDatos(rutas, { repo: r, ruta: '/plantel/p-1' });
+const abrir = (r: Repositorio = repo()) => renderConDatos(rutas, { repo: r, ruta: '/plantel' });
+// La ficha es una pantalla propia, con el nombre en la dirección.
+const abrirFicha = (r: Repositorio = repo(), slug = 'bruno-acosta') => renderConDatos(rutas, { repo: r, ruta: `/plantel/${slug}` });
 const filas = async () => within(await screen.findByRole('list', { name: 'Jugadores del plantel' })).getAllByRole('listitem');
 
 describe('Plantel con datos: encabezado y lista', () => {
@@ -160,23 +162,32 @@ describe('Plantel con datos: asistencia dentro de la lista', () => {
   });
 });
 
-describe('Plantel con datos: ficha en compu', () => {
-  it('abre con el primero en el panel y cambia al tocar otra fila', async () => {
+describe('Plantel con datos: la ficha en su pantalla', () => {
+  it('tocar a un chico abre su ficha en una pantalla propia, con su nombre en la dirección', async () => {
     simular(true);
     const u = userEvent.setup();
-    abrir();
-    expect(await screen.findByRole('article', { name: 'Ficha de Bruno Acosta' })).toBeTruthy();
+    const { router } = abrir();
+    await filas();
+    expect(screen.queryByRole('article')).toBeNull();
     await u.click(screen.getByRole('button', { name: 'Ficha de Benítez, Tomás' }));
-    expect(screen.getByRole('article', { name: 'Ficha de Tomás Benítez' })).toBeTruthy();
-    expect(screen.queryByRole('article', { name: 'Ficha de Bruno Acosta' })).toBeNull();
+    expect(await screen.findByRole('article', { name: 'Ficha de Tomás Benítez' })).toBeTruthy();
+    expect(router.state.location.pathname).toBe('/plantel/tomas-benitez');
     expect(screen.queryByRole('dialog')).toBeNull();
+    await u.click(screen.getByRole('link', { name: 'Volver al plantel' }));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/plantel'));
+  });
+
+  it('un nombre que no está en la categoría lo dice', async () => {
+    simular(true);
+    abrirFicha(repo(), 'nadie-con-este-nombre');
+    expect(await screen.findByText('No encontramos a ese jugador')).toBeTruthy();
   });
 
   it('Presente, Avisó y Faltó guardan presente, justificada y ausente', async () => {
     simular(true);
     const guardarAsistencia = vi.fn(async () => 'e-1');
     const u = userEvent.setup();
-    abrir(repo({ guardarAsistencia }));
+    abrirFicha(repo({ guardarAsistencia }));
     const ficha = within(await screen.findByRole('article', { name: 'Ficha de Bruno Acosta' }));
     await u.click(ficha.getByRole('radio', { name: 'Avisó' }));
     await waitFor(() => expect(guardarAsistencia).toHaveBeenCalledTimes(1));
@@ -190,7 +201,7 @@ describe('Plantel con datos: ficha en compu', () => {
     simular(true);
     const abrirLesion = vi.fn(async () => {});
     const u = userEvent.setup();
-    abrir(repo({ abrirLesion }));
+    abrirFicha(repo({ abrirLesion }));
     await u.click(await screen.findByRole('button', { name: /Marcar lesión/ }));
     await u.click(screen.getByRole('button', { name: 'Tobillo' }));
     await u.click(screen.getByRole('button', { name: 'Derecho' }));
@@ -204,7 +215,7 @@ describe('Plantel con datos: ficha en compu', () => {
     simular(true);
     const guardarAsistencia = vi.fn(async () => 'e-1');
     const u = userEvent.setup();
-    abrir(repo({ guardarAsistencia }));
+    abrirFicha(repo({ guardarAsistencia }));
     const ficha = within(await screen.findByRole('article', { name: 'Ficha de Bruno Acosta' }));
     expect(ficha.queryByRole('group', { name: 'Por qué faltó' })).toBeNull();
     await u.click(ficha.getByRole('radio', { name: 'Avisó' }));
@@ -215,7 +226,7 @@ describe('Plantel con datos: ficha en compu', () => {
     simular(true);
     const darAlta = vi.fn(async () => {});
     const u = userEvent.setup();
-    abrir(repo({ darAlta, obtenerLesionesDelPlantel: async () => [{ id: 'l-9', jugadorId: 'j-1', desde: '2026-10-12', hasta: null, zona: 'tobillo', lado: 'derecho', tipo: null }] }));
+    abrirFicha(repo({ darAlta, obtenerLesionesDelPlantel: async () => [{ id: 'l-9', jugadorId: 'j-1', desde: '2026-10-12', hasta: null, zona: 'tobillo', lado: 'derecho', tipo: null }] }));
     expect(await screen.findByText(/Lesionado desde el 12\/10 · tobillo derecho/)).toBeTruthy();
     await u.click(screen.getByRole('button', { name: 'Dar el alta' }));
     await waitFor(() => expect(darAlta).toHaveBeenCalledWith('l-9', HOY));
@@ -225,7 +236,7 @@ describe('Plantel con datos: ficha en compu', () => {
     simular(true);
     const sacarDelPlantel = vi.fn(async () => {});
     const u = userEvent.setup();
-    abrir(repo({ sacarDelPlantel }));
+    abrirFicha(repo({ sacarDelPlantel }));
     await u.click(await screen.findByRole('button', { name: 'Sacar del plantel' }));
     expect(screen.getByText(/Su ficha y su historia se conservan/)).toBeTruthy();
     await u.click(screen.getByRole('button', { name: 'Cancelar' }));
@@ -237,7 +248,7 @@ describe('Plantel con datos: ficha en compu', () => {
 
   it('las pestañas son Físico, Tiro, Partidos e Historia y abre en Físico', async () => {
     simular(true);
-    abrir();
+    abrirFicha();
     const ficha = within(await screen.findByRole('article', { name: 'Ficha de Bruno Acosta' }));
     expect(ficha.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Físico', 'Tiro', 'Partidos', 'Historia']);
     expect(ficha.getByRole('tab', { name: 'Físico' }).getAttribute('aria-selected')).toBe('true');
@@ -247,7 +258,7 @@ describe('Plantel con datos: ficha en compu', () => {
   it('la pestaña Tiro dibuja la curva con su escala y los valores por zona', async () => {
     simular(true);
     const u = userEvent.setup();
-    abrir();
+    abrirFicha();
     const ficha = within(await screen.findByRole('article', { name: 'Ficha de Bruno Acosta' }));
     await u.click(ficha.getByRole('tab', { name: 'Tiro' }));
     expect(ficha.getByRole('img', { name: /Curva de tiro por zona/ })).toBeTruthy();
@@ -258,41 +269,25 @@ describe('Plantel con datos: ficha en compu', () => {
   it('Tiro de un chico que nunca tiró lo dice sin inventar datos', async () => {
     simular(true);
     const u = userEvent.setup();
-    abrir();
-    await u.click(await screen.findByRole('button', { name: 'Ficha de Benítez, Tomás' }));
-    await u.click(screen.getByRole('tab', { name: 'Tiro' }));
+    abrirFicha(repo(), 'tomas-benitez');
+    await u.click(await screen.findByRole('tab', { name: 'Tiro' }));
     expect(screen.getByText('Todavía no tiene baterías de tiro.')).toBeTruthy();
   });
 });
 
-describe('Plantel con datos: celular', () => {
-  it('arranca sin ficha, la abre en una hoja y se cierra con Escape', async () => {
-    simular(false);
-    const u = userEvent.setup();
-    abrir();
-    await filas();
-    expect(screen.queryByRole('dialog')).toBeNull();
-    await u.click(screen.getByRole('button', { name: 'Ficha de Benítez, Tomás' }));
-    const hoja = screen.getByRole('dialog');
-    expect(within(hoja).getByRole('article', { name: 'Ficha de Tomás Benítez' })).toBeTruthy();
-    await u.keyboard('{Escape}');
-    expect(screen.queryByRole('dialog')).toBeNull();
-  });
-});
-
 describe('Plantel con datos: ficha pedida desde la app de siempre', () => {
-  it('en celular, ?jugador= abre la hoja con esa ficha', async () => {
+  it('?jugador=<id> se cambia por la ficha con su nombre', async () => {
     simular(false);
-    renderConDatos(rutas, { repo: repo(), ruta: '/plantel/p-1?jugador=j-1' });
-    const hoja = await screen.findByRole('dialog');
-    expect(within(hoja).getByRole('article', { name: /^Ficha de / })).toBeTruthy();
+    const { router } = renderConDatos(rutas, { repo: repo(), ruta: '/plantel?jugador=j-1' });
+    expect(await screen.findByRole('article', { name: 'Ficha de Bruno Acosta' })).toBeTruthy();
+    expect(router.state.location.pathname).toBe('/plantel/bruno-acosta');
   });
 
-  it('un jugador que no está en el plantel se ignora: no abre nada en celular', async () => {
+  it('un jugador que no está en el plantel se ignora: queda la lista', async () => {
     simular(false);
-    renderConDatos(rutas, { repo: repo(), ruta: '/plantel/p-1?jugador=otro-plantel' });
+    renderConDatos(rutas, { repo: repo(), ruta: '/plantel?jugador=otro-plantel' });
     await filas();
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('article')).toBeNull();
   });
 });
 
@@ -336,10 +331,21 @@ describe('Plantel con datos: estados y permisos', () => {
     expect(screen.queryByText(/pidi/)).toBeNull();
   });
 
-  it('el entrenador no entra a una categoría que no tiene asignada', async () => {
+  it('el entrenador ve la categoría que tiene asignada, sin ids en la dirección', async () => {
     simular(true);
     abrir(repo({ obtenerMisPlantelesAsignados: async () => new Set(['p-2']) }));
-    expect(await screen.findByText('No encontramos esa categoría')).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Sub 15' })).toBeTruthy();
+  });
+
+  it('con dos categorías, los chips de arriba cambian la del plantel', async () => {
+    simular(true);
+    const u = userEvent.setup();
+    abrir(repo({ obtenerMisPlantelesAsignados: async () => new Set(['p-1', 'p-2']) }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Sub 13' })).toBeTruthy();
+    await u.click(within(screen.getByRole('navigation', { name: 'Categoría' })).getByRole('button', { name: 'Sub 15' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Sub 15' })).toBeTruthy();
+    expect(localStorage.getItem('semillero.plantel')).toBe('p-2');
+    localStorage.clear();
   });
 
   it('la coordinación sola no ve a los chicos: se le explica en vez de mostrar una lista vacía', async () => {
@@ -356,9 +362,12 @@ describe('Plantel con datos: estados y permisos', () => {
     expect(await filas()).toHaveLength(3);
   });
 
-  it('con una sola categoría, la lista de planteles entra directo al plantel', async () => {
+  it('la dirección de entrada lleva a Hoy y el botón «Tomar asistencia» del plantel a la toma', async () => {
     simular(true);
-    renderConDatos(rutas, { repo: repo() });
-    expect(await screen.findByRole('heading', { level: 1, name: 'Sub 13' })).toBeTruthy();
+    const { router } = renderConDatos(rutas, { repo: repo() });
+    await waitFor(() => expect(router.state.location.pathname).toBe('/hoy'));
+    cleanup();
+    abrir();
+    expect((await screen.findByRole('link', { name: /Tomar asistencia/ })).getAttribute('href')).toBe('/asistencia');
   });
 });

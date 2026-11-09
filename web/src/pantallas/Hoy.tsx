@@ -1,6 +1,7 @@
 import { ArrowLeft, Target, Users } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link } from 'react-router';
+import { usePlantelId } from '../plantel/activo';
 import { saludoSegunHora } from '@datos/saludo.js';
 import { siguientePasoDeMisiones, vincularPrevias } from '@datos/misiones.js';
 import { claseBoton, Flecha } from '../components/ui/button';
@@ -33,7 +34,7 @@ const PLURAL = (n: number, uno: string, varios: string) => (n === 1 ? uno : vari
  * a dónde ir a seguir. La seguridad la impone la base; acá sólo se ordena lo que llega.
  */
 export function Hoy() {
-  const { plantelId } = useParams();
+  const plantelId = usePlantelId();
   const clubes = useMisClubes();
   const club = clubes.data?.[0];
   const planteles = usePlanteles(club?.id);
@@ -124,7 +125,7 @@ export function ContenidoDeHoy({ clubId, plantelId, categoria }: { clubId: strin
                   titulo={`Todavía no hay nada cargado en ${categoria}`}
                   accion={
                     <div className="flex flex-col gap-2">
-                      <Link to={`/plantel/${plantelId}`} className={ENLACE_FUERTE}>Cargar el plantel</Link>
+                      <Link to={`/plantel`} className={ENLACE_FUERTE}>Cargar el plantel</Link>
                       <a href={APP_ANTERIOR} className={ENLACE_BOTON}>Cargar un partido</a>
                       <a href={APP_ANTERIOR} className={ENLACE_BOTON}>Hacer la primera medición</a>
                     </div>
@@ -161,7 +162,7 @@ function Entrenamiento({ categoria, plantelId }: { categoria: string; plantelId:
           <p className="font-mono text-xs tracking-wide uppercase opacity-75">Entrenamiento de hoy</p>
           <p className="mt-1 truncate font-titulo text-4xl leading-none font-bold tracking-tight">{categoria}</p>
         </div>
-        <Link to={`/asistencia/${plantelId}`} className={cn(claseBoton(), 'self-start sm:self-auto')}>
+        <Link to={`/asistencia`} className={cn(claseBoton(), 'self-start sm:self-auto')}>
           Tomar asistencia
           <Flecha />
         </Link>
@@ -278,7 +279,7 @@ function Tiro({ resumen, categoria, plantelId }: { resumen: Completo; categoria:
               {corporal.sinMedir > 0 &&
                 ` ${corporal.sinMedir} de ${corporal.total} ${PLURAL(corporal.total, 'jugador no tiene', 'jugadores no tienen')} ninguna.`}
             </p>
-            <Link to={`/plantel/${plantelId}`} className={cn(ENLACE_BOTON, 'self-start sm:self-auto')}>Ver el plantel</Link>
+            <Link to={`/plantel`} className={cn(ENLACE_BOTON, 'self-start sm:self-auto')}>Ver el plantel</Link>
           </div>
         </Panel>
       )}

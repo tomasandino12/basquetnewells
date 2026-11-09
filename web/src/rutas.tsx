@@ -1,11 +1,13 @@
-import { Navigate, Outlet, createHashRouter, useLocation, type RouteObject } from 'react-router';
+import { Navigate, Outlet, createBrowserRouter, useLocation, type RouteObject } from 'react-router';
 import { Consulta } from './components/ui/consulta';
 import { Marco } from './laboratorio';
 import { useSesion } from './datos/contexto';
 import { irALaDeSiempre } from './clasica';
+import { BarraDeCategorias } from './pantallas/BarraDeCategorias';
 import { Asistencia } from './pantallas/Asistencia';
 import { AsistenciaHistorial } from './pantallas/AsistenciaHistorial';
 import { Entrar } from './pantallas/Entrar';
+import { FichaEjemplo, PantallaDeFicha } from './pantallas/PantallaDeFicha';
 import { Fisico } from './pantallas/Fisico';
 import { FisicoEscalones } from './pantallas/FisicoEscalones';
 import { FisicoSesion } from './pantallas/FisicoSesion';
@@ -14,16 +16,24 @@ import { Piezas } from './pantallas/Piezas';
 import { HoyEjemplo } from './pantallas/HoyEjemplo';
 import { PlantelEjemplo } from './pantallas/PlantelEjemplo';
 import { PlantelDelClub } from './pantallas/PlantelDelClub';
-import { Planteles } from './pantallas/Planteles';
+import { ProveedorPlantelActivo } from './plantel/activo';
 
 /**
  * Todo lo que lleva datos reales pasa por acá. Sin sesión, publicada, se entra en la app de
  * siempre (tiene el alta, Google y la clave olvidada) y de ahí vuelve; en la compu, a /entrar.
+ * Con sesión, la categoría elegida (los chips de arriba) vale para todas las pantallas.
  */
 export function RequiereSesion() {
   const { estado, error, reintentar } = useSesion();
   const lugar = useLocation();
-  if (estado === 'con-sesion') return <Outlet />;
+  if (estado === 'con-sesion') {
+    return (
+      <ProveedorPlantelActivo>
+        <BarraDeCategorias />
+        <Outlet />
+      </ProveedorPlantelActivo>
+    );
+  }
   if (estado === 'sin-sesion' && irALaDeSiempre({ volver: true })) return null;
   if (estado === 'sin-sesion') return <Navigate to="/entrar" replace state={{ desde: lugar.pathname }} />;
   return (
@@ -39,27 +49,34 @@ export function RequiereSesion() {
 }
 
 export const rutas: RouteObject[] = [
-  // El menú de arriba (laboratorio.tsx) va en todas: así se llega a cada pantalla sin saberse la dirección.
+  // El menú (laboratorio.tsx) va en todas: así se llega a cada pantalla sin saberse la dirección.
   { element: <Marco />, children: [
     { path: '/entrar', element: <Entrar /> },
-    // Pantallas con datos de ejemplo: las enlaza el menú de /nueva, nunca la app vieja.
+    // Pantallas con datos de ejemplo: las enlaza el menú, nunca la app de siempre.
     { path: '/piezas', element: <Piezas /> },
     { path: '/maqueta/plantel', element: <PlantelEjemplo /> },
+    { path: '/maqueta/plantel/:jugador', element: <FichaEjemplo /> },
     { path: '/maqueta/hoy', element: <HoyEjemplo /> },
     { element: <RequiereSesion />, children: [
-        { path: '/', element: <Planteles /> },
-        { path: '/plantel/:plantelId', element: <PlantelDelClub /> },
-        { path: '/hoy/:plantelId', element: <Hoy /> },
-        { path: '/asistencia/:plantelId', element: <Asistencia /> },
-        { path: '/asistencia/:plantelId/historial', element: <AsistenciaHistorial /> },
-        { path: '/fisico/:plantelId', element: <Fisico /> },
-        { path: '/fisico/:plantelId/plan/:planId/sesion/:sesionId', element: <FisicoSesion /> },
-        { path: '/fisico/:plantelId/plan/:planId/sesion/:sesionId/ejercicio/:lineaId', element: <FisicoEscalones /> },
+        { path: '/', element: <Navigate to="/hoy" replace /> },
+        { path: '/hoy', element: <Hoy /> },
+        { path: '/plantel', element: <PlantelDelClub /> },
+        { path: '/plantel/:jugador', element: <PantallaDeFicha /> },
+        { path: '/asistencia', element: <Asistencia /> },
+        { path: '/asistencia/historial', element: <AsistenciaHistorial /> },
+        { path: '/fisico', element: <Fisico /> },
+        { path: '/fisico/plan/:planId/sesion/:sesionId', element: <FisicoSesion /> },
+        { path: '/fisico/plan/:planId/sesion/:sesionId/ejercicio/:lineaId', element: <FisicoEscalones /> },
       ],
     },
     { path: '*', element: <Navigate to="/" replace /> },
   ] },
 ];
 
-// Hash y no ruta limpia: se publica estático en /nueva y así no hace falta reenviar cada ruta.
-export const crearRouter = () => createHashRouter(rutas);
+/**
+ * Direcciones limpias (/app/hoy, /app/plantel/tobias-funes): vercel.json sirve esta app en todo
+ * /app salvo /app/clasica. En la compu, el servidor de Vite la sirve en /nueva.
+ */
+export const BASE = typeof window !== 'undefined' && window.location.pathname.startsWith('/app') ? '/app' : '/nueva';
+
+export const crearRouter = () => createBrowserRouter(rutas, { basename: BASE });

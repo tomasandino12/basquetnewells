@@ -1,6 +1,7 @@
 import { EllipsisVertical, History, Users } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Link, useBlocker, useLocation, useNavigate, useParams } from 'react-router';
+import { Link, useBlocker, useLocation, useNavigate } from 'react-router';
+import { usePlantelId } from '../plantel/activo';
 import { LADOS, TIPOS, ZONAS } from '@datos/asistencia.js';
 import { hoyLocal } from '@datos/antropometria.js';
 import {
@@ -52,12 +53,12 @@ interface EstadoDeNavegacion {
  * se guarda al instante es la lesión, que es del chico y no de este entrenamiento.
  */
 export function Asistencia() {
-  const { plantelId } = useParams();
+  const plantelId = usePlantelId();
   const desde = (useLocation().state as EstadoDeNavegacion | null)?.volverA;
   return (
     <ConPlantel
       plantelId={plantelId}
-      volver={{ a: desde ?? `/plantel/${plantelId}`, texto: desde ? 'Historial' : 'Plantel' }}
+      volver={{ a: desde ?? `/plantel`, texto: desde ? 'Historial' : 'Plantel' }}
       soloCuerpoTecnico="La coordinación ve la asistencia de cada categoría en conjunto, no la de cada chico."
     >
       {(p) => <Toma {...p} />}
@@ -106,12 +107,12 @@ function Toma({ clubId, plantelId, categoria }: { clubId: string; plantelId: str
     </label>
   );
 
-  const destino = (lugar.state as EstadoDeNavegacion | null)?.volverA ?? `/plantel/${plantelId}`;
+  const destino = (lugar.state as EstadoDeNavegacion | null)?.volverA ?? `/plantel`;
 
   return (
     <>
       <Link
-        to={`/asistencia/${plantelId}/historial`}
+        to={`/asistencia/historial`}
         className="float-right inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta"
       >
         <History aria-hidden className="size-4" />
@@ -262,7 +263,7 @@ function DiaDeAsistencia({
         <Vacio
           icono={Users}
           titulo="Esta categoría no tiene jugadores"
-          accion={<Link to={`/plantel/${plantelId}`} className="text-sm font-semibold underline">Ir al plantel</Link>}
+          accion={<Link to={`/plantel`} className="text-sm font-semibold underline">Ir al plantel</Link>}
         >
           Sumá jugadores al plantel para tomar asistencia.
         </Vacio>

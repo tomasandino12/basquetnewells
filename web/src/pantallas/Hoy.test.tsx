@@ -32,7 +32,7 @@ function repo(piso: Partial<Repositorio> = {}) {
   });
 }
 
-const abrir = (r: Repositorio = repo()) => renderConDatos(rutas, { repo: r, ruta: '/hoy/p-1' });
+const abrir = (r: Repositorio = repo()) => renderConDatos(rutas, { repo: r, ruta: '/hoy' });
 const esperar = () => screen.findByRole('region', { name: 'Tiro de campo' });
 const fila = (nombre: string) => within(screen.getByRole('list', { name: 'Zonas del arco' })).getByText(nombre).closest('li')!;
 
@@ -42,21 +42,21 @@ describe('Hoy: encabezado y accesos', () => {
     expect(screen.getByRole('status')).toBeTruthy();
     expect(await screen.findByRole('heading', { level: 1, name: /Buen día|Buenas tardes|Buenas noches/ })).toBeTruthy();
     expect(await screen.findByText('Entrenamiento de hoy')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Tomar asistencia' }).getAttribute('href')).toBe('/asistencia/p-1');
+    expect(screen.getByRole('link', { name: 'Tomar asistencia' }).getAttribute('href')).toBe('/asistencia');
   });
 
   it('«Tomar asistencia» lleva a la toma del día', async () => {
     const u = userEvent.setup();
     const { router } = abrir();
     await u.click(await screen.findByRole('link', { name: 'Tomar asistencia' }));
-    expect(router.state.location.pathname).toBe('/asistencia/p-1');
+    expect(router.state.location.pathname).toBe('/asistencia');
   });
 
   it('desde el plantel se llega al resumen de hoy', async () => {
     const u = userEvent.setup();
-    const { router } = renderConDatos(rutas, { repo: repo(), ruta: '/plantel/p-1' });
+    const { router } = renderConDatos(rutas, { repo: repo(), ruta: '/plantel' });
     await u.click(await screen.findByRole('link', { name: 'Resumen de hoy' }));
-    expect(router.state.location.pathname).toBe('/hoy/p-1');
+    expect(router.state.location.pathname).toBe('/hoy');
   });
 });
 
@@ -64,7 +64,7 @@ describe('Hoy: estados sin datos', () => {
   it('sin baterías ofrece tres formas de empezar', async () => {
     abrir(repo({ obtenerSesionesDeMedicion: async () => [], obtenerMedicionesTiroDelPlantel: async () => [] }));
     expect(await screen.findByText('Todavía no hay nada cargado en Sub 13')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Cargar el plantel' }).getAttribute('href')).toBe('/plantel/p-1');
+    expect(screen.getByRole('link', { name: 'Cargar el plantel' }).getAttribute('href')).toBe('/plantel');
     expect(screen.getByRole('link', { name: 'Cargar un partido' }).getAttribute('href')).toBe('/app/clasica?desde=nueva');
     expect(screen.getByRole('link', { name: 'Hacer la primera medición' }).getAttribute('href')).toBe('/app/clasica?desde=nueva');
   });
@@ -234,7 +234,7 @@ describe('Hoy: altura y peso', () => {
     await esperar();
     const pie = within(screen.getByRole('region', { name: 'Altura y peso' }));
     expect(pie.getByText(/Última medición del plantel: 01\/10\. 2 de 3 jugadores no tienen ninguna\./)).toBeTruthy();
-    expect(pie.getByRole('link', { name: 'Ver el plantel' }).getAttribute('href')).toBe('/plantel/p-1');
+    expect(pie.getByRole('link', { name: 'Ver el plantel' }).getAttribute('href')).toBe('/plantel');
   });
 
   it('sin ninguna medición lo dice', async () => {
@@ -304,9 +304,10 @@ describe('Hoy: errores y permisos', () => {
     await waitFor(() => expect(screen.getByRole('region', { name: 'Tiro de campo' })).toBeTruthy());
   });
 
-  it('una categoría que no es del usuario no se abre', async () => {
+  it('abre la categoría que tiene asignada, sin id en la dirección', async () => {
     abrir(repo({ obtenerMisPlantelesAsignados: async () => new Set(['p-2']) }));
-    expect(await screen.findByText('No hay una categoría seleccionada')).toBeTruthy();
+    expect((await screen.findAllByText(/Sub 15/)).length).toBeGreaterThan(0);
+    expect(screen.queryByText('No hay una categoría seleccionada')).toBeNull();
   });
 
   it('la coordinación sola no ve las mediciones de cada chico y no se piden', async () => {

@@ -1,31 +1,28 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { desmarcarSesionCerrada } from '../datos/errores';
-import { renderConDatos, repositorioInventado } from '../datos/renderDePrueba';
-import { rutas } from '../rutas';
+import { desmarcarSesionCerrada } from './datos/errores';
+import { renderConDatos, repositorioInventado } from './datos/renderDePrueba';
+import { rutas } from './rutas';
 
 afterEach(() => {
   cleanup();
   desmarcarSesionCerrada();
+  localStorage.clear();
 });
 
-describe('rutas con datos', () => {
-  it('muestra la carga y después los planteles del club, ordenados', async () => {
-    renderConDatos(rutas);
-    expect(screen.getByRole('status')).toBeTruthy();
-    const lista = await screen.findByRole('list', { name: 'Planteles' });
-    expect(within(lista).getAllByRole('listitem').map((l) => l.textContent)).toEqual(['Sub 13', 'Sub 15']);
-    expect(screen.getByText('Club de Ejemplo')).toBeTruthy();
+// Un entrenador con una categoría asignada: lo de todos los días.
+const entrenador = (piso = {}) =>
+  repositorioInventado({
+    obtenerMisRoles: async () => ({ esEntrenador: true, esCoordinador: false }),
+    obtenerMisPlantelesAsignados: async () => new Set(['p-1']),
+    ...piso,
   });
 
-  it('el entrenador ve sólo sus planteles asignados: con uno solo entra directo', async () => {
-    const repo = repositorioInventado({
-      obtenerMisRoles: async () => ({ esEntrenador: true, esCoordinador: false }),
-      obtenerMisPlantelesAsignados: async () => new Set(['p-2']),
-    });
-    renderConDatos(rutas, { repo });
-    expect(await screen.findByRole('heading', { level: 1, name: 'Sub 15' })).toBeTruthy();
+describe('rutas con datos', () => {
+  it('la entrada lleva a Hoy de la categoría, sin elegir de una lista ni ids en la dirección', async () => {
+    const { router } = renderConDatos(rutas, { repo: entrenador() });
+    await waitFor(() => expect(router.state.location.pathname).toBe('/hoy'));
     expect(screen.queryByRole('list', { name: 'Planteles' })).toBeNull();
   });
 
@@ -35,9 +32,9 @@ describe('rutas con datos', () => {
     expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeTruthy();
   });
 
-  it('entrar con email y clave abre la lista', async () => {
+  it('entrar con email y clave vuelve a donde quería ir', async () => {
     let abierta = false;
-    const repo = repositorioInventado({
+    const repo = entrenador({
       obtenerSesionActual: async () => (abierta ? { user: { id: 'u-1' } } : null),
       iniciarSesion: async () => {
         abierta = true;
@@ -45,16 +42,17 @@ describe('rutas con datos', () => {
       },
     });
     const u = userEvent.setup();
-    renderConDatos(rutas, { repo });
+    const { router } = renderConDatos(rutas, { repo, ruta: '/plantel' });
     await u.type(await screen.findByLabelText('Email'), 'profe@ejemplo.test');
     await u.type(screen.getByLabelText('Clave'), 'una-clave');
     await u.click(screen.getByRole('button', { name: 'Entrar' }));
-    expect(await screen.findByRole('list', { name: 'Planteles' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Sub 13' })).toBeTruthy();
+    expect(router.state.location.pathname).toBe('/plantel');
   });
 
   it('con error de red dice «sin conexión» y reintentar vuelve a pedir', async () => {
     let intentos = 0;
-    const repo = repositorioInventado({
+    const repo = entrenador({
       obtenerPlantelesDelClub: async () => {
         intentos += 1;
         // Falla los dos primeros pedidos (el original y el segundo intento automático).
@@ -63,41 +61,39 @@ describe('rutas con datos', () => {
       },
     });
     const u = userEvent.setup();
-    renderConDatos(rutas, { repo });
+    renderConDatos(rutas, { repo, ruta: '/plantel' });
     const aviso = await screen.findByRole('alert');
     expect(aviso.textContent).toContain('Sin conexión');
     await u.click(screen.getByRole('button', { name: /Reintentar/ }));
-    // Una sola categoría: entra directo al plantel.
-    // (El repositorio de prueba sólo coordina: el plantel le dice que los chicos los ve el cuerpo técnico.)
-    expect(await screen.findByRole('heading', { name: /cuerpo técnico/ })).toBeTruthy();
-    expect(screen.queryByRole('list', { name: 'Planteles' })).toBeNull();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Sub 13' })).toBeTruthy();
   });
 
   it('un error de permiso no se reintenta solo y no muestra el texto crudo de la base', async () => {
     let intentos = 0;
-    const repo = repositorioInventado({
+    const repo = entrenador({
       obtenerPlantelesDelClub: async () => {
         intentos += 1;
         throw Object.assign(new Error('permission denied for table plantel'), { code: '42501' });
       },
     });
-    renderConDatos(rutas, { repo });
+    renderConDatos(rutas, { repo, ruta: '/plantel' });
     const aviso = await screen.findByRole('alert');
-    expect(aviso.textContent).toContain('No pudimos cargar los planteles');
+    expect(aviso.textContent).toContain('No pudimos cargar tu categoría');
     expect(aviso.textContent).not.toMatch(/permission denied|plantel_/);
     expect(intentos).toBe(1);
   });
 
-  it('al salir, los datos del club se sueltan de la memoria', async () => {
+  it('«Salir» está en el menú y al salir los datos del club se sueltan de la memoria', async () => {
     let aviso: ((evento: string, sesion: null) => void) | undefined;
-    const repo = repositorioInventado({
-      alCambiarAuth: (fn) => {
+    const repo = entrenador({
+      alCambiarAuth: (fn: unknown) => {
         aviso = fn as typeof aviso;
         return { data: { subscription: { unsubscribe: () => {} } } };
       },
     });
-    const { container } = renderConDatos(rutas, { repo });
-    await screen.findByRole('list', { name: 'Planteles' });
+    const { container } = renderConDatos(rutas, { repo, ruta: '/plantel' });
+    await screen.findByRole('heading', { level: 1, name: 'Sub 13' });
+    expect(screen.getAllByRole('button', { name: 'Salir' }).length).toBeGreaterThan(0);
     await waitFor(() => expect(aviso).toBeDefined());
     aviso!('SIGNED_OUT', null);
     expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeTruthy();

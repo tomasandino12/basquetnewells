@@ -1,5 +1,6 @@
 import { ChevronRight, ClipboardCheck, Download } from 'lucide-react';
-import { Link, useLocation, useParams } from 'react-router';
+import { Link, useLocation } from 'react-router';
+import { usePlantelId } from '../plantel/activo';
 import { hoyLocal } from '@datos/antropometria.js';
 import { detalleDelDia, textoDeFecha } from '../asistencia/toma';
 import { Aviso } from '../components/ui/aviso';
@@ -16,11 +17,11 @@ const PLURAL = (n: number, uno: string, varios: string) => (n === 1 ? uno : vari
 
 /** Los entrenamientos de la categoría, el más reciente primero: tocar uno lo abre para verlo o corregirlo. */
 export function AsistenciaHistorial() {
-  const { plantelId } = useParams();
+  const plantelId = usePlantelId();
   return (
     <ConPlantel
       plantelId={plantelId}
-      volver={{ a: `/plantel/${plantelId}`, texto: 'Plantel' }}
+      volver={{ a: `/plantel`, texto: 'Plantel' }}
       soloCuerpoTecnico="La coordinación ve la asistencia de cada categoría en conjunto, no la de cada chico."
     >
       {(p) => <Dias plantelId={p.plantelId} categoria={p.categoria} />}
@@ -32,7 +33,7 @@ function Dias({ plantelId, categoria }: { plantelId: string; categoria: string }
   const hoy = hoyLocal() as string;
   const dias = useHistorialDeAsistencia(plantelId, hoy);
   const aviso = (useLocation().state as { aviso?: string } | null)?.aviso;
-  const historial = `/asistencia/${plantelId}/historial`;
+  const historial = `/asistencia/historial`;
 
   return (
     <>
@@ -56,7 +57,7 @@ function Dias({ plantelId, categoria }: { plantelId: string; categoria: string }
               <Vacio
                 icono={ClipboardCheck}
                 titulo="Todavía no hay asistencia"
-                accion={<Link to={`/asistencia/${plantelId}`} className="inline-flex min-h-11 items-center rounded-btn bg-club px-5 font-titulo text-lg font-semibold tracking-[.14em] text-sobre-club uppercase">Tomar asistencia</Link>}
+                accion={<Link to={`/asistencia`} className="inline-flex min-h-11 items-center rounded-btn bg-club px-5 font-titulo text-lg font-semibold tracking-[.14em] text-sobre-club uppercase">Tomar asistencia</Link>}
               >
                 Cuando tomes asistencia, cada entrenamiento aparece acá y podés bajar la planilla para el área.
               </Vacio>
@@ -69,7 +70,7 @@ function Dias({ plantelId, categoria }: { plantelId: string; categoria: string }
                     return (
                       <li key={d.id}>
                         <Link
-                          to={`/asistencia/${plantelId}?fecha=${d.fecha}`}
+                          to={`/asistencia?fecha=${d.fecha}`}
                           state={{ volverA: historial }}
                           className="flex min-h-14 items-center justify-between gap-3 rounded-tarjeta border border-linea bg-sup px-4 shadow-tarjeta outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:border-tinta"
                         >

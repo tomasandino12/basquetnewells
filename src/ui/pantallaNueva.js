@@ -1,4 +1,6 @@
-import { CLAVE_NUEVA, ESPERA_NUEVA_MS, RUTA_NUEVA, direccionNueva, normalizarNueva, vieneDeLaNueva } from '../data/interruptorNueva.js';
+import {
+  CLAVE_NUEVA, CLAVE_PLANTEL, ESPERA_NUEVA_MS, RUTA_NUEVA, direccionNueva, normalizarNueva, plantelSeguro, vieneDeLaNueva,
+} from '../data/interruptorNueva.js';
 import { toast } from './nav.js';
 
 /**
@@ -56,7 +58,16 @@ export async function abrirEnNueva({ plantelId, jugadorId, pantalla, reemplazar 
     toast('La versión nueva no está disponible ahora. Te dejamos la de siempre.');
     return false;
   }
-  const destino = direccionNueva({ plantelId, jugadorId, pantalla });
+  // La categoría no va en la dirección: se deja en el teléfono, donde la nueva la busca.
+  const plantel = plantelSeguro(plantelId);
+  if (plantel) {
+    try {
+      localStorage.setItem(CLAVE_PLANTEL, plantel);
+    } catch {
+      // Sin localStorage la nueva abre en la primera categoría.
+    }
+  }
+  const destino = direccionNueva({ jugadorId, pantalla });
   // Al tocar una pestaña, assign: el atrás del sistema vuelve a /app. Al entrar,
   // replace: /app no queda en el historial y el atrás no rebota.
   if (reemplazar) window.location.replace(destino);

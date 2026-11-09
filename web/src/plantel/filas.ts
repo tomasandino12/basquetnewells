@@ -23,6 +23,8 @@ export interface ZonaDeTiro {
 
 export interface FilaPlantel {
   id: string;
+  /** Cómo va en la dirección de su ficha: «tobias-funes» (sin ids; único dentro del plantel). */
+  slug: string;
   apellido: string;
   nombre: string;
   iniciales: string;
@@ -105,6 +107,7 @@ export function armarFilas(e: EntradaFilas): FilaPlantel[] {
       const medidas = corporales.get(j.id) as Record<'alturaCm' | 'pesoKg', { valor: number } | null> | undefined;
       return {
         id: j.id,
+        slug: '',
         apellido,
         nombre,
         iniciales: ((apellido[0] ?? '') + (nombre[0] ?? '')).toUpperCase() || '?',
@@ -133,7 +136,22 @@ export function armarFilas(e: EntradaFilas): FilaPlantel[] {
         lesiones: e.lesiones.filter((l) => l.jugadorId === j.id),
       };
     })
-    .sort((a, b) => a.apellido.localeCompare(b.apellido, 'es') || a.nombre.localeCompare(b.nombre, 'es'));
+    .sort((a, b) => a.apellido.localeCompare(b.apellido, 'es') || a.nombre.localeCompare(b.nombre, 'es'))
+    .map(conSlug(new Map()));
+}
+
+/** «Tobías Funes» → «tobias-funes». Dos iguales en el plantel: el segundo es «tobias-funes-2». */
+export function slugDeNombre(nombre: string, apellido: string): string {
+  return plano(`${nombre} ${apellido}`).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'jugador';
+}
+
+function conSlug(vistos: Map<string, number>) {
+  return (f: FilaPlantel): FilaPlantel => {
+    const base = slugDeNombre(f.nombre, f.apellido);
+    const n = (vistos.get(base) ?? 0) + 1;
+    vistos.set(base, n);
+    return { ...f, slug: n === 1 ? base : `${base}-${n}` };
+  };
 }
 
 /** Busca por nombre o apellido, sin tildes ni mayúsculas. */

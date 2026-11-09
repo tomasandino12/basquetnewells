@@ -1,5 +1,6 @@
 import { ChevronRight, Dumbbell } from 'lucide-react';
-import { Link, useParams, useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
+import { usePlantelId } from '../plantel/activo';
 import { elegirPlanVisible, fechaLocal } from '@datos/escalones.js';
 import { Consulta } from '../components/ui/consulta';
 import { Vacio } from '../components/ui/estados';
@@ -20,11 +21,11 @@ const APP_ANTERIOR = APP_DE_SIEMPRE;
  * vive en la dirección (?plan=): cambiar de categoría lo olvida.
  */
 export function Fisico() {
-  const { plantelId } = useParams();
+  const plantelId = usePlantelId();
   return (
     <ConPlantel
       plantelId={plantelId}
-      volver={{ a: `/plantel/${plantelId}`, texto: 'Plantel' }}
+      volver={{ a: `/plantel`, texto: 'Plantel' }}
       soloCuerpoTecnico="La coordinación ve el plan de fuerza en la app anterior."
     >
       {(p) => <PlanDeLaCategoria {...p} />}
@@ -124,7 +125,7 @@ function ConPlan({ plantelId, plan, otros, hoy }: { plantelId: string; plan: Pla
                   {otros.map((p) => (
                     <li key={p.id}>
                       <Link
-                        to={`/fisico/${plantelId}?plan=${p.id}`}
+                        to={`/fisico?plan=${p.id}`}
                         className="flex min-h-14 items-center justify-between gap-3 rounded-tarjeta border border-linea bg-sup px-4 py-2 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:border-tinta"
                       >
                         <span className="min-w-0">
@@ -151,7 +152,7 @@ function FilaDeSesion({ plantelId, planId, sesion, hoy }: { plantelId: string; p
   return (
     <li>
       <Link
-        to={`/fisico/${plantelId}/plan/${planId}/sesion/${sesion.id}`}
+        to={`/fisico/plan/${planId}/sesion/${sesion.id}`}
         className={`flex min-h-14 items-center justify-between gap-3 rounded-tarjeta border px-4 py-2 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:border-tinta ${esHoy ? 'border-tinta bg-sup' : 'border-linea bg-sup'}`}
       >
         <span className="min-w-0">

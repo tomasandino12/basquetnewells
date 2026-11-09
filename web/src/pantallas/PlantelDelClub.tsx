@@ -1,25 +1,15 @@
 import { ArrowLeft, Search, ShieldCheck, Users } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
-import { Link, useLocation, useParams, useSearchParams } from 'react-router';
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { hoyLocal } from '@datos/antropometria.js';
 import { Aviso } from '../components/ui/aviso';
-import { claseBoton } from '../components/ui/button';
-import { Consulta } from '../components/ui/consulta';
-import { Hoja } from '../components/ui/sheet';
+import { claseBoton, Flecha } from '../components/ui/button';
 import { Vacio } from '../components/ui/estados';
-import {
-  useDatosDelPlantel,
-  useMarcarAsistencia,
-  useMisClubes,
-  useMisPlantelesAsignados,
-  useMisRoles,
-  usePlanteles,
-} from '../datos/consultas';
+import { Consulta } from '../components/ui/consulta';
+import { useDatosDelPlantel, useMarcarAsistencia } from '../datos/consultas';
 import { cn } from '../lib/cn';
-import { useEscritorio } from '../lib/useEscritorio';
+import { useCargaDeCategoria, usePlantelActivo } from '../plantel/activo';
 import { armarFilas, buscarEnFilas, type FilaPlantel } from '../plantel/filas';
-import { plantelesVisibles } from '../plantel/visibles';
-import { FichaDelJugador } from './FichaDelJugador';
 import { FilaDeLista } from './FilaDeLista';
 import { APP_DE_SIEMPRE } from '../clasica';
 
@@ -27,104 +17,82 @@ const APP_ANTERIOR = APP_DE_SIEMPRE;
 const ENLACE_TEXTO =
   'inline-flex min-h-11 items-center text-sm font-semibold underline decoration-linea decoration-2 underline-offset-4 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:decoration-club';
 
+/** Mientras se sabe qué categoría y si es del cuerpo técnico. Sin categoría, lo dice. */
+export function SinCategoria() {
+  return (
+    <Vacio icono={Users} titulo="Todavía no tenés categorías">
+      Pedile a la coordinación que te asigne una categoría.
+    </Vacio>
+  );
+}
+
+/** La base no le da filas de chicos a la coordinación sola (0018): se lo decimos en vez de mostrar un plantel vacío. */
+export function SoloCuerpoTecnico() {
+  return (
+    <Vacio icono={ShieldCheck} titulo="Los chicos los ve el cuerpo técnico">
+      La coordinación ve la categoría en conjunto, no los datos de cada chico. Los datos de emergencia se miran en la{' '}
+      <a href={APP_ANTERIOR} className="font-semibold underline">app anterior</a>.
+    </Vacio>
+  );
+}
+
 /**
- * El plantel de una categoría con datos reales: lista a la izquierda, ficha al costado (en el
- * celular, en una hoja). La asistencia se toma dentro de la lista. Lo que la pantalla ve lo decide
- * la base (RLS); acá sólo se ordena.
+ * El plantel de la categoría elegida arriba. La asistencia de hoy se marca en la lista (el círculo
+ * es «vino»); tocar a un chico abre su ficha en una pantalla propia, /plantel/su-nombre.
  */
 export function PlantelDelClub() {
-  const { plantelId } = useParams();
-  const clubes = useMisClubes();
-  const club = clubes.data?.[0];
-  const planteles = usePlanteles(club?.id);
-  const roles = useMisRoles(club?.id);
-  const asignados = useMisPlantelesAsignados(club?.id);
-
-  const listo = planteles.data && roles.data && asignados.data;
-  const consulta = useMemo(() => {
-    const falla = [planteles, roles, asignados].find((c) => c.isError);
-    return {
-      isPending: !falla && !listo && clubes.data !== undefined && clubes.data.length > 0,
-      isError: !!falla,
-      error: falla?.error,
-      data: listo ? { roles: roles.data!, visibles: plantelesVisibles(planteles.data!, roles.data!, asignados.data!) } : undefined,
-      refetch: () => Promise.all([planteles.refetch(), roles.refetch(), asignados.refetch()]),
-    };
-  }, [planteles, roles, asignados, clubes.data, listo]);
-
   return (
     <MarcoDelPlantel>
-      <Consulta consulta={clubes} errorGenerico="No pudimos cargar tu club">
-        {(lista) =>
-          lista.length === 0 ? (
-            <Vacio icono={Users} titulo="Sin club todavía">Pedile a la coordinación que te sume al club.</Vacio>
-          ) : (
-            <Consulta consulta={consulta} errorGenerico="No pudimos cargar el plantel">
-              {({ roles: r, visibles }) => {
-                const plantel = visibles.find((p) => p.id === plantelId);
-                if (!plantel) {
-                  return (
-                    <Vacio icono={Users} titulo="No encontramos esa categoría">
-                      No está entre tus categorías. Volvé a la lista de planteles y elegí otra.
-                    </Vacio>
-                  );
-                }
-                // La base no le da filas de chicos a la coordinación sola (0018): se lo decimos
-                // en vez de mostrar un plantel vacío que parezca roto.
-                if (r.esCoordinador && !r.esEntrenador) {
-                  return (
-                    <Vacio icono={ShieldCheck} titulo="Los chicos los ve el cuerpo técnico">
-                      La coordinación ve la categoría en conjunto, no los datos de cada chico. Los datos de emergencia se miran en la{' '}
-                      <a href={APP_ANTERIOR} className="font-semibold underline">app anterior</a>.
-                    </Vacio>
-                  );
-                }
-                return <ContenidoDelPlantel clubId={club!.id} plantelId={plantel.id} categoria={plantel.categoria} />;
-              }}
-            </Consulta>
-          )
-        }
-      </Consulta>
+      <ConCategoria>
+        {(activo) => <ContenidoDelPlantel key={activo.plantelId} clubId={activo.clubId} plantelId={activo.plantelId} categoria={activo.categoria} />}
+      </ConCategoria>
     </MarcoDelPlantel>
   );
 }
 
-/** El ancho y la vuelta a Planteles; la maqueta usa el mismo. En compu la vuelta ya está en el menú. */
-export function MarcoDelPlantel({ children }: { children: ReactNode }) {
+/** La categoría elegida arriba, con su carga, su error, «sin categoría» y la coordinación sola resueltos. */
+export function ConCategoria({ children }: { children: (activo: NonNullable<ReturnType<typeof usePlantelActivo>>) => ReactNode }) {
+  const activo = usePlantelActivo();
+  const carga = useCargaDeCategoria();
   return (
-    <main className="mx-auto w-full max-w-[24.375rem] px-4 py-5 sm:max-w-none sm:px-6 lg:max-w-[72rem] lg:px-8 lg:py-8">
-      <Link to="/" className="mb-2 inline-flex min-h-11 items-center gap-1.5 text-sm text-gris outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta lg:hidden">
-        <ArrowLeft aria-hidden className="size-4" />
-        Planteles
-      </Link>
-      {children}
-    </main>
+    <Consulta consulta={{ ...carga, data: carga.isPending || carga.isError ? undefined : { activo } }} errorGenerico="No pudimos cargar tu categoría">
+      {({ activo: a }) => (!a ? <SinCategoria /> : a.soloCoordina ? <SoloCuerpoTecnico /> : children(a))}
+    </Consulta>
   );
 }
 
-export function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: string; plantelId: string; categoria: string }) {
+/** El ancho de la pantalla; la maqueta usa el mismo. */
+export function MarcoDelPlantel({ children }: { children: ReactNode }) {
+  return <main className="mx-auto w-full max-w-[24.375rem] px-4 py-5 sm:max-w-none sm:px-6 lg:max-w-[72rem] lg:px-8 lg:py-8">{children}</main>;
+}
+
+interface Props {
+  clubId: string;
+  plantelId: string;
+  categoria: string;
+  /** Dónde viven las fichas: /plantel en la app, /maqueta/plantel en la maqueta. */
+  base?: string;
+  /** Dónde se toma la asistencia; la maqueta no tiene toma propia. */
+  tomar?: string;
+}
+
+export function ContenidoDelPlantel({ clubId, plantelId, categoria, base = '/plantel', tomar = '/asistencia' }: Props) {
   const hoy = hoyLocal() as string;
   const datos = useDatosDelPlantel(clubId, plantelId, hoy);
-  const escritorio = useEscritorio();
   const asistencia = useMarcarAsistencia(plantelId, hoy);
+  const navegar = useNavigate();
   const [texto, setTexto] = useState('');
-  // La app de siempre abre la ficha de un jugador con ?jugador=: arranca ya elegido.
+  // La app de siempre abre la ficha de un jugador con ?jugador=<id>: se cambia por su nombre.
   const [pedido] = useSearchParams();
-  // Al guardar la toma de asistencia se vuelve acá con el aviso de que quedó guardada.
   const avisoDeToma = (useLocation().state as { aviso?: string } | null)?.aviso;
-  const [elegido, setElegido] = useState<string | null>(pedido.get('jugador'));
 
   const filas = useMemo(() => (datos.data ? armarFilas({ ...datos.data, hoy }) : undefined), [datos.data, hoy]);
   const visibles = useMemo(() => (filas ? buscarEnFilas(filas, texto) : []), [filas, texto]);
-  // En compu siempre hay alguien en el panel; en celular la hoja se abre sólo al tocar una fila.
-  const enFicha = visibles.find((f) => f.id === elegido) ?? (escritorio ? visibles[0] : undefined);
 
-  const marcarPresente = (f: FilaPlantel) =>
-    asistencia.mutate({ jugadorId: f.id, estado: f.hoy === 'presente' ? null : 'presente' });
+  const pedida = pedido.get('jugador') && filas?.find((f) => f.id === pedido.get('jugador'));
+  if (pedida) return <Navigate to={`${base}/${pedida.slug}`} replace />;
 
-  const ficha = enFicha && (
-    <FichaDelJugador key={enFicha.id} fila={enFicha} clubId={clubId} plantelId={plantelId} hoy={hoy} alSacar={() => setElegido(null)} />
-  );
+  const marcarPresente = (f: FilaPlantel) => asistencia.mutate({ jugadorId: f.id, estado: f.hoy === 'presente' ? null : 'presente' });
 
   return (
     <Consulta consulta={datos} errorGenerico="No pudimos cargar el plantel">
@@ -140,7 +108,7 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: 
         return (
           <>
             <header className="mb-6 flex flex-col gap-5">
-              <div className="flex items-end justify-between gap-4">
+              <div className="flex flex-wrap items-end justify-between gap-4">
                 <div className="min-w-0">
                   <p className="font-mono text-xs tracking-wide text-gris uppercase">Plantel</p>
                   <h1 className="font-titulo text-5xl leading-none font-bold tracking-tight lg:text-6xl">{categoria}</h1>
@@ -149,19 +117,24 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: 
                     {todos.length > 0 && ` · hoy ${presentes} ${presentes === 1 ? 'presente' : 'presentes'}`}
                   </p>
                 </div>
-                {todos.length > 0 && (
-                  // El contador cambia a medida que se tilda: es lo primero que mira el profe al llegar.
-                  <p aria-hidden className="shrink-0 text-right">
-                    <span className="cifra block font-titulo text-6xl leading-[.85] font-bold">
-                      {presentes}
-                      <span className="text-3xl text-gris">/{todos.length}</span>
-                    </span>
-                    <span className="font-mono text-xs tracking-wide text-gris uppercase">presentes hoy</span>
-                  </p>
-                )}
+                <div className="flex items-end gap-6">
+                  {todos.length > 0 && (
+                    // El contador cambia a medida que se tilda: es lo primero que mira el profe al llegar.
+                    <p aria-hidden className="shrink-0 text-right">
+                      <span className="cifra block font-titulo text-6xl leading-[.85] font-bold">
+                        {presentes}
+                        <span className="text-3xl text-gris">/{todos.length}</span>
+                      </span>
+                      <span className="font-mono text-xs tracking-wide text-gris uppercase">presentes hoy</span>
+                    </p>
+                  )}
+                  <Link to={tomar} className={claseBoton()}>
+                    Tomar asistencia
+                    <Flecha />
+                  </Link>
+                </div>
               </div>
               {todos.length > 0 && (
-                // La asistencia se toma acá, en la lista: esto es cómo va el día, de un vistazo.
                 <dl aria-label="Asistencia de hoy" className="grid grid-cols-2 gap-px overflow-hidden rounded-tarjeta border border-linea bg-linea sm:grid-cols-4">
                   {[
                     ['Faltaron sin avisar', cuenta.faltaron, 'text-baja'],
@@ -177,18 +150,15 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: 
                 </dl>
               )}
               <nav aria-label="Acciones del plantel" className="flex flex-wrap gap-x-5">
-                <div className="flex flex-wrap gap-x-5">
-                  {[
-                    [`/hoy/${plantelId}`, 'Resumen de hoy'],
-                    [`/asistencia/${plantelId}`, 'Otro día o sin entrenamiento'],
-                    [`/asistencia/${plantelId}/historial`, 'Historial de asistencia'],
-                    [`/fisico/${plantelId}`, 'Plan de fuerza'],
-                  ].map(([a, t]) => (
-                    <Link key={a} to={a} className={ENLACE_TEXTO}>
-                      {t}
-                    </Link>
-                  ))}
-                </div>
+                {[
+                  ['/hoy', 'Resumen de hoy'],
+                  ['/asistencia/historial', 'Historial de asistencia'],
+                  ['/fisico', 'Plan de fuerza'],
+                ].map(([a, t]) => (
+                  <Link key={a} to={a} className={ENLACE_TEXTO}>
+                    {t}
+                  </Link>
+                ))}
               </nav>
             </header>
 
@@ -228,27 +198,22 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: 
                     className="h-11 w-full rounded-campo border border-borde-control bg-sup pr-3 pl-9 text-base outline-offset-2 placeholder:text-gris focus-visible:outline-2 focus-visible:outline-tinta"
                   />
                 </label>
-                <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_27rem] lg:items-start lg:gap-6">
-                  {visibles.length === 0 ? (
-                    <p className="py-10 text-center text-gris">Ningún jugador coincide con la búsqueda.</p>
-                  ) : (
-                    <ul aria-label="Jugadores del plantel" className="flex flex-col gap-2">
-                      {visibles.map((f) => (
-                        <FilaDeLista
-                          key={f.id}
-                          fila={f}
-                          elegida={enFicha?.id === f.id}
-                          guardando={asistencia.isPending}
-                          alElegir={setElegido}
-                          alPresente={marcarPresente}
-                        />
-                      ))}
-                    </ul>
-                  )}
-                  {escritorio && ficha && (
-                    <div className="sticky top-6 max-h-[calc(100svh-3rem)] overflow-y-auto rounded-tarjeta shadow-tarjeta">{ficha}</div>
-                  )}
-                </div>
+                {visibles.length === 0 ? (
+                  <p className="py-10 text-center text-gris">Ningún jugador coincide con la búsqueda.</p>
+                ) : (
+                  <ul aria-label="Jugadores del plantel" className="flex flex-col gap-2">
+                    {visibles.map((f) => (
+                      <FilaDeLista
+                        key={f.id}
+                        fila={f}
+                        elegida={false}
+                        guardando={asistencia.isPending}
+                        alElegir={() => navegar(`${base}/${f.slug}`)}
+                        alPresente={marcarPresente}
+                      />
+                    ))}
+                  </ul>
+                )}
                 {asistencia.isError && (
                   <Aviso tono="error" titulo="No se pudo guardar la asistencia" className="mt-4">
                     Revisá la conexión y volvé a tocar al jugador.
@@ -267,20 +232,19 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: 
                 ))}
               </section>
             )}
-
-            {!escritorio && (
-              <Hoja
-                abierta={enFicha !== undefined}
-                alCambiar={(abierta) => !abierta && setElegido(null)}
-                titulo={enFicha ? `Ficha de ${enFicha.nombre} ${enFicha.apellido}` : 'Ficha'}
-                descripcion="Asistencia de hoy, lesión, físico y tiro del jugador."
-              >
-                {ficha}
-              </Hoja>
-            )}
           </>
         );
       }}
     </Consulta>
+  );
+}
+
+/** La vuelta de la ficha al plantel. */
+export function VolverAlPlantel({ a }: { a: string }) {
+  return (
+    <Link to={a} className="mb-3 inline-flex min-h-11 items-center gap-1.5 text-sm text-gris outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
+      <ArrowLeft aria-hidden className="size-4" />
+      Volver al plantel
+    </Link>
   );
 }

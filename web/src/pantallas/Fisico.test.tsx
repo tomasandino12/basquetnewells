@@ -57,8 +57,8 @@ function repo(piso: Partial<Repositorio> = {}) {
   });
 }
 
-const abrir = (r: Repositorio = repo(), ruta = '/fisico/p-1') => renderConDatos(rutas, { repo: r, ruta });
-const RUTA_SESION = '/fisico/p-1/plan/pl-1/sesion/s-2';
+const abrir = (r: Repositorio = repo(), ruta = '/fisico') => renderConDatos(rutas, { repo: r, ruta });
+const RUTA_SESION = '/fisico/plan/pl-1/sesion/s-2';
 const RUTA_SENTADILLA = `${RUTA_SESION}/ejercicio/l-1`;
 
 describe('Físico: la lista de planes', () => {
@@ -133,19 +133,16 @@ describe('Físico: la lista de planes', () => {
     expect(await screen.findByText('Sin conexión')).toBeTruthy();
   });
 
-  it('una categoría que no es del profe no se muestra; la coordinación sola no entra', async () => {
-    abrir(repo(), '/fisico/p-2');
-    expect(await screen.findByText('No hay una categoría seleccionada')).toBeTruthy();
-    cleanup();
+  it('la coordinación sola no entra', async () => {
     abrir(repo({ obtenerMisRoles: async () => ({ esEntrenador: false, esCoordinador: true }) }));
     expect(await screen.findByText('Esto lo ve el cuerpo técnico')).toBeTruthy();
   });
 
   it('se llega desde el plantel', async () => {
     const u = userEvent.setup();
-    const { router } = abrir(repo(), '/plantel/p-1');
+    const { router } = abrir(repo(), '/plantel');
     await u.click(await screen.findByRole('link', { name: 'Plan de fuerza' }));
-    await waitFor(() => expect(router.state.location.pathname).toBe('/fisico/p-1'));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/fisico'));
   });
 });
 
@@ -203,7 +200,7 @@ describe('Físico: la sesión', () => {
   });
 
   it('una sesión que no existe lo dice', async () => {
-    abrir(repo(), '/fisico/p-1/plan/pl-1/sesion/zzz');
+    abrir(repo(), '/fisico/plan/pl-1/sesion/zzz');
     expect(await screen.findByText('No encontramos esa sesión')).toBeTruthy();
   });
 

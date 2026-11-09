@@ -289,13 +289,14 @@ export function FichaDelJugador({ fila: f, clubId, plantelId, hoy, alSacar }: Pr
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2, ease: SALIDA }}
     >
-      <header className="flex flex-col gap-4 border-t-4 border-club bg-negro p-5 pr-12 text-sobre-negro">
+      <header className="flex flex-col gap-5 border-t-4 border-club bg-negro p-5 text-sobre-negro lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-end lg:gap-8 lg:p-8">
+        <div className="flex flex-col gap-4">
         <div className="flex items-center gap-4">
-          <span aria-hidden className="grid size-16 shrink-0 place-items-center rounded-tarjeta bg-sobre-negro font-titulo text-3xl font-bold text-negro">
+          <span aria-hidden className="grid size-16 shrink-0 place-items-center rounded-tarjeta bg-sobre-negro font-titulo text-3xl font-bold text-negro lg:size-24 lg:text-5xl">
             {f.iniciales}
           </span>
           <div className="min-w-0">
-            <h2 className="font-titulo text-4xl leading-[.9] font-bold break-words">
+            <h2 className="font-titulo text-4xl leading-[.9] font-bold break-words lg:text-6xl">
               {f.nombre && <span className="block">{f.nombre}</span>}
               {f.apellido}
             </h2>
@@ -313,6 +314,7 @@ export function FichaDelJugador({ fila: f, clubId, plantelId, hoy, alSacar }: Pr
             <span><b className="cifra font-titulo text-lg">{f.racha}</b> entrenamientos seguidos</span>
           </p>
         )}
+        </div>
 
         <section aria-label="Asistencia de hoy" className="flex flex-col gap-2">
           <ToggleGroup.Root
@@ -357,9 +359,12 @@ export function FichaDelJugador({ fila: f, clubId, plantelId, hoy, alSacar }: Pr
         </section>
       </header>
 
-      <div className="flex flex-col gap-6 p-5">
-        <Asistencia f={f} />
-        <Lesiones f={f} clubId={clubId} hoy={hoy} ocupado={ocupado} />
+      <div className="grid gap-8 p-5 lg:grid-cols-2 lg:p-8">
+        <div className="flex flex-col gap-8">
+          <Asistencia f={f} />
+          <Lesiones f={f} clubId={clubId} hoy={hoy} ocupado={ocupado} />
+        </div>
+        <div className="flex flex-col gap-6">
 
         <Pestanas
           value={pestana}
@@ -398,6 +403,7 @@ export function FichaDelJugador({ fila: f, clubId, plantelId, hoy, alSacar }: Pr
             <a href={APP_DE_SIEMPRE} className="underline underline-offset-2">app anterior</a>.
           </p>
         </footer>
+        </div>
       </div>
     </motion.article>
   );

@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight, Dumbbell, Minus, Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
+import { usePlantelId } from '../plantel/activo';
 import {
   claveDeEjercicio, fechaLocal, formatearKg, nuevoPeso, parsearPeso, pasoDeLinea, pesoSugeridoDeCarga,
 } from '@datos/escalones.js';
@@ -32,11 +33,12 @@ import { ConPlantel } from './ConPlantel';
  * en pantalla dice «escalón», que es la palabra del profe.
  */
 export function FisicoEscalones() {
-  const { plantelId, planId, sesionId, lineaId } = useParams();
+  const { planId, sesionId, lineaId } = useParams();
+  const plantelId = usePlantelId();
   return (
     <ConPlantel
       plantelId={plantelId}
-      volver={{ a: `/fisico/${plantelId}/plan/${planId}/sesion/${sesionId}`, texto: 'Sesión' }}
+      volver={{ a: `/fisico/plan/${planId}/sesion/${sesionId}`, texto: 'Sesión' }}
       soloCuerpoTecnico="La coordinación ve el plan de fuerza en la app anterior."
     >
       {(p) => <Ejercicio {...p} planId={planId!} sesionId={sesionId!} lineaId={lineaId!} />}
@@ -55,7 +57,7 @@ interface Props {
 
 function Ejercicio({ clubId, plantelId, categoria, planId, sesionId, lineaId }: Props) {
   const sesiones = usePlanFisico(planId);
-  const base = `/fisico/${plantelId}/plan/${planId}/sesion/${sesionId}`;
+  const base = `/fisico/plan/${planId}/sesion/${sesionId}`;
   return (
     <Consulta consulta={sesiones} errorGenerico="No se pudo cargar el ejercicio">
       {(lista) => {
