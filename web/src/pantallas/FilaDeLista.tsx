@@ -1,4 +1,5 @@
 import { Check, HeartPulse } from 'lucide-react';
+import { ETIQUETAS } from '@datos/asistencia.js';
 import { cn } from '../lib/cn';
 import type { FilaPlantel } from '../plantel/filas';
 
@@ -10,6 +11,23 @@ interface Props {
   alElegir: (id: string) => void;
   alPresente: (fila: FilaPlantel) => void;
 }
+
+/** Lo de hoy en palabras, como lo dice el profe: «Avisó · Examen», «Faltó», «Sin marcar». */
+export function textoDeHoy(f: FilaPlantel): string {
+  if (f.hoy === 'presente') return 'Presente';
+  if (f.hoy === 'ausente') return 'Faltó';
+  if (f.hoy === 'justificada') {
+    return f.motivoHoy ? `Avisó · ${(ETIQUETAS as Record<string, string>)[f.motivoHoy]}` : 'Avisó';
+  }
+  return 'Sin marcar';
+}
+
+const TONO_DE_HOY = {
+  presente: 'bg-sube-fondo text-sube',
+  ausente: 'bg-baja-fondo text-baja',
+  justificada: 'bg-sup-2 text-tinta',
+  nada: 'text-gris',
+} as const;
 
 const dato = (valor: number | null, unidad: string) => (valor === null ? '—' : `${String(valor).replace('.', ',')} ${unidad}`);
 
@@ -83,6 +101,15 @@ export function FilaDeLista({ fila: f, elegida, guardando, alElegir, alPresente 
               </span>
             )}
           </span>
+        </span>
+        <span
+          className={cn(
+            'hidden shrink-0 items-center gap-1.5 rounded-[0.3125rem] px-2 py-1 text-xs font-semibold sm:inline-flex',
+            elegida ? 'bg-sobre-club/15 text-sobre-club' : TONO_DE_HOY[f.hoy ?? 'nada'],
+          )}
+        >
+          {f.hoy === 'justificada' && <span aria-hidden className="size-2 rounded-full bg-ambar" />}
+          {textoDeHoy(f)}
         </span>
         <span className="flex shrink-0 flex-col items-end font-mono text-xs leading-tight tabular-nums">
           <span>

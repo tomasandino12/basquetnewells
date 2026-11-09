@@ -8,6 +8,8 @@ export const ZONAS = [
 ];
 export const LADOS = ['izquierdo', 'derecho', 'no_aplica'];
 export const TIPOS = ['torcedura', 'golpe', 'sobrecarga_dolor', 'otro'];
+// Por qué faltó un chico que avisó (0066). Sin texto libre: es un dato de un menor.
+export const MOTIVOS = ['estudio', 'familia', 'enfermo', 'viaje', 'otro'];
 
 // Las claves no se pisan entre listas, así que alcanza un solo diccionario.
 export const ETIQUETAS = {
@@ -32,6 +34,10 @@ export const ETIQUETAS = {
   golpe: 'Golpe',
   sobrecarga_dolor: 'Sobrecarga o dolor',
   otro: 'Otro',
+  estudio: 'Estudio o examen',
+  familia: 'Familia',
+  enfermo: 'Enfermo',
+  viaje: 'Viaje',
 };
 
 /**
@@ -112,7 +118,7 @@ export function entrenamientoDesdeFila(f) {
     id: f.id,
     fecha: f.fecha,
     hubo: f.hubo,
-    filas: (f.asistencia ?? []).map((a) => ({ jugadorId: a.jugador_id, estado: a.estado })),
+    filas: (f.asistencia ?? []).map((a) => ({ jugadorId: a.jugador_id, estado: a.estado, motivo: a.motivo ?? null })),
   };
 }
 
@@ -215,6 +221,46 @@ export function asistenciaDelJugador(entrenamientos, lesiones, jugadorId) {
     nivel: semaforo(resumen.pctAsistencia),
     lesionAbierta: suyas.find((l) => l.hasta == null) ?? null,
   };
+}
+
+/**
+ * Los últimos `n` días de práctica de un chico, del más viejo al más nuevo, para
+ * la tira de la ficha. Un día sin entrenamiento sale como 'sin_entreno'; uno sin
+ * tomar a ese chico, como null (no se disfraza de falta).
+ */
+export function ultimosDias(entrenamientos, lesiones, jugadorId, n = 12) {
+  const suyas = (lesiones ?? []).filter((l) => l.jugadorId === jugadorId);
+  return [...(entrenamientos ?? [])]
+    .sort((a, b) => (a.fecha < b.fecha ? 1 : -1))
+    .slice(0, n)
+    .reverse()
+    .map((e) => {
+      const fila = e.filas.find((f) => f.jugadorId === jugadorId);
+      return {
+        fecha: e.fecha,
+        estado: e.hubo === false ? 'sin_entreno' : fila?.estado ?? null,
+        motivo: fila?.motivo ?? null,
+        lesionado: lesionadoEn(suyas, e.fecha),
+      };
+    });
+}
+
+/**
+ * Cuántos entrenamientos seguidos vino, contando hacia atrás desde el último que
+ * se le tomó. Los días sin entrenamiento y los que no se le tomaron no cortan la
+ * racha ni la suman; una falta, avisada o no, la corta.
+ */
+export function rachaDeAsistencia(entrenamientos, jugadorId) {
+  let racha = 0;
+  const dias = [...(entrenamientos ?? [])].sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
+  for (const e of dias) {
+    if (e.hubo === false) continue;
+    const estado = e.filas.find((f) => f.jugadorId === jugadorId)?.estado;
+    if (!estado) continue;
+    if (estado !== 'presente') break;
+    racha++;
+  }
+  return racha;
 }
 
 /**

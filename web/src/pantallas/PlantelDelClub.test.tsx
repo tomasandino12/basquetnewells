@@ -186,13 +186,29 @@ describe('Plantel con datos: ficha en compu', () => {
     expect(guardarAsistencia).toHaveBeenLastCalledWith(expect.objectContaining({ filas: [{ jugadorId: 'j-1', estado: 'ausente' }] }));
   });
 
-  it('«Marcar lesión» abre una lesión de hoy', async () => {
+  it('«Marcar lesión» pide zona, lado y qué pasó (todo opcional) y abre una lesión de hoy', async () => {
     simular(true);
     const abrirLesion = vi.fn(async () => {});
     const u = userEvent.setup();
     abrir(repo({ abrirLesion }));
     await u.click(await screen.findByRole('button', { name: /Marcar lesión/ }));
-    await waitFor(() => expect(abrirLesion).toHaveBeenCalledWith({ clubId: 'c-1', jugadorId: 'j-1', desde: HOY }));
+    await u.click(screen.getByRole('button', { name: 'Tobillo' }));
+    await u.click(screen.getByRole('button', { name: 'Derecho' }));
+    await u.click(screen.getByRole('button', { name: 'Guardar lesión' }));
+    await waitFor(() =>
+      expect(abrirLesion).toHaveBeenCalledWith({ clubId: 'c-1', jugadorId: 'j-1', desde: HOY, zona: 'tobillo', lado: 'derecho', tipo: null }),
+    );
+  });
+
+  it('si avisó, se elige por qué faltó y se guarda con el día', async () => {
+    simular(true);
+    const guardarAsistencia = vi.fn(async () => 'e-1');
+    const u = userEvent.setup();
+    abrir(repo({ guardarAsistencia }));
+    const ficha = within(await screen.findByRole('article', { name: 'Ficha de Bruno Acosta' }));
+    expect(ficha.queryByRole('group', { name: 'Por qué faltó' })).toBeNull();
+    await u.click(ficha.getByRole('radio', { name: 'Avisó' }));
+    await waitFor(() => expect(guardarAsistencia).toHaveBeenCalled());
   });
 
   it('con una lesión abierta dice desde cuándo y deja dar el alta', async () => {
@@ -235,7 +251,7 @@ describe('Plantel con datos: ficha en compu', () => {
     const ficha = within(await screen.findByRole('article', { name: 'Ficha de Bruno Acosta' }));
     await u.click(ficha.getByRole('tab', { name: 'Tiro' }));
     expect(ficha.getByRole('img', { name: /Curva de tiro por zona/ })).toBeTruthy();
-    expect(ficha.getByText('100%')).toBeTruthy();
+    expect(ficha.getAllByText('100%').length).toBeGreaterThan(0);
     expect(ficha.getByText('60% (6/10)')).toBeTruthy();
   });
 

@@ -1,4 +1,4 @@
-import type { Entrenamiento, EstadoAsistencia, Lesion, MedicionTiro, Repositorio } from '../datos/repositorio';
+import type { Entrenamiento, EstadoAsistencia, Lesion, MedicionTiro, MotivoFalta, Repositorio } from '../datos/repositorio';
 
 // Nombres inventados para las maquetas: ninguno es de un chico real.
 const JUGADORES = [
@@ -44,13 +44,21 @@ const MEDICIONES: MedicionTiro[] = SESIONES.flatMap((s, i) =>
 // Seis entrenamientos pasados; cada chico falta o avisa de vez en cuando.
 const PASADOS = ['2026-10-13', '2026-10-15', '2026-10-20', '2026-10-22', '2026-10-27', '2026-10-29'];
 const ESTADOS: EstadoAsistencia[] = ['presente', 'presente', 'presente', 'ausente', 'justificada'];
+const MOTIVOS_DEMO: MotivoFalta[] = ['estudio', 'familia', 'enfermo', 'viaje'];
 let entrenamientos: Entrenamiento[] = PASADOS.map((fecha, i) => ({
   id: `e${i}`,
   fecha,
   hubo: true,
-  filas: JUGADORES.map((j, k) => ({ jugadorId: j.id, estado: ESTADOS[(i * 2 + k * 3) % 5] })),
+  filas: JUGADORES.map((j, k) => {
+    const estado = ESTADOS[(i * 2 + k * 3) % 5];
+    // Los que avisaron, con un motivo inventado: así la ficha muestra la tira completa.
+    return { jugadorId: j.id, estado, motivo: estado === 'justificada' ? MOTIVOS_DEMO[(i + k) % MOTIVOS_DEMO.length] : null };
+  }),
 }));
-let lesiones: Lesion[] = [{ id: 'l1', jugadorId: 'd4', desde: '2026-10-28', hasta: null, zona: 'tobillo', lado: 'derecho', tipo: 'esguince' }];
+let lesiones: Lesion[] = [
+  { id: 'l1', jugadorId: 'd4', desde: '2026-10-28', hasta: null, zona: 'tobillo', lado: 'derecho', tipo: 'torcedura' },
+  { id: 'l0', jugadorId: 'd2', desde: '2026-09-15', hasta: '2026-09-29', zona: 'rodilla', lado: 'izquierdo', tipo: 'golpe' },
+];
 let fuera = new Set<string>();
 
 const PROPIO: Partial<Repositorio> = {
@@ -77,19 +85,21 @@ const PROPIO: Partial<Repositorio> = {
   obtenerSolicitudesDelPlantel: async () => [],
   // Lo que se toca en la maqueta queda en memoria mientras la pestaña esté abierta: nunca va a la base.
   guardarAsistencia: async ({ fecha, filas }) => {
-    let dia = entrenamientos.find((e) => e.fecha === fecha);
-    if (!dia) {
-      dia = { id: `e-${fecha}`, fecha, hubo: true, filas: [] };
-      entrenamientos = [...entrenamientos, dia];
-    }
+    const viejo = entrenamientos.find((e) => e.fecha === fecha);
+    // Copias nuevas y no cambios en el lugar: si no, la pantalla recibe el mismo objeto y no se redibuja.
+    const dia: Entrenamiento = { ...(viejo ?? { id: `e-${fecha}`, fecha, hubo: true }), filas: [...(viejo?.filas ?? [])] };
     for (const f of filas) {
+      const antes = dia.filas.find((x) => x.jugadorId === f.jugadorId);
       dia.filas = dia.filas.filter((x) => x.jugadorId !== f.jugadorId);
-      if (f.estado) dia.filas.push({ jugadorId: f.jugadorId, estado: f.estado });
+      // Como la base (0066): sin la clave motivo queda el que había; fuera de «avisó», no hay motivo.
+      const motivo = f.estado !== 'justificada' ? null : 'motivo' in f ? f.motivo ?? null : antes?.motivo ?? null;
+      if (f.estado) dia.filas.push({ jugadorId: f.jugadorId, estado: f.estado, motivo });
     }
+    entrenamientos = viejo ? entrenamientos.map((e) => (e === viejo ? dia : e)) : [...entrenamientos, dia];
     return dia.id;
   },
-  abrirLesion: async ({ jugadorId, desde }) => {
-    lesiones = [...lesiones, { id: `l-${jugadorId}-${desde}`, jugadorId, desde, hasta: null, zona: null, lado: null, tipo: null }];
+  abrirLesion: async ({ jugadorId, desde, zona = null, lado = null, tipo = null }) => {
+    lesiones = [{ id: `l-${jugadorId}-${desde}`, jugadorId, desde, hasta: null, zona, lado, tipo }, ...lesiones];
   },
   darAlta: async (lesionId, hasta) => {
     lesiones = lesiones.map((l) => (l.id === lesionId ? { ...l, hasta } : l));

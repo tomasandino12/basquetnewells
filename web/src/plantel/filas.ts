@@ -1,11 +1,12 @@
 import { edadEnAnios, vigentePorJugador } from '@datos/antropometria.js';
-import { asistenciaDelJugador } from '@datos/asistencia.js';
+import { asistenciaDelJugador, rachaDeAsistencia, ultimosDias } from '@datos/asistencia.js';
 import { ultimaBateriaConDatosDeJugador } from '@datos/estadisticas.js';
 import { LIBRES, POSICIONES } from '@datos/posiciones.js';
 import type {
   Entrenamiento,
   EstadoAsistencia,
   JugadorDelPlantel,
+  MotivoFalta,
   Lesion,
   MedicionCorporal,
   MedicionTiro,
@@ -41,6 +42,21 @@ export interface FilaPlantel {
   lesion: Lesion | null;
   /** Lo que se marcó hoy; null = todavía no se tomó. */
   hoy: EstadoAsistencia | null;
+  /** Si hoy avisó, por qué (null = avisó sin decir por qué). */
+  motivoHoy: MotivoFalta | null;
+  /** Entrenamientos seguidos que vino, hasta la última falta. */
+  racha: number;
+  /** Los últimos 12 días de práctica, del más viejo al más nuevo. */
+  ultimos: DiaDeLaTira[];
+  /** Todas sus lesiones, la más nueva primero. */
+  lesiones: Lesion[];
+}
+
+export interface DiaDeLaTira {
+  fecha: string;
+  estado: EstadoAsistencia | 'sin_entreno' | null;
+  motivo: MotivoFalta | null;
+  lesionado: boolean;
 }
 
 export interface EntradaFilas {
@@ -76,6 +92,7 @@ export function armarFilas(e: EntradaFilas): FilaPlantel[] {
   return e.jugadores
     .map((j): FilaPlantel => {
       const { apellido, nombre } = partirNombre(j.nombreLimpio);
+      const deHoy = diaDeHoy?.filas.find((f) => f.jugadorId === j.id);
       const asistencia = asistenciaDelJugador(e.entrenamientos, e.lesiones, j.id);
       const pct = asistencia.resumen.pctAsistencia as number | null;
       const bat = ultimaBateriaConDatosDeJugador(e.sesiones, e.tiro, j.id);
@@ -109,7 +126,11 @@ export function armarFilas(e: EntradaFilas): FilaPlantel[] {
         asistidos: asistencia.resumen.asistidos,
         justificadas: asistencia.resumen.justificadas,
         lesion: asistencia.lesionAbierta as Lesion | null,
-        hoy: diaDeHoy?.filas.find((f) => f.jugadorId === j.id)?.estado ?? null,
+        hoy: deHoy?.estado ?? null,
+        motivoHoy: (deHoy?.estado === 'justificada' ? deHoy.motivo ?? null : null) as MotivoFalta | null,
+        racha: rachaDeAsistencia(e.entrenamientos, j.id) as number,
+        ultimos: ultimosDias(e.entrenamientos, e.lesiones, j.id) as DiaDeLaTira[],
+        lesiones: e.lesiones.filter((l) => l.jugadorId === j.id),
       };
     })
     .sort((a, b) => a.apellido.localeCompare(b.apellido, 'es') || a.nombre.localeCompare(b.nombre, 'es'));

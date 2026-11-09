@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { ESTADOS, ZONAS, LADOS, TIPOS } from '../src/data/asistencia.js';
+import { ESTADOS, ZONAS, LADOS, TIPOS, MOTIVOS } from '../src/data/asistencia.js';
 
 /**
  * Las listas de estado, zona, lado y tipo viven en los check de 0064 (los hace
@@ -73,4 +73,23 @@ test('0064 sólo crea policies y RLS sobre sus tres tablas', () => {
   ].map((m) => m[1]);
   assert.ok(tocadas.length > 0);
   for (const t of tocadas) assert.ok(propias.has(t), `toca ${t}`);
+});
+
+const sql66 = readFileSync('supabase/migrations/0066_motivo_de_falta.sql', 'utf8')
+  .replace(/\r\n/g, '\n')
+  .replace(/--[^\n]*/g, '');
+
+test('0066: la lista de motivos de la base coincide con MOTIVOS y sólo va si avisó', () => {
+  const desde = sql66.indexOf('check (motivo in');
+  assert.ok(desde >= 0);
+  const motivos = [...sql66.slice(desde, sql66.indexOf(')', desde)).matchAll(/'([a-z_]+)'/g)].map((m) => m[1]);
+  assert.deepEqual(ordenados(motivos), ordenados(MOTIVOS));
+  assert.match(sql66, /check \(motivo is null or estado = 'justificada'\)/);
+  // Sin texto libre: la única columna nueva es la de la lista cerrada.
+  assert.deepEqual([...sql66.matchAll(/add column (\w+)/g)].map((m) => m[1]), ['motivo']);
+  assert.doesNotMatch(sql66, /\banon\b|security definer/i);
+});
+
+test('0066: sin la clave motivo (la app de siempre) se conserva el que había', () => {
+  assert.match(sql66, /when f \? 'motivo' then excluded\.motivo\s+else asistencia\.motivo/);
 });

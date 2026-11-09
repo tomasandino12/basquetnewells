@@ -14,7 +14,7 @@ export async function obtenerEntrenamientos(plantelId, desde, hasta) {
   const supabase = obtenerCliente();
   const { data, error } = await supabase
     .from('entrenamiento')
-    .select('id, fecha, hubo, asistencia(jugador_id, estado)')
+    .select('id, fecha, hubo, asistencia(jugador_id, estado, motivo)')
     .eq('plantel_id', plantelId)
     .gte('fecha', desde)
     .lte('fecha', hasta)
@@ -24,8 +24,9 @@ export async function obtenerEntrenamientos(plantelId, desde, hasta) {
 }
 
 /**
- * Todo el día en una transacción (RPC 0064). `filas`: [{ jugadorId, estado }];
- * estado null desmarca a ese chico, y los que no vienen quedan como estaban.
+ * Todo el día en una transacción (RPC 0064, motivo desde 0066). `filas`:
+ * [{ jugadorId, estado, motivo? }]; estado null desmarca a ese chico, y los que
+ * no vienen quedan como estaban. Sin la clave motivo, la base deja el que había.
  * Con hubo = false las filas se ignoran. Devuelve el id del día.
  */
 export async function guardarAsistencia({ plantelId, fecha, hubo, filas }) {
@@ -34,7 +35,11 @@ export async function guardarAsistencia({ plantelId, fecha, hubo, filas }) {
     p_plantel_id: plantelId,
     p_fecha: fecha,
     p_hubo: hubo,
-    p_filas: filas.map(({ jugadorId, estado }) => ({ jugadorId, estado: estado ?? null })),
+    p_filas: filas.map(({ jugadorId, estado, ...resto }) => ({
+      jugadorId,
+      estado: estado ?? null,
+      ...('motivo' in resto ? { motivo: resto.motivo ?? null } : {}),
+    })),
   });
   if (error) throw error;
   return data;

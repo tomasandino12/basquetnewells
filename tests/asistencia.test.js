@@ -4,7 +4,7 @@ import {
   codigoDelDia, resumenDeAsistencia, semaforo, lesionadoEn, textoDeLesion,
   entrenamientoDesdeFila, lesionDesdeFila,
   estadoInicial, alternar, contarEstados, filasParaGuardar, huboCambios, accionesDeTarjeta,
-  asistenciaDelJugador, textoDeAsistenciaDeCategoria,
+  asistenciaDelJugador, textoDeAsistenciaDeCategoria, rachaDeAsistencia, ultimosDias,
 } from '../src/data/asistencia.js';
 
 test('codigoDelDia cubre los seis códigos', () => {
@@ -108,9 +108,12 @@ test('los mappers pasan a camelCase y respetan el null', () => {
   assert.deepEqual(
     entrenamientoDesdeFila({
       id: 'e1', fecha: '2026-10-28', hubo: true,
-      asistencia: [{ jugador_id: 'j1', estado: 'presente' }],
+      asistencia: [{ jugador_id: 'j1', estado: 'presente' }, { jugador_id: 'j2', estado: 'justificada', motivo: 'estudio' }],
     }),
-    { id: 'e1', fecha: '2026-10-28', hubo: true, filas: [{ jugadorId: 'j1', estado: 'presente' }] },
+    {
+      id: 'e1', fecha: '2026-10-28', hubo: true,
+      filas: [{ jugadorId: 'j1', estado: 'presente', motivo: null }, { jugadorId: 'j2', estado: 'justificada', motivo: 'estudio' }],
+    },
   );
   assert.deepEqual(entrenamientoDesdeFila({ id: 'e2', fecha: '2026-10-27', hubo: false }).filas, []);
   assert.deepEqual(
@@ -222,4 +225,32 @@ test('textoDeAsistenciaDeCategoria: % y entrenamientos, y "—" sin datos', () =
   assert.equal(textoDeAsistenciaDeCategoria({ entrenamientos: 0, pct: null }), '—');
   assert.equal(textoDeAsistenciaDeCategoria({ entrenamientos: 3, pct: null }), '—');
   assert.equal(textoDeAsistenciaDeCategoria(undefined), '—');
+});
+
+const dia = (fecha, estado, hubo = true) => ({ fecha, hubo, filas: estado ? [{ jugadorId: 'j1', estado }] : [] });
+
+test('la racha cuenta los presentes seguidos hasta la última falta', () => {
+  const dias = [dia('2026-11-03', 'presente'), dia('2026-11-01', 'presente'), dia('2026-10-30', 'justificada'), dia('2026-10-28', 'presente')];
+  assert.equal(rachaDeAsistencia(dias, 'j1'), 2);
+});
+
+test('la racha no se corta por un día sin entrenamiento ni por uno sin tomar', () => {
+  const dias = [dia('2026-11-05', null), dia('2026-11-03', 'presente'), dia('2026-11-01', null, false), dia('2026-10-30', 'presente'), dia('2026-10-28', 'ausente')];
+  assert.equal(rachaDeAsistencia(dias, 'j1'), 2);
+  assert.equal(rachaDeAsistencia([], 'j1'), 0);
+});
+
+test('ultimosDias da los n más nuevos, del más viejo al más nuevo, con motivo y lesión', () => {
+  const dias = [
+    dia('2026-11-03', 'presente'),
+    { fecha: '2026-11-01', hubo: true, filas: [{ jugadorId: 'j1', estado: 'justificada', motivo: 'familia' }] },
+    dia('2026-10-30', null, false),
+    dia('2026-10-28', 'ausente'),
+  ];
+  const lesiones = [{ jugadorId: 'j1', desde: '2026-11-02', hasta: null }];
+  assert.deepEqual(ultimosDias(dias, lesiones, 'j1', 3), [
+    { fecha: '2026-10-30', estado: 'sin_entreno', motivo: null, lesionado: false },
+    { fecha: '2026-11-01', estado: 'justificada', motivo: 'familia', lesionado: false },
+    { fecha: '2026-11-03', estado: 'presente', motivo: null, lesionado: true },
+  ]);
 });

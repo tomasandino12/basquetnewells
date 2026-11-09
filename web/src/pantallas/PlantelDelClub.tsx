@@ -3,7 +3,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router';
 import { hoyLocal } from '@datos/antropometria.js';
 import { Aviso } from '../components/ui/aviso';
-import { claseBoton, Flecha } from '../components/ui/button';
+import { claseBoton } from '../components/ui/button';
 import { Consulta } from '../components/ui/consulta';
 import { Hoja } from '../components/ui/sheet';
 import { Vacio } from '../components/ui/estados';
@@ -131,6 +131,12 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: 
       {(d) => {
         const todos = filas ?? [];
         const presentes = todos.filter((f) => f.hoy === 'presente').length;
+        const cuenta = {
+          faltaron: todos.filter((f) => f.hoy === 'ausente').length,
+          avisaron: todos.filter((f) => f.hoy === 'justificada').length,
+          lesionados: todos.filter((f) => f.lesion).length,
+          sinMarcar: todos.filter((f) => f.hoy === null).length,
+        };
         return (
           <>
             <header className="mb-6 flex flex-col gap-5">
@@ -154,17 +160,29 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: 
                   </p>
                 )}
               </div>
-              {/* Una sola acción fuerte; el resto, enlaces de texto en una fila, para no llenar la pantalla de cajas. */}
-              <nav aria-label="Acciones del plantel" className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
-                <Link to={`/asistencia/${plantelId}`} className={cn(claseBoton(), 'self-start')}>
-                  Tomar asistencia
-                  <Flecha />
-                </Link>
+              {todos.length > 0 && (
+                // La asistencia se toma acá, en la lista: esto es cómo va el día, de un vistazo.
+                <dl aria-label="Asistencia de hoy" className="grid grid-cols-2 gap-px overflow-hidden rounded-tarjeta border border-linea bg-linea sm:grid-cols-4">
+                  {[
+                    ['Faltaron sin avisar', cuenta.faltaron, 'text-baja'],
+                    ['Avisaron', cuenta.avisaron, 'text-tinta'],
+                    ['Lesionados', cuenta.lesionados, 'text-baja'],
+                    ['Sin marcar', cuenta.sinMarcar, 'text-gris'],
+                  ].map(([t, n, tono]) => (
+                    <div key={t as string} className="bg-sup px-4 py-3">
+                      <dt className="text-xs text-gris">{t}</dt>
+                      <dd className={cn('cifra font-titulo text-3xl leading-none font-bold', n === 0 ? 'text-gris' : (tono as string))}>{n}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+              <nav aria-label="Acciones del plantel" className="flex flex-wrap gap-x-5">
                 <div className="flex flex-wrap gap-x-5">
                   {[
                     [`/hoy/${plantelId}`, 'Resumen de hoy'],
-                    [`/fisico/${plantelId}`, 'Plan de fuerza'],
+                    [`/asistencia/${plantelId}`, 'Otro día o sin entrenamiento'],
                     [`/asistencia/${plantelId}/historial`, 'Historial de asistencia'],
+                    [`/fisico/${plantelId}`, 'Plan de fuerza'],
                   ].map(([a, t]) => (
                     <Link key={a} to={a} className={ENLACE_TEXTO}>
                       {t}
@@ -252,7 +270,6 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: 
 
             {!escritorio && (
               <Hoja
-                rojo
                 abierta={enFicha !== undefined}
                 alCambiar={(abierta) => !abierta && setElegido(null)}
                 titulo={enFicha ? `Ficha de ${enFicha.nombre} ${enFicha.apellido}` : 'Ficha'}

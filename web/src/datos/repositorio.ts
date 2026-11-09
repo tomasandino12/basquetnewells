@@ -44,12 +44,14 @@ export interface MedicionCorporal {
 }
 
 export type EstadoAsistencia = 'presente' | 'ausente' | 'justificada';
+/** Por qué faltó un chico que avisó (0066); null = avisó sin decir por qué. */
+export type MotivoFalta = 'estudio' | 'familia' | 'enfermo' | 'viaje' | 'otro';
 
 export interface Entrenamiento {
   id: string;
   fecha: string;
   hubo: boolean;
-  filas: { jugadorId: string; estado: EstadoAsistencia }[];
+  filas: { jugadorId: string; estado: EstadoAsistencia; motivo?: MotivoFalta | null }[];
 }
 
 export interface Lesion {
@@ -172,7 +174,8 @@ export interface Repositorio {
     plantelId: string;
     fecha: string;
     hubo: boolean;
-    filas: { jugadorId: string; estado: EstadoAsistencia | null }[];
+    /** Sin `motivo`, la base deja el que había; con motivo null lo borra. */
+    filas: { jugadorId: string; estado: EstadoAsistencia | null; motivo?: MotivoFalta | null }[];
   }): Promise<string>;
   /** zona, lado y tipo son opcionales: null es «no se sabe». */
   abrirLesion(datos: {

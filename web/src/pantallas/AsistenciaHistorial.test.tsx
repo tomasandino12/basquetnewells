@@ -96,10 +96,10 @@ describe('Asistencia: historial', () => {
 });
 
 describe('Asistencia: el plantel lleva a las dos pantallas', () => {
-  it('«Tomar asistencia» e «Historial de asistencia» salen del plantel', async () => {
+  it('«Otro día o sin entrenamiento» e «Historial de asistencia» salen del plantel', async () => {
     const u = userEvent.setup();
     const { router } = renderConDatos(rutas, { repo: repo({ obtenerJugadoresDelPlantel: async () => [] }), ruta: '/plantel/p-1' });
-    expect((await screen.findByRole('link', { name: 'Tomar asistencia' })).getAttribute('href')).toBe('/asistencia/p-1');
+    expect((await screen.findByRole('link', { name: 'Otro día o sin entrenamiento' })).getAttribute('href')).toBe('/asistencia/p-1');
     await u.click(screen.getByRole('link', { name: 'Historial de asistencia' }));
     await waitFor(() => expect(router.state.location.pathname).toBe('/asistencia/p-1/historial'));
   });
