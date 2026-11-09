@@ -67,10 +67,15 @@ test('desde /app sólo se llega a /nueva por pantallaNueva.js, detrás del inter
   assert.match(m, /normalizarNueva\(valor\)[\s\S]*valor === 'no' \? 'no' : 'si'/, 'prendido por defecto, sólo "no" lo apaga');
 });
 
-test('el rebote a /nueva sólo ocurre al tocar la pestaña Plantel u Hoy, nunca al arrancar', () => {
+test('el salto a /nueva: al tocar Plantel u Hoy, y al entrar sólo una vez por pestaña', () => {
   const main = leer('src/ui/main.js');
   assert.equal((main.match(/abrirEnNueva\(/g) ?? []).length, 2, 'sólo Plantel y Hoy en main.js');
   assert.match(main, /onTab: async \(id\) => \{\s*if \(id === 'p-plantel' && await abrirEnNueva[^\n]*\r?\n\s*if \(id === 'p-hoy' && await abrirEnNueva/);
+  // Desde el 09/11/2026 también al entrar (Tomás abría /app y seguía viendo lo viejo).
+  assert.equal((main.match(/abrirAlEntrar\(/g) ?? []).length, 1, 'un solo salto al entrar');
+  const puerta = leer('src/ui/pantallaNueva.js');
+  assert.match(puerta, /sessionStorage\.getItem\(CLAVE_YA_SALTO\)\) return false/, 'una vez por pestaña: volver desde /nueva no rebota');
+  assert.match(puerta, /window\.location\.replace\(destino\)/, 'al entrar, replace: el atrás no rebota');
 });
 
 test('/nueva queda fuera del service worker de /app y no se cachea en el navegador', () => {

@@ -20,7 +20,7 @@ import {
   setClubActual, obtenerClubActual, setPlanteles, limpiarSesion, setRoles, obtenerModo, setModo,
   setCuenta, setFichaJugador, setPlantelActivoId, obtenerRoles, obtenerCuenta, setChicos, obtenerPlantelActivo,
 } from './sesion.js';
-import { abrirEnNueva } from './pantallaNueva.js';
+import { abrirAlEntrar, abrirEnNueva } from './pantallaNueva.js';
 import { GUIAS, guiaParaAbrir } from '../data/guias.js';
 import { claveGuia, yaVista } from './guiaVista.js';
 import { abrirGuia } from './componentes/guia.js';
@@ -412,6 +412,12 @@ async function entrarConSesion() {
   }
   setPlanteles(planteles);
 
+  // Entrenando, /app arranca en Plantel: con el interruptor prendido se abre la
+  // versión nueva, una vez por pestaña (ver abrirAlEntrar).
+  const inicial = pantallaInicialDelModo();
+  if (obtenerModo() === 'entrenar' && (inicial === 'p-plantel' || inicial === 'p-hoy')
+    && await abrirAlEntrar({ plantelId: obtenerPlantelActivo()?.id, pantalla: inicial === 'p-hoy' ? 'hoy' : 'plantel' })) return;
+
   mostrarApp();
   // Entrenando arranca en PLANTEL, donde empieza el flujo de quien arranca de
   // cero; coordinando, en el Panorama.
@@ -450,7 +456,7 @@ async function iniciar() {
   descartarBorradoresAnteriores();
   iniciarPublico({ onEntrar: entrarConSesion, onReintentarClub: entrarConSesion });
   iniciarChrome({
-    // Sólo al tocar la pestaña, nunca al arrancar: así volver desde /nueva no rebota de nuevo.
+    // Al tocar la pestaña; al arrancar lo hace abrirAlEntrar, una vez por pestaña.
     onTab: async (id) => {
       if (id === 'p-plantel' && await abrirEnNueva({ plantelId: obtenerPlantelActivo()?.id })) return;
       if (id === 'p-hoy' && await abrirEnNueva({ plantelId: obtenerPlantelActivo()?.id, pantalla: 'hoy' })) return;

@@ -50,13 +50,35 @@ async function nuevaResponde() {
  * llama no sigue con la vieja. Apagado, o si /nueva no responde, devuelve false y
  * la pantalla vieja se abre como siempre.
  */
-export async function abrirEnNueva({ plantelId, jugadorId, pantalla } = {}) {
+export async function abrirEnNueva({ plantelId, jugadorId, pantalla, reemplazar = false } = {}) {
   if (!nuevaPrendida()) return false;
   if (!(await nuevaResponde())) {
     toast('La versión nueva no está disponible ahora. Te dejamos la de siempre.');
     return false;
   }
-  // assign y no replace: el atrás del sistema vuelve a /app.
-  window.location.assign(direccionNueva({ plantelId, jugadorId, pantalla }));
+  const destino = direccionNueva({ plantelId, jugadorId, pantalla });
+  // Al tocar una pestaña, assign: el atrás del sistema vuelve a /app. Al entrar,
+  // replace: /app no queda en el historial y el atrás no rebota.
+  if (reemplazar) window.location.replace(destino);
+  else window.location.assign(destino);
   return true;
+}
+
+export const CLAVE_YA_SALTO = 'semillero.nueva.yaSalto';
+
+/**
+ * Al entrar a /app (no al tocar una pestaña): salta a la nueva una sola vez por
+ * pestaña del navegador. Así abrir /app muestra lo nuevo, pero volver desde
+ * /nueva con «En la app de siempre» se queda en la vieja. Sin sessionStorage no
+ * salta: sin la marca no habría forma de no rebotar.
+ */
+export async function abrirAlEntrar({ plantelId, pantalla } = {}) {
+  if (!nuevaPrendida()) return false;
+  try {
+    if (sessionStorage.getItem(CLAVE_YA_SALTO)) return false;
+    sessionStorage.setItem(CLAVE_YA_SALTO, '1');
+  } catch {
+    return false;
+  }
+  return abrirEnNueva({ plantelId, pantalla, reemplazar: true });
 }

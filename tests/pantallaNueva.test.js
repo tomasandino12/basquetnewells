@@ -1,6 +1,6 @@
 import { test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { abrirEnNueva, guardarNueva, nuevaPrendida } from '../src/ui/pantallaNueva.js';
+import { abrirAlEntrar, abrirEnNueva, guardarNueva, nuevaPrendida } from '../src/ui/pantallaNueva.js';
 
 /**
  * El respaldo de la mudanza: con el interruptor apagado, o con /nueva caída,
@@ -13,7 +13,9 @@ let destinos;
 let pedidos;
 let avisos;
 const originales = {};
-const CLAVES = ['localStorage', 'window', 'fetch', 'document'];
+const CLAVES = ['localStorage', 'sessionStorage', 'window', 'fetch', 'document'];
+let reemplazos;
+let sesion;
 
 function simular({ fetchFalla = false, status = 200 } = {}) {
   guardado = new Map();
@@ -24,7 +26,13 @@ function simular({ fetchFalla = false, status = 200 } = {}) {
     setItem: (k, v) => guardado.set(k, String(v)),
     removeItem: (k) => guardado.delete(k),
   };
-  globalThis.window = { location: { assign: (d) => destinos.push(d) } };
+  reemplazos = [];
+  sesion = new Map();
+  globalThis.sessionStorage = {
+    getItem: (k) => (sesion.has(k) ? sesion.get(k) : null),
+    setItem: (k, v) => sesion.set(k, String(v)),
+  };
+  globalThis.window = { location: { assign: (d) => destinos.push(d), replace: (d) => reemplazos.push(d) } };
   // toast() escribe en el DOM: alcanza con algo que guarde el texto.
   avisos = [];
   const nodo = { textContent: '', classList: { add() {}, remove() {} } };
@@ -118,4 +126,25 @@ test('si el teléfono no deja usar localStorage queda apagado y no rompe', async
   assert.equal(nuevaPrendida(), false);
   assert.equal(guardarNueva(true), false);
   assert.equal(await abrirEnNueva({ plantelId: 'p1' }), false);
+});
+
+test('al entrar a /app salta a la nueva con replace, una sola vez por pestaña', async () => {
+  assert.equal(await abrirAlEntrar({ plantelId: 'p1', pantalla: 'plantel' }), true);
+  assert.deepEqual(reemplazos, ['/nueva#/plantel/p1']);
+  assert.deepEqual(destinos, [], 'replace: /app no queda en el historial');
+  // Volver desde /nueva («En la app de siempre») no rebota.
+  assert.equal(await abrirAlEntrar({ plantelId: 'p1', pantalla: 'plantel' }), false);
+  assert.equal(reemplazos.length, 1);
+});
+
+test('al entrar con el interruptor apagado se queda en /app', async () => {
+  guardarNueva(false);
+  assert.equal(await abrirAlEntrar({ plantelId: 'p1' }), false);
+  assert.deepEqual(reemplazos, []);
+});
+
+test('al entrar sin sessionStorage no salta (no habría cómo no rebotar)', async () => {
+  globalThis.sessionStorage = { getItem: () => { throw new Error('bloqueado'); }, setItem: () => {} };
+  assert.equal(await abrirAlEntrar({ plantelId: 'p1' }), false);
+  assert.deepEqual(reemplazos, []);
 });
