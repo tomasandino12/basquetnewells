@@ -1,4 +1,4 @@
-import { CLAVE_NUEVA, ESPERA_NUEVA_MS, RUTA_NUEVA, direccionNueva, normalizarNueva } from '../data/interruptorNueva.js';
+import { CLAVE_NUEVA, ESPERA_NUEVA_MS, RUTA_NUEVA, direccionNueva, normalizarNueva, vieneDeLaNueva } from '../data/interruptorNueva.js';
 import { toast } from './nav.js';
 
 /**
@@ -64,21 +64,12 @@ export async function abrirEnNueva({ plantelId, jugadorId, pantalla, reemplazar 
   return true;
 }
 
-export const CLAVE_YA_SALTO = 'semillero.nueva.yaSalto';
-
 /**
- * Al entrar a /app (no al tocar una pestaña): salta a la nueva una sola vez por
- * pestaña del navegador. Así abrir /app muestra lo nuevo, pero volver desde
- * /nueva con «En la app de siempre» se queda en la vieja. Sin sessionStorage no
- * salta: sin la marca no habría forma de no rebotar.
+ * Al entrar a la app de siempre (no al tocar una pestaña): pasa a la nueva, salvo
+ * que la nueva la haya mandado acá a propósito (`?desde=nueva`, para algo que
+ * todavía no se mudó). replace: el atrás no vuelve a la de siempre.
  */
 export async function abrirAlEntrar({ plantelId, pantalla } = {}) {
-  if (!nuevaPrendida()) return false;
-  try {
-    if (sessionStorage.getItem(CLAVE_YA_SALTO)) return false;
-    sessionStorage.setItem(CLAVE_YA_SALTO, '1');
-  } catch {
-    return false;
-  }
+  if (vieneDeLaNueva(window.location.search)) return false;
   return abrirEnNueva({ plantelId, pantalla, reemplazar: true });
 }

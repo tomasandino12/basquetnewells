@@ -4,6 +4,7 @@ import { NavLink, Outlet, matchPath, useLocation } from 'react-router';
 import escudo from '../../public/escudo.png';
 import { cn } from './lib/cn';
 import { aplicarTema, guardarTema, leerTema, type Tema } from './tema';
+import { APP_DE_SIEMPRE } from './clasica';
 
 interface Enlace {
   a: string;
@@ -29,16 +30,14 @@ export function enlacesDelMenu(plantelId: string | undefined): Enlace[] {
 }
 
 /**
- * Lo que todavía no se mudó: se abre en la app de siempre, así desde /nueva no se pierde ninguna
- * función (H-175). /app arranca en su pantalla de inicio; no rebota a /nueva porque sólo salta
- * al tocar una pestaña.
+ * Lo que todavía no se mudó: se abre en la app de siempre (/app/clasica), así no se pierde
+ * ninguna función (H-175). Va con `?desde=nueva`: la de siempre no la manda de vuelta acá.
  */
 export const EN_LA_DE_SIEMPRE = [
   { nombre: 'Medir', icono: Ruler },
   { nombre: 'Recursos', icono: PlaySquare },
   { nombre: 'Datos', icono: LineChart },
 ];
-const APP_DE_SIEMPRE = '/app/';
 
 function DeSiempre({ compacto }: { compacto?: boolean }) {
   if (compacto) {

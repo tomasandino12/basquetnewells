@@ -19,14 +19,14 @@ describe('rutas con datos', () => {
     expect(screen.getByText('Club de Ejemplo')).toBeTruthy();
   });
 
-  it('el entrenador ve sólo sus planteles asignados', async () => {
+  it('el entrenador ve sólo sus planteles asignados: con uno solo entra directo', async () => {
     const repo = repositorioInventado({
       obtenerMisRoles: async () => ({ esEntrenador: true, esCoordinador: false }),
       obtenerMisPlantelesAsignados: async () => new Set(['p-2']),
     });
     renderConDatos(rutas, { repo });
-    const lista = await screen.findByRole('list', { name: 'Planteles' });
-    expect(within(lista).getAllByRole('listitem').map((l) => l.textContent)).toEqual(['Sub 15']);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Sub 15' })).toBeTruthy();
+    expect(screen.queryByRole('list', { name: 'Planteles' })).toBeNull();
   });
 
   it('sin sesión manda a /entrar', async () => {
@@ -67,7 +67,10 @@ describe('rutas con datos', () => {
     const aviso = await screen.findByRole('alert');
     expect(aviso.textContent).toContain('Sin conexión');
     await u.click(screen.getByRole('button', { name: /Reintentar/ }));
-    expect(await screen.findByRole('list', { name: 'Planteles' })).toBeTruthy();
+    // Una sola categoría: entra directo al plantel.
+    // (El repositorio de prueba sólo coordina: el plantel le dice que los chicos los ve el cuerpo técnico.)
+    expect(await screen.findByRole('heading', { name: /cuerpo técnico/ })).toBeTruthy();
+    expect(screen.queryByRole('list', { name: 'Planteles' })).toBeNull();
   });
 
   it('un error de permiso no se reintenta solo y no muestra el texto crudo de la base', async () => {

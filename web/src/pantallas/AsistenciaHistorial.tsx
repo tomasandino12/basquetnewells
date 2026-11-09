@@ -7,9 +7,10 @@ import { Consulta } from '../components/ui/consulta';
 import { Vacio } from '../components/ui/estados';
 import { useHistorialDeAsistencia } from '../datos/consultas';
 import { ConPlantel } from './ConPlantel';
+import { APP_DE_SIEMPRE } from '../clasica';
 
 // La planilla del área (un .xlsx con una hoja por categoría) se arma todavía en la app anterior.
-const APP_ANTERIOR = '/app/';
+const APP_ANTERIOR = APP_DE_SIEMPRE;
 
 const PLURAL = (n: number, uno: string, varios: string) => (n === 1 ? uno : varios);
 

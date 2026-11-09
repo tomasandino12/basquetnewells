@@ -77,7 +77,7 @@ describe('Asistencia: historial', () => {
 
   it('la planilla para el área se baja todavía en la app anterior', async () => {
     abrir();
-    expect((await screen.findByRole('link', { name: 'Bajar planilla' })).getAttribute('href')).toBe('/app/');
+    expect((await screen.findByRole('link', { name: 'Bajar planilla' })).getAttribute('href')).toBe('/app/clasica?desde=nueva');
   });
 
   it('muestra la carga y, si falla, ofrece reintentar', async () => {

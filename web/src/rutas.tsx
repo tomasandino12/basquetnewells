@@ -2,6 +2,7 @@ import { Navigate, Outlet, createHashRouter, useLocation, type RouteObject } fro
 import { Consulta } from './components/ui/consulta';
 import { Marco } from './laboratorio';
 import { useSesion } from './datos/contexto';
+import { irALaDeSiempre } from './clasica';
 import { Asistencia } from './pantallas/Asistencia';
 import { AsistenciaHistorial } from './pantallas/AsistenciaHistorial';
 import { Entrar } from './pantallas/Entrar';
@@ -15,11 +16,15 @@ import { PlantelEjemplo } from './pantallas/PlantelEjemplo';
 import { PlantelDelClub } from './pantallas/PlantelDelClub';
 import { Planteles } from './pantallas/Planteles';
 
-/** Todo lo que lleva datos reales pasa por acá: sin sesión se va a /entrar y vuelve a donde quería ir. */
+/**
+ * Todo lo que lleva datos reales pasa por acá. Sin sesión, publicada, se entra en la app de
+ * siempre (tiene el alta, Google y la clave olvidada) y de ahí vuelve; en la compu, a /entrar.
+ */
 export function RequiereSesion() {
   const { estado, error, reintentar } = useSesion();
   const lugar = useLocation();
   if (estado === 'con-sesion') return <Outlet />;
+  if (estado === 'sin-sesion' && irALaDeSiempre({ volver: true })) return null;
   if (estado === 'sin-sesion') return <Navigate to="/entrar" replace state={{ desde: lugar.pathname }} />;
   return (
     <main className="mx-auto w-full max-w-[52rem] px-4 py-5">

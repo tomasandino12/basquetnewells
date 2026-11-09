@@ -13,6 +13,7 @@ import { mensajeDeError } from '../datos/errores';
 import type { EstadoAsistencia } from '../datos/repositorio';
 import { cn } from '../lib/cn';
 import { ESTADO_DE_BOTON, type FilaPlantel } from '../plantel/filas';
+import { APP_DE_SIEMPRE } from '../clasica';
 
 const SALIDA: [number, number, number, number] = [0.16, 1, 0.3, 1];
 const BOTONES = [
@@ -93,7 +94,7 @@ function PendienteEnLaApp({ titulo }: { titulo: string }) {
   return (
     <p className={cn('rounded-tarjeta border border-sobre-club/30 p-3 text-sm', SUAVE)}>
       {titulo}: todavía se ven en la{' '}
-      <a href="/app/" className="font-semibold text-sobre-club underline underline-offset-2">app anterior</a>.
+      <a href={APP_DE_SIEMPRE} className="font-semibold text-sobre-club underline underline-offset-2">app anterior</a>.
     </p>
   );
 }
@@ -229,7 +230,7 @@ export function FichaDelJugador({ fila: f, clubId, plantelId, hoy, alSacar }: Pr
         )}
         <p className={cn('mt-3 text-xs', SUAVE)}>
           Editar la fecha de nacimiento, los datos de emergencia, el acceso del chico y la familia: en la{' '}
-          <a href="/app/" className="underline underline-offset-2">app anterior</a>.
+          <a href={APP_DE_SIEMPRE} className="underline underline-offset-2">app anterior</a>.
         </p>
       </footer>
     </motion.article>

@@ -412,8 +412,8 @@ async function entrarConSesion() {
   }
   setPlanteles(planteles);
 
-  // Entrenando, /app arranca en Plantel: con el interruptor prendido se abre la
-  // versión nueva, una vez por pestaña (ver abrirAlEntrar).
+  // Entrenando, la de siempre arranca en Plantel: con el interruptor prendido pasa a la
+  // nueva, salvo que la nueva haya mandado acá a propósito (ver abrirAlEntrar).
   const inicial = pantallaInicialDelModo();
   if (obtenerModo() === 'entrenar' && (inicial === 'p-plantel' || inicial === 'p-hoy')
     && await abrirAlEntrar({ plantelId: obtenerPlantelActivo()?.id, pantalla: inicial === 'p-hoy' ? 'hoy' : 'plantel' })) return;
@@ -456,7 +456,7 @@ async function iniciar() {
   descartarBorradoresAnteriores();
   iniciarPublico({ onEntrar: entrarConSesion, onReintentarClub: entrarConSesion });
   iniciarChrome({
-    // Al tocar la pestaña; al arrancar lo hace abrirAlEntrar, una vez por pestaña.
+    // Al tocar la pestaña Plantel u Hoy se vuelve a la nueva (/app).
     onTab: async (id) => {
       if (id === 'p-plantel' && await abrirEnNueva({ plantelId: obtenerPlantelActivo()?.id })) return;
       if (id === 'p-hoy' && await abrirEnNueva({ plantelId: obtenerPlantelActivo()?.id, pantalla: 'hoy' })) return;

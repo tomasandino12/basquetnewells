@@ -21,8 +21,9 @@ import { armarFilas, buscarEnFilas, type FilaPlantel } from '../plantel/filas';
 import { plantelesVisibles } from '../plantel/visibles';
 import { FichaDelJugador } from './FichaDelJugador';
 import { FilaDeLista } from './FilaDeLista';
+import { APP_DE_SIEMPRE } from '../clasica';
 
-const APP_ANTERIOR = '/app/';
+const APP_ANTERIOR = APP_DE_SIEMPRE;
 const ENLACE_TEXTO =
   'inline-flex min-h-11 items-center text-sm font-semibold underline decoration-linea decoration-2 underline-offset-4 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:decoration-club';
 

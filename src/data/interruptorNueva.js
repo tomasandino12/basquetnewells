@@ -1,5 +1,8 @@
 /**
- * Interruptor por celular para abrir Hoy, Plantel y la ficha en la versión nueva (/nueva).
+ * Desde el 09/11/2026 la app nueva (React) es /app y esta, la de siempre, vive en
+ * /app/clasica para lo que todavía no se mudó (login, Medir, Recursos, Datos,
+ * coordinación, jugador y familia). Este interruptor decide si Hoy, Plantel y la
+ * ficha se abren en la nueva.
  * Prendido por defecto desde el 08/11/2026 (Tomás quiere ver el rediseño en /app y nadie
  * usa la app todavía): sólo el valor 'no' lo apaga. Es del teléfono (localStorage), no de
  * la cuenta: quien prefiera la de siempre lo apaga en Mi perfil.
@@ -13,10 +16,21 @@ export const CLAVE_NUEVA = 'semillero.nueva';
 export const ESPERA_NUEVA_MS = 3000;
 
 /**
- * Dónde vive la versión nueva (vercel.json la publica ahí). Sin barra final: es la
+ * Dónde vive la versión nueva (vercel.json la sirve ahí). Sin barra final: es la
  * dirección que vercel.json reescribe y sirve sin guardar en el navegador.
  */
-export const RUTA_NUEVA = '/nueva';
+export const RUTA_NUEVA = '/app';
+
+/** Dónde vive esta app, la de siempre (vercel.json). */
+export const RUTA_CLASICA = '/app/clasica';
+
+/**
+ * La app nueva enlaza acá con `?desde=nueva` cuando la persona quiere algo que
+ * todavía no se mudó: entonces la de siempre no la manda de vuelta a la nueva.
+ */
+export function vieneDeLaNueva(search) {
+  return new URLSearchParams(String(search ?? '').replace(/^\?/, '')).get('desde') === 'nueva';
+}
 
 export function normalizarNueva(valor) {
   return valor === 'no' ? 'no' : 'si';

@@ -10,8 +10,9 @@ import {
 } from '../fisico/plan';
 import { enlaceBoton } from '../fisico/estilos';
 import { ConPlantel } from './ConPlantel';
+import { APP_DE_SIEMPRE } from '../clasica';
 
-const APP_ANTERIOR = '/app/';
+const APP_ANTERIOR = APP_DE_SIEMPRE;
 
 /**
  * El plan de fuerza de una categoría. Cuál se muestra lo decide elegirPlanVisible (el que contiene hoy,

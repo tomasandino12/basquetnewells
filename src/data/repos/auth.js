@@ -48,7 +48,10 @@ export async function obtenerSesionActual() {
  * Supabase (ver README de configuración).
  */
 function urlDeRetorno() {
-  return window.location.origin + window.location.pathname;
+  // En producción la app de siempre vive en /app/clasica, pero vuelve a /app (la
+  // dirección permitida en Supabase): la app nueva le reenvía la vuelta del login.
+  const { pathname } = window.location;
+  return window.location.origin + (pathname.startsWith('/app') ? '/app' : pathname);
 }
 
 /**

@@ -10,8 +10,8 @@ test("prendido por defecto: sólo 'no' lo apaga", () => {
 });
 
 test('Hoy va al resumen nuevo del plantel', () => {
-  assert.equal(direccionNueva({ plantelId: 'abc-123', pantalla: 'hoy' }), '/nueva#/hoy/abc-123');
-  assert.equal(direccionNueva({ plantelId: '../x', pantalla: 'hoy' }), '/nueva#/');
+  assert.equal(direccionNueva({ plantelId: 'abc-123', pantalla: 'hoy' }), '/app#/hoy/abc-123');
+  assert.equal(direccionNueva({ plantelId: '../x', pantalla: 'hoy' }), '/app#/');
 });
 
 test('la clave guardada es la de siempre', () => {
@@ -19,8 +19,8 @@ test('la clave guardada es la de siempre', () => {
 });
 
 test('la dirección lleva al plantel, y a la ficha si hay jugador', () => {
-  assert.equal(direccionNueva({ plantelId: 'abc-123' }), '/nueva#/plantel/abc-123');
-  assert.equal(direccionNueva({ plantelId: 'abc-123', jugadorId: 'j_9' }), '/nueva#/plantel/abc-123?jugador=j_9');
+  assert.equal(direccionNueva({ plantelId: 'abc-123' }), '/app#/plantel/abc-123');
+  assert.equal(direccionNueva({ plantelId: 'abc-123', jugadorId: 'j_9' }), '/app#/plantel/abc-123?jugador=j_9');
 });
 
 test('sin plantel o con un id raro va a la lista de planteles', () => {
@@ -31,9 +31,9 @@ test('sin plantel o con un id raro va a la lista de planteles', () => {
 });
 
 test('un jugador con id raro se ignora, el plantel queda', () => {
-  assert.equal(direccionNueva({ plantelId: 'p1', jugadorId: 'a&b=1' }), '/nueva#/plantel/p1');
+  assert.equal(direccionNueva({ plantelId: 'p1', jugadorId: 'a&b=1' }), '/app#/plantel/p1');
 });
 
 test('la dirección siempre es del mismo origen', () => {
-  assert.ok(direccionNueva({ plantelId: 'p1' }).startsWith('/nueva#'));
+  assert.ok(direccionNueva({ plantelId: 'p1' }).startsWith('/app#'));
 });

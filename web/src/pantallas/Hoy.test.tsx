@@ -65,14 +65,14 @@ describe('Hoy: estados sin datos', () => {
     abrir(repo({ obtenerSesionesDeMedicion: async () => [], obtenerMedicionesTiroDelPlantel: async () => [] }));
     expect(await screen.findByText('Todavía no hay nada cargado en Sub 13')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Cargar el plantel' }).getAttribute('href')).toBe('/plantel/p-1');
-    expect(screen.getByRole('link', { name: 'Cargar un partido' }).getAttribute('href')).toBe('/app/');
-    expect(screen.getByRole('link', { name: 'Hacer la primera medición' }).getAttribute('href')).toBe('/app/');
+    expect(screen.getByRole('link', { name: 'Cargar un partido' }).getAttribute('href')).toBe('/app/clasica?desde=nueva');
+    expect(screen.getByRole('link', { name: 'Hacer la primera medición' }).getAttribute('href')).toBe('/app/clasica?desde=nueva');
   });
 
   it('una batería sin ninguna medición lo cuenta y deja hacer una', async () => {
     abrir(repo({ obtenerMedicionesTiroDelPlantel: async () => [] }));
     expect(await screen.findByText(/Hubo una batería el 06\/10 en Sub 13, pero quedó sin ninguna medición/)).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Hacer una medición' }).getAttribute('href')).toBe('/app/');
+    expect(screen.getByRole('link', { name: 'Hacer una medición' }).getAttribute('href')).toBe('/app/clasica?desde=nueva');
   });
 });
 
@@ -167,7 +167,7 @@ describe('Hoy: comparación con la batería anterior', () => {
     const total = within(await esperar());
     expect(total.getByRole('img', { name: /Evolución del tiro de campo/ })).toBeTruthy();
     expect(total.getByText(/2 baterías · primera 60% \(90\/150\) · última 5\d% \(/)).toBeTruthy();
-    expect(total.getByRole('link', { name: 'Ver la evolución completa en Datos' }).getAttribute('href')).toBe('/app/');
+    expect(total.getByRole('link', { name: 'Ver la evolución completa en Datos' }).getAttribute('href')).toBe('/app/clasica?desde=nueva');
   });
 
   it('con una sola batería la curva es un punto', async () => {
@@ -181,7 +181,7 @@ describe('Hoy: metas del cuerpo técnico', () => {
   it('sin metas ofrece fijarlas y no habla del tema', async () => {
     abrir();
     await esperar();
-    expect(screen.getByRole('link', { name: 'Fijar las metas' }).getAttribute('href')).toBe('/app/');
+    expect(screen.getByRole('link', { name: 'Fijar las metas' }).getAttribute('href')).toBe('/app/clasica?desde=nueva');
     expect(screen.queryByText(/llegó a su meta|llegó a la meta|por debajo de la meta/)).toBeNull();
   });
 
@@ -330,6 +330,6 @@ describe('Hoy: errores y permisos', () => {
     await esperar();
     const enlaces = screen.getAllByRole('link', { name: /^Mandar un recurso para / });
     expect(enlaces).toHaveLength(6);
-    expect(enlaces[0].getAttribute('href')).toBe('/app/');
+    expect(enlaces[0].getAttribute('href')).toBe('/app/clasica?desde=nueva');
   });
 });

@@ -61,8 +61,8 @@ test('iPhone: apple-touch-icon de 180 y modo app', () => {
 });
 
 test('start_url coincide con la URL a la que vuelve el login', () => {
-  // urlDeRetorno() = origin + pathname: abierta desde el ícono, pathname es "/app".
+  // urlDeRetorno(): dentro de /app (la nueva o /app/clasica) siempre vuelve a "/app".
   const auth = readFileSync(path.join('src', 'data', 'repos', 'auth.js'), 'utf8');
-  assert.match(auth, /return window\.location\.origin \+ window\.location\.pathname;/);
+  assert.match(auth, /window\.location\.origin \+ \(pathname\.startsWith\('\/app'\) \? '\/app' : pathname\)/);
   assert.equal(new URL(manifest.start_url, 'https://x.test').pathname, '/app');
 });

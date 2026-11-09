@@ -4,12 +4,11 @@ import { existsSync, lstatSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * La mudanza a React convive con la app actual sin tocarla: lo nuevo vive en
- * web/, fuera de lo que el navegador carga (/public y /src). Desde el 04/11
- * Vercel lo arma en cada deploy y lo publica aparte, en /nueva, para que Tomás
- * vaya viendo los cambios (nadie usa la app todavía). La app vieja se sigue
- * sirviendo igual. Si un test de acá falla, alguien mezcló la mudanza con lo
- * que ve la gente.
+ * La mudanza a React: lo nuevo vive en web/, fuera de lo que carga la app de
+ * siempre (/public y /src). Vercel lo arma en cada deploy. Desde el 09/11/2026
+ * la nueva ES /app (lo pidió Tomás: «que aparezca en /app que es lo que
+ * estamos armando») y la de siempre vive en /app/clasica para lo que todavía
+ * no se mudó (H-175). /nueva queda como redirección a /app.
  */
 
 const leer = (p) => readFileSync(p, 'utf8');
@@ -29,7 +28,7 @@ test('web/ se sube al deploy sin lo instalado ni lo armado en la compu', () => {
   assert.ok(!lineas.includes('package.json'), 'sin «/», package.json deja afuera también web/package.json');
 });
 
-test('el deploy arma web/ y la publica solo en /nueva, sin dejar el código ni lo instalado', () => {
+test('el deploy arma web/ y la sirve en /app; la de siempre queda en /app/clasica', () => {
   const v = json('vercel.json');
   assert.equal(v.framework, undefined);
   assert.equal(v.outputDirectory, '.', 'la app vieja se sirve desde la raíz (/public y /src)');
@@ -37,8 +36,10 @@ test('el deploy arma web/ y la publica solo en /nueva, sin dejar el código ni l
   assert.equal(v.buildCommand, 'cd web && npm run build && cd .. && rm -rf nueva && mv web/dist nueva && rm -rf web');
   const destino = Object.fromEntries(v.rewrites.map((r) => [r.source, r.destination]));
   assert.equal(destino['/'], '/public/portal.html');
-  assert.equal(destino['/app'], '/public/index.html');
-  assert.equal(destino['/nueva'], '/nueva/index.html');
+  assert.equal(destino['/app'], '/nueva/index.html', 'la app nueva es /app');
+  assert.equal(destino['/app/clasica'], '/public/index.html', 'la de siempre, para lo que no se mudó');
+  assert.equal(destino['/nueva'], undefined);
+  assert.deepEqual(v.redirects, [{ source: '/nueva', destination: '/app', permanent: false }], 'los enlaces viejos a /nueva van a /app');
   assert.ok(!JSON.stringify(v.rewrites).includes('web/'), 'nada se sirve directo desde web/');
   assert.match(leer('web/vite.config.ts'), /base: '\/nueva\/'/, 'lo armado tiene que pedir sus archivos en /nueva/');
 });
@@ -51,11 +52,11 @@ test('la app vieja no carga nada de web/ ni de React', () => {
   assert.deepEqual(rotos, [], `src/ no importa de React ni de web/:\n  ${rotos.join('\n  ')}`);
 });
 
-test('desde /app sólo se llega a /nueva por pantallaNueva.js, detrás del interruptor y con respaldo', () => {
-  // Etapa 2: la app vieja puede abrir Plantel y la ficha nuevas. Es la única puerta.
+test('desde la de siempre sólo se pasa a la nueva por pantallaNueva.js, detrás del interruptor y con respaldo', () => {
   const puertas = archivos('src').filter((p) => /\.(js|html)$/.test(p))
-    .filter((p) => /['"`]\/nueva\b/.test(leer(p))).map((p) => p.replaceAll('\\', '/')).sort();
-  assert.deepEqual(puertas, ['src/data/interruptorNueva.js'], 'la dirección de /nueva vive en un solo módulo');
+    .filter((p) => /['"`]\/nueva\b|['"`]\/app\/clasica/.test(leer(p))).map((p) => p.replaceAll('\\', '/')).sort();
+  assert.deepEqual(puertas, ['src/data/interruptorNueva.js'], 'las direcciones de las dos apps viven en un solo módulo');
+  assert.match(leer('src/data/interruptorNueva.js'), /RUTA_NUEVA = '\/app'[\s\S]*RUTA_CLASICA = '\/app\/clasica'/);
   const ui = archivos('src/ui').filter((p) => /\.js$/.test(p))
     .filter((p) => /pantallaNueva\.js/.test(leer(p))).map((p) => p.replaceAll('\\', '/')).sort();
   assert.deepEqual(ui, ['src/ui/main.js', 'src/ui/pantallas/miPerfil.js', 'src/ui/pantallas/registro.js']);
@@ -67,23 +68,33 @@ test('desde /app sólo se llega a /nueva por pantallaNueva.js, detrás del inter
   assert.match(m, /normalizarNueva\(valor\)[\s\S]*valor === 'no' \? 'no' : 'si'/, 'prendido por defecto, sólo "no" lo apaga');
 });
 
-test('el salto a /nueva: al tocar Plantel u Hoy, y al entrar sólo una vez por pestaña', () => {
+test('la de siempre pasa a la nueva al tocar Plantel u Hoy, y al entrar salvo que venga de la nueva', () => {
   const main = leer('src/ui/main.js');
   assert.equal((main.match(/abrirEnNueva\(/g) ?? []).length, 2, 'sólo Plantel y Hoy en main.js');
   assert.match(main, /onTab: async \(id\) => \{\s*if \(id === 'p-plantel' && await abrirEnNueva[^\n]*\r?\n\s*if \(id === 'p-hoy' && await abrirEnNueva/);
-  // Desde el 09/11/2026 también al entrar (Tomás abría /app y seguía viendo lo viejo).
   assert.equal((main.match(/abrirAlEntrar\(/g) ?? []).length, 1, 'un solo salto al entrar');
   const puerta = leer('src/ui/pantallaNueva.js');
-  assert.match(puerta, /sessionStorage\.getItem\(CLAVE_YA_SALTO\)\) return false/, 'una vez por pestaña: volver desde /nueva no rebota');
+  assert.match(puerta, /if \(vieneDeLaNueva\(window\.location\.search\)\) return false/, 'la nueva la mandó a propósito: no rebota');
+  // La nueva enlaza a la de siempre siempre con ?desde=nueva, desde un solo lugar.
+  assert.match(leer('web/src/clasica.ts'), /APP_DE_SIEMPRE = `\$\{RUTA_CLASICA\}\?desde=nueva`/);
+  const sueltos = archivos('web/src').filter((p) => /\.tsx?$/.test(p) && !/\.test\./.test(p))
+    .filter((p) => /['"`]\/app\//.test(leer(p))).map((p) => p.replaceAll('\\', '/'));
+  assert.deepEqual(sueltos, [], 'nada enlaza a /app/ a mano: va por APP_DE_SIEMPRE');
   assert.match(puerta, /window\.location\.replace\(destino\)/, 'al entrar, replace: el atrás no rebota');
 });
 
-test('/nueva queda fuera del service worker de /app y no se cachea en el navegador', () => {
+test('/app y /app/clasica no se guardan en el navegador', () => {
   const v = json('vercel.json');
   const sw = v.headers.find((h) => h.source === '/public/sw.js').headers.find((x) => x.key === 'Service-Worker-Allowed');
-  assert.equal(sw.value, '/app', 'el service worker no intercepta /nueva: sin copia sin conexión');
+  assert.equal(sw.value, '/app');
   const sinCache = v.headers.filter((h) => h.headers.some((x) => x.key === 'Cache-Control' && x.value === 'no-store')).map((h) => h.source);
-  assert.ok(sinCache.includes('/nueva') && sinCache.includes('/nueva/index.html'));
+  for (const r of ['/app', '/app/clasica', '/nueva/index.html']) assert.ok(sinCache.includes(r), r);
+});
+
+test('la vuelta del login llega a /app y la nueva se la pasa a la de siempre', () => {
+  assert.match(leer('src/data/repos/auth.js'), /pathname\.startsWith\('\/app'\) \? '\/app'/, 'redirect permitido en Supabase: /app');
+  assert.match(leer('web/src/clasica.ts'), /destinoDeAuth\(search, hash\)/);
+  assert.match(leer('web/src/main.tsx'), /if \(!reenviarSiCorresponde\(\)\)/, 'antes de dibujar nada');
 });
 
 test('el package.json de la raíz no cambió de forma: sin React y con versiones exactas', () => {

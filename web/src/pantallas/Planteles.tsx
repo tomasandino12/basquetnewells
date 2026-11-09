@@ -1,5 +1,6 @@
-import { useMemo } from 'react';
-import { Link } from 'react-router';
+import { useEffect, useMemo } from 'react';
+import { Link, Navigate } from 'react-router';
+import { irALaDeSiempre } from '../clasica';
 import { Card } from '../components/ui/card';
 import { Consulta } from '../components/ui/consulta';
 import { Vacio } from '../components/ui/estados';
@@ -29,6 +30,14 @@ export function Planteles() {
       refetch: () => Promise.all([planteles.refetch(), roles.refetch(), asignados.refetch()]),
     };
   }, [planteles, roles, asignados, clubes.data, listo]);
+
+  // Sin club (jugador o familia) o sin ser del cuerpo técnico (sólo coordina): eso sigue en la de siempre.
+  const deLaDeSiempre = clubes.data?.length === 0 || (roles.data && !roles.data.esEntrenador);
+  useEffect(() => {
+    if (deLaDeSiempre) irALaDeSiempre({ volver: true });
+  }, [deLaDeSiempre]);
+  // Con una sola categoría no hay nada que elegir: se entra directo al plantel, como en la de siempre.
+  if (consulta.data?.length === 1) return <Navigate to={`/plantel/${consulta.data[0].id}`} replace />;
 
   return (
     <main className="mx-auto w-full max-w-[52rem] px-4 py-5 sm:px-6">

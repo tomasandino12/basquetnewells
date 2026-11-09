@@ -13,9 +13,8 @@ let destinos;
 let pedidos;
 let avisos;
 const originales = {};
-const CLAVES = ['localStorage', 'sessionStorage', 'window', 'fetch', 'document'];
+const CLAVES = ['localStorage', 'window', 'fetch', 'document'];
 let reemplazos;
-let sesion;
 
 function simular({ fetchFalla = false, status = 200 } = {}) {
   guardado = new Map();
@@ -27,12 +26,7 @@ function simular({ fetchFalla = false, status = 200 } = {}) {
     removeItem: (k) => guardado.delete(k),
   };
   reemplazos = [];
-  sesion = new Map();
-  globalThis.sessionStorage = {
-    getItem: (k) => (sesion.has(k) ? sesion.get(k) : null),
-    setItem: (k, v) => sesion.set(k, String(v)),
-  };
-  globalThis.window = { location: { assign: (d) => destinos.push(d), replace: (d) => reemplazos.push(d) } };
+  globalThis.window = { location: { search: '', assign: (d) => destinos.push(d), replace: (d) => reemplazos.push(d) } };
   // toast() escribe en el DOM: alcanza con algo que guarde el texto.
   avisos = [];
   const nodo = { textContent: '', classList: { add() {}, remove() {} } };
@@ -64,12 +58,12 @@ afterEach(() => {
 test('prendido por defecto: sin tocar nada, el plantel abre en la nueva', async () => {
   assert.equal(nuevaPrendida(), true);
   assert.equal(await abrirEnNueva({ plantelId: 'p1' }), true);
-  assert.deepEqual(destinos, ['/nueva#/plantel/p1']);
+  assert.deepEqual(destinos, ['/app#/plantel/p1']);
 });
 
 test('Hoy abre el resumen nuevo', async () => {
   assert.equal(await abrirEnNueva({ plantelId: 'p1', pantalla: 'hoy' }), true);
-  assert.deepEqual(destinos, ['/nueva#/hoy/p1']);
+  assert.deepEqual(destinos, ['/app#/hoy/p1']);
 });
 
 test('apagado: no pide nada y no se va de la pantalla vieja', async () => {
@@ -84,15 +78,15 @@ test('prendido y con /nueva respondiendo: va al plantel nuevo', async () => {
   assert.equal(guardarNueva(true), true);
   assert.equal(nuevaPrendida(), true);
   assert.equal(await abrirEnNueva({ plantelId: 'p1' }), true);
-  assert.deepEqual(destinos, ['/nueva#/plantel/p1']);
-  assert.equal(pedidos[0].url, '/nueva');
+  assert.deepEqual(destinos, ['/app#/plantel/p1']);
+  assert.equal(pedidos[0].url, '/app');
   assert.equal(pedidos[0].opciones.method, 'HEAD');
 });
 
 test('prendido, la ficha se abre en la nueva con el jugador', async () => {
   guardarNueva(true);
   assert.equal(await abrirEnNueva({ plantelId: 'p1', jugadorId: 'j1' }), true);
-  assert.deepEqual(destinos, ['/nueva#/plantel/p1?jugador=j1']);
+  assert.deepEqual(destinos, ['/app#/plantel/p1?jugador=j1']);
 });
 
 test('respaldo: sin conexión se queda en la pantalla vieja', async () => {
@@ -128,23 +122,21 @@ test('si el teléfono no deja usar localStorage queda apagado y no rompe', async
   assert.equal(await abrirEnNueva({ plantelId: 'p1' }), false);
 });
 
-test('al entrar a /app salta a la nueva con replace, una sola vez por pestaña', async () => {
+test('al entrar a la de siempre pasa a la nueva con replace', async () => {
   assert.equal(await abrirAlEntrar({ plantelId: 'p1', pantalla: 'plantel' }), true);
-  assert.deepEqual(reemplazos, ['/nueva#/plantel/p1']);
-  assert.deepEqual(destinos, [], 'replace: /app no queda en el historial');
-  // Volver desde /nueva («En la app de siempre») no rebota.
-  assert.equal(await abrirAlEntrar({ plantelId: 'p1', pantalla: 'plantel' }), false);
-  assert.equal(reemplazos.length, 1);
+  assert.deepEqual(reemplazos, ['/app#/plantel/p1']);
+  assert.deepEqual(destinos, [], 'replace: la de siempre no queda en el historial');
 });
 
-test('al entrar con el interruptor apagado se queda en /app', async () => {
-  guardarNueva(false);
+test('si la nueva la mandó a propósito (?desde=nueva) se queda en la de siempre', async () => {
+  globalThis.window.location.search = '?desde=nueva';
   assert.equal(await abrirAlEntrar({ plantelId: 'p1' }), false);
   assert.deepEqual(reemplazos, []);
+  assert.deepEqual(pedidos, []);
 });
 
-test('al entrar sin sessionStorage no salta (no habría cómo no rebotar)', async () => {
-  globalThis.sessionStorage = { getItem: () => { throw new Error('bloqueado'); }, setItem: () => {} };
+test('al entrar con el interruptor apagado se queda en la de siempre', async () => {
+  guardarNueva(false);
   assert.equal(await abrirAlEntrar({ plantelId: 'p1' }), false);
   assert.deepEqual(reemplazos, []);
 });

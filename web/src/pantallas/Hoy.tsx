@@ -15,9 +15,10 @@ import type { PartidoDelPlantel, PreviaDelPlantel } from '../datos/repositorio';
 import { armarResumen, fechaCorta, type Valor, type Variacion, type Zona } from '../hoy/resumen';
 import { cn } from '../lib/cn';
 import { plantelesVisibles } from '../plantel/visibles';
+import { APP_DE_SIEMPRE } from '../clasica';
 
 // Lo que todavía se hace en la app anterior (cargar mediciones y partidos, fijar metas, recursos, misiones).
-const APP_ANTERIOR = '/app/';
+const APP_ANTERIOR = APP_DE_SIEMPRE;
 
 // Una sola acción lima por pantalla (Tomar asistencia); el resto, de contorno o de línea.
 const ENLACE_BOTON = claseBoton({ variante: 'contorno', tamano: 'chico' });

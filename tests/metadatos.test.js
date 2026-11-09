@@ -102,10 +102,11 @@ test('vercel.json sirve robots.txt y sitemap.xml desde la raíz', () => {
   }
 });
 
-test('vercel.json reescribe / al portal y /app a la app', () => {
+test('vercel.json reescribe / al portal, /app a la app nueva y /app/clasica a la de siempre', () => {
   const destino = (origen) => vercel.rewrites.find((r) => r.source === origen)?.destination;
   assert.equal(destino('/'), '/public/portal.html');
-  assert.equal(destino('/app'), '/public/index.html');
+  assert.equal(destino('/app'), '/nueva/index.html');
+  assert.equal(destino('/app/clasica'), '/public/index.html');
 });
 
 test('las dos páginas se sirven sin caché, para que cada CSP nueva llegue', () => {

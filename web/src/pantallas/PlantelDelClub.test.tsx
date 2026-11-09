@@ -340,11 +340,9 @@ describe('Plantel con datos: estados y permisos', () => {
     expect(await filas()).toHaveLength(3);
   });
 
-  it('desde la lista de planteles se llega al plantel', async () => {
+  it('con una sola categoría, la lista de planteles entra directo al plantel', async () => {
     simular(true);
-    const u = userEvent.setup();
     renderConDatos(rutas, { repo: repo() });
-    await u.click(await screen.findByRole('link', { name: 'Sub 13' }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Sub 13' })).toBeTruthy();
   });
 });
