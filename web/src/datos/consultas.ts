@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CLAVE_SESION, useCargarRepositorio } from './contexto';
-import type { EstadoAsistencia, Repositorio } from './repositorio';
+import type { EscalonActual, EstadoAsistencia, PasoFuerza, Repositorio } from './repositorio';
 
 // Una consulta por dato, con la clave armada con lo que la hace distinta (el club, el plantel).
 // Los datos de un club nunca comparten clave con los de otro.
@@ -205,6 +205,95 @@ export function useDarAlta(hasta: string) {
 
 export function useSacarDelPlantel(clubId: string, plantelId: string) {
   return useEscritura<string>((repo, jugadorId) => repo.sacarDelPlantel(clubId, jugadorId, plantelId));
+}
+
+// Físico: el plan de fuerza, los escalones por ejercicio y el peso de cada chico. Las claves empiezan con «fisico».
+
+export function usePlanesFisicos(clubId: string | undefined, plantelId: string | undefined) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['fisico', 'planes', clubId, plantelId],
+    enabled: clubId !== undefined && plantelId !== undefined,
+    staleTime: 0,
+    queryFn: async () => (await cargar()).obtenerPlanesFisicos(clubId!, plantelId!),
+  });
+}
+
+/** Las sesiones de un plan con sus ejercicios. */
+export function usePlanFisico(planId: string | undefined) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['fisico', 'plan', planId],
+    enabled: planId !== undefined,
+    queryFn: async () => (await cargar()).obtenerPlanFisico(planId!),
+  });
+}
+
+/** Siempre fresco: al volver de definir un escalón, la sesión lo muestra. */
+export function usePasos(clubId: string | undefined) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['fisico', 'pasos', clubId],
+    enabled: clubId !== undefined,
+    staleTime: 0,
+    queryFn: async () => (await cargar()).obtenerPasos(clubId!),
+  });
+}
+
+/** El peso actual de cada chico en un ejercicio; sin escalón creado todavía, no hay pesos que pedir. */
+export function useEscalonesActuales(pasoId: string | undefined, jugadorIds: string[] | undefined) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['fisico', 'escalones', pasoId ?? null, jugadorIds],
+    enabled: jugadorIds !== undefined,
+    staleTime: 0,
+    // Al crearse la fila del ejercicio la clave cambia: sin esto la lista parpadearía a «Cargando».
+    placeholderData: keepPreviousData,
+    queryFn: async () => (pasoId ? (await cargar()).obtenerEscalonesActuales(pasoId, jugadorIds!) : []),
+  });
+}
+
+function useEscrituraFisica<V, R>(escribir: (repo: Repositorio, v: V) => Promise<R>) {
+  const cargar = useCargarRepositorio();
+  const consultas = useQueryClient();
+  return useMutation({
+    mutationFn: async (v: V) => escribir(await cargar(), v),
+    // Sólo lo que cambia con un peso o un escalón; el plan en sí no se vuelve a pedir.
+    onSettled: () => Promise.all([
+      consultas.invalidateQueries({ queryKey: ['fisico', 'pasos'] }),
+      consultas.invalidateQueries({ queryKey: ['fisico', 'escalones'] }),
+    ]),
+  });
+}
+
+/**
+ * Guarda el peso de un chico en el momento. Si el ejercicio todavía no tiene fila propia la crea sin
+ * escalón: el peso no espera a que el profe decida de a cuánto sube. Si otra pestaña la creó en el
+ * medio (23505) es la misma fila del mismo ejercicio: se usa esa.
+ */
+export function useMoverEscalon(clubId: string, clave: string, nombre: string) {
+  return useEscrituraFisica<{ jugadorId: string; kg: number; paso: PasoFuerza | null }, EscalonActual>(async (repo, v) => {
+    let paso = v.paso;
+    if (!paso) {
+      try {
+        paso = await repo.crearPaso({ clubId, clave, nombre: nombre.trim(), paso: null });
+      } catch (e) {
+        if ((e as { code?: string } | null)?.code !== '23505') throw e;
+        paso = (await repo.obtenerPasos(clubId)).find((p) => p.clave === clave) ?? null;
+        if (!paso) throw e;
+      }
+    }
+    return repo.moverEscalon({ clubId, jugadorId: v.jugadorId, pasoId: paso.id, kg: v.kg });
+  });
+}
+
+/** Define o cambia el escalón del ejercicio (uno para todo el club). */
+export function useGuardarPaso(clubId: string, clave: string, nombre: string) {
+  return useEscrituraFisica<{ existente: PasoFuerza | null; kg: number }, PasoFuerza>((repo, v) =>
+    v.existente
+      ? repo.editarPaso(v.existente.id, v.kg)
+      : repo.crearPaso({ clubId, clave, nombre: nombre.trim(), paso: v.kg }),
+  );
 }
 
 export function useEntrar() {

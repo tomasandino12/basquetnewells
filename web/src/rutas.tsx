@@ -5,6 +5,9 @@ import { useSesion } from './datos/contexto';
 import { Asistencia } from './pantallas/Asistencia';
 import { AsistenciaHistorial } from './pantallas/AsistenciaHistorial';
 import { Entrar } from './pantallas/Entrar';
+import { Fisico } from './pantallas/Fisico';
+import { FisicoEscalones } from './pantallas/FisicoEscalones';
+import { FisicoSesion } from './pantallas/FisicoSesion';
 import { Hoy } from './pantallas/Hoy';
 import { Piezas } from './pantallas/Piezas';
 import { Plantel } from './pantallas/Plantel';
@@ -42,6 +45,9 @@ export const rutas: RouteObject[] = [
         { path: '/hoy/:plantelId', element: <Hoy /> },
         { path: '/asistencia/:plantelId', element: <Asistencia /> },
         { path: '/asistencia/:plantelId/historial', element: <AsistenciaHistorial /> },
+        { path: '/fisico/:plantelId', element: <Fisico /> },
+        { path: '/fisico/:plantelId/plan/:planId/sesion/:sesionId', element: <FisicoSesion /> },
+        { path: '/fisico/:plantelId/plan/:planId/sesion/:sesionId/ejercicio/:lineaId', element: <FisicoEscalones /> },
       ],
     },
     { path: '*', element: <Navigate to="/" replace /> },

@@ -95,7 +95,58 @@ export interface PartidoDelPlantel {
   rivalNombre: string | null;
 }
 
+/** Un plan de fuerza importado de una planilla: las fechas son las de sus sesiones. */
+export interface PlanFisico {
+  id: string;
+  nombreArchivo: string;
+  creadoEn: string;
+  fechas: string[];
+}
+
+export interface LineaFisico {
+  id: string;
+  orden: number | null;
+  bloque: string | null;
+  nombreOriginal: string;
+  series: number | null;
+  reps: string | null;
+  cargaSugerida: string | null;
+  pausa: string | null;
+  notas: string | null;
+  /** Una línea sin video es el caso normal. */
+  video: { nombre: string; link: string } | null;
+}
+
+export interface SesionFisico {
+  id: string;
+  fecha: string;
+  lineas: LineaFisico[];
+}
+
+/** El escalón de un ejercicio (cuánto suma + y resta −), uno para todo el club. `paso: null` es «todavía sin definir». */
+export interface PasoFuerza {
+  id: string;
+  clave: string;
+  nombre: string;
+  paso: number | null;
+}
+
+/** El último peso de un chico en un ejercicio y desde cuándo. */
+export interface EscalonActual {
+  jugadorId: string;
+  kg: number;
+  desde: string;
+}
+
 export interface Repositorio {
+  obtenerPlanesFisicos(clubId: string, plantelId: string): Promise<PlanFisico[]>;
+  obtenerPlanFisico(planId: string): Promise<SesionFisico[]>;
+  obtenerPasos(clubId: string): Promise<PasoFuerza[]>;
+  crearPaso(datos: { clubId: string; clave: string; nombre: string; paso: number | null }): Promise<PasoFuerza>;
+  editarPaso(pasoId: string, paso: number): Promise<PasoFuerza>;
+  obtenerEscalonesActuales(pasoId: string, jugadorIds: string[]): Promise<EscalonActual[]>;
+  /** `kg` es el peso de destino, no «+1». */
+  moverEscalon(datos: { clubId: string; jugadorId: string; pasoId: string; kg: number }): Promise<EscalonActual>;
   obtenerSesionActual(): Promise<Sesion | null>;
   iniciarSesion(email: string, password: string): Promise<Sesion>;
   cerrarSesion(): Promise<void>;

@@ -124,6 +124,9 @@ function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: string;
                 <Link to={`/hoy/${plantelId}`} className="inline-flex min-h-11 items-center text-sm font-semibold underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
                   Resumen de hoy
                 </Link>
+                <Link to={`/fisico/${plantelId}`} className="inline-flex min-h-11 items-center text-sm font-semibold underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
+                  Plan de fuerza
+                </Link>
                 <Link to={`/asistencia/${plantelId}`} className="inline-flex min-h-11 items-center text-sm font-semibold underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
                   Tomar asistencia
                 </Link>
