@@ -10,6 +10,7 @@ import { FisicoEscalones } from './pantallas/FisicoEscalones';
 import { FisicoSesion } from './pantallas/FisicoSesion';
 import { Hoy } from './pantallas/Hoy';
 import { Piezas } from './pantallas/Piezas';
+import { HoyEjemplo } from './pantallas/HoyEjemplo';
 import { Plantel } from './pantallas/Plantel';
 import { PlantelDelClub } from './pantallas/PlantelDelClub';
 import { Planteles } from './pantallas/Planteles';
@@ -39,6 +40,7 @@ export const rutas: RouteObject[] = [
     // Pantallas con datos de ejemplo: las enlaza el menú de /nueva, nunca la app vieja.
     { path: '/piezas', element: <Piezas /> },
     { path: '/maqueta/plantel', element: <Plantel /> },
+    { path: '/maqueta/hoy', element: <HoyEjemplo /> },
     { element: <RequiereSesion />, children: [
         { path: '/', element: <Planteles /> },
         { path: '/plantel/:plantelId', element: <PlantelDelClub /> },

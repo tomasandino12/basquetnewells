@@ -32,6 +32,7 @@ export function enlacesDelMenu(plantelId: string | undefined): Enlace[] {
 export const EJEMPLOS = [
   { a: '/piezas', nombre: 'Piezas' },
   { a: '/maqueta/plantel', nombre: 'Maqueta del plantel' },
+  { a: '/maqueta/hoy', nombre: 'Maqueta de Hoy' },
 ];
 
 const CON_PLANTEL = ['/hoy/:plantelId/*', '/plantel/:plantelId/*', '/asistencia/:plantelId/*', '/fisico/:plantelId/*'];

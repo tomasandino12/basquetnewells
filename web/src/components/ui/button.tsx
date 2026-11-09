@@ -40,17 +40,25 @@ type Props = ComponentProps<'button'> & VariantProps<typeof boton> & {
   flecha?: boolean;
 };
 
+/** La misma forma para un enlace (`<Link>` o `<a>`): ir a otra pantalla se ve igual que un botón. */
+export const claseBoton = (opciones: VariantProps<typeof boton> = {}) => boton(opciones);
+
+/** La flecha que avanza: va adentro de algo con la clase `group` (un Boton o un enlace con claseBoton). */
+export function Flecha() {
+  return (
+    <ArrowRight
+      aria-hidden
+      strokeWidth={2.5}
+      className="size-5 transition-transform duration-[var(--dur-2)] ease-[var(--ease-salida)] group-active:translate-x-0.5 [@media(hover:hover)]:group-hover:translate-x-1"
+    />
+  );
+}
+
 export function Boton({ className, variante, tamano, flecha, type = 'button', children, ...props }: Props) {
   return (
     <button type={type} className={cn(boton({ variante, tamano }), className)} {...props}>
       {children}
-      {flecha && (
-        <ArrowRight
-          aria-hidden
-          strokeWidth={2.5}
-          className="size-5 transition-transform duration-[var(--dur-2)] ease-[var(--ease-salida)] group-active:translate-x-0.5 [@media(hover:hover)]:group-hover:translate-x-1"
-        />
-      )}
+      {flecha && <Flecha />}
     </button>
   );
 }

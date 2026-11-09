@@ -1,10 +1,12 @@
-import { ArrowLeft, ClipboardCheck, Ruler, Target, Users } from 'lucide-react';
+import { ArrowLeft, Target, Users } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
 import { saludoSegunHora } from '@datos/saludo.js';
 import { siguientePasoDeMisiones, vincularPrevias } from '@datos/misiones.js';
-import { Aviso } from '../components/ui/aviso';
+import escudo from '../../../public/escudo.png';
+import { claseBoton, Flecha } from '../components/ui/button';
 import { CanchaCalor } from '../components/ui/cancha-calor';
+import { Panel } from '../components/ui/card';
 import { Consulta } from '../components/ui/consulta';
 import { CurvaArco } from '../components/ui/curva-arco';
 import { Vacio } from '../components/ui/estados';
@@ -18,8 +20,11 @@ import { plantelesVisibles } from '../plantel/visibles';
 // Lo que todavía se hace en la app anterior (cargar mediciones y partidos, fijar metas, recursos, misiones).
 const APP_ANTERIOR = '/app/';
 
-const ENLACE_BOTON =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-btn border border-borde-control px-3 font-titulo text-base font-semibold tracking-[.14em] uppercase outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:border-tinta';
+// Una sola acción lima por pantalla (Tomar asistencia); el resto, de contorno o de línea.
+const ENLACE_BOTON = claseBoton({ variante: 'contorno', tamano: 'chico' });
+const ENLACE_LINEA = claseBoton({ variante: 'linea', tamano: 'chico' });
+const ENLACE_FUERTE = claseBoton({ variante: 'secundario', tamano: 'chico' });
+const ETIQUETA = 'font-mono text-xs tracking-wide text-gris uppercase';
 
 const PLURAL = (n: number, uno: string, varios: string) => (n === 1 ? uno : varios);
 
@@ -48,11 +53,7 @@ export function Hoy() {
   }, [planteles, roles, asignados, clubes.data, listo]);
 
   return (
-    <main className="mx-auto w-full max-w-[24.375rem] px-4 py-5 sm:max-w-none sm:px-6 lg:max-w-[64rem] lg:px-8">
-      <Link to="/" className="mb-3 inline-flex min-h-11 items-center gap-1.5 text-sm text-gris outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
-        <ArrowLeft aria-hidden className="size-4" />
-        Planteles
-      </Link>
+    <MarcoDeHoy>
       <Consulta consulta={clubes} errorGenerico="No pudimos cargar tu club">
         {(lista) =>
           lista.length === 0 ? (
@@ -83,33 +84,37 @@ export function Hoy() {
           )
         }
       </Consulta>
+    </MarcoDeHoy>
+  );
+}
+
+/** El ancho y la vuelta a Planteles; la maqueta de Hoy usa el mismo. En compu la vuelta ya está en el menú. */
+export function MarcoDeHoy({ children }: { children: ReactNode }) {
+  return (
+    <main className="mx-auto w-full max-w-[24.375rem] px-4 py-5 sm:max-w-none sm:px-6 lg:max-w-[64rem] lg:px-8 lg:py-8">
+      <Link to="/" className="mb-2 inline-flex min-h-11 items-center gap-1.5 text-sm text-gris outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta lg:hidden">
+        <ArrowLeft aria-hidden className="size-4" />
+        Planteles
+      </Link>
+      {children}
     </main>
   );
 }
 
-function ContenidoDeHoy({ clubId, plantelId, categoria }: { clubId: string; plantelId: string; categoria: string }) {
+export function ContenidoDeHoy({ clubId, plantelId, categoria }: { clubId: string; plantelId: string; categoria: string }) {
   const datos = useDatosDeHoy(clubId, plantelId);
   const resumen = useMemo(() => (datos.data ? armarResumen(datos.data) : undefined), [datos.data]);
   const saludo = saludoSegunHora(new Date().getHours());
 
   return (
     <>
-      <h1 className="mb-3 font-titulo text-4xl leading-none font-semibold">{saludo}</h1>
+      <h1 className="mb-5 font-titulo text-5xl leading-none font-bold tracking-tight lg:text-6xl">{saludo}</h1>
       <Consulta consulta={datos} errorGenerico="No se pudo cargar el resumen">
         {() => {
           if (!resumen) return null;
           return (
             <div className="flex flex-col gap-5">
-              <div className="flex items-center justify-between gap-3 rounded-tarjeta border border-linea bg-sup p-3 shadow-tarjeta">
-                <div className="min-w-0">
-                  <p className="text-sm text-gris">Entrenamiento de hoy</p>
-                  <p className="truncate font-titulo text-xl font-semibold">{categoria}</p>
-                </div>
-                <Link to={`/asistencia/${plantelId}`} className={ENLACE_BOTON}>
-                  <ClipboardCheck aria-hidden className="size-4" />
-                  Tomar asistencia
-                </Link>
-              </div>
+              <Entrenamiento categoria={categoria} plantelId={plantelId} />
 
               <Misiones clubId={clubId} plantelId={plantelId} />
 
@@ -119,7 +124,7 @@ function ContenidoDeHoy({ clubId, plantelId, categoria }: { clubId: string; plan
                   titulo={`Todavía no hay nada cargado en ${categoria}`}
                   accion={
                     <div className="flex flex-col gap-2">
-                      <Link to={`/plantel/${plantelId}`} className={cn(ENLACE_BOTON, 'bg-club text-sobre-club')}>Cargar el plantel</Link>
+                      <Link to={`/plantel/${plantelId}`} className={ENLACE_FUERTE}>Cargar el plantel</Link>
                       <a href={APP_ANTERIOR} className={ENLACE_BOTON}>Cargar un partido</a>
                       <a href={APP_ANTERIOR} className={ENLACE_BOTON}>Hacer la primera medición</a>
                     </div>
@@ -134,7 +139,7 @@ function ContenidoDeHoy({ clubId, plantelId, categoria }: { clubId: string; plan
                   <p className="text-sm">
                     Hubo una batería el {fechaCorta(resumen.fecha)} en {categoria}, pero quedó sin ninguna medición: todos los jugadores figuran como ausentes.
                   </p>
-                  <a href={APP_ANTERIOR} className={cn(ENLACE_BOTON, 'bg-club text-sobre-club')}>Hacer una medición</a>
+                  <a href={APP_ANTERIOR} className={ENLACE_FUERTE}>Hacer una medición</a>
                 </div>
               )}
 
@@ -144,6 +149,28 @@ function ContenidoDeHoy({ clubId, plantelId, categoria }: { clubId: string; plan
         }}
       </Consulta>
     </>
+  );
+}
+
+/**
+ * El momento de la pantalla: la tarjeta bordó del día con la única acción lima. El escudo va de
+ * marca de agua, grande y cortado por el borde, casi invisible: se nota de cerca y no pesa.
+ */
+function Entrenamiento({ categoria, plantelId }: { categoria: string; plantelId: string }) {
+  return (
+    <section aria-label="Entrenamiento de hoy" className="relative overflow-hidden rounded-tarjeta border border-linea bg-bordo p-5 text-sobre-bordo shadow-tarjeta sm:p-6">
+      <img src={escudo} alt="" aria-hidden className="pointer-events-none absolute -right-10 -bottom-16 size-56 opacity-[.08] select-none" />
+      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <p className="font-mono text-xs tracking-wide uppercase opacity-75">Entrenamiento de hoy</p>
+          <p className="mt-1 truncate font-titulo text-4xl leading-none font-bold tracking-tight">{categoria}</p>
+        </div>
+        <Link to={`/asistencia/${plantelId}`} className={cn(claseBoton(), 'self-start sm:self-auto')}>
+          Tomar asistencia
+          <Flecha />
+        </Link>
+      </div>
+    </section>
   );
 }
 
@@ -162,98 +189,107 @@ function Tiro({ resumen, categoria, plantelId }: { resumen: Completo; categoria:
       </p>
 
       {total && (
-        <section aria-label="Tiro de campo" className="rounded-tarjeta border border-linea bg-sup p-4 shadow-tarjeta">
-          <p className="font-mono text-xs tracking-wide text-gris uppercase">Tiro de campo · todo el arco</p>
-          <p className="font-titulo text-7xl leading-none font-semibold">
-            {total.pct}<span className="text-4xl text-gris">%</span>
-          </p>
-          <p className="font-mono text-sm text-gris">{total.anotados}/{total.intentos} tiros</p>
-          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-            <VariacionTexto variacion={totalVariacion} vacio="Primera batería: todavía no hay con qué comparar" />
-            {metas && <span className="text-gris">{metas.alcanzadas} de {metas.conMeta} {PLURAL(metas.conMeta, 'zona llegó', 'zonas llegó')} a su meta</span>}
-          </p>
-          {serie.length > 0 && (
-            <a href={APP_ANTERIOR} aria-label="Ver la evolución completa en Datos" className="mt-3 block rounded-campo outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
-              <CurvaArco serie={serie} />
-              <span className="flex items-center justify-between gap-2 font-mono text-xs text-gris">
-                <span>
-                  {serie.length === 1
-                    ? `Una sola batería: ${fechaCorta(serie[0].fecha)} · ${serie[0].valor.anotados}/${serie[0].valor.intentos}`
-                    : `${serie.length} baterías · primera ${serie[0].valor.pct}% (${serie[0].valor.anotados}/${serie[0].valor.intentos}) · última ${serie[serie.length - 1].valor.pct}% (${serie[serie.length - 1].valor.anotados}/${serie[serie.length - 1].valor.intentos})`}
+        <section aria-label="Tiro de campo" className="rounded-tarjeta border border-linea bg-sup p-4 shadow-tarjeta sm:p-5">
+          <p className={ETIQUETA}>Tiro de campo · todo el arco</p>
+          <div className="mt-2 lg:grid lg:grid-cols-[auto_minmax(0,1fr)] lg:items-end lg:gap-12">
+            <div>
+              <p className="cifra font-titulo text-8xl leading-[.85] font-bold tracking-tight">
+                {total.pct}
+                <span className="text-5xl text-gris">%</span>
+              </p>
+              <p className="mt-2 font-mono text-sm text-gris">{total.anotados}/{total.intentos} tiros</p>
+              <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                <VariacionTexto variacion={totalVariacion} vacio="Primera batería: todavía no hay con qué comparar" grande />
+                {metas && <span className="text-gris">{metas.alcanzadas} de {metas.conMeta} {PLURAL(metas.conMeta, 'zona llegó', 'zonas llegó')} a su meta</span>}
+              </p>
+            </div>
+            {serie.length > 0 && (
+              <a
+                href={APP_ANTERIOR}
+                aria-label="Ver la evolución completa en Datos"
+                className="group mt-4 block rounded-campo outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta lg:mt-0"
+              >
+                <CurvaArco serie={serie} />
+                <span className="flex items-center justify-between gap-2 font-mono text-xs text-gris">
+                  <span>
+                    {serie.length === 1
+                      ? `Una sola batería: ${fechaCorta(serie[0].fecha)} · ${serie[0].valor.anotados}/${serie[0].valor.intentos}`
+                      : `${serie.length} baterías · primera ${serie[0].valor.pct}% (${serie[0].valor.anotados}/${serie[0].valor.intentos}) · última ${serie[serie.length - 1].valor.pct}% (${serie[serie.length - 1].valor.anotados}/${serie[serie.length - 1].valor.intentos})`}
+                  </span>
+                  <span className="shrink-0 font-semibold text-tinta underline decoration-linea underline-offset-4 [@media(hover:hover)]:group-hover:decoration-tinta">
+                    Ver todo ›
+                  </span>
                 </span>
-                <span className="shrink-0 font-semibold text-tinta">Ver todo ›</span>
-              </span>
-            </a>
-          )}
+              </a>
+            )}
+          </div>
         </section>
       )}
 
-      <div className="lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start lg:gap-8">
-        <section aria-label="Cancha" className="mb-5 lg:mb-0">
-          <h2 className="mb-1 flex items-baseline justify-between gap-2 font-mono text-xs tracking-wide text-gris uppercase">
-            <span>Por zona</span>
-            {resumen.fechaAnterior && <span>vs {fechaCorta(resumen.fechaAnterior)}</span>}
-          </h2>
+      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start">
+        <Panel
+          titulo="Por zona"
+          accion={resumen.fechaAnterior ? <span className="font-mono text-xs text-gris">vs {fechaCorta(resumen.fechaAnterior)}</span> : undefined}
+        >
           <CanchaCalor zonas={zonas} />
           <Leyenda />
-        </section>
+          <div className="mt-4 border-t border-linea pt-3 text-sm">
+            {foco === null ? (
+              <p>Todavía no hay suficientes zonas medidas como para señalar una más floja.</p>
+            ) : foco.concluyente ? (
+              <p>
+                Zona más floja: <b>{foco.zonas[0].nombre}</b>, <Porcentaje valor={foco.zonas[0].valor} />.
+              </p>
+            ) : (
+              <p>
+                Zonas más flojas: <b>{foco.zonas.map((z) => z.nombre).join(' · ')}</b> — empatadas dentro del margen de error, el dato no alcanza para elegir una.
+              </p>
+            )}
+            {porDebajo && (
+              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+                <span>
+                  {porDebajo.cantidad} de {porDebajo.total} {PLURAL(porDebajo.cantidad, 'está', 'están')} por debajo de la meta del cuerpo técnico.
+                </span>
+                <button type="button" className={ENLACE_BOTON} onClick={() => setVerQuienes(true)}>Ver quiénes</button>
+              </div>
+            )}
+          </div>
+        </Panel>
 
-        <div className="flex flex-col gap-4">
-          <ul aria-label="Zonas del arco" className="flex flex-col gap-3">
-            {zonas.map((z) => (
-              <li key={z.id}>
-                <FilaDeZona zona={z} />
-              </li>
-            ))}
-          </ul>
+        <div className="flex flex-col gap-5">
+          <Panel titulo="Cada zona">
+            <ul aria-label="Zonas del arco" className="flex flex-col divide-y divide-linea">
+              {zonas.map((z) => (
+                <li key={z.id} className="py-3 first:pt-0 last:pb-0">
+                  <FilaDeZona zona={z} />
+                </li>
+              ))}
+            </ul>
+          </Panel>
 
-          {foco === null ? (
-            <p className="text-sm">Todavía no hay suficientes zonas medidas como para señalar una más floja.</p>
-          ) : foco.concluyente ? (
-            <p className="text-sm">
-              Zona más floja: <b>{foco.zonas[0].nombre}</b>, <Porcentaje valor={foco.zonas[0].valor} />.
-            </p>
-          ) : (
-            <p className="text-sm">
-              Zonas más flojas: <b>{foco.zonas.map((z) => z.nombre).join(' · ')}</b> — empatadas dentro del margen de error, el dato no alcanza para elegir una.
-            </p>
-          )}
-
-          {porDebajo && (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
-              <span>
-                {porDebajo.cantidad} de {porDebajo.total} {PLURAL(porDebajo.cantidad, 'está', 'están')} por debajo de la meta del cuerpo técnico.
-              </span>
-              <button type="button" className={ENLACE_BOTON} onClick={() => setVerQuienes(true)}>Ver quiénes</button>
-            </div>
-          )}
+          {/* Los tiros libres son otro tiro con otro porcentaje: van aparte, nunca mezclados con el arco. */}
+          <Panel titulo="Tiros libres">
+            <FilaDeZona zona={libres} />
+          </Panel>
         </div>
       </div>
 
-      {/* Los tiros libres son otro tiro con otro porcentaje: van aparte, nunca mezclados con el arco. */}
-      <section aria-label="Tiros libres" className="border-t border-linea pt-4">
-        <h2 className="mb-2 font-mono text-xs tracking-wide text-gris uppercase">Tiros libres</h2>
-        <FilaDeZona zona={libres} />
-      </section>
-
       {corporal && (
-        <section aria-label="Altura y peso" className="rounded-tarjeta border border-linea bg-sup p-4">
-          <p className="flex items-center gap-2 font-titulo text-xl font-semibold">
-            <Ruler aria-hidden className="size-4 text-gris" />
-            Altura y peso
-          </p>
-          <p className="mt-1 text-sm text-gris">
-            {corporal.ultimaFecha ? `Última medición del plantel: ${fechaCorta(corporal.ultimaFecha)}.` : 'Todavía no hay ninguna medición cargada.'}
-            {corporal.sinMedir > 0 &&
-              ` ${corporal.sinMedir} de ${corporal.total} ${PLURAL(corporal.total, 'jugador no tiene', 'jugadores no tienen')} ninguna.`}
-          </p>
-          <Link to={`/plantel/${plantelId}`} className={cn(ENLACE_BOTON, 'mt-3')}>Ver el plantel</Link>
-        </section>
+        <Panel titulo="Altura y peso">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-gris">
+              {corporal.ultimaFecha ? `Última medición del plantel: ${fechaCorta(corporal.ultimaFecha)}.` : 'Todavía no hay ninguna medición cargada.'}
+              {corporal.sinMedir > 0 &&
+                ` ${corporal.sinMedir} de ${corporal.total} ${PLURAL(corporal.total, 'jugador no tiene', 'jugadores no tienen')} ninguna.`}
+            </p>
+            <Link to={`/plantel/${plantelId}`} className={cn(ENLACE_BOTON, 'self-start sm:self-auto')}>Ver el plantel</Link>
+          </div>
+        </Panel>
       )}
 
       <div className="flex flex-wrap gap-2">
-        <a href={APP_ANTERIOR} className={ENLACE_BOTON}>Cargar otra medición</a>
-        <a href={APP_ANTERIOR} className={ENLACE_BOTON}>{hayMetas ? 'Editar las metas' : 'Fijar las metas'}</a>
+        <a href={APP_ANTERIOR} className={ENLACE_LINEA}>Cargar otra medición</a>
+        <a href={APP_ANTERIOR} className={ENLACE_LINEA}>{hayMetas ? 'Editar las metas' : 'Fijar las metas'}</a>
       </div>
 
       {porDebajo && (
@@ -290,15 +326,16 @@ function Porcentaje({ valor }: { valor: Valor | null }) {
 const PocosDatos = () => <span className="ml-1.5 rounded-chip bg-sup-2 px-1.5 py-0.5 font-mono text-[0.6875rem] text-gris">pocos datos</span>;
 
 /** Solo lleva flecha y color cuando supera el margen de error: la flecha es la señal, no el color. */
-function VariacionTexto({ variacion, vacio }: { variacion: Variacion | null; vacio?: string }) {
+function VariacionTexto({ variacion, vacio, grande }: { variacion: Variacion | null; vacio?: string; grande?: boolean }) {
   if (variacion === null) return vacio ? <span className="text-gris">{vacio}</span> : null;
   const texto = `${variacion.pp > 0 ? '+' : ''}${variacion.pp}`;
   if (!variacion.concluyente) {
     return <span className="text-gris" title="La diferencia no supera el margen de error">{texto} pp · sin diferencia clara</span>;
   }
+  const sube = variacion.pp > 0;
   return (
-    <span className={cn('font-semibold', variacion.pp > 0 ? 'text-sube' : 'text-baja')}>
-      {variacion.pp > 0 ? '▲' : '▼'} {texto} pp
+    <span className={cn('font-semibold', sube ? 'text-sube' : 'text-baja', grande && ['rounded-[0.3125rem] px-2 py-0.5', sube ? 'bg-sube-fondo' : 'bg-baja-fondo'])}>
+      {sube ? '▲' : '▼'} {texto} pp
     </span>
   );
 }
@@ -314,21 +351,23 @@ function FilaDeZona({ zona }: { zona: Zona }) {
         <span className="font-mono text-sm text-gris">{zona.valor ? `${zona.valor.anotados}/${zona.valor.intentos}` : 'sin medir'}</span>
       </div>
       <div className="flex items-center gap-3">
-        <div className="relative h-3 flex-1 rounded-chip bg-sup-2">
+        <div className="relative h-2.5 flex-1 rounded-chip bg-sup-2">
           {pct !== null && (
-            <div
-              className={cn('h-full rounded-chip', llego && 'bg-sube')}
-              style={{ width: `${pct}%`, ...(llego ? {} : { background: `var(--calor-${zona.calor ?? 0})` }) }}
-            />
+            // Un solo color para todas (el calor ya está en la cancha): con el del calor, la mejor zona quedaba casi invisible.
+            <div className={cn('h-full rounded-chip', llego ? 'bg-sube' : 'bg-caramelo')} style={{ width: `${pct}%` }} />
           )}
           {zona.meta !== null && (
-            <div className="absolute -top-1 h-5 w-0.5 bg-tinta" style={{ left: `${zona.meta}%` }} title={`Meta del cuerpo técnico: ${zona.meta}%`} />
+            <div className="absolute -top-1 h-[1.125rem] w-0.5 bg-tinta" style={{ left: `${zona.meta}%` }} title={`Meta del cuerpo técnico: ${zona.meta}%`} />
           )}
         </div>
-        <span className="w-11 text-right font-mono text-sm font-semibold">{pct === null ? '—' : `${pct}%`}</span>
+        <span className="cifra w-12 text-right font-titulo text-xl leading-none font-bold">{pct === null ? '—' : `${pct}%`}</span>
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-        <a href={APP_ANTERIOR} aria-label={`Mandar un recurso para ${zona.nombre}`} className="inline-flex min-h-11 items-center text-sm font-semibold underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
+        <a
+          href={APP_ANTERIOR}
+          aria-label={`Mandar un recurso para ${zona.nombre}`}
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-club-texto underline decoration-1 underline-offset-4 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta"
+        >
           Mandar un recurso
         </a>
         {zona.meta !== null && (
@@ -389,13 +428,19 @@ function Misiones({ clubId, plantelId }: { clubId: string; plantelId: string }) 
     armar: { titulo: 'Armá las misiones del próximo partido', detalle: 'Un aporte concreto para cada chico y un objetivo para el equipo.' },
   };
   return (
-    <section aria-label="Misiones del partido">
-      <h2 className="mb-1 font-mono text-xs tracking-wide text-gris uppercase">Misiones del partido</h2>
-      <a href={APP_ANTERIOR} className="block rounded-tarjeta border border-linea bg-sup p-3 shadow-tarjeta outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
-        <span className="block font-titulo text-xl font-semibold">{textos[paso].titulo}</span>
-        <span className="block text-sm text-gris">{textos[paso].detalle}</span>
-      </a>
-      {paso !== 'armar' && <a href={APP_ANTERIOR} className={cn(ENLACE_BOTON, 'mt-2')}>Armar otras misiones</a>}
-    </section>
+    <Panel titulo="Misiones del partido">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <a href={APP_ANTERIOR} className="group block min-w-0 rounded-campo outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
+          <span className="flex items-baseline gap-2 font-titulo text-2xl leading-tight font-semibold">
+            <span>{textos[paso].titulo}</span>
+            <span aria-hidden className="text-club-texto transition-transform duration-[var(--dur-2)] ease-[var(--ease-salida)] [@media(hover:hover)]:group-hover:translate-x-1">
+              ›
+            </span>
+          </span>
+          <span className="block text-sm text-gris">{textos[paso].detalle}</span>
+        </a>
+        {paso !== 'armar' && <a href={APP_ANTERIOR} className={cn(ENLACE_BOTON, 'self-start sm:self-auto')}>Armar otras misiones</a>}
+      </div>
+    </Panel>
   );
 }
