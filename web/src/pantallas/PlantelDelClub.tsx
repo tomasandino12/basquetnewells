@@ -1,8 +1,9 @@
 import { ArrowLeft, Search, ShieldCheck, Users } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router';
 import { hoyLocal } from '@datos/antropometria.js';
 import { Aviso } from '../components/ui/aviso';
+import { claseBoton, Flecha } from '../components/ui/button';
 import { Consulta } from '../components/ui/consulta';
 import { Hoja } from '../components/ui/sheet';
 import { Vacio } from '../components/ui/estados';
@@ -14,6 +15,7 @@ import {
   useMisRoles,
   usePlanteles,
 } from '../datos/consultas';
+import { cn } from '../lib/cn';
 import { useEscritorio } from '../lib/useEscritorio';
 import { armarFilas, buscarEnFilas, type FilaPlantel } from '../plantel/filas';
 import { plantelesVisibles } from '../plantel/visibles';
@@ -21,6 +23,8 @@ import { FichaDelJugador } from './FichaDelJugador';
 import { FilaDeLista } from './FilaDeLista';
 
 const APP_ANTERIOR = '/app/';
+const ENLACE_TEXTO =
+  'inline-flex min-h-11 items-center text-sm font-semibold underline decoration-linea decoration-2 underline-offset-4 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:decoration-club';
 
 /**
  * El plantel de una categoría con datos reales: lista a la izquierda, ficha al costado (en el
@@ -48,11 +52,7 @@ export function PlantelDelClub() {
   }, [planteles, roles, asignados, clubes.data, listo]);
 
   return (
-    <main className="mx-auto w-full max-w-[24.375rem] px-4 py-5 sm:max-w-none sm:px-6 lg:px-8">
-      <Link to="/" className="mb-3 inline-flex min-h-11 items-center gap-1.5 text-sm text-gris outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
-        <ArrowLeft aria-hidden className="size-4" />
-        Planteles
-      </Link>
+    <MarcoDelPlantel>
       <Consulta consulta={clubes} errorGenerico="No pudimos cargar tu club">
         {(lista) =>
           lista.length === 0 ? (
@@ -84,11 +84,24 @@ export function PlantelDelClub() {
           )
         }
       </Consulta>
+    </MarcoDelPlantel>
+  );
+}
+
+/** El ancho y la vuelta a Planteles; la maqueta usa el mismo. En compu la vuelta ya está en el menú. */
+export function MarcoDelPlantel({ children }: { children: ReactNode }) {
+  return (
+    <main className="mx-auto w-full max-w-[24.375rem] px-4 py-5 sm:max-w-none sm:px-6 lg:max-w-[72rem] lg:px-8 lg:py-8">
+      <Link to="/" className="mb-2 inline-flex min-h-11 items-center gap-1.5 text-sm text-gris outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta lg:hidden">
+        <ArrowLeft aria-hidden className="size-4" />
+        Planteles
+      </Link>
+      {children}
     </main>
   );
 }
 
-function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: string; plantelId: string; categoria: string }) {
+export function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: string; plantelId: string; categoria: string }) {
   const hoy = hoyLocal() as string;
   const datos = useDatosDelPlantel(clubId, plantelId, hoy);
   const escritorio = useEscritorio();
@@ -119,26 +132,45 @@ function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: string;
         const presentes = todos.filter((f) => f.hoy === 'presente').length;
         return (
           <>
-            <header className="mb-4">
-              <div className="float-right flex flex-col items-end">
-                <Link to={`/hoy/${plantelId}`} className="inline-flex min-h-11 items-center text-sm font-semibold underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
-                  Resumen de hoy
-                </Link>
-                <Link to={`/fisico/${plantelId}`} className="inline-flex min-h-11 items-center text-sm font-semibold underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
-                  Plan de fuerza
-                </Link>
-                <Link to={`/asistencia/${plantelId}`} className="inline-flex min-h-11 items-center text-sm font-semibold underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
-                  Tomar asistencia
-                </Link>
-                <Link to={`/asistencia/${plantelId}/historial`} className="inline-flex min-h-11 items-center text-sm font-semibold underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
-                  Historial de asistencia
-                </Link>
+            <header className="mb-6 flex flex-col gap-5">
+              <div className="flex items-end justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-mono text-xs tracking-wide text-gris uppercase">Plantel</p>
+                  <h1 className="font-titulo text-5xl leading-none font-bold tracking-tight lg:text-6xl">{categoria}</h1>
+                  <p className="mt-2 text-sm text-gris">
+                    {todos.length} {todos.length === 1 ? 'jugador' : 'jugadores'}
+                    {todos.length > 0 && ` · hoy ${presentes} ${presentes === 1 ? 'presente' : 'presentes'}`}
+                  </p>
+                </div>
+                {todos.length > 0 && (
+                  // El contador cambia a medida que se tilda: es lo primero que mira el profe al llegar.
+                  <p aria-hidden className="shrink-0 text-right">
+                    <span className="cifra block font-titulo text-6xl leading-[.85] font-bold">
+                      {presentes}
+                      <span className="text-3xl text-gris">/{todos.length}</span>
+                    </span>
+                    <span className="font-mono text-xs tracking-wide text-gris uppercase">presentes hoy</span>
+                  </p>
+                )}
               </div>
-              <h1 className="font-titulo text-4xl leading-none font-semibold">{categoria}</h1>
-              <p className="mt-1 text-sm text-gris">
-                {todos.length} {todos.length === 1 ? 'jugador' : 'jugadores'}
-                {todos.length > 0 && ` · hoy ${presentes} ${presentes === 1 ? 'presente' : 'presentes'}`}
-              </p>
+              {/* Una sola acción fuerte; el resto, enlaces de texto en una fila, para no llenar la pantalla de cajas. */}
+              <nav aria-label="Acciones del plantel" className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
+                <Link to={`/asistencia/${plantelId}`} className={cn(claseBoton(), 'self-start')}>
+                  Tomar asistencia
+                  <Flecha />
+                </Link>
+                <div className="flex flex-wrap gap-x-5">
+                  {[
+                    [`/hoy/${plantelId}`, 'Resumen de hoy'],
+                    [`/fisico/${plantelId}`, 'Plan de fuerza'],
+                    [`/asistencia/${plantelId}/historial`, 'Historial de asistencia'],
+                  ].map(([a, t]) => (
+                    <Link key={a} to={a} className={ENLACE_TEXTO}>
+                      {t}
+                    </Link>
+                  ))}
+                </div>
+              </nav>
             </header>
 
             {avisoDeToma && <Aviso tono="ok" titulo={avisoDeToma} className="mb-4" />}
@@ -155,9 +187,9 @@ function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: string;
                 titulo={`${categoria} todavía no tiene jugadores`}
                 accion={
                   <div className="flex flex-col gap-2">
-                    <a href={APP_ANTERIOR} className="text-sm font-semibold underline">Cargar un partido de la CABB</a>
-                    <a href={APP_ANTERIOR} className="text-sm font-semibold underline">Agregar jugador a mano</a>
-                    <a href={APP_ANTERIOR} className="text-sm font-semibold underline">Importar inscriptos</a>
+                    <a href={APP_ANTERIOR} className={claseBoton({ variante: 'secundario', tamano: 'chico' })}>Cargar un partido de la CABB</a>
+                    <a href={APP_ANTERIOR} className={claseBoton({ variante: 'contorno', tamano: 'chico' })}>Agregar jugador a mano</a>
+                    <a href={APP_ANTERIOR} className={claseBoton({ variante: 'contorno', tamano: 'chico' })}>Importar inscriptos</a>
                   </div>
                 }
               >
@@ -177,7 +209,7 @@ function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: string;
                     className="h-11 w-full rounded-campo border border-borde-control bg-sup pr-3 pl-9 text-base outline-offset-2 placeholder:text-gris focus-visible:outline-2 focus-visible:outline-tinta"
                   />
                 </label>
-                <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-start lg:gap-6">
+                <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_27rem] lg:items-start lg:gap-6">
                   {visibles.length === 0 ? (
                     <p className="py-10 text-center text-gris">Ningún jugador coincide con la búsqueda.</p>
                   ) : (
@@ -195,7 +227,7 @@ function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: string;
                     </ul>
                   )}
                   {escritorio && ficha && (
-                    <div className="sticky top-4 max-h-[calc(100svh-2rem)] overflow-y-auto rounded-tarjeta">{ficha}</div>
+                    <div className="sticky top-6 max-h-[calc(100svh-3rem)] overflow-y-auto rounded-tarjeta shadow-tarjeta">{ficha}</div>
                   )}
                 </div>
                 {asistencia.isError && (
@@ -208,13 +240,9 @@ function ContenidoDelPlantel({ clubId, plantelId, categoria }: { clubId: string;
 
             {todos.length > 0 && (
               <section aria-label="Más acciones del plantel" className="mt-8 flex flex-wrap gap-2 border-t border-linea pt-4">
-                <p className="w-full text-sm text-gris">Todavía en la app anterior:</p>
+                <p className="w-full font-mono text-xs tracking-wide text-gris uppercase">Todavía en la app anterior</p>
                 {['Datos de emergencia', 'Agregar a mano', 'Importar inscriptos', 'Importar emergencias'].map((t) => (
-                  <a
-                    key={t}
-                    href={APP_ANTERIOR}
-                    className="inline-flex min-h-11 items-center rounded-btn border border-borde-control px-3 font-titulo text-base font-semibold tracking-[.14em] uppercase outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:border-tinta"
-                  >
+                  <a key={t} href={APP_ANTERIOR} className={claseBoton({ variante: 'linea', tamano: 'chico' })}>
                     {t}
                   </a>
                 ))}

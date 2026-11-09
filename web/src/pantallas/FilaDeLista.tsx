@@ -54,15 +54,36 @@ export function FilaDeLista({ fila: f, elegida, guardando, alElegir, alPresente 
         aria-pressed={elegida}
         aria-label={`Ficha de ${nombre}`}
         onClick={() => alElegir(f.id)}
-        className="flex min-h-14 min-w-0 flex-1 items-center gap-3 py-2 pr-3 text-left outline-offset-[-4px] focus-visible:outline-2 focus-visible:outline-tinta"
+        className="flex min-h-16 min-w-0 flex-1 items-center gap-3 py-2 pr-3 text-left outline-offset-[-4px] focus-visible:outline-2 focus-visible:outline-tinta"
       >
+        <span
+          aria-hidden
+          className={cn(
+            'grid size-10 shrink-0 place-items-center rounded-full font-titulo text-base font-bold tracking-wide',
+            elegida ? 'bg-sobre-club/15' : 'bg-negro text-sobre-negro ring-1 ring-linea',
+          )}
+        >
+          {f.iniciales}
+        </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate font-titulo text-xl leading-tight font-semibold">{nombre}</span>
-          <span className={cn('block truncate font-mono text-xs', elegida ? 'text-sobre-club/85' : 'text-gris')}>
-            {dato(f.alturaCm, 'cm')} · {dato(f.pesoKg, 'kg')}
+          <span className="flex min-w-0 items-center gap-2">
+            <span className={cn('truncate font-mono text-xs', elegida ? 'text-sobre-club/85' : 'text-gris')}>
+              {dato(f.alturaCm, 'cm')} · {dato(f.pesoKg, 'kg')}
+            </span>
+            {f.lesion && (
+              <span
+                className={cn(
+                  'inline-flex shrink-0 items-center gap-1 rounded-[0.3125rem] px-1.5 text-xs font-semibold',
+                  elegida ? 'bg-sobre-club/15' : 'bg-baja-fondo text-baja',
+                )}
+              >
+                <HeartPulse aria-hidden className="size-3.5" />
+                Lesionado
+              </span>
+            )}
           </span>
         </span>
-        {f.lesion && <HeartPulse aria-label="Lesionado" className="size-5 shrink-0" />}
         <span className="flex shrink-0 flex-col items-end font-mono text-xs leading-tight tabular-nums">
           <span>
             <span className={elegida ? 'text-sobre-club/85' : 'text-gris'}>Tiro </span>

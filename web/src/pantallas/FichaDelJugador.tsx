@@ -31,7 +31,7 @@ function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   return (
     <div>
       <dt className={cn('text-xs', SUAVE)}>{etiqueta}</dt>
-      <dd className="font-mono text-xl font-semibold tabular-nums">{valor}</dd>
+      <dd className="cifra mt-0.5 font-titulo text-3xl leading-none font-bold">{valor}</dd>
     </div>
   );
 }

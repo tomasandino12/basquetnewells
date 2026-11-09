@@ -101,8 +101,8 @@ describe('Plantel con datos: encabezado y lista', () => {
     simular(true);
     abrir(repo({ obtenerLesionesDelPlantel: async () => [{ id: 'l-1', jugadorId: 'j-2', desde: HOY, hasta: null, zona: null, lado: null, tipo: null }] }));
     const lista = await filas();
-    expect(within(lista[1]).getByLabelText('Lesionado')).toBeTruthy();
-    expect(within(lista[0]).queryByLabelText('Lesionado')).toBeNull();
+    expect(within(lista[1]).getByText('Lesionado')).toBeTruthy();
+    expect(within(lista[0]).queryByText('Lesionado')).toBeNull();
   });
 
   it('no muestra cuota, apto médico ni nada de coordinación', async () => {
