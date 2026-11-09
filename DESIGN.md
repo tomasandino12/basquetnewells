@@ -355,5 +355,5 @@ textura. Nada de scroll infinito ni de animaciones por todos lados.
 | `--sube` / `--sube-fondo` | `#126B45` / `#E6EFE2` | `#7BCB98` / `#1C2B21` | Mejoró |
 | `--baja` / `--baja-fondo` | `#8A5409` / `#F7EAD5` | `#E0A94F` / `#33230F` | A reforzar |
 
-Letras: Barlow Condensed para títulos y cifras grandes, DM Sans para el texto (reemplaza a Inter en `web/`), IBM Plex
+Letras: Barlow Condensed para títulos y cifras grandes, DM Sans para el texto (reemplaza a Inter en `web/`; sus archivos están en `web/src/fuentes/`, fuera de `public/fonts` para que el service worker de `/app` no los guarde), IBM Plex
 Mono para tablas de números. Las reglas duras de movimiento y velocidad de arriba valen igual para `web/`.

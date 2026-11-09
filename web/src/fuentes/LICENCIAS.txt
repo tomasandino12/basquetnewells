@@ -1,0 +1,7 @@
+DM Sans (subconjunto latin, @fontsource/dm-sans 5.3.0 de npm), solo para la app nueva (web/).
+Copyright 2014 The DM Sans Project Authors (https://github.com/googlefonts/dm-fonts)
+Se distribuye bajo la SIL Open Font License, versión 1.1:
+https://openfontlicense.org/open-font-license-official-text/
+
+Va acá y no en public/fonts: lo de public/fonts lo guarda el service worker de la app vieja (/app),
+que no la usa.

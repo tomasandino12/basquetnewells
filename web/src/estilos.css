@@ -1,11 +1,12 @@
 @import 'tailwindcss';
 
-/* Fuentes de la app vieja (public/fonts): se reusan, no se duplican. */
+/* Fuentes en public/fonts (compartidas con la app vieja). DM Sans es sólo de la app nueva y vive en web/src/fuentes. */
 @font-face{font-family:'Barlow Condensed';font-weight:600;font-display:swap;src:url(../../public/fonts/barlow-condensed-latin-600-normal.woff2) format('woff2')}
 @font-face{font-family:'Barlow Condensed';font-weight:700;font-display:swap;src:url(../../public/fonts/barlow-condensed-latin-700-normal.woff2) format('woff2')}
-@font-face{font-family:'Inter';font-weight:400;font-display:swap;src:url(../../public/fonts/inter-latin-400-normal.woff2) format('woff2')}
-@font-face{font-family:'Inter';font-weight:500;font-display:swap;src:url(../../public/fonts/inter-latin-500-normal.woff2) format('woff2')}
-@font-face{font-family:'Inter';font-weight:600;font-display:swap;src:url(../../public/fonts/inter-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'DM Sans';font-weight:400;font-display:swap;src:url(./fuentes/dm-sans-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'DM Sans';font-weight:500;font-display:swap;src:url(./fuentes/dm-sans-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'DM Sans';font-weight:600;font-display:swap;src:url(./fuentes/dm-sans-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'DM Sans';font-weight:700;font-display:swap;src:url(./fuentes/dm-sans-latin-700-normal.woff2) format('woff2')}
 @font-face{font-family:'IBM Plex Mono';font-weight:500;font-display:swap;src:url(../../public/fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2')}
 @font-face{font-family:'IBM Plex Mono';font-weight:600;font-display:swap;src:url(../../public/fonts/ibm-plex-mono-latin-600-normal.woff2) format('woff2')}
 
@@ -122,7 +123,7 @@
   --color-gris: var(--gris);
   --color-borde-control: var(--borde-control);
   --font-titulo: 'Barlow Condensed', system-ui, sans-serif;
-  --font-cuerpo: 'Inter', system-ui, sans-serif;
+  --font-cuerpo: 'DM Sans', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
   --shadow-tarjeta: var(--sombra);
   --ease-salida: cubic-bezier(.16, 1, .3, 1);
@@ -144,3 +145,6 @@ body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* Cifras que se comparan: ancho fijo, así no bailan al cambiar (Vercel). */
+.cifra { font-variant-numeric: tabular-nums; }
