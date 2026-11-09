@@ -1,8 +1,8 @@
 /**
- * Interruptor por celular para abrir Plantel y la ficha en la versión nueva (/nueva).
- * Apagado por defecto: sólo el valor 'si' lo prende, cualquier otra cosa (ausente,
- * vacía, rota) es apagado. Es del teléfono (localStorage), no de la cuenta, para
- * poder probar en un solo aparato sin tocar a los demás profes.
+ * Interruptor por celular para abrir Hoy, Plantel y la ficha en la versión nueva (/nueva).
+ * Prendido por defecto desde el 08/11/2026 (Tomás quiere ver el rediseño en /app y nadie
+ * usa la app todavía): sólo el valor 'no' lo apaga. Es del teléfono (localStorage), no de
+ * la cuenta: quien prefiera la de siempre lo apaga en Mi perfil.
  *
  * No hay autorización acá: /nueva pide los datos con la misma sesión y la misma
  * RLS que /app. El interruptor sólo decide qué pantalla se muestra.
@@ -19,7 +19,7 @@ export const ESPERA_NUEVA_MS = 3000;
 export const RUTA_NUEVA = '/nueva';
 
 export function normalizarNueva(valor) {
-  return valor === 'si' ? 'si' : 'no';
+  return valor === 'no' ? 'no' : 'si';
 }
 
 const ID_SEGURO = /^[\w-]{1,64}$/;
@@ -30,8 +30,9 @@ const ID_SEGURO = /^[\w-]{1,64}$/;
  * no tiene dónde abrirse. El id se valida y no se concatena crudo: la dirección
  * termina en un cambio de location y no tiene que poder llevar a otro lado.
  */
-export function direccionNueva({ plantelId, jugadorId } = {}) {
+export function direccionNueva({ plantelId, jugadorId, pantalla = 'plantel' } = {}) {
   if (typeof plantelId !== 'string' || !ID_SEGURO.test(plantelId)) return `${RUTA_NUEVA}#/`;
+  if (pantalla === 'hoy') return `${RUTA_NUEVA}#/hoy/${plantelId}`;
   const base = `${RUTA_NUEVA}#/plantel/${plantelId}`;
   if (typeof jugadorId !== 'string' || !ID_SEGURO.test(jugadorId)) return base;
   return `${base}?jugador=${jugadorId}`;

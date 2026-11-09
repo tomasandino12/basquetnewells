@@ -1,4 +1,4 @@
-import { Activity, CalendarCheck, ClipboardCheck, Moon, Sun, Users, LayoutGrid, type LucideIcon } from 'lucide-react';
+import { Activity, ArrowUpRight, CalendarCheck, ClipboardCheck, LayoutGrid, LineChart, Moon, MoreHorizontal, PlaySquare, Ruler, Sun, Users, type LucideIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, matchPath, useLocation } from 'react-router';
 import escudo from '../../public/escudo.png';
@@ -26,6 +26,51 @@ export function enlacesDelMenu(plantelId: string | undefined): Enlace[] {
     { a: `/asistencia/${plantelId}`, nombre: 'Asistencia', icono: ClipboardCheck },
     { a: `/fisico/${plantelId}`, nombre: 'Físico', icono: CalendarCheck },
   ];
+}
+
+/**
+ * Lo que todavía no se mudó: se abre en la app de siempre, así desde /nueva no se pierde ninguna
+ * función (H-175). /app arranca en su pantalla de inicio; no rebota a /nueva porque sólo salta
+ * al tocar una pestaña.
+ */
+export const EN_LA_DE_SIEMPRE = [
+  { nombre: 'Medir', icono: Ruler },
+  { nombre: 'Recursos', icono: PlaySquare },
+  { nombre: 'Datos', icono: LineChart },
+];
+const APP_DE_SIEMPRE = '/app/';
+
+function DeSiempre({ compacto }: { compacto?: boolean }) {
+  if (compacto) {
+    return (
+      <a
+        href={APP_DE_SIEMPRE}
+        className="flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-[0.6875rem] text-sobre-negro opacity-70 outline-offset-2 focus-visible:outline-2 focus-visible:outline-lima"
+      >
+        <MoreHorizontal aria-hidden className="size-5" strokeWidth={1.8} />
+        <span>Más</span>
+      </a>
+    );
+  }
+  return (
+    <div className="mt-6 border-t border-white/10 pt-4">
+      <p className="px-3 pb-2 font-mono text-[0.6875rem] tracking-wide text-sobre-negro uppercase opacity-60">En la app de siempre</p>
+      <ul className="flex flex-col gap-1">
+        {EN_LA_DE_SIEMPRE.map(({ nombre, icono: Icono }) => (
+          <li key={nombre}>
+            <a
+              href={APP_DE_SIEMPRE}
+              className="flex min-h-11 items-center gap-3 rounded-[0.5rem] px-3 text-[0.9375rem] text-sobre-negro opacity-70 outline-offset-2 focus-visible:outline-2 focus-visible:outline-lima [@media(hover:hover)]:hover:opacity-100"
+            >
+              <Icono aria-hidden className="size-5" strokeWidth={1.8} />
+              <span>{nombre}</span>
+              <ArrowUpRight aria-hidden className="ml-auto size-4" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 /** Pantallas con datos inventados: fuera del menú, en una línea aparte que lo dice. */
@@ -138,6 +183,7 @@ export function Marco() {
               </li>
             ))}
           </ul>
+          <DeSiempre />
         </nav>
         <BotonTema tema={tema} alCambiar={cambiarTema} className="mt-auto" />
       </aside>
@@ -157,6 +203,9 @@ export function Marco() {
               <ItemMenu enlace={e} compacto />
             </li>
           ))}
+          <li className="flex flex-1">
+            <DeSiempre compacto />
+          </li>
         </ul>
       </nav>
 

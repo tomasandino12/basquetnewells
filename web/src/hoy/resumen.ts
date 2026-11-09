@@ -115,7 +115,10 @@ export function armarResumen(datos: {
   const delArco = POSICIONES.map(armar);
   if (!delArco.some((z) => z.valor) && !libres.valor) return { tipo: 'sin-mediciones', fecha: actual.fecha };
 
-  const calores = calorDeZonas(delArco.map((z) => z.valor?.pct ?? null));
+  // Los libres entran en la misma escala de color que el arco (lo pidió Tomás el 08/11): así se
+  // comparan de un vistazo en la cancha. El porcentaje sigue aparte, nunca sumado al del arco.
+  const calores = calorDeZonas([...delArco, libres].map((z) => z.valor?.pct ?? null));
+  libres.calor = calores[delArco.length];
   const zonas = delArco
     .map((z, i) => ({ ...z, calor: calores[i] }))
     .sort((a, b) => {

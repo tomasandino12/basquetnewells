@@ -453,6 +453,7 @@ async function iniciar() {
     // Sólo al tocar la pestaña, nunca al arrancar: así volver desde /nueva no rebota de nuevo.
     onTab: async (id) => {
       if (id === 'p-plantel' && await abrirEnNueva({ plantelId: obtenerPlantelActivo()?.id })) return;
+      if (id === 'p-hoy' && await abrirEnNueva({ plantelId: obtenerPlantelActivo()?.id, pantalla: 'hoy' })) return;
       await ir(id);
     },
     onPlantel: (id) => cambiarPlantel(id),

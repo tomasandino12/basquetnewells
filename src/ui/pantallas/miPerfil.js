@@ -44,16 +44,16 @@ function aparienciaHtml(oscuro) {
 }
 
 /**
- * El interruptor de las pantallas nuevas (Plantel y ficha): sólo para quien entrena, que es
- * quien las usa, y apagado por defecto. Es de este teléfono, como el tema.
+ * El interruptor de las pantallas nuevas (Hoy, Plantel y ficha): sólo para quien entrena, que es
+ * quien las usa, y prendido por defecto. Es de este teléfono, como el tema.
  */
 function nuevaHtml(prendida) {
   return html`
     <section class="perfil-datos">
       <div class="perfil-fila">
         <div>
-          <div class="k">Probar pantallas nuevas</div>
-          <div class="v" id="nueva-etiqueta">Plantel y ficha del jugador</div>
+          <div class="k">Pantallas nuevas</div>
+          <div class="v" id="nueva-etiqueta">Hoy, plantel y ficha del jugador</div>
         </div>
         <button type="button" class="interruptor" id="sw-nueva" role="switch" aria-labelledby="nueva-etiqueta" aria-checked="${prendida ? 'true' : 'false'}"></button>
       </div>

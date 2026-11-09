@@ -59,8 +59,8 @@ function Marca({ x, y, corto, zona, fondo, texto, angosta }: { x: number; y: num
 /**
  * Media cancha con las cinco zonas del triple pintadas sólo afuera de la línea, de crema a naranja
  * intenso según su porcentaje relativo (la más floja es la más fuerte), y los tiros libres en su
- * semicírculo. Los libres son otro tiro con otro porcentaje: llevan su propio color, fuera de la
- * escala del arco. Las zonas sin medir quedan sin color. El detalle está en la lista de al lado.
+ * semicírculo, en la misma escala. Las zonas sin medir quedan sin color. El detalle está en la
+ * lista de al lado, para quien no ve el dibujo.
  */
 export function CanchaCalor({ zonas, libres }: { zonas: Zona[]; libres?: Zona }) {
   const reducido = useReducedMotion();
@@ -104,7 +104,9 @@ export function CanchaCalor({ zonas, libres }: { zonas: Zona[]; libres?: Zona })
       {libres?.valor && (
         <motion.path
           d={SEMICIRCULO_LIBRES}
-          fill="var(--club-cl)"
+          fill={libres.calor === null ? 'none' : `var(--calor-${libres.calor})`}
+          stroke="var(--sup)"
+          strokeWidth={3}
           initial={reducido ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.28, ease: SALIDA, delay: 0.24 }}
@@ -140,7 +142,7 @@ export function CanchaCalor({ zonas, libres }: { zonas: Zona[]; libres?: Zona })
           />
         );
       })}
-      {libres && <Marca x={ARO.x} y={Y_TIRO_LIBRE - 24} corto="Libres" zona={libres} fondo={!!libres.valor} texto="var(--tinta)" />}
+      {libres && <Marca x={ARO.x} y={Y_TIRO_LIBRE - 24} corto="Libres" zona={libres} fondo={libres.calor !== null} texto={`var(--calor-t-${libres.calor ?? 0})`} />}
     </svg>
   );
 }

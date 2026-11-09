@@ -7,6 +7,7 @@ import { toast } from './nav.js';
  * poder leer el interruptor nunca puede romper la pantalla vieja (queda apagado).
  */
 
+// Sin localStorage se queda en la de siempre: si no se puede guardar, tampoco se podría apagar.
 export function nuevaPrendida() {
   try {
     return normalizarNueva(localStorage.getItem(CLAVE_NUEVA)) === 'si';
@@ -18,8 +19,8 @@ export function nuevaPrendida() {
 /** Devuelve false si el teléfono no dejó guardar. */
 export function guardarNueva(prendida) {
   try {
-    if (prendida) localStorage.setItem(CLAVE_NUEVA, 'si');
-    else localStorage.removeItem(CLAVE_NUEVA);
+    if (prendida) localStorage.removeItem(CLAVE_NUEVA);
+    else localStorage.setItem(CLAVE_NUEVA, 'no');
     return true;
   } catch {
     return false;
@@ -49,13 +50,13 @@ async function nuevaResponde() {
  * llama no sigue con la vieja. Apagado, o si /nueva no responde, devuelve false y
  * la pantalla vieja se abre como siempre.
  */
-export async function abrirEnNueva({ plantelId, jugadorId } = {}) {
+export async function abrirEnNueva({ plantelId, jugadorId, pantalla } = {}) {
   if (!nuevaPrendida()) return false;
   if (!(await nuevaResponde())) {
     toast('La versión nueva no está disponible ahora. Te dejamos la de siempre.');
     return false;
   }
   // assign y no replace: el atrás del sistema vuelve a /app.
-  window.location.assign(direccionNueva({ plantelId, jugadorId }));
+  window.location.assign(direccionNueva({ plantelId, jugadorId, pantalla }));
   return true;
 }

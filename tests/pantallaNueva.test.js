@@ -53,7 +53,19 @@ afterEach(() => {
   }
 });
 
-test('apagado por defecto: no pide nada y no se va de la pantalla vieja', async () => {
+test('prendido por defecto: sin tocar nada, el plantel abre en la nueva', async () => {
+  assert.equal(nuevaPrendida(), true);
+  assert.equal(await abrirEnNueva({ plantelId: 'p1' }), true);
+  assert.deepEqual(destinos, ['/nueva#/plantel/p1']);
+});
+
+test('Hoy abre el resumen nuevo', async () => {
+  assert.equal(await abrirEnNueva({ plantelId: 'p1', pantalla: 'hoy' }), true);
+  assert.deepEqual(destinos, ['/nueva#/hoy/p1']);
+});
+
+test('apagado: no pide nada y no se va de la pantalla vieja', async () => {
+  guardarNueva(false);
   assert.equal(nuevaPrendida(), false);
   assert.equal(await abrirEnNueva({ plantelId: 'p1' }), false);
   assert.deepEqual(pedidos, []);

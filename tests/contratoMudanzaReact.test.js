@@ -63,13 +63,14 @@ test('desde /app sólo se llega a /nueva por pantallaNueva.js, detrás del inter
   assert.match(puerta, /if \(!nuevaPrendida\(\)\) return false/, 'apagado no hace nada');
   assert.match(puerta, /method: 'HEAD'/, 'comprueba que /nueva responda antes de irse (respaldo)');
   const m = leer('src/data/interruptorNueva.js');
-  assert.match(m, /normalizarNueva\(valor\)[\s\S]*valor === 'si' \? 'si' : 'no'/, 'apagado por defecto');
+  // Desde el 08/11/2026 prendido por defecto (lo pidió Tomás: ver el rediseño en /app); se apaga en Mi perfil.
+  assert.match(m, /normalizarNueva\(valor\)[\s\S]*valor === 'no' \? 'no' : 'si'/, 'prendido por defecto, sólo "no" lo apaga');
 });
 
-test('el rebote a /nueva sólo ocurre al tocar la pestaña Plantel, nunca al arrancar', () => {
+test('el rebote a /nueva sólo ocurre al tocar la pestaña Plantel u Hoy, nunca al arrancar', () => {
   const main = leer('src/ui/main.js');
-  assert.equal((main.match(/abrirEnNueva\(/g) ?? []).length, 1, 'un solo uso en main.js');
-  assert.match(main, /onTab: async \(id\) => \{\s*if \(id === 'p-plantel' && await abrirEnNueva/);
+  assert.equal((main.match(/abrirEnNueva\(/g) ?? []).length, 2, 'sólo Plantel y Hoy en main.js');
+  assert.match(main, /onTab: async \(id\) => \{\s*if \(id === 'p-plantel' && await abrirEnNueva[^\n]*\r?\n\s*if \(id === 'p-hoy' && await abrirEnNueva/);
 });
 
 test('/nueva queda fuera del service worker de /app y no se cachea en el navegador', () => {

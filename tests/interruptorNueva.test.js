@@ -2,11 +2,16 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CLAVE_NUEVA, RUTA_NUEVA, direccionNueva, normalizarNueva } from '../src/data/interruptorNueva.js';
 
-test("sólo 'si' prende el interruptor", () => {
-  assert.equal(normalizarNueva('si'), 'si');
-  for (const v of [null, undefined, '', 'no', 'Si', 'true', '1', 1, true, {}, ' si']) {
-    assert.equal(normalizarNueva(v), 'no', `${JSON.stringify(v)} es apagado`);
+test("prendido por defecto: sólo 'no' lo apaga", () => {
+  assert.equal(normalizarNueva('no'), 'no');
+  for (const v of [null, undefined, '', 'si', 'No', 'true', '1', 1, true, {}, ' no']) {
+    assert.equal(normalizarNueva(v), 'si', `${JSON.stringify(v)} es prendido`);
   }
+});
+
+test('Hoy va al resumen nuevo del plantel', () => {
+  assert.equal(direccionNueva({ plantelId: 'abc-123', pantalla: 'hoy' }), '/nueva#/hoy/abc-123');
+  assert.equal(direccionNueva({ plantelId: '../x', pantalla: 'hoy' }), '/nueva#/');
 });
 
 test('la clave guardada es la de siempre', () => {
