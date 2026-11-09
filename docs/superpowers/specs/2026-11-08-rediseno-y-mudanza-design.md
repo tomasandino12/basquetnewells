@@ -48,6 +48,14 @@ rediseño. Lo que diga Tomás en el camino tiene prioridad sobre este documento.
 **Quedan afuera** (trabajo aparte, más adelante): las funciones nuevas que inventó Manus (asignar un ejercicio desde
 el mapa de tiro, marcar lesionado desde la lista, metas editables).
 
+## Criterio de Tomás (08/11)
+
+**Llamar la atención con pocas cosas.** Nada de scroll infinito ni mil animaciones. Lo que hace la diferencia son
+detalles chicos y bien hechos que no saturan: un botón con una interacción que llama la atención, cómo aparecen las
+cosas, cómo se ven los textos, una textura. Cada pantalla tiene **un** momento destacado, no varios. Se toman aspectos
+de páginas con buen diseño, las mismas que Tomás le enseña a Sofía (biblioteca de referencias y muro de la oficina:
+`docs/diseno/biblioteca.json`).
+
 ## Diseño base
 
 ### Colores
