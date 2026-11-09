@@ -28,7 +28,7 @@ const PALETA: { familia: string; muestras: { nombre: string; clase: string; rol:
     { nombre: 'Club', clase: 'bg-club', rol: 'escudo y acentos' },
     { nombre: 'Profundo', clase: 'bg-club-texto', rol: 'texto rojo' },
     { nombre: 'Cereza', clase: 'bg-cereza', rol: 'piezas fuertes' },
-    { nombre: 'Bordó', clase: 'bg-bordo', rol: 'menú' },
+    { nombre: 'Bordó', clase: 'bg-negro', rol: 'menú' },
   ] },
   { familia: 'Naranjas y marrones', muestras: [
     { nombre: 'Tomate', clase: 'bg-tomate', rol: 'gráficos' },
@@ -108,7 +108,7 @@ export function Piezas() {
                 12 de 14 entrenamientos.
               </p>
             </Panel>
-            <div className="flex flex-col justify-center gap-3 rounded-[0.6875rem] bg-bordo p-4 text-sobre-bordo">
+            <div className="flex flex-col justify-center gap-3 rounded-[0.6875rem] bg-negro p-4 text-sobre-negro">
               <p className="text-sm opacity-80">Entrenamiento de hoy · 18:30</p>
               <p className="font-titulo text-4xl leading-none font-bold uppercase">U13 · Microestadio</p>
               <Boton flecha className="self-start">Tomar asistencia</Boton>

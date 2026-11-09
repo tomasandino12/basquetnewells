@@ -333,25 +333,25 @@ textura. Nada de scroll infinito ni de animaciones por todos lados.
 
 | Token web | Claro | Oscuro | Rol |
 |---|---|---|---|
-| `--fondo` | `#F5F0E6` | `#160708` | Crema / negro bordó: fondo de la app |
-| `--sup` | `#FCFAF5` | `#221012` | Hueso: tarjetas y paneles |
-| `--sup-2` | `#EDE5D6` | `#2E1A1B` | Arena: lo hundido dentro de una tarjeta, chips |
-| `--linea` | `#E2D8C6` | `#3D2627` | Separadores |
+| `--fondo` | `#F5F0E6` | `#121011` | Crema / negro cálido: fondo de la app |
+| `--sup` | `#FCFAF5` | `#1C191A` | Hueso: tarjetas y paneles |
+| `--sup-2` | `#EDE5D6` | `#282324` | Arena: lo hundido dentro de una tarjeta, chips |
+| `--linea` | `#E2D8C6` | `#3A3334` | Separadores |
 | `--tinta` | `#241A17` | `#F3EAE0` | Texto principal |
-| `--gris` | `#6B5D52` | `#B8A79C` | Texto secundario (marrón, no gris frío) |
-| `--borde-control` | `#8C7B6B` | `#8A706B` | Borde de lo que se toca |
+| `--gris` | `#6B5D52` | `#B5AAA4` | Texto secundario (marrón, no gris frío) |
+| `--borde-control` | `#8C7B6B` | `#85787A` | Borde de lo que se toca |
 | `--club` | `#D9122E` | `#D9122E` | Rojo vivo: escudo y acentos grandes |
 | `--club-texto` | `#A80519` | `#EE7C80` | Rojo profundo: texto y bordes rojos chicos |
 | `--club-cl` | `#F8E1DC` | `#3F1418` | Fondo suave de una opción elegida |
 | `--cereza` | `#6D0317` | `#6D0317` | Piezas fuertes secundarias |
-| `--bordo` | `#250104` | `#0E0304` | Menú y pieza fuerte de la pantalla (entrenamiento de hoy) |
+| `--negro` | `#161213` | `#0A0809` | El negro del club: menú y pieza fuerte de la pantalla (entrenamiento de hoy). Rojo y negro son la identidad: nada de bordó ni marrón |
 | `--tomate` | `#E13A26` | `#E13A26` | Gráficos y etiquetas |
 | `--quemado` | `#C2410C` | `#C2410C` | Gráficos y etiquetas |
 | `--caramelo` | `#B5713A` | `#B5713A` | Gráficos y etiquetas |
 | `--cuero` | `#7A4B32` | `#7A4B32` | Gráficos y etiquetas |
 | `--ambar` | `#F2B33D` | `#F2B33D` | Dato destacado: récord, mejor marca, objetivo cumplido |
 | `--sol` | `#FEED65` | `#FEED65` | Dato destacado sobre fondo oscuro |
-| `--lima` | `#CDF73D` | `#CDF73D` | **Solo** la acción principal de la pantalla, con letra `--sobre-lima` (`#250104`). Nunca texto suelto ni el mapa de calor |
+| `--lima` | `#CDF73D` | `#CDF73D` | **Solo** la acción principal de la pantalla, con letra `--sobre-lima` (`#161213`). Nunca texto suelto ni el mapa de calor |
 | `--sube` / `--sube-fondo` | `#126B45` / `#E6EFE2` | `#7BCB98` / `#1C2B21` | Mejoró |
 | `--baja` / `--baja-fondo` | `#8A5409` / `#F7EAD5` | `#E0A94F` / `#33230F` | A reforzar |
 

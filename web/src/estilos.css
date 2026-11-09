@@ -12,7 +12,7 @@
 
 /* Tokens de la app nueva (DESIGN.md, «Sistema de la app nueva»). Los valores sueltos viven sólo
    acá: las piezas usan los nombres de rol, nunca un color literal. Paleta cálida (08/11, Tomás):
-   cremas, rojos, bordó, naranjas, marrones y amarillos, cada familia con su rol; lima sólo para la
+   cremas, rojos, negro, naranjas, marrones y amarillos, cada familia con su rol; lima sólo para la
    acción principal. contraste.test.ts mide cada par de texto y fondo en los dos temas. */
 :root {
   /* Base */
@@ -30,8 +30,8 @@
   --club-osc: #A80519;        /* botón rojo apretado */
   --club-cl: #F8E1DC;         /* fondo suave de una opción elegida */
   --cereza: #6D0317;
-  --bordo: #250104;           /* piezas fuertes: menú, entrenamiento de hoy */
-  --sobre-bordo: #F5F0E6;
+  --negro: #161213;           /* el negro del club: menú y pieza fuerte de la pantalla */
+  --sobre-negro: #F5F0E6;
   /* Naranjas y marrones */
   --tomate: #E13A26;
   --quemado: #C2410C;
@@ -42,13 +42,13 @@
   --sol: #FEED65;
   /* Fuerte: la acción principal, nada más */
   --lima: #CDF73D;
-  --sobre-lima: #250104;
+  --sobre-lima: #161213;
   /* Estados */
   --sube: #126B45;
   --sube-fondo: #E6EFE2;
   --baja: #8A5409;
   --baja-fondo: #F7EAD5;
-  --velo: rgba(37, 1, 4, .5);
+  --velo: rgba(22, 18, 19, .5);
   /* Escala de calor de la pantalla Hoy: de crema (va bien) a naranja intenso (la zona más floja).
      El aviso crece en intensidad, no en oscuridad. -t es el color del texto encima. */
   --calor-0: #FBF3E4; --calor-t-0: #241A17;
@@ -66,28 +66,28 @@
   --dur-3: 280ms;
 }
 
-/* Oscuro: negro con un toque bordó, no azulado. */
+/* Oscuro: negro cálido, como el del club; ni azulado ni marrón. */
 [data-tema='oscuro'] {
-  --fondo: #160708;
-  --sup: #221012;
-  --sup-2: #2E1A1B;
-  --linea: #3D2627;
+  --fondo: #121011;
+  --sup: #1C191A;
+  --sup-2: #282324;
+  --linea: #3A3334;
   --tinta: #F3EAE0;
-  --gris: #B8A79C;
-  --borde-control: #8A706B;
+  --gris: #B5AAA4;
+  --borde-control: #85787A;
   --club-texto: #EE7C80;
   --club-cl: #3F1418;
-  --bordo: #0E0304;
+  --negro: #0A0809;
   --sube: #7BCB98;
   --sube-fondo: #1C2B21;
   --baja: #E0A94F;
   --baja-fondo: #33230F;
   --velo: rgba(0, 0, 0, .65);
-  --calor-0: #2A1816; --calor-t-0: #F3EAE0;
+  --calor-0: #2A2120; --calor-t-0: #F3EAE0;
   --calor-1: #4A2C1E; --calor-t-1: #F3EAE0;
   --calor-2: #8C5A1C; --calor-t-2: #FFFFFF;
-  --calor-3: #D9751A; --calor-t-3: #160708;
-  --calor-4: #FF9F43; --calor-t-4: #160708;
+  --calor-3: #D9751A; --calor-t-3: #121011;
+  --calor-4: #FF9F43; --calor-t-4: #121011;
   --sombra: none;
   --textura: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .95 0 0 0 0 .88 0 0 0 0 .8 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
   --textura-opacidad: .05;
@@ -95,8 +95,8 @@
 
 @theme inline {
   --color-cereza: var(--cereza);
-  --color-bordo: var(--bordo);
-  --color-sobre-bordo: var(--sobre-bordo);
+  --color-negro: var(--negro);
+  --color-sobre-negro: var(--sobre-negro);
   --color-tomate: var(--tomate);
   --color-quemado: var(--quemado);
   --color-caramelo: var(--caramelo);

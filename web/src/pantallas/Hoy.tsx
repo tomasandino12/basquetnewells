@@ -3,7 +3,6 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
 import { saludoSegunHora } from '@datos/saludo.js';
 import { siguientePasoDeMisiones, vincularPrevias } from '@datos/misiones.js';
-import escudo from '../../../public/escudo.png';
 import { claseBoton, Flecha } from '../components/ui/button';
 import { CanchaCalor } from '../components/ui/cancha-calor';
 import { Panel } from '../components/ui/card';
@@ -152,15 +151,11 @@ export function ContenidoDeHoy({ clubId, plantelId, categoria }: { clubId: strin
   );
 }
 
-/**
- * El momento de la pantalla: la tarjeta bordó del día con la única acción lima. El escudo va de
- * marca de agua, grande y cortado por el borde, casi invisible: se nota de cerca y no pesa.
- */
+/** El momento de la pantalla: la tarjeta negra del día, con la única acción lima. */
 function Entrenamiento({ categoria, plantelId }: { categoria: string; plantelId: string }) {
   return (
-    <section aria-label="Entrenamiento de hoy" className="relative overflow-hidden rounded-tarjeta border border-linea bg-bordo p-5 text-sobre-bordo shadow-tarjeta sm:p-6">
-      <img src={escudo} alt="" aria-hidden className="pointer-events-none absolute -right-10 -bottom-16 size-56 opacity-[.08] select-none" />
-      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <section aria-label="Entrenamiento de hoy" className="rounded-tarjeta border border-linea bg-negro p-5 text-sobre-negro shadow-tarjeta sm:p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <p className="font-mono text-xs tracking-wide uppercase opacity-75">Entrenamiento de hoy</p>
           <p className="mt-1 truncate font-titulo text-4xl leading-none font-bold tracking-tight">{categoria}</p>
@@ -191,7 +186,7 @@ function Tiro({ resumen, categoria, plantelId }: { resumen: Completo; categoria:
       {total && (
         <section aria-label="Tiro de campo" className="rounded-tarjeta border border-linea bg-sup p-4 shadow-tarjeta sm:p-5">
           <p className={ETIQUETA}>Tiro de campo · todo el arco</p>
-          <div className="mt-2 lg:grid lg:grid-cols-[auto_minmax(0,1fr)] lg:items-end lg:gap-12">
+          <div className="mt-2 lg:grid lg:grid-cols-[auto_minmax(0,1fr)] lg:items-center lg:gap-12">
             <div>
               <p className="cifra font-titulo text-8xl leading-[.85] font-bold tracking-tight">
                 {total.pct}
@@ -204,23 +199,23 @@ function Tiro({ resumen, categoria, plantelId }: { resumen: Completo; categoria:
               </p>
             </div>
             {serie.length > 0 && (
-              <a
-                href={APP_ANTERIOR}
-                aria-label="Ver la evolución completa en Datos"
-                className="group mt-4 block rounded-campo outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta lg:mt-0"
-              >
+              <div className="mt-4 lg:mt-0">
                 <CurvaArco serie={serie} />
-                <span className="flex items-center justify-between gap-2 font-mono text-xs text-gris">
+                <p className="flex items-center justify-between gap-2 font-mono text-xs text-gris">
                   <span>
                     {serie.length === 1
                       ? `Una sola batería: ${fechaCorta(serie[0].fecha)} · ${serie[0].valor.anotados}/${serie[0].valor.intentos}`
                       : `${serie.length} baterías · primera ${serie[0].valor.pct}% (${serie[0].valor.anotados}/${serie[0].valor.intentos}) · última ${serie[serie.length - 1].valor.pct}% (${serie[serie.length - 1].valor.anotados}/${serie[serie.length - 1].valor.intentos})`}
                   </span>
-                  <span className="shrink-0 font-semibold text-tinta underline decoration-linea underline-offset-4 [@media(hover:hover)]:group-hover:decoration-tinta">
+                  <a
+                    href={APP_ANTERIOR}
+                    aria-label="Ver la evolución completa en Datos"
+                    className="inline-flex min-h-11 shrink-0 items-center font-semibold text-tinta underline decoration-linea underline-offset-4 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:decoration-tinta"
+                  >
                     Ver todo ›
-                  </span>
-                </span>
-              </a>
+                  </a>
+                </p>
+              </div>
             )}
           </div>
         </section>
@@ -231,7 +226,7 @@ function Tiro({ resumen, categoria, plantelId }: { resumen: Completo; categoria:
           titulo="Por zona"
           accion={resumen.fechaAnterior ? <span className="font-mono text-xs text-gris">vs {fechaCorta(resumen.fechaAnterior)}</span> : undefined}
         >
-          <CanchaCalor zonas={zonas} />
+          <CanchaCalor zonas={zonas} libres={libres} />
           <Leyenda />
           <div className="mt-4 border-t border-linea pt-3 text-sm">
             {foco === null ? (

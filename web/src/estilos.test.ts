@@ -41,7 +41,7 @@ describe('tokens de web contra DESIGN.md (sistema de la app nueva)', () => {
   });
 
   it('el tema oscuro redefine los colores que cambian de rol', () => {
-    for (const t of ['--fondo', '--sup', '--tinta', '--gris', '--sube', '--baja', '--club-cl', '--bordo']) {
+    for (const t of ['--fondo', '--sup', '--tinta', '--gris', '--sube', '--baja', '--club-cl', '--negro']) {
       expect(token('oscuro', t), t).toBeDefined();
     }
   });

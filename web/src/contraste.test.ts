@@ -38,7 +38,7 @@ describe('contraste', () => {
     ['--sobre-club', '--club'],
     ['--sube', '--sube-fondo'],
     ['--baja', '--baja-fondo'],
-    ['--sobre-bordo', '--bordo'],
+    ['--sobre-negro', '--negro'],
   ];
 
   for (const tema of ['claro', 'oscuro'] as const) {

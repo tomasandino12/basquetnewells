@@ -53,7 +53,7 @@ function BotonTema({ tema, alCambiar, className }: { tema: Tema; alCambiar: () =
       onClick={alCambiar}
       aria-label={tema === 'oscuro' ? 'Pasar al tema claro' : 'Pasar al tema oscuro'}
       className={cn(
-        'grid size-11 place-items-center rounded-full text-sobre-bordo outline-offset-2 transition-transform duration-[var(--dur-1)] active:scale-90 focus-visible:outline-2 focus-visible:outline-lima',
+        'grid size-11 place-items-center rounded-full text-sobre-negro outline-offset-2 transition-transform duration-[var(--dur-1)] active:scale-90 focus-visible:outline-2 focus-visible:outline-lima',
         className,
       )}
     >
@@ -71,7 +71,7 @@ function ItemMenu({ enlace, compacto }: { enlace: Enlace; compacto?: boolean }) 
       end
       className={({ isActive }) =>
         cn(
-          'group relative flex items-center gap-3 rounded-[0.5rem] text-sobre-bordo outline-offset-2 focus-visible:outline-2 focus-visible:outline-lima',
+          'group relative flex items-center gap-3 rounded-[0.5rem] text-sobre-negro outline-offset-2 focus-visible:outline-2 focus-visible:outline-lima',
           compacto ? 'min-h-14 flex-1 flex-col justify-center gap-1 text-[0.6875rem]' : 'min-h-11 px-3 text-[0.9375rem]',
           isActive ? 'font-semibold' : 'opacity-70 [@media(hover:hover)]:hover:opacity-100',
         )
@@ -108,7 +108,7 @@ function Ejemplos() {
   );
 }
 
-/** El marco de todas las pantallas: menú bordó al costado en compu y abajo en el celular. */
+/** El marco de todas las pantallas: menú negro al costado en compu y abajo en el celular. */
 export function Marco() {
   const { pathname } = useLocation();
   const enlaces = enlacesDelMenu(plantelDe(pathname));
@@ -125,10 +125,10 @@ export function Marco() {
   return (
     <div className="min-h-svh lg:pl-60">
       {/* Compu */}
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col bg-bordo px-3 py-5 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r-2 border-club bg-negro px-3 py-5 lg:flex">
         <div className="mb-8 flex items-center gap-3 px-3">
           <img src={escudo} alt="" width={36} height={36} className="size-9" />
-          <p className="font-titulo text-xl leading-none font-bold tracking-wide text-sobre-bordo uppercase">Semillero</p>
+          <p className="font-titulo text-xl leading-none font-bold tracking-wide text-sobre-negro uppercase">Semillero</p>
         </div>
         <nav aria-label="Menú de la app">
           <ul className="flex flex-col gap-1">
@@ -143,14 +143,14 @@ export function Marco() {
       </aside>
 
       {/* Celular: arriba el escudo y el tema; abajo el menú al alcance del pulgar. */}
-      <header className="sticky top-0 z-20 flex h-12 items-center justify-between bg-bordo pr-1 pl-4 lg:hidden">
+      <header className="sticky top-0 z-20 flex h-12 items-center justify-between border-b-2 border-club bg-negro pr-1 pl-4 lg:hidden">
         <div className="flex items-center gap-2">
           <img src={escudo} alt="" width={24} height={24} className="size-6" />
-          <p className="font-titulo text-lg leading-none font-bold tracking-wide text-sobre-bordo uppercase">Semillero</p>
+          <p className="font-titulo text-lg leading-none font-bold tracking-wide text-sobre-negro uppercase">Semillero</p>
         </div>
         <BotonTema tema={tema} alCambiar={cambiarTema} />
       </header>
-      <nav aria-label="Menú de la app" className="fixed inset-x-0 bottom-0 z-20 bg-bordo pb-[env(safe-area-inset-bottom)] lg:hidden">
+      <nav aria-label="Menú de la app" className="fixed inset-x-0 bottom-0 z-20 border-t-2 border-club bg-negro pb-[env(safe-area-inset-bottom)] lg:hidden">
         <ul className="flex">
           {enlaces.map((e) => (
             <li key={e.a} className="flex flex-1">

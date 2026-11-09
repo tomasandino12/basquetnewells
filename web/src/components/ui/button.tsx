@@ -22,8 +22,8 @@ const boton = cva(
         club: 'bg-club text-sobre-club [@media(hover:hover)]:hover:bg-club-osc',
         // La secundaria al lado de una principal: sin relleno, en el rojo profundo.
         linea: 'border border-club-texto bg-transparent text-club-texto [@media(hover:hover)]:hover:bg-club-cl',
-        // Bordó macizo; en oscuro el borde lo separa del fondo.
-        secundario: 'border border-borde-control bg-bordo text-sobre-bordo [@media(hover:hover)]:hover:bg-cereza',
+        // Negro macizo; en oscuro el borde lo separa del fondo.
+        secundario: 'border border-borde-control bg-negro text-sobre-negro [@media(hover:hover)]:hover:bg-cereza',
         contorno: 'border border-borde-control bg-transparent text-tinta [@media(hover:hover)]:hover:border-tinta',
       },
       tamano: {
