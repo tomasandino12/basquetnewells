@@ -315,3 +315,45 @@ Presupuesto de la rama: ninguna regresión contra la medición previa, con toler
 - **Botón principal `.btn`**: rojo del club, letras blancas, casi recto (`--r-btn`), mayúsculas con `letter-spacing:.14em`. **Secundario `.btn.sec`**: negro macizo con letras blancas; con mouse pasa a rojo. Los dos suben 2 px y muestran el brillo del club en el `::after` al pasar el mouse. Sobre fondo oscuro (`.publico`) el secundario sigue siendo contorno.
 - **Títulos**: `.h2` grande, en `--tinta` y con barra roja debajo; `.eyebrow` en `--fs-190`, `--tinta`, negrita. `--gris-osc` es para fondo oscuro: no usarlo sobre papel.
 - **Acción de un bloque**: `.seccion-cab` pone el botón (`.btn.chico`) a la derecha del título del bloque que afecta (ej. "Cargar partido" en DATOS), en vez de una barra fija abajo.
+
+---
+
+# Sistema de la app nueva (`web/`)
+
+Desde el 08/11/2026 la app en React (`web/`, publicada en `/nueva`) tiene su propia paleta: la pidió Tomás porque con
+solo rojo, negro y blanco la app se veía plana y genérica. Punto de partida: el prototipo de Manus y tres paletas de
+«2 colores tranquilos y 1 fuerte» (spec: `docs/superpowers/specs/2026-11-08-rediseno-y-mudanza-design.md`). La app
+vieja (`public/css/`) sigue con lo de arriba hasta que se mude. Los valores viven solo en `web/src/estilos.css`;
+`web/src/estilos.test.ts` compara esa hoja con esta tabla y `web/src/contraste.test.ts` mide cada par texto/fondo
+(4,5:1) y cada borde de lo que se toca (3:1) en los dos temas.
+
+**Criterio (Tomás):** llamar la atención con pocas cosas. Un solo momento destacado por pantalla; los detalles que
+hacen la diferencia son chicos: un botón con una interacción, cómo aparecen las cosas, cómo se ven los textos, una
+textura. Nada de scroll infinito ni de animaciones por todos lados.
+
+| Token web | Claro | Oscuro | Rol |
+|---|---|---|---|
+| `--fondo` | `#F5F0E6` | `#160708` | Crema / negro bordó: fondo de la app |
+| `--sup` | `#FCFAF5` | `#221012` | Hueso: tarjetas y paneles |
+| `--sup-2` | `#EDE5D6` | `#2E1A1B` | Arena: lo hundido dentro de una tarjeta, chips |
+| `--linea` | `#E2D8C6` | `#3D2627` | Separadores |
+| `--tinta` | `#241A17` | `#F3EAE0` | Texto principal |
+| `--gris` | `#6B5D52` | `#B8A79C` | Texto secundario (marrón, no gris frío) |
+| `--borde-control` | `#8C7B6B` | `#8A706B` | Borde de lo que se toca |
+| `--club` | `#D9122E` | `#D9122E` | Rojo vivo: escudo y acentos grandes |
+| `--club-texto` | `#A80519` | `#EE7C80` | Rojo profundo: texto y bordes rojos chicos |
+| `--club-cl` | `#F8E1DC` | `#3F1418` | Fondo suave de una opción elegida |
+| `--cereza` | `#6D0317` | `#6D0317` | Piezas fuertes secundarias |
+| `--bordo` | `#250104` | `#0E0304` | Menú y pieza fuerte de la pantalla (entrenamiento de hoy) |
+| `--tomate` | `#E13A26` | `#E13A26` | Gráficos y etiquetas |
+| `--quemado` | `#C2410C` | `#C2410C` | Gráficos y etiquetas |
+| `--caramelo` | `#B5713A` | `#B5713A` | Gráficos y etiquetas |
+| `--cuero` | `#7A4B32` | `#7A4B32` | Gráficos y etiquetas |
+| `--ambar` | `#F2B33D` | `#F2B33D` | Dato destacado: récord, mejor marca, objetivo cumplido |
+| `--sol` | `#FEED65` | `#FEED65` | Dato destacado sobre fondo oscuro |
+| `--lima` | `#CDF73D` | `#CDF73D` | **Solo** la acción principal de la pantalla, con letra `--sobre-lima` (`#250104`). Nunca texto suelto ni el mapa de calor |
+| `--sube` / `--sube-fondo` | `#126B45` / `#E6EFE2` | `#7BCB98` / `#1C2B21` | Mejoró |
+| `--baja` / `--baja-fondo` | `#8A5409` / `#F7EAD5` | `#E0A94F` / `#33230F` | A reforzar |
+
+Letras: Barlow Condensed para títulos y cifras grandes, DM Sans para el texto (reemplaza a Inter en `web/`), IBM Plex
+Mono para tablas de números. Las reglas duras de movimiento y velocidad de arriba valen igual para `web/`.

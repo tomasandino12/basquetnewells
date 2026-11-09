@@ -5,48 +5,43 @@ import { describe, expect, it } from 'vitest';
 // Se lee el archivo tal cual: con `?raw` Vitest entrega el CSS vacío.
 const css = readFileSync(new URL('./estilos.css', import.meta.url), 'utf8');
 const diseno = readFileSync(new URL('../../DESIGN.md', import.meta.url), 'utf8');
+const seccion = diseno.slice(diseno.indexOf('# Sistema de la app nueva'));
 
 /** Valor de un token dentro de un bloque (`:root` o el del tema oscuro). */
 function token(bloque: 'claro' | 'oscuro', nombre: string): string | undefined {
   const inicio = css.indexOf(bloque === 'claro' ? ':root {' : "[data-tema='oscuro'] {");
   const texto = css.slice(inicio, css.indexOf('}', inicio));
-  return new RegExp(`${nombre}:\\s*([^;]+);`).exec(texto)?.[1].trim();
+  return new RegExp(`${nombre}:\s*([^;]+);`).exec(texto)?.[1].trim();
 }
 
-describe('tokens del tema contra DESIGN.md', () => {
-  // [token de web, token de DESIGN.md, valor que DESIGN.md documenta]
-  const claro: Array<[string, string, string]> = [
-    ['--club', '--club', '#D9122E'],
-    ['--club-osc', '--primario-osc', '#A00D22'],
-    ['--club-cl', '--primario-cl', '#FFEBEE'],
-    ['--fondo', '--papel', '#F3F1ED'],
-    ['--sup-2', '--fondo-chip', '#EFECE6'],
-    ['--linea', '--linea', '#DFDBD3'],
-    ['--tinta', '--tinta', '#131316'],
-    ['--gris', '--gris', '#6E6B66'],
-    ['--borde-control', '--borde-control', '#85817A'],
-    ['--sube', '--sube', '#15794F'],
-    ['--sube-fondo', '--sube-fondo', '#E1F0E9'],
-    ['--baja', '--baja', '#985E0C'],
-    ['--baja-fondo', '--baja-fondo', '#F6ECD9'],
-  ];
+/** Filas de la tabla de DESIGN.md: token → [claro, oscuro]. Las de dos tokens (`a` / `b`) se separan. */
+function tabla(): Map<string, [string, string]> {
+  const filas = new Map<string, [string, string]>();
+  for (const linea of seccion.split('\n')) {
+    const celdas = linea.split('|').map((c) => c.trim());
+    if (celdas.length < 5 || !celdas[1].startsWith('`--')) continue;
+    const nombres = celdas[1].split('/').map((n) => n.replace(/`/g, '').trim());
+    const claros = celdas[2].split('/').map((v) => v.replace(/`/g, '').trim());
+    const oscuros = celdas[3].split('/').map((v) => v.replace(/`/g, '').trim());
+    nombres.forEach((n, i) => filas.set(n, [claros[i], oscuros[i]]));
+  }
+  return filas;
+}
 
-  it.each(claro)('%s (claro) vale lo que dice DESIGN.md', (mio, suyo, valor) => {
-    expect(token('claro', mio)).toBe(valor);
-    expect(diseno).toMatch(new RegExp(`\`${suyo}\`[^\\n]*${valor}`, 'i'));
+describe('tokens de web contra DESIGN.md (sistema de la app nueva)', () => {
+  const filas = [...tabla()];
+
+  it('la tabla de DESIGN.md tiene los tokens de la paleta', () => {
+    expect(filas.length).toBeGreaterThanOrEqual(20);
   });
 
-  it('el tema oscuro usa las superficies públicas de DESIGN.md', () => {
-    expect(token('oscuro', '--fondo')).toBe('#0D0D10');
-    expect(token('oscuro', '--sup')).toBe('#17171C');
-    expect(token('oscuro', '--linea')).toBe('#2B2B34');
-    expect(token('oscuro', '--club-texto')).toBe('#E34D62');
-    expect(token('oscuro', '--sube')).toBe('#4FD69C');
-    for (const v of ['#0D0D10', '#17171C', '#2B2B34', '#E34D62', '#4FD69C']) expect(diseno).toContain(v);
+  it.each(filas)('%s vale lo que dice DESIGN.md en los dos temas', (nombre, [claro, oscuro]) => {
+    expect(token('claro', nombre)?.toUpperCase()).toBe(claro.toUpperCase());
+    expect((token('oscuro', nombre) ?? token('claro', nombre))?.toUpperCase()).toBe(oscuro.toUpperCase());
   });
 
   it('el tema oscuro redefine los colores que cambian de rol', () => {
-    for (const t of ['--fondo', '--sup', '--tinta', '--gris', '--sube', '--baja', '--club-cl']) {
+    for (const t of ['--fondo', '--sup', '--tinta', '--gris', '--sube', '--baja', '--club-cl', '--bordo']) {
       expect(token('oscuro', t), t).toBeDefined();
     }
   });
