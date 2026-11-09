@@ -213,15 +213,15 @@ describe('Asistencia: cambiar de día y salir', () => {
     expect((await fila(/^Acosta/)).getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('con algo sin guardar, salir pregunta; «Seguir acá» se queda y «Salir» sale', async () => {
+  it('con algo sin guardar, salir por el menú de la app pregunta; «Seguir acá» se queda y «Salir» sale', async () => {
     const u = userEvent.setup();
     const { router } = abrir();
     await u.click(await fila(/^Acosta/));
-    await u.click(screen.getByRole('link', { name: 'Plantel' }));
+    await u.click(screen.getAllByRole('link', { name: 'Plantel' })[0]);
     expect((await screen.findAllByText(/Marcaste asistencia que todavía no guardaste/)).length).toBeGreaterThan(0);
     await u.click(screen.getByRole('button', { name: 'Seguir acá' }));
     expect(router.state.location.pathname).toBe('/asistencia/p-1');
-    await u.click(screen.getByRole('link', { name: 'Plantel' }));
+    await u.click(screen.getAllByRole('link', { name: 'Plantel' })[0]);
     await u.click(await screen.findByRole('button', { name: 'Salir' }));
     await waitFor(() => expect(router.state.location.pathname).toBe('/plantel/p-1'));
   });
@@ -230,7 +230,7 @@ describe('Asistencia: cambiar de día y salir', () => {
     const u = userEvent.setup();
     const { router } = abrir();
     await fila(/^Acosta/);
-    await u.click(screen.getByRole('link', { name: 'Plantel' }));
+    await u.click(screen.getAllByRole('link', { name: 'Plantel' }).slice(-1)[0]);
     await waitFor(() => expect(router.state.location.pathname).toBe('/plantel/p-1'));
   });
 

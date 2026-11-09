@@ -14,10 +14,4 @@ describe('Piezas', () => {
     expect(screen.getByText(/Presentes: 1 de 5/)).toBeTruthy();
   });
 
-  it('cambia el tema desde el botón y lo deja en <html>', async () => {
-    const u = userEvent.setup();
-    render(<Piezas />);
-    await u.click(screen.getByRole('button', { name: 'Pasar al tema oscuro' }));
-    expect(document.documentElement.dataset.tema).toBe('oscuro');
-  });
 });

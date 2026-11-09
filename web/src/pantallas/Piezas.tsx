@@ -1,5 +1,5 @@
-import { Inbox, Moon, Sun } from 'lucide-react';
-import { useEffect, useState, type ReactNode } from 'react';
+import { Inbox } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
 import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
 import { Campo } from '../components/ui/campo';
@@ -75,14 +75,9 @@ function Seccion({ titulo, children }: { titulo: string; children: ReactNode }) 
 
 /** Página interna que muestra cada pieza, en los dos temas, con datos inventados. */
 export function Piezas() {
-  const [oscuro, setOscuro] = useState(false);
   const [hoja, setHoja] = useState(false);
   const [marcas, setMarcas] = useState<Record<string, Marca>>({});
 
-  // El tema va en <html>: la hoja se dibuja en <body> y tiene que heredarlo.
-  useEffect(() => {
-    document.documentElement.dataset.tema = oscuro ? 'oscuro' : 'claro';
-  }, [oscuro]);
 
   const marca = (id: string): Marca => marcas[id] ?? { presente: false, aviso: null, lesion: false };
   const cambiar = (id: string, parte: Partial<Marca>) => setMarcas((m) => ({ ...m, [id]: { ...marca(id), ...parte } }));
@@ -96,14 +91,6 @@ export function Piezas() {
             <p className="text-sm text-gris">Piezas base · datos de ejemplo</p>
             <h1 className="font-titulo text-4xl leading-none font-semibold uppercase">Piezas</h1>
           </div>
-          <button
-            type="button"
-            onClick={() => setOscuro((o) => !o)}
-            aria-label={oscuro ? 'Pasar al tema claro' : 'Pasar al tema oscuro'}
-            className="grid size-11 place-items-center rounded-full border border-borde-control outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta"
-          >
-            {oscuro ? <Sun aria-hidden className="size-5" /> : <Moon aria-hidden className="size-5" />}
-          </button>
         </header>
 
         <Seccion titulo="Paleta">
