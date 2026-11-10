@@ -296,6 +296,17 @@ export function useGuardarPaso(clubId: string, clave: string, nombre: string) {
   );
 }
 
+/** Las sesiones ya cargadas de un plantel. Siempre fresco: al volver de medir tiene que estar la nueva. */
+export function useSesionesDeMedicion(clubId: string | undefined, plantelId: string | undefined) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['medir', 'sesiones', clubId, plantelId],
+    enabled: clubId !== undefined && plantelId !== undefined,
+    staleTime: 0,
+    queryFn: async () => (await cargar()).obtenerSesionesDeMedicion(clubId!, plantelId!),
+  });
+}
+
 export function useEntrar() {
   const cargar = useCargarRepositorio();
   const consultas = useQueryClient();

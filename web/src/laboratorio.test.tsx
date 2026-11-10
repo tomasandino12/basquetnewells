@@ -24,8 +24,8 @@ describe('menú de la app', () => {
     expect([...alcanzables].sort()).toEqual([...directas].sort());
   });
 
-  it('lleva a Hoy, Plantel, Asistencia y Físico sin ids en la dirección', () => {
-    expect(ENLACES_DEL_MENU.map((e) => e.a)).toEqual(['/hoy', '/plantel', '/asistencia', '/fisico']);
+  it('lleva a Hoy, Plantel, Asistencia, Físico y Medir sin ids en la dirección', () => {
+    expect(ENLACES_DEL_MENU.map((e) => e.a)).toEqual(['/hoy', '/plantel', '/asistencia', '/fisico', '/medir']);
   });
 
   it('los ejemplos no van en el menú: van aparte y lo dicen', async () => {

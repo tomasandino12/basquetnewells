@@ -12,6 +12,7 @@ import { Fisico } from './pantallas/Fisico';
 import { FisicoEscalones } from './pantallas/FisicoEscalones';
 import { FisicoSesion } from './pantallas/FisicoSesion';
 import { Hoy } from './pantallas/Hoy';
+import { Medir } from './pantallas/Medir';
 import { Piezas } from './pantallas/Piezas';
 import { HoyEjemplo } from './pantallas/HoyEjemplo';
 import { PlantelEjemplo } from './pantallas/PlantelEjemplo';
@@ -64,6 +65,7 @@ export const rutas: RouteObject[] = [
         { path: '/plantel/:jugador', element: <PantallaDeFicha /> },
         { path: '/asistencia', element: <Asistencia /> },
         { path: '/asistencia/historial', element: <AsistenciaHistorial /> },
+        { path: '/medir', element: <Medir /> },
         { path: '/fisico', element: <Fisico /> },
         { path: '/fisico/plan/:planId/sesion/:sesionId', element: <FisicoSesion /> },
         { path: '/fisico/plan/:planId/sesion/:sesionId/ejercicio/:lineaId', element: <FisicoEscalones /> },
