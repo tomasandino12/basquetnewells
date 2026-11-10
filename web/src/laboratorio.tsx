@@ -24,6 +24,7 @@ export const ENLACES_DEL_MENU: Enlace[] = [
   { a: '/plantel', nombre: 'Plantel', icono: Users },
   { a: '/asistencia', nombre: 'Asistencia', icono: ClipboardCheck },
   { a: '/fisico', nombre: 'Físico', icono: CalendarCheck },
+  { a: '/medir', nombre: 'Medir', icono: Ruler },
 ];
 
 /**
@@ -31,7 +32,6 @@ export const ENLACES_DEL_MENU: Enlace[] = [
  * ninguna función (H-175). Va con `?desde=nueva`: la de siempre no la manda de vuelta acá.
  */
 export const EN_LA_DE_SIEMPRE = [
-  { nombre: 'Medir', icono: Ruler },
   { nombre: 'Recursos', icono: PlaySquare },
   { nombre: 'Datos', icono: LineChart },
 ];
