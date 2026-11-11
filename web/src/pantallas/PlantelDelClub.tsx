@@ -76,7 +76,7 @@ interface Props {
   tomar?: string;
 }
 
-export function ContenidoDelPlantel({ clubId, plantelId, categoria, base = '/plantel', tomar = '/asistencia' }: Props) {
+export function ContenidoDelPlantel({ clubId, plantelId, categoria, base = '/plantel', tomar = '/plantel/asistencia' }: Props) {
   const hoy = hoyLocal() as string;
   const datos = useDatosDelPlantel(clubId, plantelId, hoy);
   const asistencia = useMarcarAsistencia(plantelId, hoy);
@@ -152,7 +152,7 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria, base = '/pla
               <nav aria-label="Acciones del plantel" className="flex flex-wrap gap-x-5">
                 {[
                   ['/hoy', 'Resumen de hoy'],
-                  ['/asistencia/historial', 'Historial de asistencia'],
+                  ['/plantel/asistencia/historial', 'Historial de asistencia'],
                   ['/fisico', 'Plan de fuerza'],
                 ].map(([a, t]) => (
                   <Link key={a} to={a} className={ENLACE_TEXTO}>

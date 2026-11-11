@@ -18,14 +18,16 @@ const caminos = (lista: RouteObject[]): string[] =>
 
 describe('menú de la app', () => {
   it('cada pantalla que se abre directo está en el menú o en los ejemplos', () => {
-    // El historial se abre desde Asistencia y desde el plantel, no desde el menú.
-    const directas = caminos(rutas).filter((c) => !['*', '/', '/entrar', '/asistencia/historial'].includes(c) && !c.includes(':'));
+    // La asistencia se toma desde el plantel (no tiene ítem propio) y las direcciones viejas sólo redirigen.
+    const directas = caminos(rutas).filter(
+      (c) => !['*', '/', '/entrar', '/asistencia', '/asistencia/historial', '/plantel/asistencia', '/plantel/asistencia/historial'].includes(c) && !c.includes(':'),
+    );
     const alcanzables = [...ENLACES_DEL_MENU.map((e) => e.a), ...EJEMPLOS.map((e) => e.a)];
     expect([...alcanzables].sort()).toEqual([...directas].sort());
   });
 
-  it('lleva a Hoy, Plantel, Asistencia, Físico y Medir sin ids en la dirección', () => {
-    expect(ENLACES_DEL_MENU.map((e) => e.a)).toEqual(['/hoy', '/plantel', '/asistencia', '/fisico', '/medir']);
+  it('lleva a Hoy, Plantel, Físico y Medir sin ids en la dirección; la asistencia se toma desde Plantel', () => {
+    expect(ENLACES_DEL_MENU.map((e) => e.a)).toEqual(['/hoy', '/plantel', '/fisico', '/medir']);
   });
 
   it('los ejemplos no van en el menú: van aparte y lo dicen', async () => {

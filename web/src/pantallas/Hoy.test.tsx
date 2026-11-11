@@ -42,14 +42,14 @@ describe('Hoy: encabezado y accesos', () => {
     expect(screen.getByRole('status')).toBeTruthy();
     expect(await screen.findByRole('heading', { level: 1, name: /Buen día|Buenas tardes|Buenas noches/ })).toBeTruthy();
     expect(await screen.findByText('Entrenamiento de hoy')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Tomar asistencia' }).getAttribute('href')).toBe('/asistencia');
+    expect(screen.getByRole('link', { name: 'Tomar asistencia' }).getAttribute('href')).toBe('/plantel/asistencia');
   });
 
   it('«Tomar asistencia» lleva a la toma del día', async () => {
     const u = userEvent.setup();
     const { router } = abrir();
     await u.click(await screen.findByRole('link', { name: 'Tomar asistencia' }));
-    expect(router.state.location.pathname).toBe('/asistencia');
+    expect(router.state.location.pathname).toBe('/plantel/asistencia');
   });
 
   it('desde el plantel se llega al resumen de hoy', async () => {

@@ -1,4 +1,4 @@
-import { Activity, ArrowUpRight, LogOut, CalendarCheck, ClipboardCheck, LineChart, Moon, MoreHorizontal, PlaySquare, Ruler, Sun, Users, type LucideIcon } from 'lucide-react';
+import { Activity, ArrowUpRight, LogOut, CalendarCheck,LineChart, Moon, MoreHorizontal, PlaySquare, Ruler, Sun, Users, type LucideIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import escudo from '../../public/escudo.png';
@@ -22,7 +22,6 @@ interface Enlace {
 export const ENLACES_DEL_MENU: Enlace[] = [
   { a: '/hoy', nombre: 'Hoy', icono: Activity },
   { a: '/plantel', nombre: 'Plantel', icono: Users },
-  { a: '/asistencia', nombre: 'Asistencia', icono: ClipboardCheck },
   { a: '/fisico', nombre: 'Físico', icono: CalendarCheck },
   { a: '/medir', nombre: 'Medir', icono: Ruler },
 ];

@@ -162,7 +162,7 @@ function Entrenamiento({ categoria, plantelId }: { categoria: string; plantelId:
           <p className="font-mono text-xs tracking-wide uppercase opacity-75">Entrenamiento de hoy</p>
           <p className="mt-1 truncate font-titulo text-4xl leading-none font-bold tracking-tight">{categoria}</p>
         </div>
-        <Link to={`/asistencia`} className={cn(claseBoton(), 'self-start sm:self-auto')}>
+        <Link to={`/plantel/asistencia`} className={cn(claseBoton(), 'self-start sm:self-auto')}>
           Tomar asistencia
           <Flecha />
         </Link>

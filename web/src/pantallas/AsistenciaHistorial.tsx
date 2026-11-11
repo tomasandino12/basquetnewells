@@ -33,7 +33,7 @@ function Dias({ plantelId, categoria }: { plantelId: string; categoria: string }
   const hoy = hoyLocal() as string;
   const dias = useHistorialDeAsistencia(plantelId, hoy);
   const aviso = (useLocation().state as { aviso?: string } | null)?.aviso;
-  const historial = `/asistencia/historial`;
+  const historial = `/plantel/asistencia/historial`;
 
   return (
     <>
@@ -57,7 +57,7 @@ function Dias({ plantelId, categoria }: { plantelId: string; categoria: string }
               <Vacio
                 icono={ClipboardCheck}
                 titulo="Todavía no hay asistencia"
-                accion={<Link to={`/asistencia`} className="inline-flex min-h-11 items-center rounded-btn bg-club px-5 font-titulo text-lg font-semibold tracking-[.14em] text-sobre-club uppercase">Tomar asistencia</Link>}
+                accion={<Link to={`/plantel/asistencia`} className="inline-flex min-h-11 items-center rounded-btn bg-club px-5 font-titulo text-lg font-semibold tracking-[.14em] text-sobre-club uppercase">Tomar asistencia</Link>}
               >
                 Cuando tomes asistencia, cada entrenamiento aparece acá y podés bajar la planilla para el área.
               </Vacio>
@@ -70,7 +70,7 @@ function Dias({ plantelId, categoria }: { plantelId: string; categoria: string }
                     return (
                       <li key={d.id}>
                         <Link
-                          to={`/asistencia?fecha=${d.fecha}`}
+                          to={`/plantel/asistencia?fecha=${d.fecha}`}
                           state={{ volverA: historial }}
                           className="flex min-h-14 items-center justify-between gap-3 rounded-tarjeta border border-linea bg-sup px-4 shadow-tarjeta outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:border-tinta"
                         >
