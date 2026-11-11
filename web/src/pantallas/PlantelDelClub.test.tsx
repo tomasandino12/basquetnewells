@@ -368,6 +368,6 @@ describe('Plantel con datos: estados y permisos', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe('/hoy'));
     cleanup();
     abrir();
-    expect((await screen.findByRole('link', { name: /Tomar asistencia/ })).getAttribute('href')).toBe('/asistencia');
+    expect((await screen.findByRole('link', { name: /Tomar asistencia/ })).getAttribute('href')).toBe('/plantel/asistencia');
   });
 });

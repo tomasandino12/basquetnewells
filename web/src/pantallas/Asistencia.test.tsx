@@ -30,7 +30,7 @@ function repo(piso: Partial<Repositorio> = {}) {
   });
 }
 
-const abrir = (r: Repositorio = repo(), ruta = '/asistencia') => renderConDatos(rutas, { repo: r, ruta });
+const abrir = (r: Repositorio = repo(), ruta = '/plantel/asistencia') => renderConDatos(rutas, { repo: r, ruta });
 const lista = async () => within(await screen.findByRole('list', { name: 'Jugadores' }));
 const fila = async (nombre: RegExp) => (await lista()).getByRole('button', { name: nombre });
 const contador = () => screen.getByRole('status', { name: 'Presentes' });
@@ -117,7 +117,7 @@ describe('Asistencia: guardar', () => {
     await u.click(await fila(/^Acosta/));
     await u.click(guardar());
     expect(await screen.findByText('No se pudo guardar la asistencia.', { exact: false })).toBeTruthy();
-    expect(router.state.location.pathname).toBe('/asistencia');
+    expect(router.state.location.pathname).toBe('/plantel/asistencia');
     expect((await fila(/^Acosta/)).getAttribute('aria-pressed')).toBe('true');
     await u.click(guardar());
     await waitFor(() => expect(router.state.location.pathname).toBe('/plantel'));
@@ -189,14 +189,21 @@ describe('Asistencia: cambiar de día y salir', () => {
 
   it('abre el día que pide la dirección (?fecha=), que es como llega el historial', async () => {
     const obtenerEntrenamientos = vi.fn(async () => []);
-    abrir(repo({ obtenerEntrenamientos }), '/asistencia?fecha=2026-10-20');
+    abrir(repo({ obtenerEntrenamientos }), '/plantel/asistencia?fecha=2026-10-20');
     await screen.findByRole('list', { name: 'Jugadores' });
     expect(obtenerEntrenamientos).toHaveBeenCalledWith('p-1', '2026-10-20', '2026-10-20');
     expect((screen.getByLabelText('Día del entrenamiento') as HTMLInputElement).value).toBe('2026-10-20');
   });
 
+  it('la dirección de antes (/asistencia?fecha=…) redirige a Plantel y conserva el día', async () => {
+    const { router } = abrir(repo(), '/asistencia?fecha=2026-10-20');
+    await screen.findByRole('list', { name: 'Jugadores' });
+    expect(router.state.location.pathname).toBe('/plantel/asistencia');
+    expect((screen.getByLabelText('Día del entrenamiento') as HTMLInputElement).value).toBe('2026-10-20');
+  });
+
   it('un día que todavía no llegó se ignora y se toma hoy', async () => {
-    abrir(repo(), '/asistencia?fecha=2999-01-01');
+    abrir(repo(), '/plantel/asistencia?fecha=2999-01-01');
     await screen.findByRole('list', { name: 'Jugadores' });
     expect((screen.getByLabelText('Día del entrenamiento') as HTMLInputElement).value).toBe(HOY);
   });
@@ -220,7 +227,7 @@ describe('Asistencia: cambiar de día y salir', () => {
     await u.click(screen.getAllByRole('link', { name: 'Plantel' })[0]);
     expect((await screen.findAllByText(/Marcaste asistencia que todavía no guardaste/)).length).toBeGreaterThan(0);
     await u.click(screen.getByRole('button', { name: 'Seguir acá' }));
-    expect(router.state.location.pathname).toBe('/asistencia');
+    expect(router.state.location.pathname).toBe('/plantel/asistencia');
     await u.click(screen.getAllByRole('link', { name: 'Plantel' })[0]);
     await u.click(await screen.findByRole('button', { name: 'Salir' }));
     await waitFor(() => expect(router.state.location.pathname).toBe('/plantel'));
@@ -238,11 +245,11 @@ describe('Asistencia: cambiar de día y salir', () => {
     const u = userEvent.setup();
     const { router } = abrir(repo({
       obtenerEntrenamientos: async () => [{ id: 'e-1', fecha: '2026-10-20', hubo: true, filas: [{ jugadorId: 'j-1', estado: 'presente' }] }],
-    }), '/asistencia/historial');
+    }), '/plantel/asistencia/historial');
     await u.click(await screen.findByRole('link', { name: /de 1 presentes|1 de 1/ }));
     await u.click(await fila(/^Acosta/));
     await u.click(guardar());
-    await waitFor(() => expect(router.state.location.pathname).toBe('/asistencia/historial'));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/plantel/asistencia/historial'));
     expect(await screen.findByText('Asistencia guardada')).toBeTruthy();
   });
 });
@@ -388,6 +395,6 @@ describe('Asistencia: estados y quién la ve', () => {
     const u = userEvent.setup();
     const { router } = abrir();
     await u.click(await screen.findByRole('link', { name: 'Historial' }));
-    await waitFor(() => expect(router.state.location.pathname).toBe('/asistencia/historial'));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/plantel/asistencia/historial'));
   });
 });

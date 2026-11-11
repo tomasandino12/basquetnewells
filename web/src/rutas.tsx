@@ -49,6 +49,11 @@ export function RequiereSesion() {
   );
 }
 
+/** Mantiene ?fecha=… al mudar una dirección vieja. */
+function RedirigirConBusqueda({ a }: { a: string }) {
+  return <Navigate to={{ pathname: a, search: useLocation().search }} replace />;
+}
+
 export const rutas: RouteObject[] = [
   // El menú (laboratorio.tsx) va en todas: así se llega a cada pantalla sin saberse la dirección.
   { element: <Marco />, children: [
@@ -63,8 +68,12 @@ export const rutas: RouteObject[] = [
         { path: '/hoy', element: <Hoy /> },
         { path: '/plantel', element: <PlantelDelClub /> },
         { path: '/plantel/:jugador', element: <PantallaDeFicha /> },
-        { path: '/asistencia', element: <Asistencia /> },
-        { path: '/asistencia/historial', element: <AsistenciaHistorial /> },
+        // La asistencia se toma desde el plantel: la toma (de hoy o de otro día) y el historial
+        // cuelgan de /plantel. Las direcciones de antes (favoritos, enlaces) redirigen acá.
+        { path: '/plantel/asistencia', element: <Asistencia /> },
+        { path: '/plantel/asistencia/historial', element: <AsistenciaHistorial /> },
+        { path: '/asistencia', element: <RedirigirConBusqueda a="/plantel/asistencia" /> },
+        { path: '/asistencia/historial', element: <RedirigirConBusqueda a="/plantel/asistencia/historial" /> },
         { path: '/medir', element: <Medir /> },
         { path: '/fisico', element: <Fisico /> },
         { path: '/fisico/plan/:planId/sesion/:sesionId', element: <FisicoSesion /> },

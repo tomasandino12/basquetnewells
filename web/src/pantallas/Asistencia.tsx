@@ -112,7 +112,7 @@ function Toma({ clubId, plantelId, categoria }: { clubId: string; plantelId: str
   return (
     <>
       <Link
-        to={`/asistencia/historial`}
+        to={`/plantel/asistencia/historial`}
         className="float-right inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta"
       >
         <History aria-hidden className="size-4" />

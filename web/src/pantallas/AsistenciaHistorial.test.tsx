@@ -30,7 +30,7 @@ function repo(piso: Partial<Repositorio> = {}) {
   });
 }
 
-const abrir = (r: Repositorio = repo()) => renderConDatos(rutas, { repo: r, ruta: '/asistencia/historial' });
+const abrir = (r: Repositorio = repo()) => renderConDatos(rutas, { repo: r, ruta: '/plantel/asistencia/historial' });
 
 describe('Asistencia: historial', () => {
   it('lista los días con cuántos vinieron de los que se tomaron, o por qué no hay número', async () => {
@@ -49,7 +49,7 @@ describe('Asistencia: historial', () => {
     const { router } = abrir();
     const filas = within(await screen.findByRole('list', { name: 'Entrenamientos' })).getAllByRole('link');
     await u.click(filas[0]);
-    await waitFor(() => expect(router.state.location.pathname).toBe('/asistencia'));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/plantel/asistencia'));
     expect(router.state.location.search).toBe('?fecha=2026-10-29');
   });
 
@@ -67,7 +67,7 @@ describe('Asistencia: historial', () => {
     const { router } = abrir(repo({ obtenerEntrenamientos: async () => [] }));
     expect(await screen.findByText('Todavía no hay asistencia')).toBeTruthy();
     await u.click(screen.getByRole('link', { name: 'Tomar asistencia' }));
-    await waitFor(() => expect(router.state.location.pathname).toBe('/asistencia'));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/plantel/asistencia'));
   });
 
   it('un solo día se cuenta en singular', async () => {
@@ -99,8 +99,8 @@ describe('Asistencia: el plantel lleva a las dos pantallas', () => {
   it('«Tomar asistencia» e «Historial de asistencia» salen del plantel', async () => {
     const u = userEvent.setup();
     const { router } = renderConDatos(rutas, { repo: repo({ obtenerJugadoresDelPlantel: async () => [] }), ruta: '/plantel' });
-    expect((await screen.findByRole('link', { name: /Tomar asistencia/ })).getAttribute('href')).toBe('/asistencia');
+    expect((await screen.findByRole('link', { name: /Tomar asistencia/ })).getAttribute('href')).toBe('/plantel/asistencia');
     await u.click(screen.getByRole('link', { name: 'Historial de asistencia' }));
-    await waitFor(() => expect(router.state.location.pathname).toBe('/asistencia/historial'));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/plantel/asistencia/historial'));
   });
 });
