@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CLAVE_SESION, useCargarRepositorio } from './contexto';
-import type { EscalonActual, EstadoAsistencia, MotivoFalta, PasoFuerza, Repositorio } from './repositorio';
+import type { DatosDePizarra, EscalonActual, EstadoAsistencia, MotivoFalta, PasoFuerza, Repositorio } from './repositorio';
 
 // Una consulta por dato, con la clave armada con lo que la hace distinta (el club, el plantel).
 // Los datos de un club nunca comparten clave con los de otro.

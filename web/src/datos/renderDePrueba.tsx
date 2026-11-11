@@ -41,6 +41,14 @@ export function repositorioInventado(piso: Partial<Repositorio> = {}): Repositor
     editarPaso: async (id, paso) => ({ id, clave: 'x', nombre: 'x', paso }),
     obtenerEscalonesActuales: async () => [],
     moverEscalon: async ({ jugadorId, kg }) => ({ jugadorId, kg, desde: new Date().toISOString() }),
+    obtenerEjercicios: async () => [],
+    obtenerEjercicio: async () => null,
+    obtenerNotas: async () => [],
+    obtenerVariaciones: async () => [],
+    listarJugadas: async () => [],
+    plantelesDeJugada: async () => [],
+    asignarJugada: async () => {},
+    crearJugada: async () => ({}),
     ...piso,
   };
 }
