@@ -1,12 +1,12 @@
-import { ArrowRight, ClipboardList, TriangleAlert } from 'lucide-react';
+import { ArrowRight, ClipboardList } from 'lucide-react';
 import { useState } from 'react';
 import { APP_DE_SIEMPRE } from '../clasica';
-import { Boton, claseBoton } from '../components/ui/button';
+import { Boton } from '../components/ui/button';
 import { Consulta } from '../components/ui/consulta';
 import { Vacio } from '../components/ui/estados';
 import { Hoja } from '../components/ui/sheet';
 import { useSesion } from '../datos/contexto';
-import { useSesionesDeMedicion } from '../datos/consultas';
+import { useJugadoresDeAsistencia, useSesionesDeMedicion } from '../datos/consultas';
 import type { SesionMedicion } from '../datos/repositorio';
 import { cn } from '../lib/cn';
 import {
@@ -16,22 +16,24 @@ import {
 import { usePlantelId } from '../plantel/activo';
 import { ConPlantel } from './ConPlantel';
 
-// Cada test tiene su franja de color (el color distingue, el nombre y el texto dicen cuál es). El botón
-// es negro en todas: la franja es la que lleva el color y no compite con la lima de otras pantallas.
-const COLOR_DE_TEST: Record<TipoDeTest, string> = {
-  tiro: 'bg-quemado text-white',
-  salto: 'bg-club-osc text-white',
-  sprint: 'bg-ambar text-sobre-lima',
-  yoyo: 'bg-cuero text-white',
+// Cada test lleva su color (el color distingue, el nombre dice cuál es): relleno del botón «Medir» y
+// cifra grande de la última medición. Los valores viven en estilos.css, con su par para cada tema.
+const COLOR_DE_TEST: Record<TipoDeTest, { boton: string; cifra: string }> = {
+  tiro: { boton: 'bg-test-tiro text-sobre-test-tiro', cifra: 'text-test-tiro-t' },
+  salto: { boton: 'bg-test-salto text-sobre-test-salto', cifra: 'text-test-salto-t' },
+  sprint: { boton: 'bg-test-sprint text-sobre-test-sprint', cifra: 'text-test-sprint-t' },
+  yoyo: { boton: 'bg-test-yoyo text-sobre-test-yoyo', cifra: 'text-test-yoyo-t' },
 };
 
 const ETIQUETA = 'font-mono text-xs tracking-wide text-gris uppercase';
 const plural = (n: number, uno: string, varios: string) => (n === 1 ? uno : varios);
+const diaMes = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 
 /**
  * Medir: elegir el test, retomar una sesión sin terminar y ver lo ya cargado. Los cuatro tests con su
  * cronómetro, el video y los pitidos todavía se hacen en la app de siempre (todavía no se mudaron):
- * cada franja lleva hasta allá.
+ * cada fila lleva hasta allá. En compu: a la izquierda título, sesión sin terminar y últimas sesiones;
+ * a la derecha la lista de tests.
  */
 export function Medir() {
   const plantelId = usePlantelId();
@@ -39,6 +41,7 @@ export function Medir() {
     <ConPlantel
       plantelId={plantelId}
       volver={{ a: '/hoy', texto: 'Hoy' }}
+      ancho="amplio"
       soloCuerpoTecnico="La coordinación ve las mediciones en la app anterior."
     >
       {(p) => <MedirDeLaCategoria {...p} />}
@@ -50,6 +53,7 @@ function MedirDeLaCategoria({ clubId, plantelId, categoria }: { clubId: string; 
   const { sesion } = useSesion();
   const usuarioId = sesion?.user.id;
   const sesiones = useSesionesDeMedicion(clubId, plantelId);
+  const chicos = useJugadoresDeAsistencia(clubId, plantelId);
   // Los borradores viven en el teléfono; `version` los vuelve a leer después de descartar uno.
   const [version, setVersion] = useState(0);
   const [aDescartar, setADescartar] = useState<TipoDeTest | null>(null);
@@ -70,22 +74,26 @@ function MedirDeLaCategoria({ clubId, plantelId, categoria }: { clubId: string; 
 
   return (
     <>
-      <header className="pt-2">
-        <p className={ETIQUETA}>Medir · {categoria}</p>
-        <h1 className="font-titulo text-4xl leading-none font-semibold uppercase">¿Qué vas a medir?</h1>
-      </header>
+      <div className="lg:grid lg:grid-cols-[minmax(0,21rem)_minmax(0,1fr)] lg:gap-x-12">
+        <div className="lg:col-start-1 lg:row-start-1">
+          <header className="pt-2">
+            <h1 className="font-titulo text-7xl leading-[.9] font-bold uppercase lg:text-8xl">Medir</h1>
+            <p className={`${ETIQUETA} mt-2`}>{categoria}</p>
+          </header>
 
-      {borradores.length > 0 && (
-        <section aria-label="Sesiones sin terminar" className="mt-4 flex flex-col gap-2">
-          {borradores.map(({ tipo, borrador }) => (
-            <Pendiente key={tipo} tipo={tipo} borrador={borrador} alDescartar={() => setADescartar(tipo)} />
-          ))}
-        </section>
-      )}
+          {borradores.length > 0 && (
+            <section aria-label="Sesiones sin terminar" className="mt-5 flex flex-col gap-3">
+              {borradores.map(({ tipo, borrador }) => (
+                <Pendiente key={tipo} tipo={tipo} borrador={borrador} alDescartar={() => setADescartar(tipo)} />
+              ))}
+            </section>
+          )}
+        </div>
 
-      <Consulta consulta={sesiones} errorGenerico="No se pudieron cargar las sesiones">
-        {(lista) => <Contenido lista={lista} />}
-      </Consulta>
+        <Consulta consulta={sesiones} errorGenerico="No se pudieron cargar las sesiones">
+          {(lista) => <Contenido lista={lista} chicos={chicos.data?.length} />}
+        </Consulta>
+      </div>
 
       <Hoja
         abierta={aDescartar !== null}
@@ -115,56 +123,69 @@ function textoDeDescartar(tipo: TipoDeTest | null, borrador: Borrador | null): s
   return `Se pierde ${cargados === 1 ? 'el jugador cargado' : `los ${cargados} jugadores cargados`} en ${nombre}. No se puede deshacer.`;
 }
 
+/** La sesión sin terminar: el bloque lima (la acción principal de la pantalla cuando hay algo para retomar). */
 function Pendiente({ tipo, borrador, alDescartar }: { tipo: TipoDeTest; borrador: Borrador; alDescartar: () => void }) {
   const cargados = cuantosCargados(borrador);
+  const total = Math.max(Object.keys(borrador.valores ?? {}).length, cargados);
+  const nombre = NOMBRE_DE_TEST[tipo];
   return (
-    <div role="status" className="flex gap-3 rounded-tarjeta border border-linea border-l-[5px] border-l-ambar bg-sup p-4">
-      <TriangleAlert aria-hidden className="mt-0.5 size-5 shrink-0 text-baja" />
-      <div className="min-w-0 flex-1">
-        <p className="font-semibold">Sesión sin terminar</p>
-        <p className="text-sm text-gris">
-          {NOMBRE_DE_TEST[tipo]} del {formatearFecha(borrador.fecha)} · {cargados} {plural(cargados, 'jugador cargado', 'jugadores cargados')}
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <a href={APP_DE_SIEMPRE} className={claseBoton({ variante: 'principal', tamano: 'chico' })}>
-            Continuar<span className="sr-only"> {NOMBRE_DE_TEST[tipo]}</span>
-          </a>
-          <Boton variante="contorno" tamano="chico" onClick={alDescartar}>
-            Descartar<span className="sr-only"> {NOMBRE_DE_TEST[tipo]}</span>
-          </Boton>
-        </div>
-      </div>
+    <div role="status" className="rounded-tarjeta bg-lima p-5 text-sobre-lima">
+      <p className="font-titulo text-3xl leading-none font-bold uppercase">Seguí la {nombre.toLowerCase()}</p>
+      <p className="cifra mt-3 font-titulo text-2xl leading-none font-semibold">{cargados} de {total} cargados</p>
+      <p className="mt-1 text-sm">
+        {nombre} del {formatearFecha(borrador.fecha)} · {cargados} {plural(cargados, 'jugador cargado', 'jugadores cargados')}
+      </p>
+      <a
+        href={APP_DE_SIEMPRE}
+        className="group mt-4 inline-flex min-h-11 items-center gap-2 rounded-btn bg-negro px-5 font-titulo text-lg font-semibold tracking-[.14em] text-sobre-negro uppercase outline-offset-2 focus-visible:outline-2 focus-visible:outline-sobre-lima"
+      >
+        Continuar<span className="sr-only"> {nombre}</span>
+        <ArrowRight aria-hidden strokeWidth={2.5} className="size-5 transition-transform duration-[var(--dur-2)] ease-[var(--ease-salida)] [@media(hover:hover)]:group-hover:translate-x-1" />
+      </a>
+      <button
+        type="button"
+        onClick={alDescartar}
+        className="mt-1 block min-h-11 text-sm font-medium underline underline-offset-4 outline-offset-2 focus-visible:outline-2 focus-visible:outline-sobre-lima"
+      >
+        Descartar esa sesión<span className="sr-only"> de {nombre}</span>
+      </button>
     </div>
   );
 }
 
-function Contenido({ lista }: { lista: SesionMedicion[] }) {
+const CUANTAS_ULTIMAS = 4;
+
+function Contenido({ lista, chicos }: { lista: SesionMedicion[]; chicos: number | undefined }) {
+  const [verTodas, setVerTodas] = useState(false);
   const ultimas = ultimaPorTipo(lista);
   const cuantas = (tipo: TipoDeTest) => lista.filter((s) => s.tipo === tipo).length;
+  const ordenadas = masNuevasPrimero(lista);
+  const visibles = verTodas ? ordenadas : ordenadas.slice(0, CUANTAS_ULTIMAS);
   return (
     <>
-      <section aria-label="Tests" className="mt-4">
-        <ul className="flex flex-col gap-2.5">
+      <section aria-label="Tests" className="mt-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-2">
+        <ul className="flex flex-col gap-3">
           {TESTS.map((t) => {
             const ultima = ultimas[t.tipo];
             const n = cuantas(t.tipo);
+            const color = COLOR_DE_TEST[t.tipo];
             return (
               <li key={t.tipo}>
                 <a
                   href={APP_DE_SIEMPRE}
-                  className={cn(
-                    'group flex min-h-24 items-center justify-between gap-3 rounded-tarjeta px-4 py-3 outline-offset-2 transition-transform duration-[var(--dur-1)] active:scale-[.985] focus-visible:outline-2 focus-visible:outline-tinta',
-                    COLOR_DE_TEST[t.tipo],
-                  )}
+                  className="group flex min-h-28 items-center justify-between gap-3 rounded-tarjeta border border-linea bg-sup px-4 py-4 outline-offset-2 transition-transform duration-[var(--dur-1)] active:scale-[.985] focus-visible:outline-2 focus-visible:outline-tinta sm:px-6"
                 >
-                  <span className="min-w-0">
-                    <span className="block font-titulo text-3xl leading-none font-semibold uppercase">{t.nombre}</span>
-                    <span className="mt-1 block text-sm opacity-90">{t.detalle}</span>
-                    <span className="mt-1 block font-mono text-xs tracking-wide uppercase opacity-90">
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-titulo text-3xl leading-none font-bold uppercase sm:text-4xl">{t.nombre}</span>
+                    <span className="mt-1.5 block text-sm text-gris">{t.detalle}</span>
+                    <span className="mt-1.5 block font-mono text-xs tracking-wide text-gris uppercase">
                       {ultima ? `${n} ${plural(n, 'sesión', 'sesiones')} · última ${formatearFecha(ultima.fecha)}` : 'Sin mediciones todavía'}
                     </span>
                   </span>
-                  <span aria-hidden className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-btn bg-negro px-4 font-titulo text-lg font-semibold tracking-[.14em] text-sobre-negro uppercase">
+                  <span aria-hidden className={cn('cifra shrink-0 font-titulo text-5xl leading-none font-bold sm:text-6xl', color.cifra)}>
+                    {ultima ? diaMes(ultima.fecha) : '—'}
+                  </span>
+                  <span aria-hidden className={cn('inline-flex min-h-11 shrink-0 items-center gap-2 rounded-btn px-4 font-titulo text-lg font-semibold tracking-[.14em] uppercase', color.boton)}>
                     Medir
                     <ArrowRight strokeWidth={2.5} className="size-5 transition-transform duration-[var(--dur-2)] ease-[var(--ease-salida)] [@media(hover:hover)]:group-hover:translate-x-1" />
                   </span>
@@ -175,15 +196,22 @@ function Contenido({ lista }: { lista: SesionMedicion[] }) {
         </ul>
       </section>
 
-      <section aria-label="Sesiones cargadas" className="mt-6">
-        <h2 className="mb-2 font-titulo text-2xl leading-none font-semibold">Sesiones cargadas</h2>
+      <section aria-label="Sesiones cargadas" className="mt-8 lg:col-start-1 lg:row-start-2 lg:mt-6">
+        <div className="mb-2 flex items-baseline justify-between gap-3">
+          <h2 className="font-titulo text-2xl leading-none font-bold uppercase">Últimas sesiones</h2>
+          {ordenadas.length > CUANTAS_ULTIMAS && (
+            <button type="button" onClick={() => setVerTodas((v) => !v)} className="min-h-11 text-sm font-medium text-club-texto underline underline-offset-4">
+              {verTodas ? 'Ver menos' : 'Ver todas'}
+            </button>
+          )}
+        </div>
         {lista.length === 0 ? (
           <Vacio icono={ClipboardList} titulo="Todavía no hay mediciones">
             La batería son 6 posiciones de 10 tiros cada una. Con una sola sesión ya podés ver desde dónde tira mejor cada chico; recién con la segunda empieza a verse si mejora.
           </Vacio>
         ) : (
           <ul className="flex flex-col gap-2">
-            {masNuevasPrimero(lista).map((s) => (
+            {visibles.map((s) => (
               <li key={s.id} className="flex min-h-14 items-center justify-between gap-3 rounded-tarjeta border border-linea bg-sup px-4 py-2">
                 <span className="font-semibold">{NOMBRE_DE_TEST[s.tipo] ?? s.tipo}</span>
                 <span className="text-sm text-gris">{formatearFecha(s.fecha)}</span>
@@ -191,7 +219,21 @@ function Contenido({ lista }: { lista: SesionMedicion[] }) {
             ))}
           </ul>
         )}
+        <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-linea pt-4">
+          <Cifra etiqueta="Sesiones" valor={String(lista.length)} />
+          <Cifra etiqueta="Chicos" valor={chicos === undefined ? '—' : String(chicos)} />
+          <Cifra etiqueta="Última" valor={ordenadas[0] ? diaMes(ordenadas[0].fecha) : '—'} />
+        </dl>
       </section>
     </>
+  );
+}
+
+function Cifra({ etiqueta, valor }: { etiqueta: string; valor: string }) {
+  return (
+    <div className="flex flex-col-reverse justify-end gap-1">
+      <dt className={ETIQUETA}>{etiqueta}</dt>
+      <dd className="cifra font-titulo text-4xl leading-none font-bold">{valor}</dd>
+    </div>
   );
 }
