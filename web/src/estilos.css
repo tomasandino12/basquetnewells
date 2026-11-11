@@ -57,6 +57,12 @@
   --calor-3: #EE8A2B; --calor-t-3: #241A17;
   --calor-4: #C2410C; --calor-t-4: #FFFFFF;
   --sombra: 0 1px 2px rgba(37, 1, 4, .05), 0 6px 16px -8px rgba(37, 1, 4, .12);
+  /* Color de cada test de Medir. El relleno del botón es igual en los dos temas (con su texto);
+     la cifra grande usa -t, que cambia con el tema para leerse sobre el fondo. */
+  --test-tiro: #6D0317;   --sobre-test-tiro: #FFFFFF;   --test-tiro-t: #6D0317;
+  --test-salto: #C2410C;  --sobre-test-salto: #FFFFFF;  --test-salto-t: #C2410C;
+  --test-sprint: #E6D3B1; --sobre-test-sprint: #161213; --test-sprint-t: #8A5409;
+  --test-yoyo: #F0A5B0;   --sobre-test-yoyo: #161213;   --test-yoyo-t: #B83A52;
   /* Grano de papel: estático, detrás de todo, se nota sólo si se lo busca. */
   --textura: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .15 0 0 0 0 .04 0 0 0 0 .03 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
   --textura-opacidad: .06;
@@ -89,6 +95,10 @@
   --calor-3: #D9751A; --calor-t-3: #121011;
   --calor-4: #FF9F43; --calor-t-4: #121011;
   --sombra: none;
+  --test-tiro-t: #E2707A;
+  --test-salto-t: #FF9F43;
+  --test-sprint-t: #E9D3A8;
+  --test-yoyo-t: #F2A6B3;
   --textura: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .95 0 0 0 0 .88 0 0 0 0 .8 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
   --textura-opacidad: .05;
 }
@@ -110,6 +120,18 @@
   --color-club-texto: var(--club-texto);
   --color-club-osc: var(--club-osc);
   --color-club-cl: var(--club-cl);
+  --color-test-tiro: var(--test-tiro);
+  --color-sobre-test-tiro: var(--sobre-test-tiro);
+  --color-test-tiro-t: var(--test-tiro-t);
+  --color-test-salto: var(--test-salto);
+  --color-sobre-test-salto: var(--sobre-test-salto);
+  --color-test-salto-t: var(--test-salto-t);
+  --color-test-sprint: var(--test-sprint);
+  --color-sobre-test-sprint: var(--sobre-test-sprint);
+  --color-test-sprint-t: var(--test-sprint-t);
+  --color-test-yoyo: var(--test-yoyo);
+  --color-sobre-test-yoyo: var(--sobre-test-yoyo);
+  --color-test-yoyo-t: var(--test-yoyo-t);
   --color-sube: var(--sube);
   --color-sube-fondo: var(--sube-fondo);
   --color-baja: var(--baja);
