@@ -24,6 +24,7 @@ export const ENLACES_DEL_MENU: Enlace[] = [
   { a: '/plantel', nombre: 'Plantel', icono: Users },
   { a: '/fisico', nombre: 'Físico', icono: CalendarCheck },
   { a: '/medir', nombre: 'Medir', icono: Ruler },
+  { a: '/recursos', nombre: 'Recursos', icono: PlaySquare },
 ];
 
 /**
@@ -31,7 +32,6 @@ export const ENLACES_DEL_MENU: Enlace[] = [
  * ninguna función (H-175). Va con `?desde=nueva`: la de siempre no la manda de vuelta acá.
  */
 export const EN_LA_DE_SIEMPRE = [
-  { nombre: 'Recursos', icono: PlaySquare },
   { nombre: 'Datos', icono: LineChart },
 ];
 
@@ -174,9 +174,9 @@ export function Marco() {
     });
 
   return (
-    <div className="min-h-svh lg:pl-60">
+    <div className="min-h-svh lg:pl-60 print:pl-0">
       {/* Compu */}
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r-2 border-club bg-negro px-3 py-5 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col print:hidden border-r-2 border-club bg-negro px-3 py-5 lg:flex">
         <div className="mb-8 flex items-center gap-3 px-3">
           <img src={escudo} alt="" width={36} height={36} className="size-9" />
           <p className="font-titulo text-xl leading-none font-bold tracking-wide text-sobre-negro uppercase">Semillero</p>
@@ -198,7 +198,7 @@ export function Marco() {
       </aside>
 
       {/* Celular: arriba el escudo y el tema; abajo el menú al alcance del pulgar. */}
-      <header className="sticky top-0 z-20 flex h-12 items-center justify-between border-b-2 border-club bg-negro pr-1 pl-4 lg:hidden">
+      <header className="sticky top-0 z-20 flex h-12 items-center print:hidden justify-between border-b-2 border-club bg-negro pr-1 pl-4 lg:hidden">
         <div className="flex items-center gap-2">
           <img src={escudo} alt="" width={24} height={24} className="size-6" />
           <p className="font-titulo text-lg leading-none font-bold tracking-wide text-sobre-negro uppercase">Semillero</p>
@@ -208,7 +208,7 @@ export function Marco() {
           <BotonTema tema={tema} alCambiar={cambiarTema} />
         </div>
       </header>
-      <nav aria-label="Menú de la app" className="fixed inset-x-0 bottom-0 z-20 border-t-2 border-club bg-negro pb-[env(safe-area-inset-bottom)] lg:hidden">
+      <nav aria-label="Menú de la app" className="fixed inset-x-0 bottom-0 z-20 print:hidden border-t-2 border-club bg-negro pb-[env(safe-area-inset-bottom)] lg:hidden">
         <ul className="flex">
           {enlaces.map((e) => (
             <li key={e.a} className="flex flex-1">

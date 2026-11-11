@@ -140,6 +140,82 @@ export interface EscalonActual {
   desde: string;
 }
 
+/** Un ejercicio de la biblioteca del club. */
+export interface EjercicioDeLista {
+  id: string;
+  titulo: string;
+  tema: string;
+  descripcion: string | null;
+  enlace: string | null;
+  material: string | null;
+  jugadores: number | null;
+  categorias: string[] | null;
+  creadoPor: string | null;
+  creadoEn: string;
+  /** Señal de presencia (no un contador): hay alguna nota de uso. */
+  tieneNotas: boolean;
+  cantidadVariaciones: number;
+}
+
+/** Un ejercicio pedido solo: trae la pizarra, que la lista no trae. */
+export interface EjercicioCompleto extends Omit<EjercicioDeLista, 'tieneNotas' | 'cantidadVariaciones'> {
+  pizarra: DatosDePizarra | null;
+}
+
+export interface NotaDeEjercicio {
+  id: string;
+  texto: string;
+  creadoPor: string | null;
+  creadoEn: string;
+}
+
+export interface VariacionDeEjercicio {
+  id: string;
+  nivel: number;
+  eje: string | null;
+  titulo: string;
+  descripcion: string | null;
+  creadoEn: string;
+}
+
+/** Una ficha de la pizarra: x e y van de 0 a 1 sobre la cancha. */
+export interface FichaDePizarra {
+  id: string;
+  tipo: 'ataque' | 'defensa' | 'cono' | 'fila' | 'entrenador';
+  numero?: number | null;
+  x: number;
+  y: number;
+  cantidad?: number;
+}
+
+export interface AccionDePizarra {
+  tipo: string;
+  ficha: string;
+  a?: string;
+  hasta?: { x: number; y: number };
+  control?: { x: number; y: number } | null;
+}
+
+/** El JSON de una jugada o de la pizarra de un ejercicio (modo 'ejercicio'). */
+export interface DatosDePizarra {
+  modo?: 'ejercicio';
+  cancha: 'media' | 'entera';
+  fichas: FichaDePizarra[];
+  pelota?: string | null;
+  pelotas?: (string | null)[];
+  pasos: { acciones: AccionDePizarra[]; nota?: string | null }[];
+}
+
+export interface JugadaDelClub {
+  id: string;
+  nombre: string;
+  tipo: string;
+  datos: DatosDePizarra;
+  creadoPor: string | null;
+  esMia: boolean;
+  actualizadoEn: string;
+}
+
 export interface Repositorio {
   obtenerPlanesFisicos(clubId: string, plantelId: string): Promise<PlanFisico[]>;
   obtenerPlanFisico(planId: string): Promise<SesionFisico[]>;
@@ -149,6 +225,15 @@ export interface Repositorio {
   obtenerEscalonesActuales(pasoId: string, jugadorIds: string[]): Promise<EscalonActual[]>;
   /** `kg` es el peso de destino, no «+1». */
   moverEscalon(datos: { clubId: string; jugadorId: string; pasoId: string; kg: number }): Promise<EscalonActual>;
+  obtenerEjercicios(clubId: string): Promise<EjercicioDeLista[]>;
+  obtenerEjercicio(clubId: string, ejercicioId: string): Promise<EjercicioCompleto | null>;
+  obtenerNotas(clubId: string, ejercicioId: string): Promise<NotaDeEjercicio[]>;
+  obtenerVariaciones(clubId: string, ejercicioId: string): Promise<VariacionDeEjercicio[]>;
+  listarJugadas(clubId: string): Promise<JugadaDelClub[]>;
+  plantelesDeJugada(clubId: string, jugadaId: string): Promise<string[]>;
+  /** Deja la jugada asignada exactamente a estos planteles. */
+  asignarJugada(clubId: string, jugadaId: string, plantelIds: string[]): Promise<void>;
+  crearJugada(datos: { clubId: string; nombre: string; tipo: string; datos: DatosDePizarra }): Promise<unknown>;
   obtenerSesionActual(): Promise<Sesion | null>;
   iniciarSesion(email: string, password: string): Promise<Sesion>;
   cerrarSesion(): Promise<void>;
