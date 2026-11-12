@@ -1,4 +1,4 @@
-import { Activity, ArrowUpRight, LogOut, CalendarCheck,LineChart, Moon, MoreHorizontal, PlaySquare, Ruler, Sun, Users, type LucideIcon } from 'lucide-react';
+import { Activity, ArrowUpRight, Building2, LogOut, CalendarCheck,LineChart, Moon, MoreHorizontal, PlaySquare, Ruler, Sun, Users, type LucideIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import escudo from '../../public/escudo.png';
@@ -6,6 +6,7 @@ import { ANCHO_DE_PAGINA } from './components/ui/pagina';
 import { cn } from './lib/cn';
 import { useSesion } from './datos/contexto';
 import { useSalir } from './datos/consultas';
+import { useEsCoordinador } from './coord/consultas';
 import { aplicarTema, guardarTema, leerTema, type Tema } from './tema';
 import { APP_DE_SIEMPRE } from './clasica';
 
@@ -13,6 +14,10 @@ interface Enlace {
   a: string;
   nombre: string;
   icono: LucideIcon;
+  /** Sólo lo ve quien coordina el club (la base es la que decide qué se puede leer: esto sólo evita un enlace que a un profe le daría error). */
+  soloCoordinacion?: boolean;
+  /** Para la barra de abajo del celular, donde el nombre entero no entra. */
+  corto?: string;
 }
 
 /**
@@ -26,6 +31,8 @@ export const ENLACES_DEL_MENU: Enlace[] = [
   { a: '/fisico', nombre: 'Físico', icono: CalendarCheck },
   { a: '/medir', nombre: 'Medir', icono: Ruler },
   { a: '/recursos', nombre: 'Recursos', icono: PlaySquare },
+  // Panorama, profes, finanzas y familias: el resto de coordinación cuelga de /coordinacion/….
+  { a: '/coordinacion', nombre: 'Coordinación', icono: Building2, soloCoordinacion: true, corto: 'Coord.' },
 ];
 
 /**
@@ -132,7 +139,14 @@ function ItemMenu({ enlace, compacto }: { enlace: Enlace; compacto?: boolean }) 
       {({ isActive }) => (
         <>
           <Icono aria-hidden className="size-5" strokeWidth={isActive ? 2.4 : 1.8} />
-          <span>{enlace.nombre}</span>
+          {compacto && enlace.corto ? (
+            <>
+              <span aria-hidden>{enlace.corto}</span>
+              <span className="sr-only">{enlace.nombre}</span>
+            </>
+          ) : (
+            <span>{enlace.nombre}</span>
+          )}
           <span
             aria-hidden
             className={cn(
@@ -163,7 +177,8 @@ function Ejemplos() {
 /** El marco de todas las pantallas: menú negro al costado en compu y abajo en el celular. */
 export function Marco() {
   const { pathname } = useLocation();
-  const enlaces = ENLACES_DEL_MENU;
+  const esCoordinador = useEsCoordinador();
+  const enlaces = ENLACES_DEL_MENU.filter((e) => !e.soloCoordinacion || esCoordinador);
   const [tema, setTema] = useState<Tema>(leerTema);
 
   useEffect(() => aplicarTema(tema), [tema]);

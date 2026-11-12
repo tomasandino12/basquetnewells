@@ -39,9 +39,12 @@ describe('un solo ancho para todas las pantallas', () => {
     const pantallas = [...rutas.matchAll(/element: <(\w+) \/>/g)].map((m) => m[1]).filter((n) => archivoDe.has(n));
     expect(pantallas.length).toBeGreaterThanOrEqual(8);
     const marcos = ['<Pagina', '<ConPlantel', '<MarcoDeHoy', '<MarcoDelPlantel'];
+    // RequiereCoordinacion pone <Pagina> en todos sus estados (cargando, sin permiso y con la pantalla).
     for (const nombre of pantallas) {
       // Las de pantallas/jugador/ se dibujan dentro de MarcoJugador (por <Outlet />): se comprueba abajo.
       if (archivoDe.get(nombre)!.startsWith('pantallas/jugador/') && nombre !== 'MarcoJugador') continue;
+      // Las de pantallas/coord/ se dibujan dentro de RequiereCoordinacion (por <Outlet />): se comprueba abajo.
+      if (archivoDe.get(nombre)!.startsWith('pantallas/coord/') && nombre !== 'RequiereCoordinacion') continue;
       const texto = fuentes[archivoDe.get(nombre)!];
       expect(texto, `${nombre}: no se encontró ${archivoDe.get(nombre)}`).toBeDefined();
       expect(marcos.some((m) => texto.includes(m)), `${nombre} no usa <Pagina>`).toBe(true);
@@ -54,6 +57,7 @@ describe('un solo ancho para todas las pantallas', () => {
       ['pantallas/Hoy.tsx', 'MarcoDeHoy'],
       ['pantallas/PlantelDelClub.tsx', 'MarcoDelPlantel'],
       ['pantallas/jugador/MarcoJugador.tsx', 'MarcoJugador'],
+      ['pantallas/coord/MarcoCoord.tsx', 'ConSesion'],
     ] as const) {
       const texto = fuentes[archivo];
       expect(texto.slice(texto.indexOf(`function ${marco}`)), marco).toContain('<Pagina');
