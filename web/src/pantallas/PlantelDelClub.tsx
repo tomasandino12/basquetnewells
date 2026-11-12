@@ -7,11 +7,12 @@ import { claseBoton, Flecha } from '../components/ui/button';
 import { Vacio } from '../components/ui/estados';
 import { Pagina } from '../components/ui/pagina';
 import { Consulta } from '../components/ui/consulta';
-import { useDatosDelPlantel, useMarcarAsistencia } from '../datos/consultas';
+import { useDatosDelPlantel } from '../datos/consultas';
 import { cn } from '../lib/cn';
 import { useCargaDeCategoria, usePlantelActivo } from '../plantel/activo';
 import { armarFilas, buscarEnFilas, type FilaPlantel } from '../plantel/filas';
 import { FilaDeLista } from './FilaDeLista';
+import { LeyendaDeAsistencia, ULTIMAS_EN_LISTA } from './TiraDeAsistencia';
 import { APP_DE_SIEMPRE } from '../clasica';
 
 const APP_ANTERIOR = APP_DE_SIEMPRE;
@@ -80,7 +81,6 @@ interface Props {
 export function ContenidoDelPlantel({ clubId, plantelId, categoria, base = '/plantel', tomar = '/plantel/asistencia' }: Props) {
   const hoy = hoyLocal() as string;
   const datos = useDatosDelPlantel(clubId, plantelId, hoy);
-  const asistencia = useMarcarAsistencia(plantelId, hoy);
   const navegar = useNavigate();
   const [texto, setTexto] = useState('');
   // La app de siempre abre la ficha de un jugador con ?jugador=<id>: se cambia por su nombre.
@@ -92,8 +92,6 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria, base = '/pla
 
   const pedida = pedido.get('jugador') && filas?.find((f) => f.id === pedido.get('jugador'));
   if (pedida) return <Navigate to={`${base}/${pedida.slug}`} replace />;
-
-  const marcarPresente = (f: FilaPlantel) => asistencia.mutate({ jugadorId: f.id, estado: f.hoy === 'presente' ? null : 'presente' });
 
   return (
     <Consulta consulta={datos} errorGenerico="No pudimos cargar el plantel">
@@ -199,6 +197,10 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria, base = '/pla
                     className="h-11 w-full rounded-campo border border-borde-control bg-sup pr-3 pl-9 text-base outline-offset-2 placeholder:text-gris focus-visible:outline-2 focus-visible:outline-tinta"
                   />
                 </label>
+                <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <p className="font-mono text-xs tracking-wide text-gris uppercase">Últimas {ULTIMAS_EN_LISTA} prácticas</p>
+                  <LeyendaDeAsistencia />
+                </div>
                 {visibles.length === 0 ? (
                   <p className="py-10 text-center text-gris">Ningún jugador coincide con la búsqueda.</p>
                 ) : (
@@ -208,17 +210,10 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria, base = '/pla
                         key={f.id}
                         fila={f}
                         elegida={false}
-                        guardando={asistencia.isPending}
                         alElegir={() => navegar(`${base}/${f.slug}`)}
-                        alPresente={marcarPresente}
                       />
                     ))}
                   </ul>
-                )}
-                {asistencia.isError && (
-                  <Aviso tono="error" titulo="No se pudo guardar la asistencia" className="mt-4">
-                    Revisá la conexión y volvé a tocar al jugador.
-                  </Aviso>
                 )}
               </>
             )}

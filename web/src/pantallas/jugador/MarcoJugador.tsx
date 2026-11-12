@@ -4,6 +4,7 @@ import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 import escudo from '../../../../public/escudo.png';
 import { irALaDeSiempre } from '../../clasica';
 import { Consulta } from '../../components/ui/consulta';
+import { Pagina, TOPE_DE_PAGINA } from '../../components/ui/pagina';
 import { useSesion } from '../../datos/contexto';
 import { useMiFicha } from '../../datos/consultasJugador';
 import { BotonSalir, BotonTema } from '../../laboratorio';
@@ -88,14 +89,14 @@ export function MarcoJugador() {
 
       <div key={pathname} className="entra pb-24">
         <RequiereJugador>
-          <main className="mx-auto w-full max-w-[64rem] px-4 py-5 sm:px-6">
+          <Pagina>
             <Outlet />
-          </main>
+          </Pagina>
         </RequiereJugador>
       </div>
 
       <nav aria-label="Menú del jugador" className="fixed inset-x-0 bottom-0 z-20 border-t-2 border-club bg-cereza pb-[env(safe-area-inset-bottom)] print:hidden">
-        <ul className="mx-auto flex max-w-[64rem]">
+        <ul className={`mx-auto flex w-full ${TOPE_DE_PAGINA}`}>
           {DESTINOS_DEL_JUGADOR.map((d) => (
             <li key={d.a} className="flex flex-1">
               <Pestana destino={d} />
@@ -117,14 +118,14 @@ function RequiereJugador({ children }: { children: ReactNode }) {
   if (estado === 'sin-sesion') return <Navigate to="/entrar" replace state={{ desde: lugar.pathname }} />;
   if (estado !== 'con-sesion') {
     return (
-      <main className="mx-auto w-full max-w-[64rem] px-4 py-5 sm:px-6">
+      <Pagina>
         <Consulta
           consulta={{ isPending: estado === 'cargando', isError: estado === 'error', error, data: undefined, refetch: reintentar }}
           errorGenerico="No pudimos revisar tu sesión"
         >
           {() => null}
         </Consulta>
-      </main>
+      </Pagina>
     );
   }
   return (
@@ -133,11 +134,11 @@ function RequiereJugador({ children }: { children: ReactNode }) {
         f ? (
           children
         ) : (
-          <main className="mx-auto w-full max-w-[64rem] px-4 py-5 sm:px-6">
+          <Pagina>
             <Vacio icono={Users} titulo="Esta cuenta no es de jugador" accion={<Link to="/hoy" className="text-sm font-semibold underline">Ir a Hoy</Link>}>
               Tu profe te habilita desde el plantel. Si sos del cuerpo técnico, tu pantalla es Hoy.
             </Vacio>
-          </main>
+          </Pagina>
         )
       }
     </Consulta>

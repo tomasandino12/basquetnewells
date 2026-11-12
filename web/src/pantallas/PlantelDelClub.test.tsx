@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { hoyLocal } from '@datos/antropometria.js';
 import { desmarcarSesionCerrada } from '../datos/errores';
 import { renderConDatos, repositorioInventado } from '../datos/renderDePrueba';
-import type { Repositorio } from '../datos/repositorio';
+import type { Entrenamiento, Repositorio } from '../datos/repositorio';
 import { rutas } from '../rutas';
 
 const HOY = hoyLocal() as string;
@@ -126,39 +126,65 @@ describe('Plantel con datos: encabezado y lista', () => {
   });
 });
 
-describe('Plantel con datos: asistencia dentro de la lista', () => {
-  it('el tilde marca presente con una sola fila y sin abrir la ficha', async () => {
+describe('Plantel con datos: últimas asistencias en la lista', () => {
+  const dia = (n: number) => {
+    const d = new Date(`${HOY}T12:00:00`);
+    d.setDate(d.getDate() - n);
+    return d.toISOString().slice(0, 10);
+  };
+  const entrenamientos = async (): Promise<Entrenamiento[]> => [
+    { id: 'e-1', fecha: dia(4), hubo: true, filas: [{ jugadorId: 'j-1', estado: 'presente' }, { jugadorId: 'j-2', estado: 'ausente' }] },
+    { id: 'e-2', fecha: dia(3), hubo: false, filas: [] },
+    { id: 'e-3', fecha: dia(2), hubo: true, filas: [{ jugadorId: 'j-1', estado: 'presente' }, { jugadorId: 'j-2', estado: 'justificada', motivo: 'estudio' }] },
+    { id: 'e-4', fecha: HOY, hubo: true, filas: [{ jugadorId: 'j-1', estado: 'ausente' }] },
+  ];
+
+  it('la lista ya no se marca desde acá: no hay tilde de presente ni «Sin marcar» por fila', async () => {
     simular(false);
-    const guardarAsistencia = vi.fn(async () => 'e-1');
-    const u = userEvent.setup();
-    abrir(repo({ guardarAsistencia }));
-    await filas();
-    await u.click(screen.getByRole('button', { name: 'Marcar presente a Benítez, Tomás' }));
-    await waitFor(() => expect(guardarAsistencia).toHaveBeenCalledTimes(1));
-    expect(guardarAsistencia).toHaveBeenCalledWith({ plantelId: 'p-1', fecha: HOY, hubo: true, filas: [{ jugadorId: 'j-2', estado: 'presente' }] });
-    expect(screen.queryByRole('dialog')).toBeNull();
+    abrir();
+    const lista = await filas();
+    expect(screen.queryByRole('button', { name: /Marcar presente a/ })).toBeNull();
+    for (const fila of lista) {
+      expect(within(fila).queryByText(/^(Presente|Faltó|Sin marcar)$/)).toBeNull();
+      expect(within(fila).queryByText(/^Avisó/)).toBeNull();
+    }
+    // La toma sigue en su botón de arriba.
+    expect(screen.getByRole('link', { name: /Tomar asistencia/ })).toBeTruthy();
   });
 
-  it('tocar el tilde de un presente lo desmarca', async () => {
+  /** Lo que dice la tira de un chico, en orden: «vino», «no hubo entrenamiento», «avisó (examen)»… */
+  const estados = (nombre: string) => {
+    const tira = screen.getByRole('img', { name: new RegExp(`^Últimas asistencias de ${nombre}: `) });
+    return (tira.getAttribute('aria-label') ?? '').split('; ').map((t) => t.replace(/^.*?\d+[^:]*: /, '').replace(/^.*: /, ''));
+  };
+
+  it('cada fila muestra cómo vino en sus últimas prácticas, una por día', async () => {
     simular(false);
-    const guardarAsistencia = vi.fn(async () => 'e-1');
-    const u = userEvent.setup();
-    abrir(repo({ guardarAsistencia }));
+    abrir(repo({ obtenerEntrenamientos: entrenamientos }));
     await filas();
-    const tilde = screen.getByRole('button', { name: 'Marcar presente a Acosta, Bruno' });
-    expect(tilde.getAttribute('aria-pressed')).toBe('true');
-    await u.click(tilde);
-    await waitFor(() => expect(guardarAsistencia).toHaveBeenCalled());
-    expect(guardarAsistencia).toHaveBeenCalledWith(expect.objectContaining({ filas: [{ jugadorId: 'j-1', estado: null }] }));
+    expect(estados('Benítez, Tomás')).toEqual(['faltó sin avisar', 'no hubo entrenamiento', 'avisó (estudio o examen)', 'no se tomó']);
+    expect(estados('Acosta, Bruno')).toEqual(['vino', 'no hubo entrenamiento', 'vino', 'faltó sin avisar']);
   });
 
-  it('si no se puede guardar, lo cuenta', async () => {
+  it('muestra como mucho las últimas 5 prácticas', async () => {
     simular(false);
-    const u = userEvent.setup();
-    abrir(repo({ guardarAsistencia: async () => { throw new Error('boom'); } }));
+    const muchas = async () => Array.from({ length: 8 }, (_, i) => ({
+      id: `e-${i}`,
+      fecha: dia(i + 1),
+      hubo: true,
+      filas: [{ jugadorId: 'j-1', estado: 'presente' as const }],
+    }));
+    abrir(repo({ obtenerEntrenamientos: muchas }));
     await filas();
-    await u.click(screen.getByRole('button', { name: 'Marcar presente a Benítez, Tomás' }));
-    expect(await screen.findByText('No se pudo guardar la asistencia')).toBeTruthy();
+    expect(screen.getByRole('img', { name: /^Últimas asistencias de Acosta, Bruno: / }).querySelectorAll('span')).toHaveLength(5);
+  });
+
+  it('un plantel sin entrenamientos tomados no inventa nada', async () => {
+    simular(false);
+    abrir(repo({ obtenerEntrenamientos: async () => [] }));
+    await filas();
+    expect(screen.queryByRole('img', { name: /Últimas asistencias de/ })).toBeNull();
+    expect(screen.getByLabelText('Sin entrenamientos de Acosta, Bruno')).toBeTruthy();
   });
 });
 

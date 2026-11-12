@@ -13,7 +13,8 @@ import { useDarAlta, useMarcarAsistencia, useRegistrarLesion, useSacarDelPlantel
 import { mensajeDeError } from '../datos/errores';
 import type { EstadoAsistencia, Lesion, MotivoFalta } from '../datos/repositorio';
 import { cn } from '../lib/cn';
-import { ESTADO_DE_BOTON, type DiaDeLaTira, type FilaPlantel } from '../plantel/filas';
+import { ESTADO_DE_BOTON, type FilaPlantel } from '../plantel/filas';
+import { TiraDeAsistencia } from './TiraDeAsistencia';
 import { APP_DE_SIEMPRE } from '../clasica';
 
 const SALIDA: [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -36,58 +37,6 @@ function Dato({ etiqueta: e, valor }: { etiqueta: string; valor: string }) {
     <div>
       <dt className="text-xs text-gris">{e}</dt>
       <dd className="cifra mt-0.5 font-titulo text-3xl leading-none font-bold">{valor}</dd>
-    </div>
-  );
-}
-
-/** Color de cada día en la tira: el mismo en la tira y en su leyenda. */
-const COLOR_DIA: Record<string, string> = {
-  presente: 'bg-sube',
-  justificada: 'bg-ambar',
-  ausente: 'bg-baja',
-  sin_entreno: 'bg-linea',
-};
-
-function textoDelDia(d: DiaDeLaTira) {
-  const cuando = diaMes(d.fecha) as string;
-  if (d.estado === 'sin_entreno') return `${cuando}: no hubo entrenamiento`;
-  if (d.estado === null) return `${cuando}: no se tomó`;
-  if (d.estado === 'justificada') return `${cuando}: avisó${d.motivo ? ` (${etiqueta(d.motivo).toLowerCase()})` : ''}`;
-  const base = `${cuando}: ${d.estado === 'presente' ? 'vino' : 'faltó sin avisar'}`;
-  return d.lesionado ? `${base}, lesionado` : base;
-}
-
-/** Los últimos entrenamientos de un vistazo: un rectángulo por día, del más viejo al más nuevo. */
-function TiraDeAsistencia({ dias }: { dias: DiaDeLaTira[] }) {
-  if (dias.length === 0) return null;
-  return (
-    <div>
-      <ol aria-label="Últimos entrenamientos" className="flex gap-1">
-        {dias.map((d) => (
-          <li
-            key={d.fecha}
-            title={textoDelDia(d)}
-            aria-label={textoDelDia(d)}
-            className={cn(
-              'h-3 flex-1 rounded-[2px]',
-              d.estado === null ? 'border border-dashed border-borde-control' : COLOR_DIA[d.estado],
-              d.lesionado && 'ring-2 ring-caramelo ring-offset-1 ring-offset-sup',
-            )}
-          />
-        ))}
-      </ol>
-      <div className="mt-1.5 flex justify-between font-mono text-[0.6875rem] text-gris">
-        <span>{diaMes(dias[0].fecha) as string}</span>
-        <span>{diaMes(dias[dias.length - 1].fecha) as string}</span>
-      </div>
-      <ul aria-hidden className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-gris">
-        {[['presente', 'Vino'], ['justificada', 'Avisó'], ['ausente', 'Faltó'], ['sin_entreno', 'Sin entreno']].map(([k, t]) => (
-          <li key={k} className="flex items-center gap-1.5">
-            <span className={cn('size-2.5 rounded-[2px]', COLOR_DIA[k])} />
-            {t}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

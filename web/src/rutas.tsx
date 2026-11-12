@@ -33,7 +33,7 @@ import { MisionesPartido } from './pantallas/MisionesPartido';
 /** La puerta de entrada: quien tiene cuenta de jugador va a lo suyo; el resto, a Hoy. */
 function Entrada() {
   const ficha = useMiFicha();
-  if (ficha.isPending) return <main className="mx-auto w-full max-w-[52rem] px-4 py-5"><Cargando filas={2} /></main>;
+  if (ficha.isPending) return <Pagina><Cargando filas={2} /></Pagina>;
   return <Navigate to={ficha.data ? '/jugador/fisico' : '/hoy'} replace />;
 }
 
