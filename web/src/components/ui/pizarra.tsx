@@ -48,19 +48,25 @@ function triangulo(cx: number, cy: number, r: number): string {
   return [[cx, cy - r - bajada], [cx - r, cy + r - bajada], [cx + r, cy + r - bajada]].map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
 }
 
+// Las líneas de la cancha miden lo mismo en cualquier tamaño de pantalla: un trazo que se estira con el dibujo
+// engorda y se ve desprolijo donde una línea se cruza con otra.
+const LINEA = { stroke: 'var(--borde-control)', strokeWidth: 1.5, fill: 'none', vectorEffect: 'non-scaling-stroke' } as const;
+
 function MitadDeCancha() {
   const { zona, circuloLibres, triple, aro, tablero } = formasDeUnExtremo();
   const { rectaIzq, rectaDer, arco } = triple;
-  const linea = { stroke: 'var(--borde-control)', strokeWidth: 1.5, fill: 'none' } as const;
+  const { cx, cy, r } = circuloLibres;
   return (
     <g>
-      <rect x={zona.x} y={zona.y} width={zona.ancho} height={zona.alto} {...linea} />
-      <circle cx={circuloLibres.cx} cy={circuloLibres.cy} r={circuloLibres.r} {...linea} />
-      <line x1={rectaIzq.x} y1={rectaIzq.y1} x2={rectaIzq.x} y2={rectaIzq.y2} {...linea} />
-      <line x1={rectaDer.x} y1={rectaDer.y1} x2={rectaDer.x} y2={rectaDer.y2} {...linea} />
-      <path d={`M ${rectaIzq.x} ${rectaIzq.y2} A ${arco.r} ${arco.r} 0 0 0 ${rectaDer.x} ${rectaDer.y2}`} {...linea} />
-      <circle cx={aro.cx} cy={aro.cy} r={aro.r} stroke="var(--quemado)" strokeWidth={2} fill="none" />
-      <line x1={tablero.x1} y1={tablero.y} x2={tablero.x2} y2={tablero.y} stroke="var(--tinta)" strokeWidth={2.5} />
+      <rect x={zona.x} y={zona.y} width={zona.ancho} height={zona.alto} {...LINEA} />
+      {/* Círculo de libres: la mitad que cae adentro de la pintura va punteada, así no cruza sus líneas. */}
+      <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} {...LINEA} strokeDasharray="4 4" />
+      <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 0 ${cx + r} ${cy}`} {...LINEA} />
+      <line x1={rectaIzq.x} y1={rectaIzq.y1} x2={rectaIzq.x} y2={rectaIzq.y2} {...LINEA} />
+      <line x1={rectaDer.x} y1={rectaDer.y1} x2={rectaDer.x} y2={rectaDer.y2} {...LINEA} />
+      <path d={`M ${rectaIzq.x} ${rectaIzq.y2} A ${arco.r} ${arco.r} 0 0 0 ${rectaDer.x} ${rectaDer.y2}`} {...LINEA} />
+      <circle cx={aro.cx} cy={aro.cy} r={aro.r} stroke="var(--quemado)" strokeWidth={2} fill="none" vectorEffect="non-scaling-stroke" />
+      <line x1={tablero.x1} y1={tablero.y} x2={tablero.x2} y2={tablero.y} stroke="var(--tinta)" strokeWidth={2.5} vectorEffect="non-scaling-stroke" />
     </g>
   );
 }
@@ -68,23 +74,23 @@ function MitadDeCancha() {
 function Cancha({ cancha }: { cancha: 'media' | 'entera' }) {
   const alto = altoDe(cancha);
   const { circuloCentral } = formasDeUnExtremo();
-  const linea = { stroke: 'var(--borde-control)', strokeWidth: 1.5, fill: 'none' } as const;
   return (
     <>
-      <rect x={-MARGEN} y={-MARGEN} width={W + MARGEN * 2} height={alto + MARGEN * 2} fill="var(--sup-2)" />
-      <rect x={0} y={0} width={W} height={alto} fill="var(--sup)" />
-      <rect x={1} y={1} width={W - 2} height={alto - 2} {...linea} />
+      {/* Un solo tono (la banda de afuera no es otro rectángulo) y el borde sobre la línea de fondo, sin un
+          segundo contorno pegado: antes la línea de fondo se veía doble. */}
+      <rect x={-MARGEN} y={-MARGEN} width={W + MARGEN * 2} height={alto + MARGEN * 2} fill="var(--sup)" />
+      <rect x={0} y={0} width={W} height={alto} {...LINEA} />
       <MitadDeCancha />
       {cancha === 'entera' ? (
         <>
           <g transform={`translate(0,${alto}) scale(1,-1)`}>
             <MitadDeCancha />
           </g>
-          <line x1={0} y1={alto / 2} x2={W} y2={alto / 2} {...linea} />
-          <circle cx={W / 2} cy={alto / 2} r={circuloCentral.r} {...linea} />
+          <line x1={0} y1={alto / 2} x2={W} y2={alto / 2} {...LINEA} />
+          <circle cx={W / 2} cy={alto / 2} r={circuloCentral.r} {...LINEA} />
         </>
       ) : (
-        <path d={`M ${W / 2 - circuloCentral.r} ${alto} A ${circuloCentral.r} ${circuloCentral.r} 0 0 1 ${W / 2 + circuloCentral.r} ${alto}`} {...linea} />
+        <path d={`M ${W / 2 - circuloCentral.r} ${alto} A ${circuloCentral.r} ${circuloCentral.r} 0 0 1 ${W / 2 + circuloCentral.r} ${alto}`} {...LINEA} />
       )}
     </>
   );
@@ -297,33 +303,11 @@ export function Pizarra({ datos, nosotrosDefiende = false, etiqueta, className }
   const nota = datos.pasos[k]?.nota;
   const animando = anim !== null;
 
+  const proporcion = (W + MARGEN * 2) / (alto + MARGEN * 2);
+
   return (
     <div className={cn('flex flex-col gap-3', className)}>
-      <svg
-        role="img"
-        aria-label={etiqueta}
-        viewBox={`${-MARGEN} ${-MARGEN} ${W + MARGEN * 2} ${alto + MARGEN * 2}`}
-        preserveAspectRatio="xMidYMid meet"
-        style={{ aspectRatio: `${W + MARGEN * 2} / ${alto + MARGEN * 2}` }}
-        className="mx-auto max-h-[70svh] w-full rounded-tarjeta border border-linea"
-      >
-        <defs>
-          <marker id={idFlecha} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M0,0 L10,5 L0,10 z" fill="var(--tinta)" />
-          </marker>
-        </defs>
-        <Cancha cancha={datos.cancha} />
-        {acciones.map((a, i) => (
-          <Trazo key={i} a={a} inicio={inicioDelPaso} cancha={datos.cancha} alto={alto} idFlecha={idFlecha} />
-        ))}
-        {datos.fichas.map((f) => (
-          <Ficha key={f.id} ficha={f} p={estado.posiciones.get(f.id) ?? f} alto={alto} nosotrosDefiende={nosotrosDefiende} />
-        ))}
-        {estado.pelotas.map((p, i) => (
-          <circle key={i} data-pelota cx={(p.x + 0.026) * W} cy={(p.y + 0.026) * alto} r={5} fill="var(--ambar)" stroke="var(--tinta)" strokeWidth={1.5} />
-        ))}
-      </svg>
-
+      {/* Los controles van arriba de la cancha: abajo quedaban fuera de la pantalla. */}
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -360,6 +344,32 @@ export function Pizarra({ datos, nosotrosDefiende = false, etiqueta, className }
           </div>
         )}
       </div>
+
+      <svg
+        role="img"
+        aria-label={etiqueta}
+        viewBox={`${-MARGEN} ${-MARGEN} ${W + MARGEN * 2} ${alto + MARGEN * 2}`}
+        preserveAspectRatio="xMidYMid meet"
+        // El marco abraza a la cancha: el ancho sigue al alto disponible, así no sobran bordes a los costados.
+        style={{ aspectRatio: `${W + MARGEN * 2} / ${alto + MARGEN * 2}`, width: `min(100%, calc(70svh * ${proporcion}))` }}
+        className="mx-auto block h-auto border border-linea bg-sup"
+      >
+        <defs>
+          <marker id={idFlecha} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--tinta)" />
+          </marker>
+        </defs>
+        <Cancha cancha={datos.cancha} />
+        {acciones.map((a, i) => (
+          <Trazo key={i} a={a} inicio={inicioDelPaso} cancha={datos.cancha} alto={alto} idFlecha={idFlecha} />
+        ))}
+        {datos.fichas.map((f) => (
+          <Ficha key={f.id} ficha={f} p={estado.posiciones.get(f.id) ?? f} alto={alto} nosotrosDefiende={nosotrosDefiende} />
+        ))}
+        {estado.pelotas.map((p, i) => (
+          <circle key={i} data-pelota cx={(p.x + 0.026) * W} cy={(p.y + 0.026) * alto} r={5} fill="var(--ambar)" stroke="var(--tinta)" strokeWidth={1.5} />
+        ))}
+      </svg>
       {nota && <p className="text-sm text-gris">{nota}</p>}
     </div>
   );

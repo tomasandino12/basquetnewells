@@ -39,6 +39,14 @@ describe('contraste', () => {
     ['--sube', '--sube-fondo'],
     ['--baja', '--baja-fondo'],
     ['--sobre-negro', '--negro'],
+    // Etiquetas de tema y de tipo en Recursos (recursos/colores.ts): letra oscura (--negro) o blanca (--sobre-club).
+    ['--negro', '--ambar'],
+    ['--negro', '--sol'],
+    ['--negro', '--caramelo'],
+    ['--sobre-club', '--cuero'],
+    ['--sobre-club', '--cereza'],
+    ['--sobre-club', '--quemado'],
+    ['--sup', '--tinta'],
   ];
 
   for (const tema of ['claro', 'oscuro'] as const) {

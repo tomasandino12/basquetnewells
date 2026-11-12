@@ -38,3 +38,13 @@ export function ChipBoton({ className, activo, children, ...props }: ComponentPr
     </button>
   );
 }
+
+/** Marca de categoría en una línea de lista: recta (2 px), en mayúsculas y con el color que le pongan. */
+export function Etiqueta({ className, ...props }: ComponentProps<'span'>) {
+  return (
+    <span
+      className={cn('inline-flex min-h-5 items-center rounded-[2px] px-1.5 font-mono text-[0.6875rem] font-semibold tracking-wide uppercase', className)}
+      {...props}
+    />
+  );
+}

@@ -69,7 +69,8 @@ describe('Recursos en los dos temas', () => {
   });
 
   it('la pizarra pinta con el piso y las líneas del tema, nunca negra sobre claro', () => {
-    expect(fuentes[0]).toContain('var(--sup-2)');
+    // Un solo tono para la cancha y su banda de afuera (antes la banda era otro rectángulo y la cancha parecía flotar).
+    expect(fuentes[0]).toContain('fill="var(--sup)"');
     expect(fuentes[0]).toContain('var(--borde-control)');
   });
 });

@@ -1,11 +1,11 @@
-import { BookOpen, Copy, Pencil, Printer, Search, Users } from 'lucide-react';
+import { BookOpen, Copy, Package, Pencil, Printer, Search, Tag, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { duplicarDatos, etiquetaDeTipo, nosotrosDefiende, pantallaAptaParaEditar } from '@datos/jugadas.js';
 import { LIMITE } from '@datos/limites.js';
 import { nombreDeEje, ordenarVariaciones } from '@datos/variaciones.js';
 import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
-import { Chip, ChipBoton } from '../components/ui/chip';
+import { Chip, ChipBoton, Etiqueta } from '../components/ui/chip';
 import { Consulta } from '../components/ui/consulta';
 import { Vacio } from '../components/ui/estados';
 import { Pizarra } from '../components/ui/pizarra';
@@ -13,15 +13,20 @@ import { Hoja } from '../components/ui/sheet';
 import { APP_DE_SIEMPRE } from '../clasica';
 import { useAsignarJugada, useDetalleDeEjercicio, useDuplicarJugada, useEjercicios, useJugadasDelClub, usePlantelesDeJugada } from '../datos/consultasRecursos';
 import { mensajeDeError } from '../datos/errores';
-import type { EjercicioDeLista, JugadaDelClub, PlantelDelClub } from '../datos/repositorio';
+import type { EjercicioDeLista, JugadaDelClub, NotaDeEjercicio, PlantelDelClub, VariacionDeEjercicio } from '../datos/repositorio';
 import { cn } from '../lib/cn';
 import { usePlantelActivo } from '../plantel/activo';
+import { colorDeTema, colorDeTipo } from '../recursos/colores';
 import { filtrarEjercicios, filtrarJugadas, nombreDeCopia, nombreDeTema, temasConEjercicios, textoDeVariaciones, tiposConJugadas } from '../recursos/biblioteca';
 import { Pagina } from '../components/ui/pagina';
 import { SinCategoria } from './PlantelDelClub';
 import { VideoDeEjercicio } from '../fisico/VideoDeEjercicio';
 
 type Pestana = 'ejercicios' | 'jugadas';
+
+// Un enlace con forma de botón recto y a la vista; el texto largo entra en una línea (el botón de mayúsculas lo partía).
+const BOTON_DE_ENLACE =
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-btn border border-borde-control px-3 text-sm font-semibold outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:border-tinta';
 
 const ENLACE_TEXTO =
   'inline-flex min-h-11 items-center text-sm font-semibold underline decoration-linea decoration-2 underline-offset-4 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:decoration-club';
@@ -43,7 +48,7 @@ export function Recursos() {
   return <Biblioteca clubId={activo.clubId} planteles={activo.visibles} />;
 }
 
-function Biblioteca({ clubId, planteles }: { clubId: string; planteles: PlantelDelClub[] }) {
+export function Biblioteca({ clubId, planteles }: { clubId: string; planteles: PlantelDelClub[] }) {
   const ejercicios = useEjercicios(clubId);
   const jugadas = useJugadasDelClub(clubId);
   const [pestana, setPestana] = useState<Pestana>('ejercicios');
@@ -139,7 +144,7 @@ function Biblioteca({ clubId, planteles }: { clubId: string; planteles: PlantelD
   );
 }
 
-/** Un ítem de la lista. El elegido va en rojo suave y con filete: se lee por forma, no sólo por color. */
+/** Un renglón de la lista: plano, sin tarjeta ni reborde. El elegido va con fondo rojo suave y letra más firme. */
 function Item({ elegido, alTocar, children }: { elegido: boolean; alTocar: () => void; children: React.ReactNode }) {
   return (
     <li>
@@ -148,8 +153,8 @@ function Item({ elegido, alTocar, children }: { elegido: boolean; alTocar: () =>
         aria-current={elegido ? 'true' : undefined}
         onClick={alTocar}
         className={cn(
-          'flex min-h-14 w-full flex-col items-start gap-1 rounded-tarjeta border border-l-[5px] px-3 py-2 text-left outline-offset-2 transition-transform duration-[var(--dur-1)] focus-visible:outline-2 focus-visible:outline-tinta active:scale-[.99]',
-          elegido ? 'border-club bg-club-cl' : 'border-linea border-l-linea bg-sup [@media(hover:hover)]:hover:border-borde-control',
+          'flex min-h-14 w-full flex-col items-start gap-1 px-3 py-2.5 text-left outline-offset-[-2px] focus-visible:outline-2 focus-visible:outline-tinta',
+          elegido ? 'bg-club-cl' : '[@media(hover:hover)]:hover:bg-sup-2',
         )}
       >
         {children}
@@ -158,12 +163,16 @@ function Item({ elegido, alTocar, children }: { elegido: boolean; alTocar: () =>
   );
 }
 
-function Filtros({ opciones, filtro, setFiltro }: { opciones: { id: string; nombre: string }[]; filtro: string | null; setFiltro: (f: string | null) => void }) {
+/** Todos los renglones en un solo bloque recto, separados por una línea. */
+const LISTA = 'flex flex-col divide-y divide-linea overflow-hidden rounded-btn border border-linea bg-sup';
+
+function Filtros({ opciones, filtro, setFiltro, color }: { opciones: { id: string; nombre: string }[]; filtro: string | null; setFiltro: (f: string | null) => void; color: (id: string) => string }) {
   return (
     <div role="group" aria-label="Filtrar" className="flex flex-wrap gap-x-1">
       <ChipBoton activo={filtro === null} onClick={() => setFiltro(null)}>Todos</ChipBoton>
       {opciones.map((o) => (
         <ChipBoton key={o.id} activo={filtro === o.id} onClick={() => setFiltro(o.id)}>
+          <span aria-hidden className={cn('mr-1.5 inline-block size-2 rounded-[1px]', color(o.id))} />
           {o.nombre}
         </ChipBoton>
       ))}
@@ -181,15 +190,15 @@ function ListaDeEjercicios({ todos, visibles, filtro, setFiltro, elegido, elegir
   }
   return (
     <>
-      <Filtros opciones={temasConEjercicios(todos)} filtro={filtro} setFiltro={setFiltro} />
-      <ul className="flex flex-col gap-2">
+      <Filtros opciones={temasConEjercicios(todos)} filtro={filtro} setFiltro={setFiltro} color={colorDeTema} />
+      <ul className={LISTA}>
         {visibles.map((e) => (
           <Item key={e.id} elegido={e.id === elegido} alTocar={() => elegir(e.id)}>
             <span className="flex w-full items-center gap-2">
-              <span className="font-mono text-[0.6875rem] tracking-wide text-gris uppercase">{nombreDeTema(e.tema)}</span>
-              {e.tieneNotas && <Chip className="ml-auto">✓ probado</Chip>}
+              <Etiqueta className={colorDeTema(e.tema)}>{nombreDeTema(e.tema)}</Etiqueta>
+              {e.tieneNotas && <span className="ml-auto text-xs font-semibold text-sube">✓ probado</span>}
             </span>
-            <span className="font-semibold">{e.titulo}</span>
+            <span className={cn('leading-snug', elegido === e.id ? 'font-bold' : 'font-semibold')}>{e.titulo}</span>
             {textoDeVariaciones(e.cantidadVariaciones) && <span className="text-xs text-gris">{textoDeVariaciones(e.cantidadVariaciones)}</span>}
           </Item>
         ))}
@@ -208,16 +217,16 @@ function ListaDeJugadas({ todas, visibles, filtro, setFiltro, elegido, elegir }:
   }
   return (
     <>
-      <Filtros opciones={tiposConJugadas(todas).map((t) => ({ id: t.clave, nombre: t.etiqueta }))} filtro={filtro} setFiltro={setFiltro} />
-      <ul className="flex flex-col gap-2">
+      <Filtros opciones={tiposConJugadas(todas).map((t) => ({ id: t.clave, nombre: t.etiqueta }))} filtro={filtro} setFiltro={setFiltro} color={colorDeTipo} />
+      <ul className={LISTA}>
         {visibles.map((j) => (
           <Item key={j.id} elegido={j.id === elegido} alTocar={() => elegir(j.id)}>
-            <span className="font-mono text-[0.6875rem] tracking-wide text-gris uppercase">{etiquetaDeTipo(j.tipo)}</span>
-            <span className="font-semibold">{j.nombre}</span>
-            <span className="text-xs text-gris">
-              {j.datos.pasos.length === 1 ? '1 paso' : `${j.datos.pasos.length} pasos`}
-              {j.esMia ? ' · Tuya' : ''}
+            <span className="flex w-full items-center gap-2">
+              <Etiqueta className={colorDeTipo(j.tipo)}>{etiquetaDeTipo(j.tipo)}</Etiqueta>
+              {j.esMia && <span className="ml-auto text-xs font-semibold text-gris">Tuya</span>}
             </span>
+            <span className={cn('leading-snug', elegido === j.id ? 'font-bold' : 'font-semibold')}>{j.nombre}</span>
+            <span className="text-xs text-gris">{j.datos.pasos.length === 1 ? '1 paso' : `${j.datos.pasos.length} pasos`}</span>
           </Item>
         ))}
       </ul>
@@ -229,85 +238,131 @@ function ListaDeJugadas({ todas, visibles, filtro, setFiltro, elegido, elegir }:
 
 function DeEjercicio({ clubId, ejercicio }: { clubId: string; ejercicio: EjercicioDeLista }) {
   const detalle = useDetalleDeEjercicio(clubId, ejercicio.id);
+  const conPizarra = Boolean(detalle.data?.ejercicio?.pizarra);
+  const textos = (notas: NotaDeEjercicio[], variaciones: VariacionDeEjercicio[]) => (
+    <>
+      {ejercicio.descripcion && (
+        <section aria-label="Cómo se hace">
+          <h3 className={SECCION}>Cómo se hace</h3>
+          <p className="text-base leading-relaxed whitespace-pre-line">{ejercicio.descripcion}</p>
+        </section>
+      )}
+      <Variaciones variaciones={variaciones} />
+      <Notas notas={notas} />
+    </>
+  );
   return (
     <>
       <section aria-label="Pizarra" className="order-1 min-w-0 lg:order-2">
         <h2 className="mb-3 font-titulo text-3xl leading-none font-semibold tracking-wide uppercase">{ejercicio.titulo}</h2>
         <Consulta consulta={detalle} errorGenerico="No pudimos cargar el ejercicio" filas={2}>
-          {({ ejercicio: completo }) =>
+          {({ ejercicio: completo, notas, variaciones }) =>
             completo?.pizarra ? (
               <Pizarra datos={completo.pizarra} etiqueta={`Pizarra del ejercicio: ${ejercicio.titulo}`} />
             ) : (
-              <p className="rounded-tarjeta border border-dashed border-borde-control p-6 text-center text-sm text-gris">Este ejercicio no tiene pizarra dibujada.</p>
+              // Sin pizarra, el centro se usa para lo que sí hay: la descripción, las variaciones y las notas.
+              <div className="flex flex-col gap-6">
+                <p className="text-sm text-gris">Este ejercicio no tiene pizarra dibujada.</p>
+                {textos(notas, variaciones)}
+              </div>
             )
           }
         </Consulta>
       </section>
-      <aside aria-label="Detalle" className="order-2 flex min-w-0 flex-col gap-4 lg:order-3 print:hidden">
-        <div className="flex flex-wrap items-center gap-2">
-          <Chip tono="activo">{nombreDeTema(ejercicio.tema)}</Chip>
-          {ejercicio.tieneNotas && <Chip>✓ probado</Chip>}
-        </div>
-        {ejercicio.descripcion && <p className="text-base whitespace-pre-line">{ejercicio.descripcion}</p>}
-        <dl className="flex flex-col gap-1 text-sm">
-          {ejercicio.material && <Dato clave="Material" valor={ejercicio.material} />}
-          {ejercicio.jugadores != null && <Dato clave="Jugadores" valor={String(ejercicio.jugadores)} />}
-          {ejercicio.categorias && ejercicio.categorias.length > 0 && <Dato clave="Categorías" valor={ejercicio.categorias.join(', ')} />}
-        </dl>
-        {ejercicio.enlace && <VideoDeEjercicio link={ejercicio.enlace} titulo={ejercicio.titulo} />}
-        <Consulta consulta={detalle} errorGenerico="No pudimos cargar las notas" filas={1}>
-          {({ notas, variaciones }) => (
-            <>
-              <section aria-label="Variaciones">
-                <h3 className="mb-2 font-titulo text-xl font-semibold tracking-wide uppercase">Variaciones</h3>
-                {variaciones.length === 0 ? (
-                  <p className="text-sm text-gris">Todavía no hay variaciones.</p>
-                ) : (
-                  <ol className="flex flex-col gap-2">
-                    {(ordenarVariaciones(variaciones) as typeof variaciones).map((v) => (
-                      <li key={v.id} className="rounded-tarjeta border border-linea bg-sup p-3 text-sm">
-                        <p className="font-semibold">
-                          Nivel {v.nivel}
-                          {v.eje ? ` · ${nombreDeEje(v.eje) as string}` : ''}
-                        </p>
-                        <p>{v.titulo}</p>
-                        {v.descripcion && <p className="mt-1 text-gris">{v.descripcion}</p>}
-                      </li>
-                    ))}
-                  </ol>
-                )}
-              </section>
-              <section aria-label="Notas de uso">
-                <h3 className="mb-2 font-titulo text-xl font-semibold tracking-wide uppercase">Notas de uso</h3>
-                {notas.length === 0 ? (
-                  <p className="text-sm text-gris">Nadie anotó nada todavía.</p>
-                ) : (
-                  <ul className="flex flex-col gap-2">
-                    {notas.map((n) => (
-                      <li key={n.id} className="rounded-tarjeta border border-linea bg-sup p-3 text-sm whitespace-pre-line">
-                        {n.texto}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-            </>
-          )}
-        </Consulta>
-        <a href={APP_DE_SIEMPRE} className={ENLACE_TEXTO}>
-          <Pencil aria-hidden className="mr-2 size-4" />
+      <aside aria-label="Detalle" className="order-2 flex min-w-0 flex-col gap-5 lg:order-3 print:hidden">
+        <a href={APP_DE_SIEMPRE} className={BOTON_DE_ENLACE}>
+          <Pencil aria-hidden className="size-4" />
           Editar o anotar en la app de siempre
         </a>
+        <div className="flex flex-wrap items-center gap-2">
+          <Etiqueta className={cn('min-h-7 px-2.5 text-xs', colorDeTema(ejercicio.tema))}>{nombreDeTema(ejercicio.tema)}</Etiqueta>
+          {ejercicio.tieneNotas && <span className="text-sm font-semibold text-sube">✓ probado</span>}
+        </div>
+        <dl className="flex flex-col gap-3">
+          {ejercicio.material && <Dato icono={Package} tono="bg-baja-fondo text-baja" clave="Material" valor={ejercicio.material} />}
+          {ejercicio.jugadores != null && <Dato icono={Users} tono="bg-sube-fondo text-sube" clave="Jugadores" valor={String(ejercicio.jugadores)} />}
+          {ejercicio.categorias && ejercicio.categorias.length > 0 && <Dato icono={Tag} tono="bg-club-cl text-club-texto" clave="Categorías" valor={ejercicio.categorias.join(', ')} />}
+        </dl>
+        {ejercicio.enlace && <VideoDeEjercicio link={ejercicio.enlace} titulo={ejercicio.titulo} />}
+        {conPizarra && (
+          <Consulta consulta={detalle} errorGenerico="No pudimos cargar las notas" filas={1}>
+            {({ notas, variaciones }) => textos(notas, variaciones)}
+          </Consulta>
+        )}
       </aside>
     </>
   );
 }
 
-function Dato({ clave, valor }: { clave: string; valor: string }) {
+const SECCION = 'mb-2 font-titulo text-xl leading-none font-semibold tracking-wide uppercase';
+
+/** Cuántas hay, al lado del título; vacía no ocupa lugar con un cartel grande. */
+function Variaciones({ variaciones }: { variaciones: VariacionDeEjercicio[] }) {
+  if (variaciones.length === 0) {
+    return (
+      <section aria-label="Variaciones">
+        <h3 className={cn(SECCION, 'text-gris')}>Variaciones</h3>
+        <p className="text-sm text-gris">Todavía no hay variaciones.</p>
+      </section>
+    );
+  }
   return (
-    <div className="flex gap-2">
-      <dt className="w-24 shrink-0 text-gris">{clave}</dt>
-      <dd className="min-w-0">{valor}</dd>
+    <section aria-label="Variaciones">
+      <h3 className={SECCION}>
+        Variaciones <span className="ml-1 font-mono text-xs font-medium text-gris">{variaciones.length}</span>
+      </h3>
+      <ol className="flex flex-col divide-y divide-linea border-y border-linea">
+        {(ordenarVariaciones(variaciones) as VariacionDeEjercicio[]).map((v) => (
+          <li key={v.id} className="flex items-start gap-3 py-3 text-sm">
+            <Etiqueta className="mt-0.5 shrink-0 bg-tinta text-sup">Nivel {v.nivel}</Etiqueta>
+            <div className="min-w-0">
+              <p className="font-semibold">{v.titulo}</p>
+              {v.eje && <p className="font-mono text-xs tracking-wide text-gris uppercase">{nombreDeEje(v.eje) as string}</p>}
+              {v.descripcion && <p className="mt-1 text-gris">{v.descripcion}</p>}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function Notas({ notas }: { notas: NotaDeEjercicio[] }) {
+  if (notas.length === 0) {
+    return (
+      <section aria-label="Notas de uso">
+        <h3 className={cn(SECCION, 'text-gris')}>Notas de uso</h3>
+        <p className="text-sm text-gris">Nadie anotó nada todavía.</p>
+      </section>
+    );
+  }
+  return (
+    <section aria-label="Notas de uso">
+      <h3 className={SECCION}>
+        Notas de uso <span className="ml-1 font-mono text-xs font-medium text-gris">{notas.length}</span>
+      </h3>
+      <ul className="flex flex-col divide-y divide-linea border-y border-linea">
+        {notas.map((n) => (
+          <li key={n.id} className="py-3 text-sm whitespace-pre-line">
+            {n.texto}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** Un dato del ejercicio con su ícono de color: se reconoce sin leer la palabra. */
+function Dato({ icono: Icono, tono, clave, valor }: { icono: typeof Package; tono: string; clave: string; valor: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span aria-hidden className={cn('grid size-9 shrink-0 place-items-center rounded-[2px]', tono)}>
+        <Icono className="size-[1.125rem]" />
+      </span>
+      <div className="min-w-0">
+        <dt className="font-mono text-[0.6875rem] tracking-wide text-gris uppercase">{clave}</dt>
+        <dd className="font-semibold">{valor}</dd>
+      </div>
     </div>
   );
 }
@@ -338,7 +393,7 @@ function DeJugada({ clubId, jugada, planteles }: { clubId: string; jugada: Jugad
       </section>
       <aside aria-label="Detalle" className="order-2 flex min-w-0 flex-col gap-4 lg:order-3 print:hidden">
         <div className="flex flex-wrap items-center gap-2">
-          <Chip tono="activo">{etiquetaDeTipo(jugada.tipo) as string}</Chip>
+          <Etiqueta className={cn('min-h-7 px-2.5 text-xs', colorDeTipo(jugada.tipo))}>{etiquetaDeTipo(jugada.tipo) as string}</Etiqueta>
           <Chip>{jugada.esMia ? 'Tuya' : 'De otro profe'}</Chip>
         </div>
         {copiada && <Aviso tono="ok" titulo="Jugada duplicada">Quedó en tu biblioteca como copia tuya.</Aviso>}

@@ -81,6 +81,7 @@ export const EJEMPLOS = [
   { a: '/piezas', nombre: 'Piezas' },
   { a: '/maqueta/plantel', nombre: 'Maqueta del plantel' },
   { a: '/maqueta/hoy', nombre: 'Maqueta de Hoy' },
+  { a: '/maqueta/recursos', nombre: 'Maqueta de Recursos' },
 ];
 
 /** Salir de la cuenta: estaba en la lista de planteles, que ya no existe. Sólo con sesión. */

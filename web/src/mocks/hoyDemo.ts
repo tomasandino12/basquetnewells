@@ -1,3 +1,4 @@
+import { PARA_RECURSOS } from './recursosDemo';
 import type { Entrenamiento, EstadoAsistencia, Lesion, MedicionTiro, MisionDePrevia, MotivoFalta, Repositorio } from '../datos/repositorio';
 
 // Nombres inventados para las maquetas: ninguno es de un chico real.
@@ -73,6 +74,7 @@ let misionesJugador: MisionDePrevia[] = [
 ];
 
 const PROPIO: Partial<Repositorio> = {
+  ...PARA_RECURSOS,
   obtenerSesionActual: async () => null,
   alCambiarAuth: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
   fueSalidaVoluntaria: () => true,
