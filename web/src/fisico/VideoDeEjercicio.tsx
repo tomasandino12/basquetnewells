@@ -10,14 +10,14 @@ import { enlaceBoton } from './estilos';
  * tarjeta traba un celular, por eso recién al tocar); cualquier otro link web se abre aparte; lo que
  * no es un link web no muestra nada. Es un control propio: tocarlo no abre los escalones.
  */
-export function VideoDeEjercicio({ link, titulo }: { link: string; titulo: string }) {
+export function VideoDeEjercicio({ link, titulo, alAbrir }: { link: string; titulo: string; alAbrir?: () => void }) {
   const [abierto, setAbierto] = useState(false);
   const id = idDeYoutube(link) as string | null;
 
   if (id) {
     return (
       <>
-        <button type="button" onClick={() => setAbierto(true)} className={`${enlaceBoton} min-h-11 gap-2 px-3 text-sm`}>
+        <button type="button" onClick={() => { alAbrir?.(); setAbierto(true); }} className={`${enlaceBoton} min-h-11 gap-2 px-3 text-sm`}>
           <Play aria-hidden className="size-4" />
           Ver video
         </button>
@@ -48,7 +48,7 @@ export function VideoDeEjercicio({ link, titulo }: { link: string; titulo: strin
   }
   if (esEnlaceWeb(link)) {
     return (
-      <a href={link} target="_blank" rel="noopener noreferrer" className={`${enlaceBoton} gap-2 px-3 text-sm`}>
+      <a href={link} target="_blank" rel="noopener noreferrer" onClick={alAbrir} className={`${enlaceBoton} gap-2 px-3 text-sm`}>
         <Play aria-hidden className="size-4" />
         Ver video
       </a>

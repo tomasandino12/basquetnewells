@@ -19,6 +19,22 @@ import { HoyEjemplo } from './pantallas/HoyEjemplo';
 import { PlantelEjemplo } from './pantallas/PlantelEjemplo';
 import { PlantelDelClub } from './pantallas/PlantelDelClub';
 import { ProveedorPlantelActivo } from './plantel/activo';
+import { Cargando } from './components/ui/estados';
+import { useMiFicha } from './datos/consultasJugador';
+import { JugadorFisico } from './pantallas/jugador/JugadorFisico';
+import { JugadorJugadas } from './pantallas/jugador/JugadorJugadas';
+import { JugadorProgreso } from './pantallas/jugador/JugadorProgreso';
+import { JugadorRecursos } from './pantallas/jugador/JugadorRecursos';
+import { JugadorSesion } from './pantallas/jugador/JugadorSesion';
+import { MarcoJugador } from './pantallas/jugador/MarcoJugador';
+import { MisionesPartido } from './pantallas/MisionesPartido';
+
+/** La puerta de entrada: quien tiene cuenta de jugador va a lo suyo; el resto, a Hoy. */
+function Entrada() {
+  const ficha = useMiFicha();
+  if (ficha.isPending) return <main className="mx-auto w-full max-w-[52rem] px-4 py-5"><Cargando filas={2} /></main>;
+  return <Navigate to={ficha.data ? '/jugador/fisico' : '/hoy'} replace />;
+}
 
 /**
  * Todo lo que lleva datos reales pasa por acá. Sin sesión, publicada, se entra en la app de
@@ -65,7 +81,7 @@ export const rutas: RouteObject[] = [
     { path: '/maqueta/plantel/:jugador', element: <FichaEjemplo /> },
     { path: '/maqueta/hoy', element: <HoyEjemplo /> },
     { element: <RequiereSesion />, children: [
-        { path: '/', element: <Navigate to="/hoy" replace /> },
+        { path: '/', element: <Entrada /> },
         { path: '/hoy', element: <Hoy /> },
         { path: '/plantel', element: <PlantelDelClub /> },
         { path: '/plantel/:jugador', element: <PantallaDeFicha /> },
@@ -77,12 +93,24 @@ export const rutas: RouteObject[] = [
         { path: '/asistencia/historial', element: <RedirigirConBusqueda a="/plantel/asistencia/historial" /> },
         { path: '/medir', element: <Medir /> },
         { path: '/recursos', element: <Recursos /> },
+        { path: '/misiones/:previaId', element: <MisionesPartido /> },
         { path: '/fisico', element: <Fisico /> },
         { path: '/fisico/plan/:planId/sesion/:sesionId', element: <FisicoSesion /> },
         { path: '/fisico/plan/:planId/sesion/:sesionId/ejercicio/:lineaId', element: <FisicoEscalones /> },
       ],
     },
     { path: '*', element: <Navigate to="/" replace /> },
+  ] },
+  // La vista del jugador tiene su propio marco (barra de abajo con sus cinco destinos) y no pasa por RequiereSesion:
+  // quien entra es un jugador, sin club ni categoría activa. El marco mismo pide la ficha y la sesión.
+  { element: <MarcoJugador />, children: [
+    { path: '/jugador', element: <Navigate to="/jugador/fisico" replace /> },
+    { path: '/jugador/fisico', element: <JugadorFisico /> },
+    { path: '/jugador/progreso', element: <JugadorProgreso /> },
+    { path: '/jugador/jugadas', element: <JugadorJugadas /> },
+    { path: '/jugador/recursos', element: <JugadorRecursos /> },
+    { path: '/jugador/sesion', element: <JugadorSesion /> },
+    { path: '/jugador/sesion/:sesionId', element: <JugadorSesion /> },
   ] },
 ];
 

@@ -206,6 +206,28 @@ function estadoAnimado(datos: DatosDePizarra, k: number, t: number): Estado {
   return { posiciones: e.posiciones, pelotas: e.pelotaEn ? [e.pelotaEn] : [] };
 }
 
+/** La jugada en miniatura: la cancha y las fichas al empezar, sin trazos ni controles. Decorativa (el nombre va al lado). */
+export function PizarraMini({ datos, nosotrosDefiende = false, className }: { datos: DatosDePizarra; nosotrosDefiende?: boolean; className?: string }) {
+  const alto = altoDe(datos.cancha);
+  const estado = estadoQuieto(datos, 0);
+  return (
+    <svg
+      aria-hidden
+      viewBox={`${-MARGEN} ${-MARGEN} ${W + MARGEN * 2} ${alto + MARGEN * 2}`}
+      preserveAspectRatio="xMidYMid meet"
+      className={cn('block w-full', className)}
+    >
+      <Cancha cancha={datos.cancha} />
+      {datos.fichas.map((f) => (
+        <Ficha key={f.id} ficha={f} p={estado.posiciones.get(f.id) ?? f} alto={alto} nosotrosDefiende={nosotrosDefiende} />
+      ))}
+      {estado.pelotas.map((p, i) => (
+        <circle key={i} cx={(p.x + 0.026) * W} cy={(p.y + 0.026) * alto} r={5} fill="var(--ambar)" stroke="var(--tinta)" strokeWidth={1.5} />
+      ))}
+    </svg>
+  );
+}
+
 const reducirMovimiento = () => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 interface Props {

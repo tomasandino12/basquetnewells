@@ -76,7 +76,7 @@ export const EJEMPLOS = [
 ];
 
 /** Salir de la cuenta: estaba en la lista de planteles, que ya no existe. Sólo con sesión. */
-function BotonSalir({ compacto }: { compacto?: boolean }) {
+export function BotonSalir({ compacto }: { compacto?: boolean }) {
   const { estado } = useSesion();
   const salir = useSalir();
   if (estado !== 'con-sesion') return null;
@@ -97,7 +97,7 @@ function BotonSalir({ compacto }: { compacto?: boolean }) {
   );
 }
 
-function BotonTema({ tema, alCambiar, className }: { tema: Tema; alCambiar: () => void; className?: string }) {
+export function BotonTema({ tema, alCambiar, className }: { tema: Tema; alCambiar: () => void; className?: string }) {
   const Icono = tema === 'oscuro' ? Sun : Moon;
   return (
     <button
