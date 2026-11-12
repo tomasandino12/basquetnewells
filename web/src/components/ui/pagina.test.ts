@@ -40,6 +40,8 @@ describe('un solo ancho para todas las pantallas', () => {
     expect(pantallas.length).toBeGreaterThanOrEqual(8);
     const marcos = ['<Pagina', '<ConPlantel', '<MarcoDeHoy', '<MarcoDelPlantel'];
     for (const nombre of pantallas) {
+      // Las de pantallas/jugador/ se dibujan dentro de MarcoJugador (por <Outlet />): se comprueba abajo.
+      if (archivoDe.get(nombre)!.startsWith('pantallas/jugador/') && nombre !== 'MarcoJugador') continue;
       const texto = fuentes[archivoDe.get(nombre)!];
       expect(texto, `${nombre}: no se encontró ${archivoDe.get(nombre)}`).toBeDefined();
       expect(marcos.some((m) => texto.includes(m)), `${nombre} no usa <Pagina>`).toBe(true);
@@ -51,6 +53,7 @@ describe('un solo ancho para todas las pantallas', () => {
       ['pantallas/ConPlantel.tsx', 'ConPlantel'],
       ['pantallas/Hoy.tsx', 'MarcoDeHoy'],
       ['pantallas/PlantelDelClub.tsx', 'MarcoDelPlantel'],
+      ['pantallas/jugador/MarcoJugador.tsx', 'MarcoJugador'],
     ] as const) {
       const texto = fuentes[archivo];
       expect(texto.slice(texto.indexOf(`function ${marco}`)), marco).toContain('<Pagina');
