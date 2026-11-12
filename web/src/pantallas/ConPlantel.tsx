@@ -3,6 +3,7 @@ import { useMemo, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { Consulta } from '../components/ui/consulta';
 import { Vacio } from '../components/ui/estados';
+import { Pagina } from '../components/ui/pagina';
 import { useMisClubes, useMisPlantelesAsignados, useMisRoles, usePlanteles } from '../datos/consultas';
 import { plantelesVisibles } from '../plantel/visibles';
 
@@ -13,15 +14,13 @@ interface Props {
   /** Qué dice el cuerpo técnico-only a la coordinación: los chicos no se muestran uno por uno (0018). */
   soloCuerpoTecnico: string;
   children: (plantel: { clubId: string; plantelId: string; categoria: string }) => ReactNode;
-  /** «amplio»: en compu usa dos columnas y más ancho (Medir). En celular no cambia nada. */
-  ancho?: 'amplio';
 }
 
 /**
  * Lo que comparten las pantallas de una categoría con datos de chicos: elegir el club, ver que la
  * categoría sea de quien mira y no mostrar nada individual a la coordinación sola.
  */
-export function ConPlantel({ plantelId, volver, soloCuerpoTecnico, children, ancho }: Props) {
+export function ConPlantel({ plantelId, volver, soloCuerpoTecnico, children }: Props) {
   const clubes = useMisClubes();
   const club = clubes.data?.[0];
   const planteles = usePlanteles(club?.id);
@@ -41,7 +40,7 @@ export function ConPlantel({ plantelId, volver, soloCuerpoTecnico, children, anc
   }, [planteles, roles, asignados, clubes.data, listo]);
 
   return (
-    <main className={`mx-auto w-full max-w-[24.375rem] px-4 pt-5 pb-0 sm:max-w-[40rem] sm:px-6${ancho === 'amplio' ? ' lg:max-w-[68rem]' : ''}`}>
+    <Pagina className="pb-0 lg:pb-0">
       <Link to={volver.a} className="mb-1 inline-flex min-h-11 items-center gap-1.5 text-sm text-gris outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
         <ArrowLeft aria-hidden className="size-4" />
         {volver.texto}
@@ -70,6 +69,6 @@ export function ConPlantel({ plantelId, volver, soloCuerpoTecnico, children, anc
           )
         }
       </Consulta>
-    </main>
+    </Pagina>
   );
 }

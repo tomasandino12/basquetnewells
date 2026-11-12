@@ -17,6 +17,7 @@ import type { EjercicioDeLista, JugadaDelClub, PlantelDelClub } from '../datos/r
 import { cn } from '../lib/cn';
 import { usePlantelActivo } from '../plantel/activo';
 import { filtrarEjercicios, filtrarJugadas, nombreDeCopia, nombreDeTema, temasConEjercicios, textoDeVariaciones, tiposConJugadas } from '../recursos/biblioteca';
+import { Pagina } from '../components/ui/pagina';
 import { SinCategoria } from './PlantelDelClub';
 import { VideoDeEjercicio } from '../fisico/VideoDeEjercicio';
 
@@ -34,9 +35,9 @@ export function Recursos() {
   const activo = usePlantelActivo();
   if (!activo) {
     return (
-      <main className="mx-auto w-full max-w-[24.375rem] px-4 py-5">
+      <Pagina>
         <SinCategoria />
-      </main>
+      </Pagina>
     );
   }
   return <Biblioteca clubId={activo.clubId} planteles={activo.visibles} />;
@@ -69,7 +70,7 @@ function Biblioteca({ clubId, planteles }: { clubId: string; planteles: PlantelD
   };
 
   return (
-    <main className="mx-auto w-full max-w-[24.375rem] px-4 py-5 sm:max-w-none sm:px-6 lg:max-w-[96rem] lg:px-8 lg:py-8">
+    <Pagina>
       <header className="mb-4 flex flex-wrap items-end justify-between gap-3 print:hidden">
         <h1 className="font-titulo text-4xl leading-none font-bold tracking-wide uppercase">Recursos</h1>
         <div role="tablist" aria-label="Biblioteca" className="flex rounded-campo border border-borde-control p-0.5">
@@ -134,7 +135,7 @@ function Biblioteca({ clubId, planteles }: { clubId: string; planteles: PlantelD
           </div>
         )}
       </div>
-    </main>
+    </Pagina>
   );
 }
 

@@ -41,7 +41,6 @@ export function Medir() {
     <ConPlantel
       plantelId={plantelId}
       volver={{ a: '/hoy', texto: 'Hoy' }}
-      ancho="amplio"
       soloCuerpoTecnico="La coordinación ve las mediciones en la app anterior."
     >
       {(p) => <MedirDeLaCategoria {...p} />}

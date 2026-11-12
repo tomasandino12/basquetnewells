@@ -2,6 +2,7 @@ import { Activity, ArrowUpRight, LogOut, CalendarCheck,LineChart, Moon, MoreHori
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import escudo from '../../public/escudo.png';
+import { ANCHO_DE_PAGINA } from './components/ui/pagina';
 import { cn } from './lib/cn';
 import { useSesion } from './datos/contexto';
 import { useSalir } from './datos/consultas';
@@ -148,7 +149,7 @@ function ItemMenu({ enlace, compacto }: { enlace: Enlace; compacto?: boolean }) 
 
 function Ejemplos() {
   return (
-    <nav aria-label="Pantallas de ejemplo" className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-3 px-4 py-6 text-xs text-gris sm:px-6">
+    <nav aria-label="Pantallas de ejemplo" className={cn(ANCHO_DE_PAGINA, 'flex flex-wrap items-center gap-x-3 py-6 text-xs text-gris')}>
       <span>Con datos de ejemplo:</span>
       {EJEMPLOS.map((e) => (
         <NavLink key={e.a} to={e.a} end className="underline decoration-linea underline-offset-4 aria-[current=page]:text-tinta [@media(hover:hover)]:hover:text-tinta">
