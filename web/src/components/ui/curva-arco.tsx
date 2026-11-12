@@ -1,12 +1,15 @@
-import { useId, useState } from 'react';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { fechaCorta, type PuntoDeCurva } from '../../hoy/resumen';
 
-const ANCHO = 320;
-const ALTO = 150;
-const IZQ = 30; // lugar para los porcentajes del eje
-const DER = 14;
-const ARRIBA = 30; // lugar para la etiqueta del punto elegido
-const ABAJO = 20; // lugar para las fechas
+// El dibujo se arma al ancho real de su tarjeta: así las letras y la línea miden siempre lo mismo
+// (un lienzo fijo estirado a 1000 px agrandaba todo ×3 y la curva se veía «zoomeada»).
+const ANCHO_INICIAL = 320; // hasta que se mide (y donde no hay medidas, como en las pruebas)
+const ALTO = 210;
+const IZQ = 40; // lugar para los porcentajes del eje
+const DER = 18;
+const ARRIBA = 38; // lugar para la etiqueta del punto elegido
+const ABAJO = 26; // lugar para las fechas
+const LETRA = 11;
 
 /**
  * El eje no arranca en 0: se ajusta a lo medido, con aire arriba y abajo, y cada línea lleva su
@@ -57,23 +60,46 @@ function suave(p: { x: number; y: number }[]): string {
  */
 export function CurvaArco({ serie }: { serie: PuntoDeCurva[] }) {
   const id = useId();
+  const dibujo = useRef<SVGSVGElement>(null);
+  const [ancho, setAncho] = useState(ANCHO_INICIAL);
+  useLayoutEffect(() => {
+    const el = dibujo.current;
+    if (!el) return;
+    const medir = () => {
+      const w = Math.round(el.getBoundingClientRect().width);
+      if (w > 0) setAncho(w);
+    };
+    medir();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observador = new ResizeObserver(medir);
+    observador.observe(el);
+    return () => observador.disconnect();
+  }, []);
   const n = serie.length;
   const [elegido, setElegido] = useState(n - 1);
   const resumen = serie.map((p) => `${fechaCorta(p.fecha)}: ${p.valor.pct}%`).join(', ');
   const { bajo, alto, marcas } = escala(serie.map((p) => p.valor.pct));
 
-  const x = (i: number) => (n === 1 ? (IZQ + ANCHO - DER) / 2 : IZQ + (i * (ANCHO - IZQ - DER)) / (n - 1));
+  const x = (i: number) => (n === 1 ? (IZQ + ancho - DER) / 2 : IZQ + (i * (ancho - IZQ - DER)) / (n - 1));
   const y = (pct: number) => ARRIBA + ((alto - pct) / (alto - bajo)) * (ALTO - ARRIBA - ABAJO);
   const puntos = serie.map((p, i) => ({ x: x(i), y: y(p.valor.pct) }));
   const linea = n > 1 ? suave(puntos) : '';
   const piso = ALTO - ABAJO;
-  const banda = n > 1 ? (ANCHO - IZQ - DER) / (n - 1) : ANCHO;
+  const banda = n > 1 ? (ancho - IZQ - DER) / (n - 1) : ancho;
   const sel = serie[Math.min(elegido, n - 1)];
   const ps = puntos[Math.min(elegido, n - 1)];
   const conFecha = (i: number) => n <= 7 || i === 0 || i === n - 1;
 
   return (
-    <svg role="img" aria-label={`Evolución del tiro de campo por batería. ${resumen}`} viewBox={`0 0 ${ANCHO} ${ALTO}`} className="w-full text-club-texto">
+    <svg
+      ref={dibujo}
+      role="img"
+      aria-label={`Evolución del tiro de campo por batería. ${resumen}`}
+      viewBox={`0 0 ${ancho} ${ALTO}`}
+      height={ALTO}
+      style={{ height: ALTO }}
+      className="block w-full text-club-texto"
+    >
       <defs>
         <linearGradient id={`${id}-area`} x1="0" x2="0" y1="0" y2="1">
           <stop offset="0" stopColor="currentColor" stopOpacity={0.24} />
@@ -83,8 +109,8 @@ export function CurvaArco({ serie }: { serie: PuntoDeCurva[] }) {
 
       {marcas.map((v) => (
         <g key={v} aria-hidden>
-          <line x1={IZQ} x2={ANCHO - DER} y1={y(v)} y2={y(v)} stroke="var(--tinta)" strokeOpacity={0.12} strokeDasharray="3 4" />
-          <text x={IZQ - 6} y={y(v) + 3} textAnchor="end" fontSize={8.5} fill="var(--gris)" className="font-mono">
+          <line x1={IZQ} x2={ancho - DER} y1={y(v)} y2={y(v)} stroke="var(--tinta)" strokeOpacity={0.12} strokeDasharray="3 4" />
+          <text x={IZQ - 6} y={y(v) + 4} textAnchor="end" fontSize={LETRA} fill="var(--gris)" className="font-mono">
             {v}%
           </text>
         </g>
@@ -96,14 +122,14 @@ export function CurvaArco({ serie }: { serie: PuntoDeCurva[] }) {
       {serie.map((p, i) => (
         <g key={p.fecha + i} aria-hidden>
           {conFecha(i) && (
-            <text x={puntos[i].x} y={ALTO - 5} textAnchor="middle" fontSize={8.5} fill="var(--gris)" className="font-mono">
+            <text x={puntos[i].x} y={ALTO - 6} textAnchor="middle" fontSize={LETRA} fill="var(--gris)" className="font-mono">
               {fechaCorta(p.fecha)}
             </text>
           )}
           <circle
             cx={puntos[i].x}
             cy={puntos[i].y}
-            r={i === elegido ? 5.5 : 3.5}
+            r={i === elegido ? 6 : 4}
             fill={p.valor.muestraChica ? 'var(--sup)' : 'currentColor'}
             stroke={i === elegido ? 'var(--sup)' : 'currentColor'}
             strokeWidth={i === elegido ? 2.5 : 1.5}
@@ -113,8 +139,8 @@ export function CurvaArco({ serie }: { serie: PuntoDeCurva[] }) {
 
       {/* La etiqueta del punto elegido: oscura, arriba del punto, sin taparlo. */}
       <g aria-hidden pointerEvents="none">
-        <rect x={Math.min(Math.max(ps.x - 24, 0), ANCHO - 48)} y={ps.y - 30} width={48} height={20} rx={5} fill="var(--tinta)" />
-        <text x={Math.min(Math.max(ps.x, 24), ANCHO - 24)} y={ps.y - 16} textAnchor="middle" fontSize={11} fontWeight={700} fill="var(--sup)" className="font-titulo">
+        <rect x={Math.min(Math.max(ps.x - 26, 0), ancho - 52)} y={ps.y - 34} width={52} height={24} rx={5} fill="var(--tinta)" />
+        <text x={Math.min(Math.max(ps.x, 26), ancho - 26)} y={ps.y - 17} textAnchor="middle" fontSize={14} fontWeight={700} fill="var(--sup)" className="font-titulo">
           {sel.valor.pct}%
         </text>
       </g>

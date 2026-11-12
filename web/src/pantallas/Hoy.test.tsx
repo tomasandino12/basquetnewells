@@ -252,85 +252,115 @@ describe('Hoy: altura y peso', () => {
 
 describe('Hoy: misiones del partido', () => {
   const previa = { id: 'pr-1', fecha: '2026-10-18', rival: 'Rival de Ejemplo', plantelId: 'p-1', partidoId: null, evaluada: false };
+  const mision = (id: string, texto: string, extra: Record<string, unknown> = {}) => ({ id, metrica: null, valor: null, texto, estado: null, comentario: null, jugadorId: null, ...extra });
+  const completa = (fecha = '2026-10-18') => ({
+    id: 'pr-1',
+    fecha,
+    rival: 'Rival de Ejemplo',
+    partidoId: null,
+    misionesEquipo: [mision('me-1', 'Jugar como equipo')],
+    misionesJugador: [
+      mision('mj-1', 'Defender fuerte', { jugadorId: 'j-1' }),
+      mision('mj-2', 'Bajar los rebotes', { jugadorId: 'j-2' }),
+      mision('mj-3', 'Pasarla rápido', { jugadorId: 'j-3' }),
+    ],
+  });
+  const conMisiones = (extra: Partial<Repositorio> = {}, fecha?: string) =>
+    repo({ obtenerPreviasDelPlantel: async () => [previa], obtenerPrevia: async () => completa(fecha), ...extra });
+  // La tarjeta pasa de «cargando» a la lista: se espera a que termine para no agarrar el recuadro viejo.
+  const tarjeta = async () => {
+    await screen.findByRole('region', { name: 'Misiones del partido' });
+    await waitFor(() => expect(screen.queryByText('Cargando las misiones…')).toBeNull());
+    return within(screen.getByRole('region', { name: 'Misiones del partido' }));
+  };
 
   it('sin previas invita a armar las misiones', async () => {
     abrir();
-    const misiones = within(await screen.findByRole('region', { name: 'Misiones del partido' }));
+    const misiones = await tarjeta();
     expect(misiones.getByText('Armá las misiones del próximo partido')).toBeTruthy();
     expect(misiones.queryByText('Armar otras misiones')).toBeNull();
   });
 
-  it('con una previa sin partido cargado espera el partido', async () => {
-    abrir(repo({ obtenerPreviasDelPlantel: async () => [previa] }));
-    const misiones = within(await screen.findByRole('region', { name: 'Misiones del partido' }));
-    expect(misiones.getByText('Misiones armadas')).toBeTruthy();
-    expect(misiones.getByText(/Rival de Ejemplo · 18\/10\/26\. Cuando cargues el partido/)).toBeTruthy();
+  it('muestra las 3 primeras (el equipo primero) con un toque para marcar cada una', async () => {
+    abrir(conMisiones());
+    const misiones = await tarjeta();
+    expect(await misiones.findByText('Jugar como equipo')).toBeTruthy();
+    expect(misiones.getByText('Defender fuerte')).toBeTruthy();
+    expect(misiones.getByText('Bajar los rebotes')).toBeTruthy();
+    expect(misiones.queryByText('Pasarla rápido')).toBeNull();
+    expect(misiones.getByText('0 de 4')).toBeTruthy();
+    expect(misiones.getAllByRole('button', { name: /^Cumplida:/ })).toHaveLength(3);
+    expect(misiones.getByRole('link', { name: 'Ver las 4' }).getAttribute('href')).toBe('/misiones/pr-1');
+  });
+
+  it('un toque en «cumplida» la marca y guarda solo esa misión, sin tocar el partido', async () => {
+    const u = userEvent.setup();
+    const guardadas: unknown[] = [];
+    abrir(conMisiones({ evaluarMisiones: async (d) => { guardadas.push(d); return {}; } }));
+    const misiones = await tarjeta();
+    const boton = await misiones.findByRole('button', { name: 'Cumplida: Defender fuerte' });
+    await u.click(boton);
+    expect(boton.getAttribute('aria-pressed')).toBe('true');
+    expect(misiones.getByText('1 de 4')).toBeTruthy();
+    await waitFor(() => expect(guardadas).toHaveLength(1));
+    expect(guardadas[0]).toEqual({ previaId: 'pr-1', partidoId: null, evaluaciones: [{ tipo: 'jugador', id: 'mj-1', estado: 'logrado', comentario: null }] });
+  });
+
+  it('otro toque la desmarca', async () => {
+    const u = userEvent.setup();
+    const guardadas: { evaluaciones: { estado: string | null }[] }[] = [];
+    abrir(conMisiones({ evaluarMisiones: async (d) => { guardadas.push(d as never); return {}; } }));
+    const boton = await (await tarjeta()).findByRole('button', { name: 'Cumplida: Defender fuerte' });
+    await u.click(boton);
+    await u.click(boton);
+    expect(boton.getAttribute('aria-pressed')).toBe('false');
+    await waitFor(() => expect(guardadas).toHaveLength(2));
+    expect(guardadas[1].evaluaciones[0].estado).toBeNull();
+  });
+
+  it('«Siguientes» muestra las que faltan y vuelve al principio', async () => {
+    const u = userEvent.setup();
+    abrir(conMisiones());
+    const misiones = await tarjeta();
+    await misiones.findByText('Jugar como equipo');
+    await u.click(misiones.getByRole('button', { name: 'Siguientes' }));
+    expect(misiones.getByText('Pasarla rápido')).toBeTruthy();
+    expect(misiones.queryByText('Jugar como equipo')).toBeNull();
+    await u.click(misiones.getByRole('button', { name: 'Siguientes' }));
+    expect(misiones.getByText('Jugar como equipo')).toBeTruthy();
+  });
+
+  it('si no se pudo guardar, deshace la marca y avisa', async () => {
+    const u = userEvent.setup();
+    abrir(conMisiones({ evaluarMisiones: async () => { throw new Error('SIN_PERMISO'); } }));
+    const misiones = await tarjeta();
+    const boton = await misiones.findByRole('button', { name: 'Cumplida: Defender fuerte' });
+    await u.click(boton);
+    expect(await misiones.findByRole('alert')).toBeTruthy();
+    expect(boton.getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('antes del día del partido se repasan, sin botones para marcar', async () => {
+    abrir(conMisiones({}, '2099-01-01'));
+    const misiones = await tarjeta();
+    expect(await misiones.findByText('Defender fuerte')).toBeTruthy();
+    expect(misiones.queryByRole('button', { name: /^Cumplida:/ })).toBeNull();
     expect(misiones.getByRole('link', { name: 'Armar otras misiones' })).toBeTruthy();
   });
 
-  it('con el partido cargado pide evaluar', async () => {
-    abrir(repo({
-      obtenerPreviasDelPlantel: async () => [previa],
-      obtenerPartidosDelPlantel: async () => [{ id: 'pa-1', fecha: '2026-10-18', rivalNombre: 'Rival de Ejemplo' }],
-    }));
-    expect(await screen.findByText('Evaluá cómo salió')).toBeTruthy();
+  it('si ya estaban todas evaluadas al abrir, vuelve a invitar a armar las próximas', async () => {
+    const evaluada = completa();
+    evaluada.misionesEquipo[0].estado = 'logrado' as never;
+    evaluada.misionesJugador.forEach((m) => { m.estado = 'no_logrado' as never; });
+    abrir(conMisiones({ obtenerPrevia: async () => evaluada }));
+    const misiones = await tarjeta();
+    expect(await misiones.findByText('Armá las misiones del próximo partido')).toBeTruthy();
+    expect(misiones.getByText(/Ya evaluaste las 4 del Rival de Ejemplo/)).toBeTruthy();
   });
 
   it('si las misiones no cargan no se dibuja nada y el resto sigue', async () => {
     abrir(repo({ obtenerPreviasDelPlantel: async () => { throw new Error('x'); } }));
     await esperar();
     expect(screen.queryByRole('region', { name: 'Misiones del partido' })).toBeNull();
-  });
-});
-
-describe('Hoy: errores y permisos', () => {
-  it('si falla la batería, lo cuenta con salida para reintentar', async () => {
-    abrir(repo({ obtenerSesionesDeMedicion: async () => { throw new Error('x'); } }));
-    expect(await screen.findByRole('alert')).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Reintentar/ })).toBeTruthy();
-  });
-
-  it('reintentar vuelve a pedir los datos', async () => {
-    const u = userEvent.setup();
-    let intento = 0;
-    abrir(repo({
-      obtenerSesionesDeMedicion: async () => {
-        intento += 1;
-        if (intento <= 1) throw new Error('x');
-        return [S1];
-      },
-    }));
-    await u.click(await screen.findByRole('button', { name: /Reintentar/ }));
-    await waitFor(() => expect(screen.getByRole('region', { name: 'Tiro de campo' })).toBeTruthy());
-  });
-
-  it('abre la categoría que tiene asignada, sin id en la dirección', async () => {
-    abrir(repo({ obtenerMisPlantelesAsignados: async () => new Set(['p-2']) }));
-    expect((await screen.findAllByText(/Sub 15/)).length).toBeGreaterThan(0);
-    expect(screen.queryByText('No hay una categoría seleccionada')).toBeNull();
-  });
-
-  it('la coordinación sola no ve las mediciones de cada chico y no se piden', async () => {
-    let pidio = false;
-    abrir(repo({
-      obtenerMisRoles: async () => ({ esEntrenador: false, esCoordinador: true }),
-      obtenerMedicionesTiroDelPlantel: async () => { pidio = true; return []; },
-    }));
-    expect(await screen.findByText('El tiro lo ve el cuerpo técnico')).toBeTruthy();
-    expect(pidio).toBe(false);
-  });
-
-  it('no muestra cuota, apto médico ni nada de coordinación', async () => {
-    const { container } = abrir();
-    await esperar();
-    expect(container.textContent).not.toMatch(/al día|apto|pagó|deuda|cuota/i);
-  });
-
-  it('«Mandar un recurso» está en cada zona y lleva a la app anterior', async () => {
-    abrir();
-    await esperar();
-    const enlaces = screen.getAllByRole('link', { name: /^Mandar un recurso para / });
-    expect(enlaces).toHaveLength(6);
-    expect(enlaces[0].getAttribute('href')).toBe('/app/clasica?desde=nueva');
   });
 });

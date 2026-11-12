@@ -289,7 +289,8 @@ export interface JugadaDelJugador {
 export interface MisionDePrevia {
   id: string;
   jugadorId?: string | null;
-  metrica: string;
+  /** Null en una misión escrita a mano (con texto, sin número). */
+  metrica: string | null;
   comparador?: string | null;
   meta?: number | null;
   estado: 'logrado' | 'en_proceso' | 'no_logrado' | null;

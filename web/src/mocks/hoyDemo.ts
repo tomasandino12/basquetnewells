@@ -1,4 +1,4 @@
-import type { Entrenamiento, EstadoAsistencia, Lesion, MedicionTiro, MotivoFalta, Repositorio } from '../datos/repositorio';
+import type { Entrenamiento, EstadoAsistencia, Lesion, MedicionTiro, MisionDePrevia, MotivoFalta, Repositorio } from '../datos/repositorio';
 
 // Nombres inventados para las maquetas: ninguno es de un chico real.
 const JUGADORES = [
@@ -61,6 +61,17 @@ let lesiones: Lesion[] = [
 ];
 let fuera = new Set<string>();
 
+// Misiones de ejemplo (una previa ya jugada): lo que se marca queda en memoria, nunca va a la base.
+const mision = (id: string, texto: string, jugadorId: string | null = null): MisionDePrevia => ({ id, metrica: null, valor: null, texto, estado: null, comentario: null, jugadorId });
+let misionesEquipo: MisionDePrevia[] = [mision('me1', 'Menos de 5 pérdidas'), mision('me2', 'Defender sin hacer faltas tontas')];
+let misionesJugador: MisionDePrevia[] = [
+  mision('mj1', 'Defender y que no le metan más de 6 puntos', 'd1'),
+  mision('mj2', 'Bajar 5 rebotes', 'd2'),
+  mision('mj3', 'Dar 3 pases para que otro tire', 'd3'),
+  mision('mj4', 'Hablar en la defensa todo el partido', 'd4'),
+  mision('mj5', 'Correr la cancha en cada contraataque', 'd5'),
+];
+
 const PROPIO: Partial<Repositorio> = {
   obtenerSesionActual: async () => null,
   alCambiarAuth: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
@@ -77,8 +88,19 @@ const PROPIO: Partial<Repositorio> = {
   ],
   obtenerMetasDelPlantel: async () => ({ frontal: 40, esq_izq: 50, c45_der: 50 }),
   obtenerPreviasDelPlantel: async () => [
-    { id: 'pr1', fecha: '2026-11-15', rival: 'Rival de Ejemplo', plantelId: 'demo', partidoId: null, evaluada: false },
+    { id: 'pr1', fecha: '2026-11-08', rival: 'Rival de Ejemplo', plantelId: 'demo', partidoId: null, evaluada: [...misionesEquipo, ...misionesJugador].some((m) => m.estado !== null) },
   ],
+  obtenerPrevia: async () => ({ id: 'pr1', fecha: '2026-11-08', rival: 'Rival de Ejemplo', partidoId: null, misionesEquipo, misionesJugador }),
+  evaluarMisiones: async ({ evaluaciones }) => {
+    const aplicar = (lista: MisionDePrevia[]) =>
+      lista.map((m) => {
+        const e = evaluaciones.find((x) => x.id === m.id);
+        return e ? { ...m, estado: e.estado as MisionDePrevia['estado'], comentario: e.comentario } : m;
+      });
+    misionesEquipo = aplicar(misionesEquipo);
+    misionesJugador = aplicar(misionesJugador);
+    return {};
+  },
   obtenerPartidosDelPlantel: async () => [],
   obtenerEntrenamientos: async () => entrenamientos,
   obtenerLesionesDelPlantel: async () => lesiones,

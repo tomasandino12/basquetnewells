@@ -3,7 +3,6 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { usePlantelId } from '../plantel/activo';
 import { saludoSegunHora } from '@datos/saludo.js';
-import { siguientePasoDeMisiones, vincularPrevias } from '@datos/misiones.js';
 import { claseBoton, Flecha } from '../components/ui/button';
 import { CanchaCalor } from '../components/ui/cancha-calor';
 import { Panel } from '../components/ui/card';
@@ -13,11 +12,12 @@ import { Vacio } from '../components/ui/estados';
 import { Pagina } from '../components/ui/pagina';
 import { Hoja } from '../components/ui/sheet';
 import { useDatosDeHoy, useMisClubes, useMisPlantelesAsignados, useMisRoles, useMisionesDeHoy, usePlanteles } from '../datos/consultas';
-import type { PartidoDelPlantel, PreviaDelPlantel } from '../datos/repositorio';
+import type { PreviaDelPlantel } from '../datos/repositorio';
 import { armarResumen, fechaCorta, type Valor, type Variacion, type Zona } from '../hoy/resumen';
 import { cn } from '../lib/cn';
 import { plantelesVisibles } from '../plantel/visibles';
 import { APP_DE_SIEMPRE } from '../clasica';
+import { MisionesDeHoy } from './MisionesRapidas';
 
 // Lo que todavía se hace en la app anterior (cargar mediciones y partidos, fijar metas, recursos, misiones).
 const APP_ANTERIOR = APP_DE_SIEMPRE;
@@ -107,6 +107,9 @@ export function ContenidoDeHoy({ clubId, plantelId, categoria }: { clubId: strin
   const datos = useDatosDeHoy(clubId, plantelId);
   const resumen = useMemo(() => (datos.data ? armarResumen(datos.data) : undefined), [datos.data]);
   const saludo = saludoSegunHora(new Date().getHours());
+  // Es un agregado: si no carga, Hoy sigue sin la tarjeta.
+  const previas = useMisionesDeHoy(clubId, plantelId).data as { previas: PreviaDelPlantel[] } | undefined;
+  const misiones = previas ? <MisionesDeHoy clubId={clubId} plantelId={plantelId} previas={previas.previas} /> : null;
 
   return (
     <>
@@ -118,7 +121,7 @@ export function ContenidoDeHoy({ clubId, plantelId, categoria }: { clubId: strin
             <div className="flex flex-col gap-5">
               <Entrenamiento categoria={categoria} plantelId={plantelId} />
 
-              <Misiones clubId={clubId} plantelId={plantelId} />
+              {resumen.tipo !== 'completo' && misiones}
 
               {resumen.tipo === 'sin-baterias' && (
                 <Vacio
@@ -145,7 +148,7 @@ export function ContenidoDeHoy({ clubId, plantelId, categoria }: { clubId: strin
                 </div>
               )}
 
-              {resumen.tipo === 'completo' && <Tiro resumen={resumen} categoria={categoria} plantelId={plantelId} />}
+              {resumen.tipo === 'completo' && <Tiro resumen={resumen} categoria={categoria} plantelId={plantelId} misiones={misiones} />}
             </div>
           );
         }}
@@ -174,7 +177,7 @@ function Entrenamiento({ categoria, plantelId }: { categoria: string; plantelId:
 
 type Completo = Extract<ReturnType<typeof armarResumen>, { tipo: 'completo' }>;
 
-function Tiro({ resumen, categoria, plantelId }: { resumen: Completo; categoria: string; plantelId: string }) {
+function Tiro({ resumen, categoria, plantelId, misiones }: { resumen: Completo; categoria: string; plantelId: string; misiones: ReactNode }) {
   const [verQuienes, setVerQuienes] = useState(false);
   const { total, totalVariacion, metas, zonas, libres, foco, porDebajo, serie, corporal, jugadoresQueMidieron } = resumen;
   const midieron = jugadoresQueMidieron;
@@ -182,50 +185,54 @@ function Tiro({ resumen, categoria, plantelId }: { resumen: Completo; categoria:
 
   return (
     <>
-      <p className="text-sm text-gris">
-        {categoria} · batería del {fechaCorta(resumen.fecha)} · {midieron} {PLURAL(midieron, 'jugador midió', 'jugadores midieron')}
-      </p>
-
-      {total && (
-        <section aria-label="Tiro de campo" className="rounded-tarjeta border border-linea bg-sup p-4 shadow-tarjeta sm:p-5">
-          <p className={ETIQUETA}>Tiro de campo · todo el arco</p>
-          <div className="mt-2 lg:grid lg:grid-cols-[auto_minmax(0,1fr)] lg:items-center lg:gap-12">
-            <div>
-              <p className="cifra font-titulo text-8xl leading-[.85] font-bold tracking-tight">
-                {total.pct}
-                <span className="text-5xl text-gris">%</span>
-              </p>
-              <p className="mt-2 font-mono text-sm text-gris">{total.anotados}/{total.intentos} tiros</p>
-              <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                <VariacionTexto variacion={totalVariacion} vacio="Primera batería: todavía no hay con qué comparar" grande />
-                {metas && <span className="text-gris">{metas.alcanzadas} de {metas.conMeta} {PLURAL(metas.conMeta, 'zona llegó', 'zonas llegó')} a su meta</span>}
-              </p>
-            </div>
-            {serie.length > 0 && (
-              <div className="mt-4 lg:mt-0">
-                <CurvaArco serie={serie} />
-                <p className="flex items-center justify-between gap-2 font-mono text-xs text-gris">
-                  <span>
-                    {serie.length === 1
-                      ? `Una sola batería: ${fechaCorta(serie[0].fecha)} · ${serie[0].valor.anotados}/${serie[0].valor.intentos}`
-                      : `${serie.length} baterías · primera ${serie[0].valor.pct}% (${serie[0].valor.anotados}/${serie[0].valor.intentos}) · última ${serie[serie.length - 1].valor.pct}% (${serie[serie.length - 1].valor.anotados}/${serie[serie.length - 1].valor.intentos})`}
-                  </span>
-                  <a
-                    href={APP_ANTERIOR}
-                    aria-label="Ver la evolución completa en Datos"
-                    className="inline-flex min-h-11 shrink-0 items-center font-semibold text-tinta underline decoration-linea underline-offset-4 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:decoration-tinta"
-                  >
-                    Ver todo ›
-                  </a>
+      {/* En compu, el tiro y las misiones van lado a lado; en celular, primero lo que se hace (las misiones). */}
+      <div className={cn('flex flex-col gap-5', misiones && 'lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-stretch')}>
+        {total && (
+          <section aria-label="Tiro de campo" className="min-w-0 rounded-tarjeta border border-linea bg-sup p-4 shadow-tarjeta sm:p-5 lg:flex lg:flex-col">
+            <p className={ETIQUETA}>Tiro de campo · todo el arco</p>
+            <p className="mt-1 text-sm text-gris">
+              {categoria} · batería del {fechaCorta(resumen.fecha)} · {midieron} {PLURAL(midieron, 'jugador midió', 'jugadores midieron')}
+            </p>
+            <div className="mt-3 lg:grid lg:flex-1 lg:grid-cols-[14rem_minmax(0,1fr)] lg:items-center lg:gap-8">
+              <div>
+                <p className="cifra font-titulo text-8xl leading-[.85] font-bold tracking-tight">
+                  {total.pct}
+                  <span className="text-5xl text-gris">%</span>
+                </p>
+                <p className="mt-2 font-mono text-sm text-gris">{total.anotados}/{total.intentos} tiros</p>
+                <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                  <VariacionTexto variacion={totalVariacion} vacio="Primera batería: todavía no hay con qué comparar" grande />
+                  {metas && <span className="text-gris">{metas.alcanzadas} de {metas.conMeta} {PLURAL(metas.conMeta, 'zona llegó', 'zonas llegó')} a su meta</span>}
                 </p>
               </div>
-            )}
-          </div>
-        </section>
-      )}
+              {serie.length > 0 && (
+                <div className="mt-4 min-w-0 lg:mt-0">
+                  <CurvaArco serie={serie} />
+                  <p className="flex items-center justify-between gap-2 font-mono text-xs text-gris">
+                    <span>
+                      {serie.length === 1
+                        ? `Una sola batería: ${fechaCorta(serie[0].fecha)} · ${serie[0].valor.anotados}/${serie[0].valor.intentos}`
+                        : `${serie.length} baterías · primera ${serie[0].valor.pct}% (${serie[0].valor.anotados}/${serie[0].valor.intentos}) · última ${serie[serie.length - 1].valor.pct}% (${serie[serie.length - 1].valor.anotados}/${serie[serie.length - 1].valor.intentos})`}
+                    </span>
+                    <a
+                      href={APP_ANTERIOR}
+                      aria-label="Ver la evolución completa en Datos"
+                      className="inline-flex min-h-11 shrink-0 items-center font-semibold text-tinta underline decoration-linea underline-offset-4 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:decoration-tinta"
+                    >
+                      Ver todo ›
+                    </a>
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+        {misiones && <div className="order-first min-w-0 lg:order-none">{misiones}</div>}
+      </div>
 
-      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start">
+      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-stretch">
         <Panel
+          className="lg:col-start-1 lg:row-start-1"
           titulo="Por zona"
           accion={resumen.fechaAnterior ? <span className="font-mono text-xs text-gris">vs {fechaCorta(resumen.fechaAnterior)}</span> : undefined}
         >
@@ -254,22 +261,21 @@ function Tiro({ resumen, categoria, plantelId }: { resumen: Completo; categoria:
           </div>
         </Panel>
 
-        <div className="flex flex-col gap-5">
-          <Panel titulo="Cada zona">
-            <ul aria-label="Zonas del arco" className="flex flex-col divide-y divide-linea">
-              {zonas.map((z) => (
-                <li key={z.id} className="py-3 first:pt-0 last:pb-0">
-                  <FilaDeZona zona={z} />
-                </li>
-              ))}
-            </ul>
-          </Panel>
+        <Panel titulo="Cada zona" className="lg:col-start-2 lg:row-start-1">
+          <ul aria-label="Zonas del arco" className="flex flex-col divide-y divide-linea">
+            {zonas.map((z) => (
+              <li key={z.id} className="py-3 first:pt-0 last:pb-0">
+                <FilaDeZona zona={z} />
+              </li>
+            ))}
+          </ul>
+        </Panel>
 
-          {/* Los tiros libres son otro tiro con otro porcentaje: van aparte, nunca mezclados con el arco. */}
-          <Panel titulo="Tiros libres">
-            <FilaDeZona zona={libres} />
-          </Panel>
-        </div>
+        {/* Los tiros libres son otro tiro con otro porcentaje: van aparte, nunca mezclados con el arco.
+            En compu van a todo el ancho debajo de la cancha y las zonas, así las dos columnas terminan parejas. */}
+        <Panel titulo="Tiros libres" className="lg:col-span-2 lg:row-start-2">
+          <FilaDeZona zona={libres} />
+        </Panel>
       </div>
 
       {corporal && (
@@ -406,39 +412,5 @@ function QuienesPorDebajo({
         </ul>
       </div>
     </Hoja>
-  );
-}
-
-/** Las misiones del partido: la tarjeta de lo que toca hacer ahora. Es un agregado: si no carga, no se dibuja. */
-function Misiones({ clubId, plantelId }: { clubId: string; plantelId: string }) {
-  const q = useMisionesDeHoy(clubId, plantelId);
-  if (!q.data) return null;
-  const { previas, partidos } = q.data as { previas: PreviaDelPlantel[]; partidos: PartidoDelPlantel[] };
-  const vinculos = vincularPrevias(
-    previas,
-    partidos.map((p) => ({ id: p.id, fecha: p.fecha, rivalNombre: p.rivalNombre, plantelId })),
-  );
-  const { paso, previa } = siguientePasoDeMisiones(previas, vinculos) as { paso: 'armar' | 'esperar' | 'evaluar'; previa: PreviaDelPlantel | null };
-  const nombre = previa ? `${previa.rival ?? 'Rival sin nombre'} · ${previa.fecha.split('-').reverse().slice(0, 2).join('/')}/${previa.fecha.slice(2, 4)}` : '';
-  const textos: Record<typeof paso, { titulo: string; detalle: ReactNode }> = {
-    evaluar: { titulo: 'Evaluá cómo salió', detalle: nombre },
-    esperar: { titulo: 'Misiones armadas', detalle: `${nombre}. Cuando cargues el partido, las evaluás desde acá.` },
-    armar: { titulo: 'Armá las misiones del próximo partido', detalle: 'Un aporte concreto para cada chico y un objetivo para el equipo.' },
-  };
-  return (
-    <Panel titulo="Misiones del partido">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <a href={APP_ANTERIOR} className="group block min-w-0 rounded-campo outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
-          <span className="flex items-baseline gap-2 font-titulo text-2xl leading-tight font-semibold">
-            <span>{textos[paso].titulo}</span>
-            <span aria-hidden className="text-club-texto transition-transform duration-[var(--dur-2)] ease-[var(--ease-salida)] [@media(hover:hover)]:group-hover:translate-x-1">
-              ›
-            </span>
-          </span>
-          <span className="block text-sm text-gris">{textos[paso].detalle}</span>
-        </a>
-        {paso !== 'armar' && <a href={APP_ANTERIOR} className={cn(ENLACE_BOTON, 'self-start sm:self-auto')}>Armar otras misiones</a>}
-      </div>
-    </Panel>
   );
 }
