@@ -1,5 +1,6 @@
 import { Navigate, Outlet, createBrowserRouter, useLocation, type RouteObject } from 'react-router';
 import { Consulta } from './components/ui/consulta';
+import { Pagina } from './components/ui/pagina';
 import { Marco } from './laboratorio';
 import { useSesion } from './datos/contexto';
 import { irALaDeSiempre } from './clasica';
@@ -39,14 +40,14 @@ export function RequiereSesion() {
   if (estado === 'sin-sesion' && irALaDeSiempre({ volver: true })) return null;
   if (estado === 'sin-sesion') return <Navigate to="/entrar" replace state={{ desde: lugar.pathname }} />;
   return (
-    <main className="mx-auto w-full max-w-[52rem] px-4 py-5">
+    <Pagina>
       <Consulta
         consulta={{ isPending: estado === 'cargando', isError: estado === 'error', error, data: undefined, refetch: reintentar }}
         errorGenerico="No pudimos revisar tu sesión"
       >
         {() => null}
       </Consulta>
-    </main>
+    </Pagina>
   );
 }
 

@@ -5,6 +5,7 @@ import { hoyLocal } from '@datos/antropometria.js';
 import { Aviso } from '../components/ui/aviso';
 import { claseBoton, Flecha } from '../components/ui/button';
 import { Vacio } from '../components/ui/estados';
+import { Pagina } from '../components/ui/pagina';
 import { Consulta } from '../components/ui/consulta';
 import { useDatosDelPlantel, useMarcarAsistencia } from '../datos/consultas';
 import { cn } from '../lib/cn';
@@ -63,7 +64,7 @@ export function ConCategoria({ children }: { children: (activo: NonNullable<Retu
 
 /** El ancho de la pantalla; la maqueta usa el mismo. */
 export function MarcoDelPlantel({ children }: { children: ReactNode }) {
-  return <main className="mx-auto w-full max-w-[24.375rem] px-4 py-5 sm:max-w-none sm:px-6 lg:max-w-[72rem] lg:px-8 lg:py-8">{children}</main>;
+  return <Pagina>{children}</Pagina>;
 }
 
 interface Props {

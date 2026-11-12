@@ -5,6 +5,7 @@ import { Boton } from '../components/ui/button';
 import { Campo } from '../components/ui/campo';
 import { Card, Panel } from '../components/ui/card';
 import { Cargando, Vacio } from '../components/ui/estados';
+import { Pagina } from '../components/ui/pagina';
 import { FilaJugador, type Aviso as TipoAviso } from '../components/ui/fila-jugador';
 import { ListaPestanas, PanelPestana, Pestana, Pestanas } from '../components/ui/pestanas';
 import { Hoja } from '../components/ui/sheet';
@@ -85,7 +86,7 @@ export function Piezas() {
 
   return (
     <div className="entra min-h-svh text-tinta">
-      <main className="mx-auto flex w-full max-w-[24.375rem] flex-col gap-8 px-4 py-5 sm:max-w-3xl sm:px-6 lg:max-w-5xl">
+      <Pagina className="flex flex-col gap-8">
         <header className="flex items-end justify-between gap-4">
           <div>
             <p className="text-sm text-gris">Piezas base · datos de ejemplo</p>
@@ -200,7 +201,7 @@ export function Piezas() {
             </Seccion>
           </div>
         </div>
-      </main>
+      </Pagina>
     </div>
   );
 }

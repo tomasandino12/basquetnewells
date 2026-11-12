@@ -10,6 +10,7 @@ import { Panel } from '../components/ui/card';
 import { Consulta } from '../components/ui/consulta';
 import { CurvaArco } from '../components/ui/curva-arco';
 import { Vacio } from '../components/ui/estados';
+import { Pagina } from '../components/ui/pagina';
 import { Hoja } from '../components/ui/sheet';
 import { useDatosDeHoy, useMisClubes, useMisPlantelesAsignados, useMisRoles, useMisionesDeHoy, usePlanteles } from '../datos/consultas';
 import type { PartidoDelPlantel, PreviaDelPlantel } from '../datos/repositorio';
@@ -92,13 +93,13 @@ export function Hoy() {
 /** El ancho y la vuelta a Planteles; la maqueta de Hoy usa el mismo. En compu la vuelta ya está en el menú. */
 export function MarcoDeHoy({ children }: { children: ReactNode }) {
   return (
-    <main className="mx-auto w-full max-w-[24.375rem] px-4 py-5 sm:max-w-none sm:px-6 lg:max-w-[64rem] lg:px-8 lg:py-8">
+    <Pagina>
       <Link to="/" className="mb-2 inline-flex min-h-11 items-center gap-1.5 text-sm text-gris outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta lg:hidden">
         <ArrowLeft aria-hidden className="size-4" />
         Planteles
       </Link>
       {children}
-    </main>
+    </Pagina>
   );
 }
 

@@ -1,3 +1,4 @@
+import { ANCHO_DE_PAGINA } from '../components/ui/pagina';
 import { cn } from '../lib/cn';
 import { usePlantelActivo } from '../plantel/activo';
 
@@ -10,7 +11,7 @@ export function BarraDeCategorias() {
   const activo = usePlantelActivo();
   if (!activo || activo.visibles.length < 2) return null;
   return (
-    <nav aria-label="Categoría" className="mx-auto flex w-full max-w-[72rem] gap-2 px-4 pt-4 sm:px-6 lg:px-8 lg:pt-6">
+    <nav aria-label="Categoría" className={cn(ANCHO_DE_PAGINA, 'flex gap-2 pt-4 lg:pt-6')}>
       {activo.visibles.map((p) => {
         const elegida = p.id === activo.plantelId;
         return (
