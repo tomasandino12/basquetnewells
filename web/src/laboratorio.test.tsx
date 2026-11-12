@@ -25,7 +25,9 @@ describe('menú de la app', () => {
       (c) =>
         !['*', '/', '/entrar', '/asistencia', '/asistencia/historial', '/plantel/asistencia', '/plantel/asistencia/historial'].includes(c) &&
         !c.includes(':') &&
-        !c.startsWith('/jugador'),
+        !c.startsWith('/jugador') &&
+        // Temporada, rubros y formularios se abren desde Profes, Finanzas y Familias (la barra de /coordinacion).
+        !c.startsWith('/coordinacion/'),
     );
     const alcanzables = [...ENLACES_DEL_MENU.map((e) => e.a), ...EJEMPLOS.map((e) => e.a)];
     expect([...alcanzables].sort()).toEqual([...directas].sort());
@@ -38,8 +40,18 @@ describe('menú de la app', () => {
     expect(DESTINOS_DEL_JUGADOR.some((d) => d.a.includes('misiones'))).toBe(false);
   });
 
-  it('lleva a Hoy, Plantel, Físico, Medir y Recursos sin ids en la dirección; la asistencia se toma desde Plantel', () => {
-    expect(ENLACES_DEL_MENU.map((e) => e.a)).toEqual(['/hoy', '/plantel', '/fisico', '/medir', '/recursos']);
+  it('lleva a Hoy, Plantel, Físico, Medir, Recursos y Coordinación sin ids en la dirección; la asistencia se toma desde Plantel', () => {
+    expect(ENLACES_DEL_MENU.map((e) => e.a)).toEqual(['/hoy', '/plantel', '/fisico', '/medir', '/recursos', '/coordinacion']);
+  });
+
+  it('Coordinación sólo aparece en el menú para quien coordina', async () => {
+    const { unmount } = renderConDatos(rutas, { ruta: '/piezas' });
+    const menu = screen.getAllByRole('navigation', { name: 'Menú de la app' })[0];
+    expect(await within(menu).findByRole('link', { name: 'Coordinación' })).toBeTruthy();
+    unmount();
+    renderConDatos(rutas, { repo: repositorioInventado({ obtenerMisRoles: async () => ({ esEntrenador: true, esCoordinador: false }) }), ruta: '/piezas' });
+    await screen.findAllByRole('link', { name: 'Hoy' });
+    expect(screen.queryByRole('link', { name: 'Coordinación' })).toBeNull();
   });
 
   it('los ejemplos no van en el menú: van aparte y lo dicen', async () => {

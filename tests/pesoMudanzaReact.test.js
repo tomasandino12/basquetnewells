@@ -9,12 +9,14 @@ import { gzipSync } from 'node:zlib';
  * Medido el 04/11 con Plantel y la ficha: 268 kB de JS + 6 kB de CSS, contra ~560 kB
  * de la app vieja entera (ver docs/decisiones/mudanza-peso.md). Si crece más de
  * ~20% sin que se haya mudado nada nuevo, algo pesado entró de más.
+ * 12/11: coordinación entera (7 pantallas: panorama con gráficos, profes, temporada, rubros,
+ * finanzas, papeles y formularios) subió el total a 341 kB; el tope pasó de 330 a 360.
  *
  * Mide web/dist, que sólo existe después de `npm --prefix web run build`: sin
  * armar, se saltea (Vercel la arma en el deploy, no en las pruebas).
  */
 
-const PRESUPUESTO_KB = 330;
+const PRESUPUESTO_KB = 360;
 const DIST = 'web/dist/assets';
 
 test('lo que baja el celular de /nueva entra en el presupuesto', { skip: !existsSync(DIST) && 'web/dist no está armado' }, () => {

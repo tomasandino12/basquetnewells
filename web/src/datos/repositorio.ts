@@ -2,6 +2,8 @@
 // Las pantallas piden el repositorio por el contexto, así las pruebas le dan uno inventado
 // y nunca se carga el real (ni se toca la red).
 
+import type { RepositorioCoord } from './repositorioCoord';
+
 export interface Sesion {
   user: { id: string; email?: string };
 }
@@ -315,7 +317,7 @@ export interface EvaluacionAGuardar {
   evaluaciones: { tipo: 'jugador' | 'equipo'; id: string; estado: string | null; comentario: string | null }[];
 }
 
-export interface Repositorio {
+export interface Repositorio extends RepositorioCoord {
   // Vista del jugador (cuenta de jugador: la base sólo le da lo suyo).
   obtenerMiFicha(): Promise<FichaDeJugador | null>;
   obtenerMiPlan(): Promise<MiPlan>;

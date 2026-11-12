@@ -29,6 +29,14 @@ import { JugadorRecursos } from './pantallas/jugador/JugadorRecursos';
 import { JugadorSesion } from './pantallas/jugador/JugadorSesion';
 import { MarcoJugador } from './pantallas/jugador/MarcoJugador';
 import { MisionesPartido } from './pantallas/MisionesPartido';
+import { CoordFamilias } from './pantallas/coord/CoordFamilias';
+import { CoordFinanzas } from './pantallas/coord/CoordFinanzas';
+import { CoordFormularios } from './pantallas/coord/CoordFormularios';
+import { CoordPanorama } from './pantallas/coord/CoordPanorama';
+import { CoordProfes } from './pantallas/coord/CoordProfes';
+import { CoordRubros } from './pantallas/coord/CoordRubros';
+import { CoordTemporada } from './pantallas/coord/CoordTemporada';
+import { RequiereCoordinacion } from './pantallas/coord/MarcoCoord';
 
 /** La puerta de entrada: quien tiene cuenta de jugador va a lo suyo; el resto, a Hoy. */
 function Entrada() {
@@ -98,6 +106,18 @@ export const rutas: RouteObject[] = [
         { path: '/fisico', element: <Fisico /> },
         { path: '/fisico/plan/:planId/sesion/:sesionId', element: <FisicoSesion /> },
         { path: '/fisico/plan/:planId/sesion/:sesionId/ejercicio/:lineaId', element: <FisicoEscalones /> },
+      ],
+    },
+    // Coordinación no pasa por RequiereSesion: ése manda a la app de siempre a quien sólo coordina.
+    // La puerta propia pide la sesión y el rol de coordinación.
+    { element: <RequiereCoordinacion />, children: [
+        { path: '/coordinacion', element: <CoordPanorama /> },
+        { path: '/coordinacion/profes', element: <CoordProfes /> },
+        { path: '/coordinacion/temporada', element: <CoordTemporada /> },
+        { path: '/coordinacion/finanzas', element: <CoordFinanzas /> },
+        { path: '/coordinacion/rubros', element: <CoordRubros /> },
+        { path: '/coordinacion/familias', element: <CoordFamilias /> },
+        { path: '/coordinacion/formularios', element: <CoordFormularios /> },
       ],
     },
     { path: '*', element: <Navigate to="/" replace /> },
