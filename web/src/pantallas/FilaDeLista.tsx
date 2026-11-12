@@ -31,18 +31,20 @@ export function FilaDeLista({ fila: f, elegida, alElegir }: Props) {
         aria-pressed={elegida}
         aria-label={`Ficha de ${nombre}`}
         onClick={() => alElegir(f.id)}
-        className="flex min-h-16 min-w-0 flex-1 items-center gap-3 px-3 py-2 text-left outline-offset-[-4px] focus-visible:outline-2 focus-visible:outline-tinta"
+        // Celular: avatar, nombre y números arriba; la tira de 5 prácticas debajo del nombre.
+        // Compu: una sola línea con columnas de ancho fijo (nombre, tira, números), iguales en todas las filas.
+        className="grid min-h-16 min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)_5.25rem] items-center gap-x-3 gap-y-1 px-3 py-2 text-left outline-offset-[-4px] focus-visible:outline-2 focus-visible:outline-tinta sm:grid-cols-[auto_minmax(0,1fr)_auto_5.25rem]"
       >
         <span
           aria-hidden
           className={cn(
-            'grid size-10 shrink-0 place-items-center rounded-full font-titulo text-base font-bold tracking-wide',
+            'row-span-2 grid size-10 shrink-0 place-items-center self-start rounded-full font-titulo text-base font-bold tracking-wide sm:row-span-1 sm:self-center',
             elegida ? 'bg-sobre-club/15' : 'bg-negro text-sobre-negro ring-1 ring-linea',
           )}
         >
           {f.iniciales}
         </span>
-        <span className="min-w-0 flex-1">
+        <span className="min-w-0">
           <span className="block truncate font-titulo text-xl leading-tight font-semibold">{nombre}</span>
           <span className="flex min-w-0 items-center gap-2">
             <span className={cn('truncate font-mono text-xs', elegida ? 'text-sobre-club/85' : 'text-gris')}>
@@ -61,13 +63,13 @@ export function FilaDeLista({ fila: f, elegida, alElegir }: Props) {
             )}
           </span>
         </span>
-        <UltimasAsistencias dias={f.ultimos} nombre={nombre} />
-        <span className="flex shrink-0 flex-col items-end font-mono text-xs leading-tight tabular-nums">
-          <span>
+        <UltimasAsistencias dias={f.ultimos} nombre={nombre} className="col-start-2 row-start-2 justify-self-start sm:col-start-3 sm:row-start-1" />
+        <span className="col-start-3 row-start-1 flex flex-col font-mono text-xs leading-tight tabular-nums sm:col-start-4">
+          <span className="flex justify-between gap-2">
             <span className={elegida ? 'text-sobre-club/85' : 'text-gris'}>Tiro </span>
             <b className="text-sm">{f.tiroPct === null ? '—' : `${f.tiroPct}%`}</b>
           </span>
-          <span>
+          <span className="flex justify-between gap-2">
             <span className={elegida ? 'text-sobre-club/85' : 'text-gris'}>Asist. </span>
             <b className="text-sm">{f.asistenciaPct === null ? '—' : `${f.asistenciaPct}%`}</b>
           </span>

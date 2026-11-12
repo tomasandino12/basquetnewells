@@ -66,18 +66,27 @@ export function TiraDeAsistencia({ dias }: { dias: DiaDeLaTira[] }) {
 /** Cuántos entrenamientos muestra cada fila de la lista del plantel. */
 export const ULTIMAS_EN_LISTA = 5;
 
-/** La tira chica de la lista del plantel: las últimas prácticas de ese chico, sin fechas ni leyenda. */
-export function UltimasAsistencias({ dias, nombre }: { dias: DiaDeLaTira[]; nombre: string }) {
+/**
+ * La tira chica de la lista del plantel: las últimas prácticas de ese chico, sin fechas ni leyenda.
+ * Siempre ocupa 5 casilleros, con la misma medida en todas las filas: los que faltan (un chico nuevo o un
+ * plantel con pocas prácticas) van vacíos a la izquierda, así la columna queda recta.
+ */
+export function UltimasAsistencias({ dias, nombre, className }: { dias: DiaDeLaTira[]; nombre: string; className?: string }) {
   const ultimas = dias.slice(-ULTIMAS_EN_LISTA);
-  if (ultimas.length === 0) return <span aria-label={`Sin entrenamientos de ${nombre}`} className="font-mono text-xs text-gris">—</span>;
+  const vacios = Array.from({ length: ULTIMAS_EN_LISTA - ultimas.length }, (_, i) => (
+    <span key={`vacio-${i}`} aria-hidden className="h-4 w-2 rounded-[2px] border border-linea sm:w-2.5" />
+  ));
+  const contenedor = cn('flex shrink-0 gap-[3px] sm:gap-1', className);
+  if (ultimas.length === 0) return <span aria-label={`Sin entrenamientos de ${nombre}`} className={contenedor}>{vacios}</span>;
   return (
-    <span role="img" aria-label={`Últimas asistencias de ${nombre}: ${ultimas.map(textoDelDia).join('; ')}`} className="flex shrink-0 gap-1">
+    <span role="img" aria-label={`Últimas asistencias de ${nombre}: ${ultimas.map(textoDelDia).join('; ')}`} className={contenedor}>
+      {vacios}
       {ultimas.map((d) => (
         <span
           key={d.fecha}
           title={textoDelDia(d)}
           className={cn(
-            'h-4 w-2.5 rounded-[2px]',
+            'h-4 w-2 rounded-[2px] sm:w-2.5',
             d.estado === null ? 'border border-dashed border-borde-control' : COLOR_DIA[d.estado],
             d.lesionado && 'ring-2 ring-caramelo ring-offset-1 ring-offset-sup',
           )}

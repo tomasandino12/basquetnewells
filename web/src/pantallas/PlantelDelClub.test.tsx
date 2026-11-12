@@ -166,6 +166,14 @@ describe('Plantel con datos: últimas asistencias en la lista', () => {
     expect(estados('Acosta, Bruno')).toEqual(['vino', 'no hubo entrenamiento', 'vino', 'faltó sin avisar']);
   });
 
+  it('la tira siempre tiene 5 casilleros, aunque el chico tenga menos prácticas: la columna queda recta', async () => {
+    simular(false);
+    abrir(repo({ obtenerEntrenamientos: entrenamientos }));
+    await filas();
+    // 4 días de práctica en el plantel: 1 casillero vacío a la izquierda.
+    expect(screen.getByRole('img', { name: /^Últimas asistencias de Benítez, Tomás: / }).querySelectorAll('span')).toHaveLength(5);
+  });
+
   it('muestra como mucho las últimas 5 prácticas', async () => {
     simular(false);
     const muchas = async () => Array.from({ length: 8 }, (_, i) => ({
@@ -184,7 +192,7 @@ describe('Plantel con datos: últimas asistencias en la lista', () => {
     abrir(repo({ obtenerEntrenamientos: async () => [] }));
     await filas();
     expect(screen.queryByRole('img', { name: /Últimas asistencias de/ })).toBeNull();
-    expect(screen.getByLabelText('Sin entrenamientos de Acosta, Bruno')).toBeTruthy();
+    expect(screen.getByLabelText('Sin entrenamientos de Acosta, Bruno').querySelectorAll('span')).toHaveLength(5);
   });
 });
 
