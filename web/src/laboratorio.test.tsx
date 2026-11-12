@@ -5,6 +5,7 @@ import type { RouteObject } from 'react-router';
 import { desmarcarSesionCerrada } from './datos/errores';
 import { renderConDatos, repositorioInventado } from './datos/renderDePrueba';
 import { EJEMPLOS, ENLACES_DEL_MENU } from './laboratorio';
+import { DESTINOS_DEL_JUGADOR } from './pantallas/jugador/MarcoJugador';
 import { rutas } from './rutas';
 
 afterEach(() => {
@@ -19,11 +20,22 @@ const caminos = (lista: RouteObject[]): string[] =>
 describe('menú de la app', () => {
   it('cada pantalla que se abre directo está en el menú o en los ejemplos', () => {
     // La asistencia se toma desde el plantel (no tiene ítem propio) y las direcciones viejas sólo redirigen.
+    // La vista del jugador tiene su propio marco: sus destinos se controlan en la prueba de abajo.
     const directas = caminos(rutas).filter(
-      (c) => !['*', '/', '/entrar', '/asistencia', '/asistencia/historial', '/plantel/asistencia', '/plantel/asistencia/historial'].includes(c) && !c.includes(':'),
+      (c) =>
+        !['*', '/', '/entrar', '/asistencia', '/asistencia/historial', '/plantel/asistencia', '/plantel/asistencia/historial'].includes(c) &&
+        !c.includes(':') &&
+        !c.startsWith('/jugador'),
     );
     const alcanzables = [...ENLACES_DEL_MENU.map((e) => e.a), ...EJEMPLOS.map((e) => e.a)];
     expect([...alcanzables].sort()).toEqual([...directas].sort());
+  });
+
+  it('cada pantalla de la vista del jugador está en su barra de abajo (y la barra no lleva rutas que no existen)', () => {
+    const delJugador = caminos(rutas).filter((c) => c.startsWith('/jugador') && c !== '/jugador' && !c.includes(':'));
+    expect(DESTINOS_DEL_JUGADOR.map((d) => d.a).sort()).toEqual([...delJugador].sort());
+    // La de misiones es del profe: no va en la barra del jugador.
+    expect(DESTINOS_DEL_JUGADOR.some((d) => d.a.includes('misiones'))).toBe(false);
   });
 
   it('lleva a Hoy, Plantel, Físico, Medir y Recursos sin ids en la dirección; la asistencia se toma desde Plantel', () => {

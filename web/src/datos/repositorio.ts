@@ -95,6 +95,8 @@ export interface PartidoDelPlantel {
   id: string;
   fecha: string;
   rivalNombre: string | null;
+  puntosPropios?: number | null;
+  puntosRival?: number | null;
 }
 
 /** Un plan de fuerza importado de una planilla: las fechas son las de sus sesiones. */
@@ -216,7 +218,116 @@ export interface JugadaDelClub {
   actualizadoEn: string;
 }
 
+/** Quien tiene cuenta de jugador: lo único que la base le da sobre sí mismo (mi_ficha). */
+export interface FichaDeJugador {
+  jugadorId: string;
+  clubId: string;
+  clubNombre: string;
+  nombre: string;
+  planteles: { plantelId: string; categoriaCodigo: string | null; categoria: string }[];
+}
+
+/** Una línea del plan tal como la entrega mi_plan: igual que la del profe, con el nombre original del ejercicio. */
+export interface LineaDeMiPlan {
+  id: string;
+  orden: number | null;
+  bloque: string | null;
+  nombreOriginal: string;
+  series: number | null;
+  reps: string | null;
+  cargaSugerida: string | null;
+  pausa: string | null;
+  notas: string | null;
+  video: { nombre: string; link: string } | null;
+}
+
+export interface SesionDeMiPlan {
+  id: string;
+  fecha: string;
+  lineas: LineaDeMiPlan[];
+}
+
+export interface MiPlan {
+  planes: { planId: string; plantelId: string; categoria: string; nombreArchivo: string; sesiones: SesionDeMiPlan[] }[];
+  /** El último peso del jugador en cada ejercicio, unido a la línea por la clave del nombre. */
+  pesos: { clave: string; nombre: string; kg: number }[];
+}
+
+/** Lo que mi_progreso entrega: sólo lo del propio jugador. La forma fina la consumen las funciones puras de src/data. */
+export interface MiProgreso {
+  partidos: unknown[];
+  tiro: unknown[];
+  saltos: { sesionId: string; fecha: string; test: string; intentos: { intento: number; tiempoVueloMs: number | null }[] }[];
+  sprints: {
+    sesionId: string;
+    fecha: string;
+    distanciaM: number;
+    intentos: { intento: number; tiempoMs: number | null; parcialMs: number | null; origen: string }[];
+  }[];
+  yoyos: unknown[];
+  escalones: unknown[];
+}
+
+export interface RecursoDelJugador {
+  id: string;
+  titulo: string;
+  descripcion: string | null;
+  enlace: string | null;
+  fecha: string;
+}
+
+export interface JugadaDelJugador {
+  id: string;
+  nombre: string;
+  tipo: string;
+  datos: DatosDePizarra;
+}
+
+/** Una misión de una previa de partido (de un jugador o del equipo). `estado: null` = sin evaluar. */
+export interface MisionDePrevia {
+  id: string;
+  jugadorId?: string | null;
+  metrica: string;
+  comparador?: string | null;
+  meta?: number | null;
+  estado: 'logrado' | 'en_proceso' | 'no_logrado' | null;
+  comentario: string | null;
+  [campo: string]: unknown;
+}
+
+export interface PreviaCompleta {
+  id: string;
+  fecha: string;
+  rival: string | null;
+  partidoId: string | null;
+  misionesJugador: MisionDePrevia[];
+  misionesEquipo: MisionDePrevia[];
+}
+
+export interface PartidoConMarcador extends PartidoDelPlantel {
+  puntosPropios: number | null;
+  puntosRival: number | null;
+}
+
+export interface EvaluacionAGuardar {
+  previaId: string;
+  partidoId: string | null;
+  evaluaciones: { tipo: 'jugador' | 'equipo'; id: string; estado: string | null; comentario: string | null }[];
+}
+
 export interface Repositorio {
+  // Vista del jugador (cuenta de jugador: la base sólo le da lo suyo).
+  obtenerMiFicha(): Promise<FichaDeJugador | null>;
+  obtenerMiPlan(): Promise<MiPlan>;
+  obtenerMiProgreso(): Promise<MiProgreso>;
+  misJugadas(): Promise<JugadaDelJugador[]>;
+  obtenerMisRecursos(): Promise<RecursoDelJugador[]>;
+  /** No lanza: abrir un recurso no depende de que se anote. */
+  registrarAperturaDeRecurso(recursoId: string): Promise<void>;
+  // Misiones de un partido (las evalúa el profe).
+  obtenerPrevia(previaId: string): Promise<PreviaCompleta | null>;
+  obtenerEstadisticasParaMisiones(partidoId: string): Promise<{ jugadorId: string; [columna: string]: unknown }[]>;
+  evaluarMisiones(datos: EvaluacionAGuardar): Promise<unknown>;
   obtenerPlanesFisicos(clubId: string, plantelId: string): Promise<PlanFisico[]>;
   obtenerPlanFisico(planId: string): Promise<SesionFisico[]>;
   obtenerPasos(clubId: string): Promise<PasoFuerza[]>;
