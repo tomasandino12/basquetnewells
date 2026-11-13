@@ -107,6 +107,9 @@ const PROPIO: Partial<Repositorio> = {
   obtenerEntrenamientos: async () => entrenamientos,
   obtenerLesionesDelPlantel: async () => lesiones,
   obtenerSolicitudesDelPlantel: async () => [],
+  // Sin esto el comodín de abajo devolvería una lista (que cuenta como «sí») y la maqueta mostraría «tiene acceso».
+  jugadorTieneCuenta: async () => false,
+  obtenerResponsablesDeJugador: async () => [],
   // Lo que se toca en la maqueta queda en memoria mientras la pestaña esté abierta: nunca va a la base.
   guardarAsistencia: async ({ fecha, filas }) => {
     const viejo = entrenamientos.find((e) => e.fecha === fecha);

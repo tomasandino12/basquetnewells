@@ -11,7 +11,10 @@ import { useDatosDelPlantel } from '../datos/consultas';
 import { cn } from '../lib/cn';
 import { useCargaDeCategoria, usePlantelActivo } from '../plantel/activo';
 import { armarFilas, buscarEnFilas, type FilaPlantel } from '../plantel/filas';
+import { HojaDeEmergencias } from './coord/HojaDeEmergencias';
 import { FilaDeLista } from './FilaDeLista';
+import { HojaAltaJugador } from './familias/HojaAltaJugador';
+import { HojaSolicitudes } from './familias/HojaSolicitudes';
 import { LeyendaDeAsistencia, ULTIMAS_EN_LISTA } from './TiraDeAsistencia';
 import { APP_DE_SIEMPRE } from '../clasica';
 
@@ -46,7 +49,15 @@ export function PlantelDelClub() {
   return (
     <MarcoDelPlantel>
       <ConCategoria>
-        {(activo) => <ContenidoDelPlantel key={activo.plantelId} clubId={activo.clubId} plantelId={activo.plantelId} categoria={activo.categoria} />}
+        {(activo) => (
+          <ContenidoDelPlantel
+            key={activo.plantelId}
+            clubId={activo.clubId}
+            plantelId={activo.plantelId}
+            categoria={activo.categoria}
+            temporadaId={activo.visibles.find((p) => p.id === activo.plantelId)?.temporadaId ?? null}
+          />
+        )}
       </ConCategoria>
     </MarcoDelPlantel>
   );
@@ -72,17 +83,24 @@ interface Props {
   clubId: string;
   plantelId: string;
   categoria: string;
+  /** La temporada de la categoría: el alta a mano la necesita para dar de alta al chico. */
+  temporadaId?: string | null;
   /** Dónde viven las fichas: /plantel en la app, /maqueta/plantel en la maqueta. */
   base?: string;
   /** Dónde se toma la asistencia; la maqueta no tiene toma propia. */
   tomar?: string;
 }
 
-export function ContenidoDelPlantel({ clubId, plantelId, categoria, base = '/plantel', tomar = '/plantel/asistencia' }: Props) {
+type HojaAbierta = 'solicitudes' | 'alta' | 'emergencias' | null;
+
+export function ContenidoDelPlantel({ clubId, plantelId, categoria, temporadaId = null, base = '/plantel', tomar = '/plantel/asistencia' }: Props) {
   const hoy = hoyLocal() as string;
   const datos = useDatosDelPlantel(clubId, plantelId, hoy);
   const navegar = useNavigate();
   const [texto, setTexto] = useState('');
+  const [hoja, setHoja] = useState<HojaAbierta>(null);
+  const [hecho, setHecho] = useState<string | null>(null);
+  const cerrarHoja = () => setHoja(null);
   // La app de siempre abre la ficha de un jugador con ?jugador=<id>: se cambia por su nombre.
   const [pedido] = useSearchParams();
   const avisoDeToma = (useLocation().state as { aviso?: string } | null)?.aviso;
@@ -163,9 +181,11 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria, base = '/pla
 
             {avisoDeToma && <Aviso tono="ok" titulo={avisoDeToma} className="mb-4" />}
 
+            {hecho && <Aviso tono="ok" titulo={hecho} className="mb-4" />}
+
             {d.solicitudes > 0 && (
               <Aviso titulo={d.solicitudes === 1 ? '1 chico pidió entrar a esta categoría' : `${d.solicitudes} chicos pidieron entrar a esta categoría`} className="mb-4">
-                <a href={APP_ANTERIOR} className="font-semibold underline">Revisar en la app anterior</a>
+                <button type="button" onClick={() => setHoja('solicitudes')} className="font-semibold underline">Revisar los pedidos</button>
               </Aviso>
             )}
 
@@ -176,7 +196,7 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria, base = '/pla
                 accion={
                   <div className="flex flex-col gap-2">
                     <a href={APP_ANTERIOR} className={claseBoton({ variante: 'secundario', tamano: 'chico' })}>Cargar un partido de la CABB</a>
-                    <a href={APP_ANTERIOR} className={claseBoton({ variante: 'contorno', tamano: 'chico' })}>Agregar jugador a mano</a>
+                    <button type="button" onClick={() => setHoja('alta')} className={claseBoton({ variante: 'contorno', tamano: 'chico' })}>Agregar jugador a mano</button>
                     <a href={APP_ANTERIOR} className={claseBoton({ variante: 'contorno', tamano: 'chico' })}>Importar inscriptos</a>
                   </div>
                 }
@@ -221,13 +241,30 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria, base = '/pla
             {todos.length > 0 && (
               <section aria-label="Más acciones del plantel" className="mt-8 flex flex-wrap gap-2 border-t border-linea pt-4">
                 <p className="w-full font-mono text-xs tracking-wide text-gris uppercase">Todavía en la app anterior</p>
-                {['Datos de emergencia', 'Agregar a mano', 'Importar inscriptos', 'Importar emergencias'].map((t) => (
+                <p className="w-full -mt-1 text-xs text-gris">Importar inscriptos y emergencias sigue en la app anterior.</p>
+                {['Importar inscriptos', 'Importar emergencias'].map((t) => (
                   <a key={t} href={APP_ANTERIOR} className={claseBoton({ variante: 'linea', tamano: 'chico' })}>
                     {t}
                   </a>
                 ))}
               </section>
             )}
+
+            <section aria-label="Familias y altas" className="mt-4 flex flex-wrap gap-2">
+              <button type="button" onClick={() => setHoja('emergencias')} className={claseBoton({ variante: 'linea', tamano: 'chico' })}>Datos de emergencia</button>
+              {todos.length > 0 && (
+                <button type="button" onClick={() => setHoja('alta')} className={claseBoton({ variante: 'linea', tamano: 'chico' })}>Agregar a mano</button>
+              )}
+              <button type="button" onClick={() => setHoja('solicitudes')} className={claseBoton({ variante: 'linea', tamano: 'chico' })}>Pidieron entrar</button>
+            </section>
+
+            {hoja === 'solicitudes' && (
+              <HojaSolicitudes plantel={{ id: plantelId, categoria }} clubId={clubId} jugadores={d.jugadores} alCerrar={cerrarHoja} alResolver={setHecho} />
+            )}
+            {hoja === 'alta' && (
+              <HojaAltaJugador clubId={clubId} plantel={{ id: plantelId, categoria, temporadaId }} alCerrar={cerrarHoja} alAgregar={setHecho} />
+            )}
+            {hoja === 'emergencias' && <HojaDeEmergencias plantel={{ id: plantelId, categoria }} alCerrar={cerrarHoja} />}
           </>
         );
       }}
