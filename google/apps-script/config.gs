@@ -20,6 +20,10 @@ var TITULO_NOMBRE = 'Nombre del jugador';
 // Pregunta opcional: si un formulario la tiene, su respuesta va en el nombre del archivo.
 var TITULO_CONCEPTO = 'Concepto';
 
+// Mail de la comisión que recibe el aviso cuando un DNI viene mal escrito. Vacío = sin mail
+// (igual queda anotado: correr verRevisar()). El aviso no lleva nombres ni DNI.
+var MAIL_AVISO = '';
+
 // Cada cuántos minutos se revisan los formularios (Apps Script sólo admite 1, 5, 10, 15 o 30).
 var MINUTOS_ENTRE_BARRIDOS = 10;
 

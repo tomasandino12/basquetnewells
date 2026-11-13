@@ -67,7 +67,7 @@ function procesarFormulario(formulario, jugadores, inicio) {
     var momento = respuestas[i].getTimestamp().getTime();
     if (momento <= desde) continue;
     try {
-      procesarRespuesta(respuestas[i], jugadores);
+      procesarRespuesta(respuestas[i], jugadores, formulario);
     } catch (e) {
       // Falla transitoria (Drive caído, cuota): se corta acá y el próximo barrido
       // reintenta desde esta respuesta, sin saltear ninguna.
@@ -85,12 +85,15 @@ function tienePreguntaDni(formulario) {
   });
 }
 
-function procesarRespuesta(respuesta, jugadores) {
+function procesarRespuesta(respuesta, jugadores, formulario) {
   var datos = leerRespuesta(respuesta);
   var dni = normalizarDni(datos.dni);
   if (!dniValido(dni)) {
-    // Reintentar no lo arregla: queda anotado y los archivos siguen donde los dejó Forms.
-    Logger.log('DNI inválido en la respuesta ' + respuesta.getId() + ': los archivos quedan sin mover.');
+    // Reintentar no lo arregla: va a la cola y al mail de la comisión, y los archivos
+    // siguen donde los dejó Forms (nunca se pierden en silencio).
+    var motivo = motivoDniInvalido(dni);
+    Logger.log('DNI inválido en la respuesta ' + respuesta.getId() + ' (' + motivo + '): los archivos quedan sin mover.');
+    avisarDniInvalido(formulario, respuesta, motivo);
     return;
   }
   var carpeta = carpetaDelJugador(jugadores, datos.apellido, datos.nombre, dni);

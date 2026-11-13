@@ -1,5 +1,6 @@
 import { TIPOS_AGENDA, idCalendario, claveValida } from './agenda.js';
 import { aniosDeCategoria, textoAnios } from './categorias.js';
+import { horarioDe, INSCRIPCION_ABRE } from './portalConfig.js';
 
 /**
  * Las fotos del club que usa el portal (public/img/fotos/): el nombre del
@@ -94,16 +95,20 @@ export const PORTAL = Object.freeze({
   // 2026). Newell's no tiene Escuelita ni femeninos de inferiores: la única
   // femenina es Primera. Las dos Primeras no figuran en ningún formulario y van
   // sin horario hasta que el club lo pase.
+  // Los horarios NO van acá: se editan en portalConfig.js (HORARIOS).
   categorias: Object.freeze([
-    Object.freeze({ grupo: 'U9', rama: 'Mixto', horario: 'Mar 18 a 19 h (Estadio Cubierto) · Jue 18 a 19 h (Playón Deportivo)', foto: FOTOS.mini }),
-    Object.freeze({ grupo: 'U11', rama: 'Mixto', horario: 'Mar 19 a 20 h (Estadio Cubierto) · Jue 19 a 20 h (Playón Deportivo)', foto: FOTOS.dribbling }),
-    Object.freeze({ grupo: 'U13', rama: 'Mixto', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)', foto: FOTOS.grupo }),
-    Object.freeze({ grupo: 'U15', rama: 'Masculino', horario: 'Lun y Vie 18 a 19 h (Estadio Cubierto) · Mié 18 a 19 h (Microestadio)', foto: FOTOS.entrenamiento }),
-    Object.freeze({ grupo: 'U17', rama: 'Masculino', horario: 'Lun y Vie 19 a 20 h (Estadio Cubierto) · Mié 19 a 20 h (Microestadio)', foto: FOTOS.ataque }),
-    Object.freeze({ grupo: 'U21', rama: 'Masculino', horario: 'Lun y Vie 20 a 21 h (Estadio Cubierto) · Mié 20 a 21 h (Microestadio)', foto: FOTOS.penetracion }),
-    Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Masculino', horario: null, foto: FOTOS.lanzamiento }),
-    Object.freeze({ grupo: 'MAYORES', nombre: 'Primera', rama: 'Femenino', horario: null, foto: FOTOS.femenino }),
-  ]),
+    { grupo: 'U9', rama: 'Mixto', foto: FOTOS.mini },
+    { grupo: 'U11', rama: 'Mixto', foto: FOTOS.dribbling },
+    { grupo: 'U13', rama: 'Mixto', foto: FOTOS.grupo },
+    { grupo: 'U15', rama: 'Masculino', foto: FOTOS.entrenamiento },
+    { grupo: 'U17', rama: 'Masculino', foto: FOTOS.ataque },
+    { grupo: 'U21', rama: 'Masculino', foto: FOTOS.penetracion },
+    { grupo: 'MAYORES', nombre: 'Primera', rama: 'Masculino', foto: FOTOS.lanzamiento },
+    { grupo: 'MAYORES', nombre: 'Primera', rama: 'Femenino', foto: FOTOS.femenino },
+  ].map((c) => Object.freeze({ ...c, horario: horarioDe(c.grupo, c.rama) }))),
+
+  // Fecha de apertura de la inscripción (se edita en portalConfig.js). Sólo avisa.
+  inscripcionAbre: INSCRIPCION_ABRE,
 
   // Dónde se entrena. Sin calle ni número en ningún formulario: el mapa es una
   // búsqueda de Google Maps. Si el club pasa el link de "Compartir", va ese.

@@ -10,12 +10,26 @@ var LARGO_MAXIMO_NOMBRE = 80;
 // Argentina no tiene horario de verano desde 2009. Si vuelve, esto se corre una hora.
 var DESFASE_ARGENTINA_MS = -3 * 60 * 60 * 1000;
 
+// Copia en google/apps-script-tablero/fila2026.gs (otro proyecto): tests/appsScriptNombres.test.js las compara.
 function normalizarDni(texto) {
-  return String(texto == null ? '' : texto).replace(/[.\s-]/g, '');
+  // Saca un "DNI" / "D.N.I." delante ("DNI 12345678") además de puntos, espacios y guiones.
+  return String(texto == null ? '' : texto).replace(/^\s*d\.?n\.?i\.?\s*[:°º]?\s*/i, '').replace(/[.\s-]/g, '');
 }
 
 function dniValido(dni) {
   return typeof dni === 'string' && /^\d{7,8}$/.test(dni);
+}
+
+/**
+ * Por qué un DNI no sirve, sin repetir lo que escribieron (es dato de un menor):
+ * es lo que va en el aviso a la comisión. null si es válido.
+ */
+function motivoDniInvalido(dni) {
+  if (dniValido(dni)) return null;
+  var s = String(dni == null ? '' : dni);
+  if (!s) return 'vino vacío';
+  if (/\D/.test(s)) return 'tiene letras o símbolos';
+  return 'tiene ' + s.length + ' dígitos y tienen que ser 7 u 8';
 }
 
 /**

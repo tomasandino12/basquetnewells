@@ -10,23 +10,43 @@ const CARPETA = new URL('../google/apps-script/', import.meta.url);
  * appsscript.json y este test hace que un permiso nuevo no entre sin que
  * alguien lo vea y actualice la lista de la guía.
  */
-test('appsscript.json pide sólo forms, drive y script.scriptapp', () => {
+test('appsscript.json pide sólo forms, drive, script.scriptapp y script.send_mail', () => {
   const manifiesto = JSON.parse(readFileSync(new URL('appsscript.json', CARPETA), 'utf8'));
   assert.deepEqual([...manifiesto.oauthScopes].sort(), [
     'https://www.googleapis.com/auth/drive',
     'https://www.googleapis.com/auth/forms',
     'https://www.googleapis.com/auth/script.scriptapp',
+    'https://www.googleapis.com/auth/script.send_mail',
   ]);
 });
 
-test('el script no borra nada ni usa Sheets ni mail', () => {
-  const prohibidos = /setTrashed|removeFile|removeFolder|deleteResponse|deleteAllResponses|SpreadsheetApp|MailApp|GmailApp|UrlFetchApp/;
+const sinComentarios = (nombre) => readFileSync(new URL(nombre, CARPETA), 'utf8')
+  .replace(/\/\*[\s\S]*?\*\//g, '')
+  .replace(/\/\/.*$/gm, '');
+
+test('el script no borra nada ni usa Sheets ni Gmail', () => {
+  const prohibidos = /setTrashed|removeFile|removeFolder|deleteResponse|deleteAllResponses|SpreadsheetApp|GmailApp|UrlFetchApp/;
   for (const nombre of readdirSync(CARPETA).filter((n) => n.endsWith('.gs'))) {
-    const sinComentarios = readFileSync(new URL(nombre, CARPETA), 'utf8')
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/\/\/.*$/gm, '');
-    assert.doesNotMatch(sinComentarios, prohibidos, nombre);
+    assert.doesNotMatch(sinComentarios(nombre), prohibidos, nombre);
   }
+});
+
+test('el mail sale sólo de avisos.gs y el aviso no lleva nombres ni DNI', () => {
+  for (const nombre of readdirSync(CARPETA).filter((n) => n.endsWith('.gs'))) {
+    const usaMail = /MailApp/.test(sinComentarios(nombre));
+    assert.equal(usaMail, nombre === 'avisos.gs', nombre);
+  }
+  const g = vm.createContext({});
+  vm.runInContext(readFileSync(new URL('avisos.gs', CARPETA), 'utf8'), g);
+  const texto = g.textoAviso('Comprobante', 'R123', 'tiene 6 dígitos y tienen que ser 7 u 8', 'https://forms/edit');
+  assert.match(texto, /R123/);
+  assert.match(texto, /Comprobante/);
+  assert.doesNotMatch(texto, /\d{7,}/);
+});
+
+test('un DNI inválido va a la cola de revisión en vez de perderse', () => {
+  const organizar = sinComentarios('organizar.gs');
+  assert.match(organizar, /avisarDniInvalido\(/);
 });
 
 test('todos los .gs compilan', () => {
