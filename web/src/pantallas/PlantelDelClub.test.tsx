@@ -331,7 +331,7 @@ describe('Plantel con datos: estados y permisos', () => {
     abrir(repo({ obtenerJugadoresDelPlantel: async () => [] }));
     expect(await screen.findByText('Sub 13 todavía no tiene jugadores')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Cargar un partido de la CABB' })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Agregar jugador a mano' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Agregar jugador a mano' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Importar inscriptos' })).toBeTruthy();
   });
 

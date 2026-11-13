@@ -6,6 +6,8 @@ import { PESTANAS_FICHA, PESTANA_INICIAL } from '@datos/pestanasFicha.js';
 import { ETIQUETAS, LADOS, MOTIVOS, TIPOS, ZONAS, diaMes, textoDeLesion } from '@datos/asistencia.js';
 import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
+import { HojaDeEmergencias } from './coord/HojaDeEmergencias';
+import { FamiliaDelJugador } from './familias/FamiliaDelJugador';
 import { ChipBoton } from '../components/ui/chip';
 import { ListaPestanas, PanelPestana, Pestana, Pestanas } from '../components/ui/pestanas';
 import { TiroCurva } from '../components/ui/tiro-curva';
@@ -223,6 +225,7 @@ export function FichaDelJugador({ fila: f, clubId, plantelId, hoy, alSacar }: Pr
   const asistencia = useMarcarAsistencia(plantelId, hoy);
   const sacar = useSacarDelPlantel(clubId, plantelId);
   const [confirmando, setConfirmando] = useState(false);
+  const [emergencia, setEmergencia] = useState(false);
   const [pestana, setPestana] = useState(ultimaPestana);
 
   const nombre = `${f.nombre} ${f.apellido}`.trim();
@@ -333,6 +336,12 @@ export function FichaDelJugador({ fila: f, clubId, plantelId, hoy, alSacar }: Pr
           <PanelPestana value="historia"><PendienteEnLaApp titulo="Temporadas y recursos enviados" /></PanelPestana>
         </Pestanas>
 
+        <FamiliaDelJugador clubId={clubId} jugadorId={f.id} nombre={nombre} />
+        <div>
+          <Boton variante="contorno" tamano="chico" onClick={() => setEmergencia(true)}>Datos de emergencia</Boton>
+        </div>
+        {emergencia && <HojaDeEmergencias plantel={{ id: plantelId }} jugadorId={f.id} alCerrar={() => setEmergencia(false)} />}
+
         <footer className="border-t border-linea pt-3">
           {confirmando ? (
             <div role="group" aria-label="Confirmar" className="flex flex-col gap-2">
@@ -348,7 +357,7 @@ export function FichaDelJugador({ fila: f, clubId, plantelId, hoy, alSacar }: Pr
             <Boton variante="contorno" tamano="chico" onClick={() => setConfirmando(true)}>Sacar del plantel</Boton>
           )}
           <p className="mt-3 text-xs text-gris">
-            Editar la fecha de nacimiento, los datos de emergencia, el acceso del chico y la familia: en la{' '}
+            Editar la fecha de nacimiento: en la{' '}
             <a href={APP_DE_SIEMPRE} className="underline underline-offset-2">app anterior</a>.
           </p>
         </footer>

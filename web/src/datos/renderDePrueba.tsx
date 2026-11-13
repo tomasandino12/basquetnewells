@@ -58,6 +58,22 @@ export function repositorioInventado(piso: Partial<Repositorio> = {}): Repositor
     plantelesDeJugada: async () => [],
     asignarJugada: async () => {},
     crearJugada: async () => ({}),
+    // Familias y altas.
+    obtenerJugadoresDelClub: async () => [],
+    altaJugadorManual: async () => ({}),
+    crearPertenencia: async () => {},
+    aprobarSolicitud: async () => ({}),
+    rechazarSolicitud: async () => {},
+    revocarCuentaJugador: async () => {},
+    jugadorTieneCuenta: async () => false,
+    obtenerResponsablesDeJugador: async () => [],
+    agregarResponsable: async () => {},
+    quitarResponsable: async () => {},
+    vincularPorMail: async () => 0,
+    obtenerMisChicos: async () => [],
+    obtenerClubesParaSolicitar: async () => [],
+    crearSolicitudJugador: async () => {},
+    obtenerMiSolicitud: async () => null,
     // Coordinación: todo vacío; cada prueba pisa lo que necesita.
     obtenerCatalogoDeCategorias: async () => [
       { codigo: 'U13', nombre: 'Sub 13', orden: 1 },

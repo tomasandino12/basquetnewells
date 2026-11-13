@@ -318,7 +318,84 @@ export interface EvaluacionAGuardar {
   evaluaciones: { tipo: 'jugador' | 'equipo'; id: string; estado: string | null; comentario: string | null }[];
 }
 
+/** Un pedido de un chico para entrar a una categoría. El código de aprobación no viaja acá: el chico lo muestra en persona. */
+export interface SolicitudDelPlantel {
+  id: string;
+  userId: string;
+  nombre: string | null;
+  creadoEn: string;
+  emailEnmascarado: string | null;
+  fechaNacimiento: string | null;
+}
+
+/** Lo que la base deja ver de cada ficha del club para no duplicar: `plantelesActuales` sólo trae los planteles propios. */
+export interface JugadorDelClub {
+  id: string;
+  nombreClave: string;
+  nombreLimpio: string;
+  plantelesActuales: string[];
+}
+
+export interface ChicoDeFamilia {
+  vinculoId: string;
+  nombre: string;
+  clubNombre: string;
+  categorias: string | null;
+}
+
+export interface ResponsableDeJugador {
+  id: string;
+  email: string;
+}
+
+/** Una fila del catálogo de «soy jugador de un club»: una por categoría de cada club. */
+export interface CategoriaParaSolicitar {
+  clubId: string;
+  clubNombre: string;
+  plantelId: string;
+  categoriaCodigo: string | null;
+  categoriaNombre: string;
+}
+
+export interface MiSolicitud {
+  id: string;
+  estado: 'pendiente' | 'aprobada' | 'rechazada' | string;
+  clubNombre: string;
+  categoriaNombre: string;
+  creadoEn: string;
+  /** El que el chico le muestra en persona al profe. */
+  codigo: string | null;
+}
+
+/** Lo que se manda a aprobar_solicitud_jugador: vincula a una ficha que existe o crea una nueva. */
+export type AprobacionDeSolicitud =
+  | { solicitudId: string; jugadorId: string; codigo: string }
+  | { solicitudId: string; nombreClave: string; nombreLimpio: string; fechaNacimiento: string; codigo: string; desambiguador?: string };
+
 export interface Repositorio extends RepositorioCoord {
+  // Familias y altas (los pedidos de entrada, el alta a mano, los mails de la familia).
+  obtenerJugadoresDelClub(clubId: string): Promise<JugadorDelClub[]>;
+  altaJugadorManual(datos: {
+    clubId: string;
+    nombreClave: string;
+    nombreLimpio: string;
+    plantelId: string;
+    temporadaId: string | null;
+    desde: string;
+  }): Promise<unknown>;
+  crearPertenencia(datos: { clubId: string; jugadorId: string; plantelId: string; temporadaId: string | null; desde: string }): Promise<void>;
+  aprobarSolicitud(datos: AprobacionDeSolicitud): Promise<unknown>;
+  rechazarSolicitud(solicitudId: string): Promise<void>;
+  revocarCuentaJugador(jugadorId: string): Promise<void>;
+  jugadorTieneCuenta(jugadorId: string): Promise<boolean>;
+  obtenerResponsablesDeJugador(jugadorId: string): Promise<ResponsableDeJugador[]>;
+  agregarResponsable(clubId: string, jugadorId: string, email: string): Promise<void>;
+  quitarResponsable(responsableId: string): Promise<void>;
+  vincularPorMail(): Promise<number>;
+  obtenerMisChicos(): Promise<ChicoDeFamilia[]>;
+  obtenerClubesParaSolicitar(): Promise<CategoriaParaSolicitar[]>;
+  crearSolicitudJugador(datos: { clubId: string; plantelId: string; fechaNacimiento: string }): Promise<void>;
+  obtenerMiSolicitud(): Promise<MiSolicitud | null>;
   // Vista del jugador (cuenta de jugador: la base sólo le da lo suyo).
   obtenerMiFicha(): Promise<FichaDeJugador | null>;
   obtenerMiPlan(): Promise<MiPlan>;
