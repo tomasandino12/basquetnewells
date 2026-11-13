@@ -21,6 +21,29 @@ test('normaliza DNI con puntos y espacios', () => {
   assert.equal(g.normalizarDni('22-222-222'), '22222222');
 });
 
+test('normaliza un "DNI" escrito delante', () => {
+  assert.equal(g.normalizarDni('DNI 12345678'), '12345678');
+  assert.equal(g.normalizarDni('D.N.I.: 12.345.678'), '12345678');
+  assert.equal(g.normalizarDni('dni:1234567'), '1234567');
+});
+
+test('explica por qué un DNI no sirve, sin repetirlo', () => {
+  assert.equal(g.motivoDniInvalido('12345678'), null);
+  assert.equal(g.motivoDniInvalido(''), 'vino vacío');
+  assert.equal(g.motivoDniInvalido('12a45678'), 'tiene letras o símbolos');
+  assert.equal(g.motivoDniInvalido('123456'), 'tiene 6 dígitos y tienen que ser 7 u 8');
+});
+
+test('las dos copias de normalizarDni (organizar y tablero) dan lo mismo', () => {
+  const gt = vm.createContext({});
+  vm.runInContext(readFileSync(new URL('../google/apps-script-tablero/fila2026.gs', import.meta.url), 'utf8'), gt);
+  const casos = ['', null, undefined, ' 11.111.111 ', '1 234 567', '22-222-222', 'DNI 12345678', 'D.N.I.: 12.345.678', 'abc', '123456789', 12345678];
+  for (const c of casos) {
+    assert.equal(gt.normalizarDni(c), g.normalizarDni(c), String(c));
+    assert.equal(gt.dniValido(gt.normalizarDni(c)), g.dniValido(g.normalizarDni(c)), String(c));
+  }
+});
+
 test('acepta DNI de 7 y 8 dígitos', () => {
   assert.equal(g.dniValido('1234567'), true);
   assert.equal(g.dniValido('11111111'), true);

@@ -6,7 +6,7 @@
 
 // Copias de nombres.gs del otro proyecto (este es un proyecto aparte, no comparte archivos).
 function normalizarDni(texto) {
-  return String(texto == null ? '' : texto).replace(/[.\s-]/g, '');
+  return String(texto == null ? '' : texto).replace(/^\s*d\.?n\.?i\.?\s*[:°º]?\s*/i, '').replace(/[.\s-]/g, '');
 }
 
 function dniValido(dni) {

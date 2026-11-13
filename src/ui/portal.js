@@ -7,6 +7,7 @@ import {
   fotoDeCategoriaValida, fotoDeEvento, firmaValida, frasesDeCintaValidas, FOTOS,
 } from '../data/portal.js';
 import { temporadaComoAnio } from '../data/categorias.js';
+import { textoApertura } from '../data/portalConfig.js';
 import { resolverFormularios, separarFormularios } from '../data/formulariosPortal.js';
 import {
   eventosPorDia, proximosEventos, semanasDelMes, mesVecino, hoyEnRosario, tituloMes, fechaLarga,
@@ -96,13 +97,13 @@ function accion({ clase, icono, titulo, detalle, url, cerrado, cargando }) {
  * alias y, si hay, el comprobante (htmlPago). Son independientes: alguien se
  * puede inscribir sin pagar nada.
  */
-export function htmlAcciones({ inscripcion = null, consultas = null, temporada = null, cargando = false } = {}) {
+export function htmlAcciones({ inscripcion = null, consultas = null, temporada = null, apertura = null, cargando = false } = {}) {
   const url = (f) => (f ? enlaceFormulario(f.enlace) : null);
   const ins = url(inscripcion);
   const primera = ins
     ? accion({ clase: 'principal', icono: 'personaMas', titulo: 'Inscribirme', url: ins, detalle: `Inscripción${temporada ? ` ${temporada}` : ''} abierta` })
     : accion({ clase: 'principal', icono: 'personaMas', titulo: 'Anotarse para probar', url: url(consultas), cargando,
-      detalle: 'Dejá tus datos y te avisamos', cerrado: 'Se habilita cuando abra el formulario' });
+      detalle: 'Dejá tus datos y te avisamos', cerrado: apertura ?? 'Se habilita cuando abra el formulario' });
   return html`${primera}
     <button type="button" class="portal-accion pago" data-abrir-pago aria-haspopup="dialog">
       <i>${ICONO.billetera}</i><span><b>Pagar</b><small>Alias y comprobante</small></span><em aria-hidden="true">›</em>
@@ -325,14 +326,14 @@ export function htmlCategoriaDelAnio(anio, categorias) {
  * (inscripción, "Anotarse para probar") para no mandar a un botón apagado. Al final,
  * la ÚNICA vez que aparece el WhatsApp del coordinador en la página.
  */
-export function htmlAyuda({ inscripcionAbierta = false, consultasAbierto = false, temporada = null, alias = null, sede = null, contacto = null } = {}) {
+export function htmlAyuda({ inscripcionAbierta = false, consultasAbierto = false, temporada = null, apertura = null, alias = null, sede = null, contacto = null } = {}) {
   const a = aliasValido(alias);
   const s = sedeValida(sede);
   const coordinador = enlaceContacto(contacto);
   const pregunta = (titulo, respuesta) => html`<details class="portal-faq"><summary>${titulo}</summary><div class="portal-faq-r">${respuesta}</div></details>`;
   const comoInscribir = inscripcionAbierta
     ? html`<p>Tocá <b>Inscribirme</b>, arriba de todo. Se abre un formulario de Google: completalo desde el celular. Tené a mano el DNI del chico o la chica y el tuyo.</p>`
-    : html`<p>La inscripción${temporada ? html` ${temporada}` : ''} todavía no abrió. ${consultasAbierto
+    : html`<p>La inscripción${temporada ? html` ${temporada}` : ''} todavía no abrió${apertura ? html` (${apertura.toLowerCase()})` : ''}. ${consultasAbierto
       ? html`Mientras tanto, tocá <b>Anotarse para probar</b>, arriba de todo: dejás tus datos y te avisamos para que venga a probar.`
       : html`Cuando abra, el botón se habilita arriba de todo.`}</p>`;
   const alCoordinador = coordinador ? 'escribile al coordinador (el botón de acá abajo)' : 'escribile al coordinador';
@@ -796,14 +797,15 @@ export async function iniciarPortal() {
   // Hasta que responda la base, todo cerrado: nunca un botón a un formulario que quizá ya no está.
   const pintarFormularios = ({ inscripcion = null, comprobante = null, consultas = null, colaboradores = null, recaudacion = null } = {}, cargando = false) => {
     const abierto = (f) => Boolean(f && enlaceFormulario(f.enlace));
-    $('portal-heroe').innerHTML = htmlAcciones({ inscripcion, consultas, temporada: PORTAL.temporada, cargando });
+    const apertura = textoApertura(PORTAL.inscripcionAbre);
+    $('portal-heroe').innerHTML = htmlAcciones({ inscripcion, consultas, temporada: PORTAL.temporada, apertura, cargando });
     $('portal-dock-acc').innerHTML = htmlDock({ inscripcion, consultas });
     $('portal-pago-cuerpo').innerHTML = htmlPago({ alias: PORTAL.alias, comprobante });
     $('portal-recaudacion').innerHTML = htmlRecaudacion(recaudacion);
     $('portal-colaborar').innerHTML = htmlColaborar(colaboradores);
     $('portal-ayuda-lista').innerHTML = htmlAyuda({
       inscripcionAbierta: abierto(inscripcion), consultasAbierto: abierto(consultas),
-      temporada: PORTAL.temporada, alias: PORTAL.alias, sede: PORTAL.sede, contacto: PORTAL.contacto,
+      temporada: PORTAL.temporada, apertura, alias: PORTAL.alias, sede: PORTAL.sede, contacto: PORTAL.contacto,
     });
   };
   pintarFormularios({}, true);
