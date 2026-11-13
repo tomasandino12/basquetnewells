@@ -97,7 +97,7 @@ export function Biblioteca({ clubId, planteles }: { clubId: string; planteles: P
         </div>
       </header>
 
-      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[20rem_minmax(0,1fr)_20rem] lg:items-start">
+      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(16rem,1fr)_minmax(0,2fr)_minmax(16rem,1fr)] lg:items-start">
         <section aria-label="Lista" className="order-3 flex flex-col gap-3 lg:order-1 print:hidden">
           <label className="relative block">
             <span className="sr-only">{pestana === 'ejercicios' ? 'Buscar ejercicio' : 'Buscar jugada'}</span>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { TIPOS_JUGADA, etiquetaDeTipo, nosotrosDefiende } from '@datos/jugadas.js';
 import { Consulta } from '../../components/ui/consulta';
 import { Vacio } from '../../components/ui/estados';
+import { TOPE_DE_PAGINA } from '../../components/ui/pagina';
 import { Pizarra, PizarraMini } from '../../components/ui/pizarra';
 import { useMisJugadas } from '../../datos/consultasJugador';
 import type { JugadaDelJugador } from '../../datos/repositorio';
@@ -66,7 +67,7 @@ export function JugadorJugadas() {
           <Dialog.Content className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-fondo text-tinta outline-none">
             <Dialog.Title className="sr-only">{abierta?.nombre ?? 'Jugada'}</Dialog.Title>
             <Dialog.Description className="sr-only">La jugada a pantalla completa, con sus pasos.</Dialog.Description>
-            <div className="mx-auto flex w-full max-w-[64rem] items-center justify-between gap-3 px-4 pt-3">
+            <div className={`mx-auto flex w-full ${TOPE_DE_PAGINA} items-center justify-between gap-3 px-4 pt-3`}>
               <p className="font-titulo text-2xl leading-none font-semibold break-words">{abierta?.nombre}</p>
               <Dialog.Close
                 aria-label="Cerrar la jugada"
@@ -76,7 +77,7 @@ export function JugadorJugadas() {
               </Dialog.Close>
             </div>
             {abierta && (
-              <div className="mx-auto w-full max-w-[64rem] px-4 py-4">
+              <div className={`mx-auto w-full ${TOPE_DE_PAGINA} px-4 py-4`}>
                 <Pizarra datos={abierta.datos} nosotrosDefiende={nosotrosDefiende(abierta.tipo) as boolean} etiqueta={`Jugada: ${abierta.nombre}`} />
               </div>
             )}

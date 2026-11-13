@@ -73,7 +73,7 @@ function AbrirTemporada({ clubId, vigente, anio, alHacer }: { clubId: string; vi
   const [abierta, setAbierta] = useState(false);
   const abrir = useAccionCoord((repo, nombre: string) => repo.abrirTemporada({ clubId, nombre }));
   return (
-    <section aria-label="Paso 1" className="max-w-2xl">
+    <section aria-label="Paso 1">
       <Rotulo>Paso 1 · Abrir la temporada nueva</Rotulo>
       <p className="mb-4 text-sm">
         Hoy la temporada es la <b>{vigente}</b> y no queda ningún chico por pasar. Cuando arranque la {anio + 1}, abrila acá: se crean los mismos

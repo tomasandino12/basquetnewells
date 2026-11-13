@@ -73,7 +73,7 @@ function MedirDeLaCategoria({ clubId, plantelId, categoria }: { clubId: string; 
 
   return (
     <>
-      <div className="lg:grid lg:grid-cols-[minmax(0,21rem)_minmax(0,1fr)] lg:gap-x-12">
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] lg:gap-x-12">
         <div className="lg:col-start-1 lg:row-start-1">
           <header className="pt-2">
             <h1 className="font-titulo text-7xl leading-[.9] font-bold uppercase lg:text-8xl">Medir</h1>
