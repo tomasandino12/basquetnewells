@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Navigate, Outlet, createBrowserRouter, useLocation, type RouteObject } from 'react-router';
 import { Consulta } from './components/ui/consulta';
 import { Pagina } from './components/ui/pagina';
@@ -30,7 +31,9 @@ import { JugadorProgreso } from './pantallas/jugador/JugadorProgreso';
 import { JugadorRecursos } from './pantallas/jugador/JugadorRecursos';
 import { JugadorSesion } from './pantallas/jugador/JugadorSesion';
 import { MarcoJugador } from './pantallas/jugador/MarcoJugador';
+import { ArmarMisiones } from './pantallas/ArmarMisiones';
 import { MisionesPartido } from './pantallas/MisionesPartido';
+import { Perfil } from './pantallas/Perfil';
 import { CoordFamilias } from './pantallas/coord/CoordFamilias';
 import { CoordFinanzas } from './pantallas/coord/CoordFinanzas';
 import { CoordFormularios } from './pantallas/coord/CoordFormularios';
@@ -53,16 +56,32 @@ function Entrada() {
  * Con sesión, la categoría elegida (los chips de arriba) vale para todas las pantallas.
  */
 export function RequiereSesion() {
-  const { estado, error, reintentar } = useSesion();
-  const lugar = useLocation();
-  if (estado === 'con-sesion') {
-    return (
+  return (
+    <PuertaDeSesion>
       <ProveedorPlantelActivo>
         <BarraDeCategorias />
         <Outlet />
       </ProveedorPlantelActivo>
-    );
-  }
+    </PuertaDeSesion>
+  );
+}
+
+/**
+ * Mi perfil lo abre cualquiera con cuenta (profe, coordinación, jugador, familia): pide sólo la
+ * sesión, sin categoría elegida (ésa es del cuerpo técnico).
+ */
+export function RequiereSoloSesion() {
+  return (
+    <PuertaDeSesion>
+      <Outlet />
+    </PuertaDeSesion>
+  );
+}
+
+function PuertaDeSesion({ children }: { children: ReactNode }) {
+  const { estado, error, reintentar } = useSesion();
+  const lugar = useLocation();
+  if (estado === 'con-sesion') return <>{children}</>;
   if (estado === 'sin-sesion' && irALaDeSiempre({ volver: true })) return null;
   if (estado === 'sin-sesion') return <Navigate to="/entrar" replace state={{ desde: lugar.pathname }} />;
   return (
@@ -109,12 +128,17 @@ export const rutas: RouteObject[] = [
         // Cargar un partido cuelga de Datos (y del plantel vacío): no tiene ítem propio en el menú.
         { path: '/datos/cargar-partido', element: <CargarPartido /> },
         { path: '/recursos', element: <Recursos /> },
+        // Armar las misiones cuelga de Plantel y de Hoy; sin id es una previa nueva, con id se edita la que está.
+        { path: '/misiones/armar', element: <ArmarMisiones /> },
+        { path: '/misiones/:previaId/armar', element: <ArmarMisiones /> },
         { path: '/misiones/:previaId', element: <MisionesPartido /> },
         { path: '/fisico', element: <Fisico /> },
         { path: '/fisico/plan/:planId/sesion/:sesionId', element: <FisicoSesion /> },
         { path: '/fisico/plan/:planId/sesion/:sesionId/ejercicio/:lineaId', element: <FisicoEscalones /> },
       ],
     },
+    // Mi perfil: con cuenta de cualquier rol; se abre desde la cabecera, no desde el menú.
+    { element: <RequiereSoloSesion />, children: [{ path: '/perfil', element: <Perfil /> }] },
     // Coordinación no pasa por RequiereSesion: ése manda a la app de siempre a quien sólo coordina.
     // La puerta propia pide la sesión y el rol de coordinación.
     { element: <RequiereCoordinacion />, children: [

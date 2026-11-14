@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCargarRepositorio } from './contexto';
-import type { EvaluacionAGuardar } from './repositorio';
+import type { EvaluacionAGuardar, PayloadDePrevia } from './repositorio';
 
 // Vista del jugador: una consulta por dato. La base entrega sólo lo suyo (mi_ficha, mi_plan, mi_progreso…),
 // así que las claves empiezan con «jugador» y se sueltan junto con el resto al salir de la cuenta.
@@ -93,6 +93,37 @@ export function useDatosDeMisiones(clubId: string | undefined, plantelId: string
       ]);
       return { previa, previas, partidos, jugadores };
     },
+  });
+}
+
+/**
+ * Lo que necesita armar o editar las misiones: los chicos (nombres de menores, así no se guardan
+ * en memoria) y, si se edita una previa que ya existe, esa previa.
+ */
+export function useDatosDeArmado(clubId: string | undefined, plantelId: string | undefined, previaId: string | null) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['misiones', 'armar', clubId, plantelId, previaId],
+    enabled: clubId !== undefined && plantelId !== undefined,
+    staleTime: 0,
+    gcTime: 0,
+    queryFn: async () => {
+      const repo = await cargar();
+      const [jugadores, previa] = await Promise.all([
+        repo.obtenerJugadoresDelPlantel(clubId!, plantelId!),
+        previaId ? repo.obtenerPrevia(previaId) : Promise.resolve(null),
+      ]);
+      return { jugadores, previa };
+    },
+  });
+}
+
+export function useGuardarPrevia() {
+  const cargar = useCargarRepositorio();
+  const consultas = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: PayloadDePrevia) => (await cargar()).guardarPrevia(payload),
+    onSuccess: () => consultas.invalidateQueries({ queryKey: ['misiones'] }),
   });
 }
 

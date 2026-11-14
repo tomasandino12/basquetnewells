@@ -1,13 +1,14 @@
-import { Activity, ArrowUpRight, Building2, LogOut, CalendarCheck,LineChart, Moon, MoreHorizontal, PlaySquare, Ruler, Sun, Users, type LucideIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Activity, ArrowUpRight, Building2, LogOut, CalendarCheck,LineChart, Moon, MoreHorizontal, PlaySquare, Ruler, Sun, User, Users, type LucideIcon } from 'lucide-react';
+import { useEffect } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
+import { inicialesDeNombre, nombreDeUsuario } from '@datos/cuenta.js';
 import escudo from '../../public/escudo.png';
 import { ANCHO_DE_PAGINA } from './components/ui/pagina';
 import { cn } from './lib/cn';
 import { useSesion } from './datos/contexto';
 import { useSalir } from './datos/consultas';
 import { useEsCoordinador } from './coord/consultas';
-import { aplicarTema, guardarTema, leerTema, type Tema } from './tema';
+import { aplicarTema, guardarTema, useTema, type Tema } from './tema';
 import { APP_DE_SIEMPRE } from './clasica';
 
 interface Enlace {
@@ -108,6 +109,37 @@ export function BotonSalir({ compacto }: { compacto?: boolean }) {
   );
 }
 
+/**
+ * Mi perfil: no es un ítem del menú (la barra de abajo ya está llena) sino un acceso en la cabecera,
+ * con las iniciales del nombre. Sin nombre cargado, un muñequito. Sólo con sesión.
+ */
+export function BotonPerfil({ compacto }: { compacto?: boolean }) {
+  const { estado, sesion } = useSesion();
+  if (estado !== 'con-sesion') return null;
+  const iniciales = inicialesDeNombre((nombreDeUsuario(sesion?.user) as string | null) ?? '') as string;
+  const marca = (
+    <span aria-hidden className="grid size-7 shrink-0 place-items-center rounded-full bg-club font-titulo text-sm leading-none font-bold text-sobre-club">
+      {iniciales || <User className="size-4" />}
+    </span>
+  );
+  return (
+    <NavLink
+      to="/perfil"
+      aria-label={compacto ? 'Mi perfil' : undefined}
+      className={({ isActive }) =>
+        cn(
+          'flex items-center gap-3 rounded-[0.5rem] text-sobre-negro outline-offset-2 focus-visible:outline-2 focus-visible:outline-lima',
+          compacto ? 'size-11 justify-center' : 'min-h-11 px-3 text-[0.9375rem]',
+          isActive ? 'font-semibold' : 'opacity-70 [@media(hover:hover)]:hover:opacity-100',
+        )
+      }
+    >
+      {marca}
+      {!compacto && <span>Mi perfil</span>}
+    </NavLink>
+  );
+}
+
 export function BotonTema({ tema, alCambiar, className }: { tema: Tema; alCambiar: () => void; className?: string }) {
   const Icono = tema === 'oscuro' ? Sun : Moon;
   return (
@@ -182,15 +214,11 @@ export function Marco() {
   const { pathname } = useLocation();
   const esCoordinador = useEsCoordinador();
   const enlaces = ENLACES_DEL_MENU.filter((e) => !e.soloCoordinacion || esCoordinador);
-  const [tema, setTema] = useState<Tema>(leerTema);
+  // El mismo tema que el interruptor de Mi perfil: cambiar uno cambia el otro.
+  const tema: Tema = useTema();
 
   useEffect(() => aplicarTema(tema), [tema]);
-  const cambiarTema = () =>
-    setTema((t) => {
-      const otro: Tema = t === 'oscuro' ? 'claro' : 'oscuro';
-      guardarTema(otro);
-      return otro;
-    });
+  const cambiarTema = () => guardarTema(tema === 'oscuro' ? 'claro' : 'oscuro');
 
   return (
     <div className="min-h-svh lg:pl-60 print:pl-0">
@@ -210,9 +238,12 @@ export function Marco() {
           </ul>
           <DeSiempre />
         </nav>
-        <div className="mt-auto flex items-center justify-between">
-          <BotonSalir />
-          <BotonTema tema={tema} alCambiar={cambiarTema} />
+        <div className="mt-auto flex flex-col gap-1">
+          <BotonPerfil />
+          <div className="flex items-center justify-between">
+            <BotonSalir />
+            <BotonTema tema={tema} alCambiar={cambiarTema} />
+          </div>
         </div>
       </aside>
 
@@ -223,6 +254,7 @@ export function Marco() {
           <p className="font-titulo text-lg leading-none font-bold tracking-wide text-sobre-negro uppercase">Semillero</p>
         </div>
         <div className="flex items-center">
+          <BotonPerfil compacto />
           <BotonSalir compacto />
           <BotonTema tema={tema} alCambiar={cambiarTema} />
         </div>
