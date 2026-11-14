@@ -13,7 +13,10 @@ import { useCargaDeCategoria, usePlantelActivo } from '../plantel/activo';
 import { armarFilas, buscarEnFilas, type FilaPlantel } from '../plantel/filas';
 import { HojaDeEmergencias } from './coord/HojaDeEmergencias';
 import { FilaDeLista } from './FilaDeLista';
+import { RUTA_CARGAR_PARTIDO } from '../importar/rutas';
 import { HojaAltaJugador } from './familias/HojaAltaJugador';
+import { ImportarEmergencias } from './importar/ImportarEmergencias';
+import { ImportarInscriptos } from './importar/ImportarInscriptos';
 import { HojaSolicitudes } from './familias/HojaSolicitudes';
 import { LeyendaDeAsistencia, ULTIMAS_EN_LISTA } from './TiraDeAsistencia';
 import { APP_DE_SIEMPRE } from '../clasica';
@@ -55,6 +58,7 @@ export function PlantelDelClub() {
             clubId={activo.clubId}
             plantelId={activo.plantelId}
             categoria={activo.categoria}
+            categoriaCodigo={activo.visibles.find((p) => p.id === activo.plantelId)?.categoriaCodigo ?? null}
             temporadaId={activo.visibles.find((p) => p.id === activo.plantelId)?.temporadaId ?? null}
           />
         )}
@@ -83,6 +87,8 @@ interface Props {
   clubId: string;
   plantelId: string;
   categoria: string;
+  /** El código de la categoría (U13…): importar inscriptos se queda con los chicos de esa categoría. */
+  categoriaCodigo?: string | null;
   /** La temporada de la categoría: el alta a mano la necesita para dar de alta al chico. */
   temporadaId?: string | null;
   /** Dónde viven las fichas: /plantel en la app, /maqueta/plantel en la maqueta. */
@@ -91,9 +97,9 @@ interface Props {
   tomar?: string;
 }
 
-type HojaAbierta = 'solicitudes' | 'alta' | 'emergencias' | null;
+type HojaAbierta = 'solicitudes' | 'alta' | 'emergencias' | 'inscriptos' | 'importarEmergencias' | null;
 
-export function ContenidoDelPlantel({ clubId, plantelId, categoria, temporadaId = null, base = '/plantel', tomar = '/plantel/asistencia' }: Props) {
+export function ContenidoDelPlantel({ clubId, plantelId, categoria, categoriaCodigo = null, temporadaId = null, base = '/plantel', tomar = '/plantel/asistencia' }: Props) {
   const hoy = hoyLocal() as string;
   const datos = useDatosDelPlantel(clubId, plantelId, hoy);
   const navegar = useNavigate();
@@ -195,9 +201,9 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria, temporadaId 
                 titulo={`${categoria} todavía no tiene jugadores`}
                 accion={
                   <div className="flex flex-col gap-2">
-                    <a href={APP_ANTERIOR} className={claseBoton({ variante: 'secundario', tamano: 'chico' })}>Cargar un partido de la CABB</a>
+                    <Link to={RUTA_CARGAR_PARTIDO} className={claseBoton({ variante: 'secundario', tamano: 'chico' })}>Cargar un partido de la CABB</Link>
                     <button type="button" onClick={() => setHoja('alta')} className={claseBoton({ variante: 'contorno', tamano: 'chico' })}>Agregar jugador a mano</button>
-                    <a href={APP_ANTERIOR} className={claseBoton({ variante: 'contorno', tamano: 'chico' })}>Importar inscriptos</a>
+                    <button type="button" onClick={() => setHoja('inscriptos')} className={claseBoton({ variante: 'contorno', tamano: 'chico' })}>Importar inscriptos</button>
                   </div>
                 }
               >
@@ -238,15 +244,13 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria, temporadaId 
               </>
             )}
 
+            {/* Con el plantel vacío, estas acciones ya están en el vacío de arriba; emergencias necesita chicos con quién cruzar. */}
             {todos.length > 0 && (
-              <section aria-label="Más acciones del plantel" className="mt-8 flex flex-wrap gap-2 border-t border-linea pt-4">
-                <p className="w-full font-mono text-xs tracking-wide text-gris uppercase">Todavía en la app anterior</p>
-                <p className="w-full -mt-1 text-xs text-gris">Importar inscriptos y emergencias sigue en la app anterior.</p>
-                {['Importar inscriptos', 'Importar emergencias'].map((t) => (
-                  <a key={t} href={APP_ANTERIOR} className={claseBoton({ variante: 'linea', tamano: 'chico' })}>
-                    {t}
-                  </a>
-                ))}
+              <section aria-label="Importar planillas" className="mt-8 flex flex-wrap gap-2 border-t border-linea pt-4">
+                <p className="w-full font-mono text-xs tracking-wide text-gris uppercase">Importar planillas</p>
+                <button type="button" onClick={() => setHoja('inscriptos')} className={claseBoton({ variante: 'linea', tamano: 'chico' })}>Importar inscriptos</button>
+                <button type="button" onClick={() => setHoja('importarEmergencias')} className={claseBoton({ variante: 'linea', tamano: 'chico' })}>Importar emergencias</button>
+                <Link to={RUTA_CARGAR_PARTIDO} className={claseBoton({ variante: 'linea', tamano: 'chico' })}>Cargar partido</Link>
               </section>
             )}
 
@@ -265,6 +269,18 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria, temporadaId 
               <HojaAltaJugador clubId={clubId} plantel={{ id: plantelId, categoria, temporadaId }} alCerrar={cerrarHoja} alAgregar={setHecho} />
             )}
             {hoja === 'emergencias' && <HojaDeEmergencias plantel={{ id: plantelId, categoria }} alCerrar={cerrarHoja} />}
+            {hoja === 'inscriptos' && (
+              <ImportarInscriptos
+                clubId={clubId}
+                plantel={{ id: plantelId, categoria, categoriaCodigo, temporadaId }}
+                jugadores={d.jugadores}
+                alCerrar={cerrarHoja}
+                alImportar={setHecho}
+              />
+            )}
+            {hoja === 'importarEmergencias' && (
+              <ImportarEmergencias plantel={{ id: plantelId, categoria }} jugadores={d.jugadores} alCerrar={cerrarHoja} alImportar={setHecho} />
+            )}
           </>
         );
       }}

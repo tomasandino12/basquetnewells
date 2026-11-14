@@ -32,15 +32,11 @@ export function vieneDeLaNueva(search) {
   return new URLSearchParams(String(search ?? '').replace(/^\?/, '')).get('desde') === 'nueva';
 }
 
-export function normalizarNueva(valor) {
-  return valor === 'no' ? 'no' : 'si';
-}
-
 /**
- * A qué pantalla de la de siempre puede mandar la nueva con `?ir=<destino>`. Lista cerrada:
- * lo que llega por la dirección nunca se usa como id de pantalla sin pasar por acá.
+ * Pantallas de la de siempre a las que la nueva puede mandar con `?ir=`. Lista cerrada:
+ * lo que viene en la dirección nunca se usa como id de pantalla sin pasar por acá.
  */
-export const DESTINOS_DE_MEDIR = {
+export const PANTALLAS_PEDIDAS = {
   medir: 'p-medir',
   tiro: 'p-medir-bateria',
   salto: 'p-medir-salto',
@@ -48,10 +44,15 @@ export const DESTINOS_DE_MEDIR = {
   yoyo: 'p-medir-yoyo',
 };
 
-/** La pantalla de la de siempre que pide `?ir=`, o null si no pide ninguna o no está permitida. */
+/** La pantalla que pidió la nueva (`?desde=nueva&ir=salto`), o null si no pidió una conocida. */
 export function pantallaPedida(search) {
-  const pedido = new URLSearchParams(String(search ?? '').replace(/^\?/, '')).get('ir');
-  return pedido !== null && Object.hasOwn(DESTINOS_DE_MEDIR, pedido) ? DESTINOS_DE_MEDIR[pedido] : null;
+  if (!vieneDeLaNueva(search)) return null;
+  const ir = new URLSearchParams(String(search ?? '').replace(/^\?/, '')).get('ir');
+  return Object.hasOwn(PANTALLAS_PEDIDAS, ir ?? '') ? PANTALLAS_PEDIDAS[ir] : null;
+}
+
+export function normalizarNueva(valor) {
+  return valor === 'no' ? 'no' : 'si';
 }
 
 const ID_SEGURO = /^[\w-]{1,64}$/;

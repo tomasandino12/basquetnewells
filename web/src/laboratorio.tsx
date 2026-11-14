@@ -30,6 +30,7 @@ export const ENLACES_DEL_MENU: Enlace[] = [
   { a: '/plantel', nombre: 'Plantel', icono: Users },
   { a: '/fisico', nombre: 'Físico', icono: CalendarCheck },
   { a: '/medir', nombre: 'Medir', icono: Ruler },
+  { a: '/datos', nombre: 'Datos', icono: LineChart },
   { a: '/recursos', nombre: 'Recursos', icono: PlaySquare },
   // Panorama, profes, finanzas y familias: el resto de coordinación cuelga de /coordinacion/….
   { a: '/coordinacion', nombre: 'Coordinación', icono: Building2, soloCoordinacion: true, corto: 'Coord.' },
@@ -39,11 +40,11 @@ export const ENLACES_DEL_MENU: Enlace[] = [
  * Lo que todavía no se mudó: se abre en la app de siempre (/app/clasica), así no se pierde
  * ninguna función (H-175). Va con `?desde=nueva`: la de siempre no la manda de vuelta acá.
  */
-export const EN_LA_DE_SIEMPRE = [
-  { nombre: 'Datos', icono: LineChart },
-];
+export const EN_LA_DE_SIEMPRE: { nombre: string; icono: LucideIcon }[] = [];
 
 function DeSiempre({ compacto }: { compacto?: boolean }) {
+  // Datos ya se mudó: sin nada pendiente, el menú no manda a ningún lado.
+  if (EN_LA_DE_SIEMPRE.length === 0) return null;
   if (compacto) {
     return (
       <a
@@ -232,9 +233,11 @@ export function Marco() {
               <ItemMenu enlace={e} compacto />
             </li>
           ))}
-          <li className="flex flex-1">
-            <DeSiempre compacto />
-          </li>
+          {EN_LA_DE_SIEMPRE.length > 0 && (
+            <li className="flex flex-1">
+              <DeSiempre compacto />
+            </li>
+          )}
         </ul>
       </nav>
 

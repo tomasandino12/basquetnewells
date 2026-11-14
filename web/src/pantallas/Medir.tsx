@@ -1,6 +1,6 @@
 import { ArrowRight, ClipboardList } from 'lucide-react';
 import { useState } from 'react';
-import { APP_DE_SIEMPRE, enlaceDeMedir } from '../clasica';
+import { medirEnLaDeSiempre } from '../clasica';
 import { Boton } from '../components/ui/button';
 import { Consulta } from '../components/ui/consulta';
 import { Vacio } from '../components/ui/estados';
@@ -139,7 +139,7 @@ function Pendiente({ tipo, borrador, alDescartar }: { tipo: TipoDeTest; borrador
         {nombre} del {formatearFecha(borrador.fecha)} · {cargados} {plural(cargados, 'jugador cargado', 'jugadores cargados')}
       </p>
       <a
-        href={enlaceDeMedir(tipo)}
+        href={medirEnLaDeSiempre(tipo)}
         className="group mt-4 inline-flex min-h-11 items-center gap-2 rounded-btn bg-negro px-5 font-titulo text-lg font-semibold tracking-[.14em] text-sobre-negro uppercase outline-offset-2 focus-visible:outline-2 focus-visible:outline-sobre-lima"
       >
         Continuar<span className="sr-only"> {nombre}</span>
@@ -172,7 +172,7 @@ function Tests({ lista }: { lista: SesionMedicion[] | undefined }) {
             return (
               <li key={t.tipo}>
                 <a
-                  href={enlaceDeMedir(t.tipo)}
+                  href={medirEnLaDeSiempre(t.tipo)}
                   className="group flex min-h-28 items-center justify-between gap-3 rounded-tarjeta border border-linea bg-sup px-4 py-4 outline-offset-2 transition-transform duration-[var(--dur-1)] active:scale-[.985] focus-visible:outline-2 focus-visible:outline-tinta sm:px-6"
                 >
                   <span className="min-w-0 flex-1">

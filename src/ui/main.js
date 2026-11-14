@@ -435,11 +435,10 @@ async function entrarConSesion() {
   // cero; coordinando, en el Panorama.
   await ir(pantallaInicialDelModo());
   // Un test pedido se abre encima de Medir: el «volver» deja en la lista de tests.
-  if (pedida && pedida !== 'p-medir') {
-    await ir('p-medir');
-    await ir(pedida, { push: true });
-  } else if (pedida) {
-    await ir(pedida);
+  if (pedida) {
+    if (pedida !== 'p-medir') await ir('p-medir');
+    await ir(pedida, { push: pedida !== 'p-medir' });
+    return;
   }
   abrirGuiaSiFalta();
 }

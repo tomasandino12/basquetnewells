@@ -99,6 +99,27 @@ export interface PartidoDelPlantel {
   rivalNombre: string | null;
   puntosPropios?: number | null;
   puntosRival?: number | null;
+  condicionPropia?: 'local' | 'visitante' | null;
+}
+
+/** Lo que un jugador hizo en un partido; null = no se pudo leer (no es 0). */
+export interface EstadisticaDePartido {
+  partidoId: string;
+  jugadorId: string;
+  minSegundos: number | null;
+  pts: number | null;
+  dosAnotados: number | null;
+  dosIntentados: number | null;
+  tresAnotados: number | null;
+  tresIntentados: number | null;
+  libresAnotados: number | null;
+  libresIntentados: number | null;
+}
+
+/** Cada peso anotado de un chico en un ejercicio, y el ejercicio con su bloque del plan. */
+export interface CargasDelPlantel {
+  movimientos: { jugadorId: string; pasoId: string; kg: number; fecha: string; orden: number }[];
+  ejercicios: { pasoId: string; nombre: string; bloque: string | null }[];
 }
 
 /** Un plan de fuerza importado de una planilla: las fechas son las de sus sesiones. */
@@ -469,6 +490,17 @@ export interface Repositorio extends RepositorioCoord {
   obtenerJugadoresDelPlantel(clubId: string, plantelId: string): Promise<JugadorDelPlantel[]>;
   obtenerMedicionesCorporalesDelClub(clubId: string): Promise<MedicionCorporal[]>;
   obtenerSolicitudesDelPlantel(plantelId: string): Promise<unknown[]>;
+  // Importar planillas y la pantalla Datos. Cada importación guarda todo o nada.
+  importarInscriptos(datos: { plantelId: string; filas: unknown[] }): Promise<{ creados: number; existentes: number }>;
+  importarEmergencias(datos: { plantelId: string; filas: unknown[] }): Promise<{ guardados: number }>;
+  /** Devuelve la fila cruda de la base (nombre_archivo, no nombreArchivo), o null si el archivo es nuevo. */
+  buscarImportacionPorHash(clubId: string, hashArchivo: string): Promise<{ id: string; nombre_archivo: string | null; id_partido_cabb: string | null } | null>;
+  importarPartido(payload: unknown): Promise<unknown>;
+  obtenerEstadisticasDelPlantel(clubId: string, plantelId: string): Promise<EstadisticaDePartido[]>;
+  obtenerCargasDelPlantel(clubId: string, plantelId: string, jugadorIds: string[]): Promise<CargasDelPlantel>;
+  obtenerMedicionesSprintDelPlantel(clubId: string, plantelId: string): Promise<unknown[]>;
+  obtenerMedicionesYoyoDelPlantel(clubId: string, plantelId: string): Promise<unknown[]>;
+  obtenerMedicionesSaltoDelPlantel(clubId: string, plantelId: string): Promise<unknown[]>;
   obtenerEntrenamientos(plantelId: string, desde: string, hasta: string): Promise<Entrenamiento[]>;
   obtenerLesionesDelPlantel(plantelId: string): Promise<Lesion[]>;
   obtenerSesionesDeMedicion(clubId: string, plantelId: string): Promise<SesionMedicion[]>;
