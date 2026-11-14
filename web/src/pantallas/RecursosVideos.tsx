@@ -50,7 +50,7 @@ export function Videos({ clubId, plantelId, categoria }: { clubId: string; plant
   const [tipo, setTipo] = useState('todos');
 
   return (
-    <section aria-label="Videos para jugadores" className="flex flex-col gap-4">
+    <section aria-label="Videos para jugadores" className="flex flex-col gap-4 lg:min-h-[calc(100dvh-10rem)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="max-w-prose text-sm text-gris">
           Material que dejás disponible para que cada uno progrese por su cuenta. No es obligación ni control.
@@ -115,11 +115,11 @@ function Tarjetas({ recursos, resumen, jugadores, categoria, tipo, setTipo }: {
           ))}
         </div>
       )}
-      <ul className={REJILLA_CHICA}>
+      <ul className={cn(REJILLA_CHICA, 'auto-rows-fr')}>
         {visibles.map((r) => {
           const fila = filaDe(r.id);
           return (
-            <li key={r.id} className="flex">
+            <li key={r.id} className="flex min-w-0">
               <TarjetaDeRecurso
                 recurso={r}
                 alcance={alcanceDeRecurso(fila) as Alcance}
@@ -140,17 +140,18 @@ function TarjetaDeRecurso({ recurso: r, alcance, envio, categoria }: { recurso: 
   const esVideo = Boolean(idDeYoutube(r.enlace ?? ''));
   const eyebrow = [etiquetaDeTipo(r.tipo) as string | null, diaMes(r.creadoEn.slice(0, 10))].filter(Boolean).join(' · ');
   return (
-    <article className="flex w-full flex-col overflow-hidden rounded-tarjeta border border-linea bg-sup">
+    <article className="flex w-full min-w-0 flex-col overflow-hidden rounded-tarjeta border border-linea bg-sup">
       <Miniatura recurso={r} alTocar={esVideo ? () => setViendo(true) : undefined} />
-      <div className="flex flex-1 flex-col gap-3 p-4">
+      <div className="flex min-w-0 flex-1 flex-col gap-3 p-4">
         <div>
           <p className="font-mono text-xs tracking-wide text-gris uppercase">{eyebrow}</p>
-          <h3 className="mt-1 font-titulo text-2xl leading-tight font-semibold">{r.titulo}</h3>
-          {r.descripcion && <p className="mt-1 line-clamp-3 text-sm text-gris">{r.descripcion}</p>}
+          <h3 className="mt-1 font-titulo text-2xl leading-tight font-semibold break-words">{r.titulo}</h3>
+          {/* En celular la descripción va completa (cortarla escondía datos); el recorte sólo ayuda a igualar alturas en la rejilla. */}
+          {r.descripcion && <p className="mt-1 text-sm break-words text-gris md:line-clamp-4">{r.descripcion}</p>}
         </div>
         {/* Un dato que el profe no cargó no se muestra: ni cajita vacía ni «0». */}
         {(r.frecuenciaSemanal != null || r.minutos != null) && (
-          <dl className="flex gap-6">
+          <dl className="flex flex-wrap gap-x-6 gap-y-2">
             {r.frecuenciaSemanal != null && <Dato clave="Frecuencia" valor={`${r.frecuenciaSemanal} por semana`} />}
             {r.minutos != null && <Dato clave="Dedicación" valor={`${r.minutos} min`} />}
           </dl>
@@ -272,9 +273,9 @@ function Alcance({ alcance }: { alcance: Alcance }) {
 
 function Dato({ clave, valor }: { clave: string; valor: string }) {
   return (
-    <div>
+    <div className="min-w-0">
       <dt className="font-mono text-[0.6875rem] tracking-wide text-gris uppercase">{clave}</dt>
-      <dd className="font-semibold">{valor}</dd>
+      <dd className="font-semibold break-words">{valor}</dd>
     </div>
   );
 }
