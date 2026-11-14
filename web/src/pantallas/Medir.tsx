@@ -89,9 +89,13 @@ function MedirDeLaCategoria({ clubId, plantelId, categoria }: { clubId: string; 
           )}
         </div>
 
-        <Consulta consulta={sesiones} errorGenerico="No se pudieron cargar las sesiones">
-          {(lista) => <Contenido lista={lista} chicos={chicos.data?.length} />}
-        </Consulta>
+        {/* Los tests no dependen de las sesiones: con la lista cargando, vacía o caída, los botones están. */}
+        <Tests lista={sesiones.data} />
+        <section aria-label="Sesiones cargadas" className="mt-8 lg:col-start-1 lg:row-start-2 lg:mt-6">
+          <Consulta consulta={sesiones} errorGenerico="No se pudieron cargar las sesiones">
+            {(lista) => <Sesiones lista={lista} chicos={chicos.data?.length} />}
+          </Consulta>
+        </section>
       </div>
 
       <Hoja
@@ -154,15 +158,12 @@ function Pendiente({ tipo, borrador, alDescartar }: { tipo: TipoDeTest; borrador
 
 const CUANTAS_ULTIMAS = 4;
 
-function Contenido({ lista, chicos }: { lista: SesionMedicion[]; chicos: number | undefined }) {
-  const [verTodas, setVerTodas] = useState(false);
-  const ultimas = ultimaPorTipo(lista);
-  const cuantas = (tipo: TipoDeTest) => lista.filter((s) => s.tipo === tipo).length;
-  const ordenadas = masNuevasPrimero(lista);
-  const visibles = verTodas ? ordenadas : ordenadas.slice(0, CUANTAS_ULTIMAS);
+/** Los cuatro tests, siempre a la vista; `lista` es undefined mientras las sesiones cargan o si no se pudieron leer. */
+function Tests({ lista }: { lista: SesionMedicion[] | undefined }) {
+  const ultimas = ultimaPorTipo(lista ?? []);
+  const cuantas = (tipo: TipoDeTest) => (lista ?? []).filter((s) => s.tipo === tipo).length;
   return (
-    <>
-      <section aria-label="Tests" className="mt-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-2">
+    <section aria-label="Tests" className="mt-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-2">
         <ul className="flex flex-col gap-3">
           {TESTS.map((t) => {
             const ultima = ultimas[t.tipo];
@@ -178,7 +179,7 @@ function Contenido({ lista, chicos }: { lista: SesionMedicion[]; chicos: number 
                     <span className="block font-titulo text-3xl leading-none font-bold uppercase sm:text-4xl">{t.nombre}</span>
                     <span className="mt-1.5 block text-sm text-gris">{t.detalle}</span>
                     <span className="mt-1.5 block font-mono text-xs tracking-wide text-gris uppercase">
-                      {ultima ? `${n} ${plural(n, 'sesión', 'sesiones')} · última ${formatearFecha(ultima.fecha)}` : 'Sin mediciones todavía'}
+                      {!lista ? ' ' : ultima ? `${n} ${plural(n, 'sesión', 'sesiones')} · última ${formatearFecha(ultima.fecha)}` : 'Sin mediciones todavía'}
                     </span>
                   </span>
                   <span aria-hidden className={cn('cifra shrink-0 font-titulo text-5xl leading-none font-bold sm:text-6xl', color.cifra)}>
@@ -193,9 +194,16 @@ function Contenido({ lista, chicos }: { lista: SesionMedicion[]; chicos: number 
             );
           })}
         </ul>
-      </section>
+    </section>
+  );
+}
 
-      <section aria-label="Sesiones cargadas" className="mt-8 lg:col-start-1 lg:row-start-2 lg:mt-6">
+function Sesiones({ lista, chicos }: { lista: SesionMedicion[]; chicos: number | undefined }) {
+  const [verTodas, setVerTodas] = useState(false);
+  const ordenadas = masNuevasPrimero(lista);
+  const visibles = verTodas ? ordenadas : ordenadas.slice(0, CUANTAS_ULTIMAS);
+  return (
+    <>
         <div className="mb-2 flex items-baseline justify-between gap-3">
           <h2 className="font-titulo text-2xl leading-none font-bold uppercase">Últimas sesiones</h2>
           {ordenadas.length > CUANTAS_ULTIMAS && (
@@ -223,7 +231,6 @@ function Contenido({ lista, chicos }: { lista: SesionMedicion[]; chicos: number 
           <Cifra etiqueta="Chicos" valor={chicos === undefined ? '—' : String(chicos)} />
           <Cifra etiqueta="Última" valor={ordenadas[0] ? diaMes(ordenadas[0].fecha) : '—'} />
         </dl>
-      </section>
     </>
   );
 }

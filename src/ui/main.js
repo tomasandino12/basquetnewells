@@ -21,7 +21,7 @@ import {
   setCuenta, setFichaJugador, setPlantelActivoId, obtenerRoles, obtenerCuenta, setChicos, obtenerPlantelActivo,
 } from './sesion.js';
 import { abrirAlEntrar, abrirEnNueva } from './pantallaNueva.js';
-import { pantallaPedida } from '../data/interruptorNueva.js';
+import { CLAVE_PLANTEL, pantallaPedida } from '../data/interruptorNueva.js';
 import { GUIAS, guiaParaAbrir } from '../data/guias.js';
 import { claveGuia, yaVista } from './guiaVista.js';
 import { abrirGuia } from './componentes/guia.js';
@@ -419,15 +419,25 @@ async function entrarConSesion() {
   if (obtenerModo() === 'entrenar' && (inicial === 'p-plantel' || inicial === 'p-hoy')
     && await abrirAlEntrar({ plantelId: obtenerPlantelActivo()?.id, pantalla: inicial === 'p-hoy' ? 'hoy' : 'plantel' })) return;
 
+  // La nueva manda a un test concreto (`?ir=`): se abre ya en la categoría que se estaba mirando.
+  const pedida = obtenerModo() === 'entrenar' ? pantallaPedida(window.location.search) : null;
+  if (pedida) {
+    try {
+      const guardado = localStorage.getItem(CLAVE_PLANTEL);
+      if (guardado && planteles.some((p) => p.id === guardado)) setPlantelActivoId(guardado);
+    } catch {
+      // Sin localStorage queda la primera categoría.
+    }
+  }
+
   mostrarApp();
   // Entrenando arranca en PLANTEL, donde empieza el flujo de quien arranca de
   // cero; coordinando, en el Panorama.
   await ir(pantallaInicialDelModo());
-  // La nueva mandó a una prueba de Medir (?desde=nueva&ir=salto): se abre encima, y Atrás vuelve.
-  // Sólo entrenando: la coordinación no mide.
-  const pedida = pantallaPedida(window.location.search);
-  if (pedida && obtenerModo() === 'entrenar') {
-    await ir(pedida, { push: true });
+  // Un test pedido se abre encima de Medir: el «volver» deja en la lista de tests.
+  if (pedida) {
+    if (pedida !== 'p-medir') await ir('p-medir');
+    await ir(pedida, { push: pedida !== 'p-medir' });
     return;
   }
   abrirGuiaSiFalta();
