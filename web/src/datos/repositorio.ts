@@ -507,6 +507,11 @@ export interface Repositorio extends RepositorioCoord {
   obtenerSesionActual(): Promise<Sesion | null>;
   iniciarSesion(email: string, password: string): Promise<Sesion>;
   cerrarSesion(): Promise<void>;
+  /** `sesion` viene null si el proyecto exige confirmar el mail: hay que esperar el link. */
+  crearCuenta(email: string, password: string, nombre: string, opciones?: { esJugador?: boolean }): Promise<{ sesion: Sesion | null; usuario: unknown }>;
+  enviarRecuperacionDeClave(email: string): Promise<void>;
+  /** Si sale bien navega a Google y la página se descarta. */
+  entrarConGoogle(): Promise<void>;
   /** Devuelve lo que devuelve el servicio de sesión: `data.subscription.unsubscribe()` corta el aviso. */
   alCambiarAuth(fn: (evento: string, sesion: Sesion | null) => void): { data: { subscription: { unsubscribe(): void } } };
   fueSalidaVoluntaria(): boolean;

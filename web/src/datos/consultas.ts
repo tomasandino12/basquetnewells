@@ -317,6 +317,26 @@ export function useEntrar() {
   });
 }
 
+export function useCrearCuenta() {
+  const cargar = useCargarRepositorio();
+  return useMutation({
+    // Sin onSuccess que guarde sesión: si el proyecto no exige confirmar el mail, el aviso de
+    // cambio de sesión ya la marca; si lo exige, `sesion` viene null y se muestra el aviso del mail.
+    mutationFn: async (d: { email: string; clave: string; nombre: string; esJugador: boolean }) =>
+      (await cargar()).crearCuenta(d.email, d.clave, d.nombre, { esJugador: d.esJugador }),
+  });
+}
+
+export function useRecuperarClave() {
+  const cargar = useCargarRepositorio();
+  return useMutation({ mutationFn: async (email: string) => (await cargar()).enviarRecuperacionDeClave(email) });
+}
+
+export function useEntrarConGoogle() {
+  const cargar = useCargarRepositorio();
+  return useMutation({ mutationFn: async () => (await cargar()).entrarConGoogle() });
+}
+
 export function useSalir() {
   const cargar = useCargarRepositorio();
   return useMutation({
