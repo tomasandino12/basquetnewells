@@ -40,8 +40,8 @@ describe('menú de la app', () => {
     expect(DESTINOS_DEL_JUGADOR.some((d) => d.a.includes('misiones'))).toBe(false);
   });
 
-  it('lleva a Hoy, Plantel, Físico, Medir, Datos, Recursos y Coordinación sin ids en la dirección; la asistencia se toma desde Plantel y el partido se carga desde Datos', () => {
-    expect(ENLACES_DEL_MENU.map((e) => e.a)).toEqual(['/hoy', '/plantel', '/fisico', '/medir', '/datos', '/recursos', '/coordinacion']);
+  it('lleva a Hoy, Plantel, Físico, Medir, Recursos, Datos y Coordinación sin ids en la dirección; la asistencia se toma desde Plantel y el partido se carga desde Datos', () => {
+    expect(ENLACES_DEL_MENU.map((e) => e.a)).toEqual(['/hoy', '/plantel', '/fisico', '/medir', '/recursos', '/datos', '/coordinacion']);
   });
 
   it('Coordinación sólo aparece en el menú para quien coordina', async () => {

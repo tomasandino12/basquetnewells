@@ -78,3 +78,19 @@ export function usePruebasDelPlantel(clubId: string, plantelId: string) {
     },
   });
 }
+
+/** Todos los entrenamientos de la categoría con su asistencia, y los chicos para ponerles nombre. */
+export function useAsistenciaDelPlantel(clubId: string, plantelId: string, hoy: string) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: clave('asistencia', clubId, plantelId),
+    queryFn: async () => {
+      const repo = await cargar();
+      const [entrenamientos, jugadores] = await Promise.all([
+        repo.obtenerEntrenamientos(plantelId, '2000-01-01', hoy),
+        repo.obtenerJugadoresDelPlantel(clubId, plantelId),
+      ]);
+      return { entrenamientos, jugadores };
+    },
+  });
+}
