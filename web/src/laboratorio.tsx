@@ -30,8 +30,8 @@ export const ENLACES_DEL_MENU: Enlace[] = [
   { a: '/plantel', nombre: 'Plantel', icono: Users },
   { a: '/fisico', nombre: 'Físico', icono: CalendarCheck },
   { a: '/medir', nombre: 'Medir', icono: Ruler },
-  { a: '/datos', nombre: 'Datos', icono: LineChart },
   { a: '/recursos', nombre: 'Recursos', icono: PlaySquare },
+  { a: '/datos', nombre: 'Datos', icono: LineChart },
   // Panorama, profes, finanzas y familias: el resto de coordinación cuelga de /coordinacion/….
   { a: '/coordinacion', nombre: 'Coordinación', icono: Building2, soloCoordinacion: true, corto: 'Coord.' },
 ];
@@ -83,6 +83,7 @@ export const EJEMPLOS = [
   { a: '/maqueta/plantel', nombre: 'Maqueta del plantel' },
   { a: '/maqueta/hoy', nombre: 'Maqueta de Hoy' },
   { a: '/maqueta/recursos', nombre: 'Maqueta de Recursos' },
+  { a: '/maqueta/datos', nombre: 'Maqueta de Datos' },
 ];
 
 /** Salir de la cuenta: estaba en la lista de planteles, que ya no existe. Sólo con sesión. */

@@ -26,7 +26,8 @@ function escala(valores: number[]) {
 }
 
 /** Curva suave que pasa por cada punto sin pasarse nunca de largo (no inventa picos entre baterías). */
-function suave(p: { x: number; y: number }[]): string {
+export function suave(p: { x: number; y: number }[]): string {
+  if (p.length === 1) return `M${p[0].x},${p[0].y}`;
   const n = p.length;
   const d = p.slice(0, -1).map((a, i) => (p[i + 1].y - a.y) / (p[i + 1].x - a.x));
   const m = p.map((_, i) => (i === 0 ? d[0] : i === n - 1 ? d[n - 2] : d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2));

@@ -18,7 +18,7 @@ import { Hoy } from './pantallas/Hoy';
 import { Medir } from './pantallas/Medir';
 import { Piezas } from './pantallas/Piezas';
 import { Recursos } from './pantallas/Recursos';
-import { HoyEjemplo, RecursosEjemplo } from './pantallas/HoyEjemplo';
+import { DatosEjemplo, HoyEjemplo, RecursosEjemplo } from './pantallas/HoyEjemplo';
 import { PlantelEjemplo } from './pantallas/PlantelEjemplo';
 import { PlantelDelClub } from './pantallas/PlantelDelClub';
 import { ProveedorPlantelActivo } from './plantel/activo';
@@ -92,6 +92,7 @@ export const rutas: RouteObject[] = [
     { path: '/maqueta/plantel/:jugador', element: <FichaEjemplo /> },
     { path: '/maqueta/hoy', element: <HoyEjemplo /> },
     { path: '/maqueta/recursos', element: <RecursosEjemplo /> },
+    { path: '/maqueta/datos', element: <DatosEjemplo /> },
     { element: <RequiereSesion />, children: [
         { path: '/', element: <Entrada /> },
         { path: '/hoy', element: <Hoy /> },

@@ -303,3 +303,62 @@ describe('Datos: categoría y permisos', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Sub 13' })).toBeTruthy();
   });
 });
+
+describe('Datos: gráficos que se prenden y apagan', () => {
+  it('cada tiro tiene su botón; apagar uno lo saca de la lectura, y el último no se puede apagar', async () => {
+    abrir(repo());
+    const botones = await screen.findByRole('group', { name: 'Qué tiros se ven' });
+    const dobles = within(botones).getByRole('button', { name: 'Dobles' });
+    const triples = within(botones).getByRole('button', { name: 'Triples' });
+    const libres = within(botones).getByRole('button', { name: 'Libres' });
+    expect(dobles.getAttribute('aria-pressed')).toBe('true');
+    await userEvent.click(dobles);
+    await userEvent.click(triples);
+    expect(dobles.getAttribute('aria-pressed')).toBe('false');
+    expect(triples.getAttribute('aria-pressed')).toBe('false');
+    await userEvent.click(libres);
+    expect(libres.getAttribute('aria-pressed')).toBe('true');
+    expect(libres.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('el perfil de tiro compara la primera batería con la última en un polígono', async () => {
+    abrir(repo({
+      obtenerSesionesDeMedicion: async () => [
+        { id: 's1', fecha: '2026-10-01', tipo: 'tiro' },
+        { id: 's2', fecha: '2026-10-15', tipo: 'tiro' },
+      ],
+      obtenerMedicionesTiroDelPlantel: async () => [
+        { sesionId: 's1', jugadorId: 'j-1', posicion: 'frontal', anotados: 4, intentos: 10 },
+        { sesionId: 's2', jugadorId: 'j-1', posicion: 'frontal', anotados: 6, intentos: 10 },
+      ],
+    }));
+    expect(await screen.findByRole('img', { name: /Acierto por zona en la última batería\. .*Frontal: 60%/ })).toBeTruthy();
+    const capas = screen.getByRole('group', { name: 'Qué baterías se ven' });
+    expect(within(capas).getByRole('button', { name: 'Primera · 01/10' })).toBeTruthy();
+    expect(within(capas).getByRole('button', { name: 'Última · 15/10' })).toBeTruthy();
+  });
+});
+
+describe('Datos: asistencia', () => {
+  it('sin asistencia tomada explica dónde se toma', async () => {
+    abrir(repo());
+    expect(await screen.findByText(/Todavía no hay asistencia tomada\. Se toma desde Plantel/)).toBeTruthy();
+  });
+
+  it('muestra el promedio, la curva por entrenamiento y una fila por chico con su total y su racha', async () => {
+    const dia = (fecha: string, a: 'presente' | 'ausente' | 'justificada', b: 'presente' | 'ausente' | 'justificada') => ({
+      id: fecha, fecha, hubo: true, filas: [{ jugadorId: 'j-1', estado: a }, { jugadorId: 'j-2', estado: b }],
+    });
+    abrir(repo({
+      obtenerEntrenamientos: async () => [dia('2026-10-01', 'presente', 'ausente'), dia('2026-10-03', 'presente', 'justificada')],
+    }));
+    expect(await screen.findByRole('img', { name: /Asistencia por entrenamiento: 01\/10 1 de 2, 03\/10 1 de 2/ })).toBeTruthy();
+    const tabla = screen.getByRole('table', { name: 'Asistencia de cada chico en los últimos entrenamientos' });
+    const filas = within(tabla).getAllByRole('row').slice(1);
+    expect(filas[0].textContent).toContain('100%');
+    expect(filas[0].textContent).toMatch(/vino.*vino/);
+    expect(filas[1].textContent).toContain('faltó');
+    expect(filas[1].textContent).toContain('avisó');
+    expect(filas[1].textContent).toContain('0%');
+  });
+});
