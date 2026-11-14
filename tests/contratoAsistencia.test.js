@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { ESTADOS, ZONAS, LADOS, TIPOS, MOTIVOS } from '../src/data/asistencia.js';
 
 /**
@@ -88,6 +88,43 @@ test('0066: la lista de motivos de la base coincide con MOTIVOS y sólo va si av
   // Sin texto libre: la única columna nueva es la de la lista cerrada.
   assert.deepEqual([...sql66.matchAll(/add column (\w+)/g)].map((m) => m[1]), ['motivo']);
   assert.doesNotMatch(sql66, /\banon\b|security definer/i);
+});
+
+test('toda columna que guardar_asistencia escribe en asistencia tiene grant (el caso de 0066)', () => {
+  // La función es security invoker: corre con los permisos del profe. Se juntan
+  // los grants de todas las migraciones, en orden, y se comparan con lo que
+  // escribe la última definición de la función.
+  const dir = 'supabase/migrations';
+  const archivos = readdirSync(dir).filter((f) => f.endsWith('.sql')).sort();
+  const limpio = (f) => readFileSync(`${dir}/${f}`, 'utf8').replace(/\r\n/g, '\n').replace(/--[^\n]*/g, '');
+  const columnas = (txt) => txt.split(',').map((c) => c.trim()).filter(Boolean);
+
+  const insertables = new Set();
+  const actualizables = new Set();
+  let cuerpoFuncion = null;
+  for (const f of archivos) {
+    const txt = limpio(f);
+    if (/revoke all on asistencia\b/.test(txt)) { insertables.clear(); actualizables.clear(); }
+    for (const m of txt.matchAll(/grant insert \(([^)]*)\)[^;]*? on asistencia to authenticated/g)) columnas(m[1]).forEach((c) => insertables.add(c));
+    for (const m of txt.matchAll(/grant update \(([^)]*)\)[^;]*? on asistencia to authenticated/g)) columnas(m[1]).forEach((c) => actualizables.add(c));
+    // «grant insert (a), update (b) on asistencia»: forma combinada.
+    for (const m of txt.matchAll(/grant ((?:(?:insert|update) \([^)]*\),?\s*)+) on asistencia to authenticated/g)) {
+      for (const p of m[1].matchAll(/(insert|update) \(([^)]*)\)/g)) {
+        columnas(p[2]).forEach((c) => (p[1] === 'insert' ? insertables : actualizables).add(c));
+      }
+    }
+    const desde = txt.indexOf('function guardar_asistencia(');
+    if (desde >= 0) cuerpoFuncion = txt.slice(desde, txt.indexOf('$$;', desde));
+  }
+  assert.ok(cuerpoFuncion, 'no encontré guardar_asistencia');
+
+  const insert = /insert into asistencia \(([^)]*)\)/.exec(cuerpoFuncion);
+  assert.ok(insert, 'no encontré el INSERT en asistencia');
+  for (const c of columnas(insert[1])) assert.ok(insertables.has(c), `falta grant insert (${c}) on asistencia`);
+
+  const set = /do update\s+set([\s\S]*?)(?:end if|$)/.exec(cuerpoFuncion.slice(insert.index));
+  assert.ok(set, 'no encontré el DO UPDATE SET');
+  for (const m of set[1].matchAll(/(?:^|,)\s*(\w+)\s*=/g)) assert.ok(actualizables.has(m[1]), `falta grant update (${m[1]}) on asistencia`);
 });
 
 test('0066: sin la clave motivo (la app de siempre) se conserva el que había', () => {
