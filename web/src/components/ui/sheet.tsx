@@ -13,10 +13,12 @@ interface HojaProps {
   rojo?: boolean;
   /** Lo que lee el lector de pantalla en la cruz; por defecto es el de la ficha. */
   etiquetaCerrar?: string;
+  /** Un video necesita lugar: en pantalla grande la hoja se ensancha, en el celular sigue igual. */
+  ancha?: boolean;
 }
 
 /** Hoja inferior para celular: se cierra con la cruz, el velo o Escape. */
-export function Hoja({ abierta, alCambiar, titulo, descripcion, children, rojo = false, etiquetaCerrar = 'Cerrar la ficha' }: HojaProps) {
+export function Hoja({ abierta, alCambiar, titulo, descripcion, children, rojo = false, etiquetaCerrar = 'Cerrar la ficha', ancha = false }: HojaProps) {
   return (
     <Dialog.Root open={abierta} onOpenChange={alCambiar}>
       <Dialog.Portal>
@@ -24,6 +26,7 @@ export function Hoja({ abierta, alCambiar, titulo, descripcion, children, rojo =
         <Dialog.Content
           className={cn(
             'hoja-contenido fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[88svh] w-full max-w-[24.375rem] flex-col overflow-y-auto rounded-t-[1.125rem] border border-b-0 border-linea bg-sup text-tinta outline-none',
+            ancha && 'md:max-w-4xl',
             rojo && 'border-club-osc bg-club-osc text-sobre-club',
           )}
         >

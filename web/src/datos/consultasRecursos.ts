@@ -13,6 +13,26 @@ export function useEjercicios(clubId: string | undefined) {
   });
 }
 
+/** Los videos y links que el profe ofrece a sus jugadores. */
+export function useRecursosDelClub(clubId: string | undefined) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['recursos', 'videos', clubId],
+    enabled: clubId !== undefined,
+    queryFn: async () => (await cargar()).obtenerRecursos(clubId!),
+  });
+}
+
+/** El conteo es un agregado: si falla, las tarjetas salen igual y dicen que no se pudo leer. */
+export function useResumenDeRecursos(plantelId: string | undefined) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['recursos', 'resumen', plantelId],
+    enabled: plantelId !== undefined,
+    queryFn: async () => (await cargar()).obtenerResumenRecursos(plantelId!).catch(() => null),
+  });
+}
+
 export function useJugadasDelClub(clubId: string | undefined) {
   const cargar = useCargarRepositorio();
   return useQuery({

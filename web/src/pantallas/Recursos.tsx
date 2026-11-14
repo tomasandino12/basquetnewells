@@ -21,8 +21,10 @@ import { filtrarEjercicios, filtrarJugadas, nombreDeCopia, nombreDeTema, temasCo
 import { Pagina } from '../components/ui/pagina';
 import { SinCategoria } from './PlantelDelClub';
 import { VideoDeEjercicio } from '../fisico/VideoDeEjercicio';
+import { Videos } from './RecursosVideos';
 
-type Pestana = 'ejercicios' | 'jugadas';
+type Pestana = 'ejercicios' | 'jugadas' | 'videos';
+const NOMBRE_DE_PESTANA: Record<Pestana, string> = { ejercicios: 'Ejercicios', jugadas: 'Jugadas', videos: 'Videos' };
 
 // Un enlace con forma de botón recto y a la vista; el texto largo entra en una línea (el botón de mayúsculas lo partía).
 const BOTON_DE_ENLACE =
@@ -45,16 +47,16 @@ export function Recursos() {
       </Pagina>
     );
   }
-  return <Biblioteca clubId={activo.clubId} planteles={activo.visibles} />;
+  return <Biblioteca clubId={activo.clubId} planteles={activo.visibles} plantelId={activo.plantelId} categoria={activo.categoria} />;
 }
 
-export function Biblioteca({ clubId, planteles }: { clubId: string; planteles: PlantelDelClub[] }) {
+export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId: string; planteles: PlantelDelClub[]; plantelId?: string; categoria?: string }) {
   const ejercicios = useEjercicios(clubId);
   const jugadas = useJugadasDelClub(clubId);
   const [pestana, setPestana] = useState<Pestana>('ejercicios');
   const [texto, setTexto] = useState('');
   const [filtro, setFiltro] = useState<string | null>(null);
-  const [elegida, setElegida] = useState<{ ejercicios: string | null; jugadas: string | null }>({ ejercicios: null, jugadas: null });
+  const [elegida, setElegida] = useState<Record<Pestana, string | null>>({ ejercicios: null, jugadas: null, videos: null });
 
   const cambiarPestana = (p: Pestana) => {
     setPestana(p);
@@ -79,7 +81,7 @@ export function Biblioteca({ clubId, planteles }: { clubId: string; planteles: P
       <header className="mb-4 flex flex-wrap items-end justify-between gap-3 print:hidden">
         <h1 className="font-titulo text-4xl leading-none font-bold tracking-wide uppercase">Recursos</h1>
         <div role="tablist" aria-label="Biblioteca" className="flex rounded-campo border border-borde-control p-0.5">
-          {(['ejercicios', 'jugadas'] as const).map((p) => (
+          {(['ejercicios', 'jugadas', 'videos'] as const).map((p) => (
             <button
               key={p}
               type="button"
@@ -91,12 +93,17 @@ export function Biblioteca({ clubId, planteles }: { clubId: string; planteles: P
                 pestana === p ? 'bg-negro text-sobre-negro' : 'text-gris',
               )}
             >
-              {p === 'ejercicios' ? 'Ejercicios' : 'Jugadas'}
+              {NOMBRE_DE_PESTANA[p]}
             </button>
           ))}
         </div>
       </header>
 
+      {pestana === 'videos' ? (
+        plantelId && categoria ? (
+          <Videos clubId={clubId} plantelId={plantelId} categoria={categoria} />
+        ) : null
+      ) : (
       <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(16rem,1fr)_minmax(0,2fr)_minmax(16rem,1fr)] lg:items-start">
         <section aria-label="Lista" className="order-3 flex flex-col gap-3 lg:order-1 print:hidden">
           <label className="relative block">
@@ -140,6 +147,7 @@ export function Biblioteca({ clubId, planteles }: { clubId: string; planteles: P
           </div>
         )}
       </div>
+      )}
     </Pagina>
   );
 }

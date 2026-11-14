@@ -278,6 +278,34 @@ export interface RecursoDelJugador {
   fecha: string;
 }
 
+/** Un recurso que el profe ofrece a sus jugadores (video, PDF o link), con a quién se le mandó. */
+export interface RecursoDelClub {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  enlace: string | null;
+  tipo: string | null;
+  frecuenciaSemanal: number | null;
+  minutos: number | null;
+  creadoPor: string | null;
+  creadoEn: string;
+  envios: { jugadorId: string; fecha: string }[];
+}
+
+/** Conteos del plantel sin nombres; `abrieron` viene null si hay tan pocas cuentas que delataría a alguien. */
+export interface ResumenDeRecursos {
+  conCuenta: number;
+  abrieronAlguno: number | null;
+  recursos: {
+    recursoId: string;
+    enviados: number;
+    conCuenta: number;
+    abrieron: number | null;
+    primerasEsteMes: number | null;
+    primerasMesAnterior: number | null;
+  }[];
+}
+
 export interface JugadaDelJugador {
   id: string;
   nombre: string;
@@ -402,6 +430,9 @@ export interface Repositorio extends RepositorioCoord {
   obtenerMiProgreso(): Promise<MiProgreso>;
   misJugadas(): Promise<JugadaDelJugador[]>;
   obtenerMisRecursos(): Promise<RecursoDelJugador[]>;
+  obtenerRecursos(clubId: string): Promise<RecursoDelClub[]>;
+  /** Null si quien llama no es entrenador del plantel. */
+  obtenerResumenRecursos(plantelId: string): Promise<ResumenDeRecursos | null>;
   /** No lanza: abrir un recurso no depende de que se anote. */
   registrarAperturaDeRecurso(recursoId: string): Promise<void>;
   // Misiones de un partido (las evalúa el profe).

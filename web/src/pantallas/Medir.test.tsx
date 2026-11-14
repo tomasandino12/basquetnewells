@@ -33,7 +33,9 @@ const abrir = (r: Repositorio = repo()) => renderConDatos(rutas, { repo: r, ruta
 describe('Medir', () => {
   it('muestra una franja por test, con cuántas sesiones hay y la última, y lleva a la app de siempre', async () => {
     abrir();
-    const tests = within(await screen.findByRole('region', { name: 'Tests' }));
+    // Los tests están desde el principio; lo de las sesiones llega cuando carga la lista.
+    await screen.findByText(/2 sesiones · última 20\/10\/26/);
+    const tests = within(screen.getByRole('region', { name: 'Tests' }));
     const links = tests.getAllByRole('link');
     expect(links).toHaveLength(4);
     expect(links[0].textContent).toContain('Batería de tiro');
@@ -41,13 +43,15 @@ describe('Medir', () => {
     expect(links[1].textContent).toContain('1 sesión · última 15/09/26');
     expect(links[2].textContent).toContain('Sin mediciones todavía');
     expect(links[3].textContent).toContain('Yo-Yo');
+    // Cada botón lleva a SU test en la app de siempre, no a la portada.
+    expect(links.map((l) => l.getAttribute('href')?.split('ir=')[1])).toEqual(['tiro', 'salto', 'sprint', 'yoyo']);
     expect(links[0].getAttribute('href')).toContain('clasica');
   });
 
   it('lista las sesiones cargadas, la más nueva primero', async () => {
     abrir();
     const lista = within(await screen.findByRole('region', { name: 'Sesiones cargadas' }));
-    const filas = lista.getAllByRole('listitem').map((f) => f.textContent);
+    const filas = (await lista.findAllByRole('listitem')).map((f) => f.textContent);
     expect(filas).toEqual(['Batería de tiro20/10/26', 'Batería de tiro01/10/26', 'Salto15/09/26']);
   });
 
@@ -60,6 +64,8 @@ describe('Medir', () => {
   it('si no se pueden cargar las sesiones lo dice y deja reintentar', async () => {
     abrir(repo({ obtenerSesionesDeMedicion: async () => { throw new Error('Failed to fetch'); } }));
     expect(await screen.findByRole('button', { name: /Reintentar/ })).toBeTruthy();
+    // Aunque las sesiones no carguen, se puede medir.
+    expect(within(screen.getByRole('region', { name: 'Tests' })).getAllByRole('link')).toHaveLength(4);
   });
 
   it('la coordinación sola no entra: los datos son del cuerpo técnico', async () => {
