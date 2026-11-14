@@ -24,7 +24,7 @@ export function PlantelEjemplo() {
   return (
     <ConDatosDeEjemplo>
       <MarcoDelPlantel>
-        <ContenidoDelPlantel clubId="demo" plantelId="demo" categoria="U13" base="/maqueta/plantel" tomar="/maqueta/plantel" />
+        <ContenidoDelPlantel clubId="demo" plantelId="demo" categoria="U13" base="/maqueta/plantel" tomar="/maqueta/plantel" conMisiones={false} />
       </MarcoDelPlantel>
     </ConDatosDeEjemplo>
   );

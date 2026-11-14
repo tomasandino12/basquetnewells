@@ -32,6 +32,19 @@ describe('tema', () => {
     expect(() => guardarTema('oscuro')).not.toThrow();
   });
 
+  it('guardar dice si se pudo recordar; si no, el cambio vale mientras la pestaña esté abierta', () => {
+    expect(guardarTema('claro')).toBe(true);
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('modo privado');
+    });
+    expect(guardarTema('oscuro')).toBe(false);
+    expect(leerTema()).toBe('oscuro');
+    vi.restoreAllMocks();
+    // Con el teléfono otra vez de acuerdo, lo guardado manda de nuevo.
+    expect(guardarTema('claro')).toBe(true);
+    expect(leerTema()).toBe('claro');
+  });
+
   it('se aplica en <html>, así lo heredan las hojas que se dibujan en <body>', () => {
     aplicarTema('oscuro');
     expect(document.documentElement.dataset.tema).toBe('oscuro');

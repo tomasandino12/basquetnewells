@@ -13,6 +13,7 @@ import { useCargaDeCategoria, usePlantelActivo } from '../plantel/activo';
 import { armarFilas, buscarEnFilas, type FilaPlantel } from '../plantel/filas';
 import { HojaDeEmergencias } from './coord/HojaDeEmergencias';
 import { FilaDeLista } from './FilaDeLista';
+import { MisionesDelPlantel } from './MisionesDelPlantel';
 import { RUTA_CARGAR_PARTIDO } from '../importar/rutas';
 import { HojaAltaJugador } from './familias/HojaAltaJugador';
 import { ImportarEmergencias } from './importar/ImportarEmergencias';
@@ -95,11 +96,13 @@ interface Props {
   base?: string;
   /** Dónde se toma la asistencia; la maqueta no tiene toma propia. */
   tomar?: string;
+  /** El bloque de misiones pide datos reales de la categoría: la maqueta, con datos inventados, no lo lleva. */
+  conMisiones?: boolean;
 }
 
 type HojaAbierta = 'solicitudes' | 'alta' | 'emergencias' | 'inscriptos' | 'importarEmergencias' | null;
 
-export function ContenidoDelPlantel({ clubId, plantelId, categoria, categoriaCodigo = null, temporadaId = null, base = '/plantel', tomar = '/plantel/asistencia' }: Props) {
+export function ContenidoDelPlantel({ clubId, plantelId, categoria, categoriaCodigo = null, temporadaId = null, base = '/plantel', tomar = '/plantel/asistencia', conMisiones = true }: Props) {
   const hoy = hoyLocal() as string;
   const datos = useDatosDelPlantel(clubId, plantelId, hoy);
   const navegar = useNavigate();
@@ -243,6 +246,8 @@ export function ContenidoDelPlantel({ clubId, plantelId, categoria, categoriaCod
                 )}
               </>
             )}
+
+            {conMisiones && <MisionesDelPlantel clubId={clubId} plantelId={plantelId} />}
 
             {/* Con el plantel vacío, estas acciones ya están en el vacío de arriba; emergencias necesita chicos con quién cruzar. */}
             {todos.length > 0 && (

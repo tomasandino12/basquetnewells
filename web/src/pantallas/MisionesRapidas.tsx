@@ -8,7 +8,6 @@ import { useDatosDeMisiones, useEvaluarMisiones } from '../datos/consultasJugado
 import { mensajeDeGuardado } from '../datos/errores';
 import type { JugadorDelPlantel, MisionDePrevia, PreviaCompleta, PreviaDelPlantel } from '../datos/repositorio';
 import { cn } from '../lib/cn';
-import { APP_DE_SIEMPRE } from '../clasica';
 
 type Estado = 'logrado' | 'en_proceso' | 'no_logrado';
 
@@ -47,7 +46,7 @@ export function MisionesDeHoy({ clubId, plantelId, previas }: { clubId: string; 
 function Armar({ nota }: { nota?: string }) {
   return (
     <Panel titulo="Misiones del partido">
-      <a href={APP_DE_SIEMPRE} className="group block min-w-0 rounded-campo outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
+      <Link to="/misiones/armar" className="group block min-w-0 rounded-campo outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta">
         <span className="flex items-baseline gap-2 font-titulo text-2xl leading-tight font-semibold">
           <span>Armá las misiones del próximo partido</span>
           <span aria-hidden className="text-club-texto transition-transform duration-[var(--dur-2)] ease-[var(--ease-salida)] [@media(hover:hover)]:group-hover:translate-x-1">
@@ -55,7 +54,7 @@ function Armar({ nota }: { nota?: string }) {
           </span>
         </span>
         <span className="block text-sm text-gris">{nota ?? 'Un aporte concreto para cada chico y un objetivo para el equipo.'}</span>
-      </a>
+      </Link>
     </Panel>
   );
 }
@@ -195,9 +194,14 @@ function Lista({ previa, jugadores }: { previa: PreviaCompleta; jugadores: Jugad
           </button>
         )}
         {!puedeMarcar && (
-          <a href={APP_DE_SIEMPRE} className={ENLACE}>
-            Armar otras misiones
-          </a>
+          <>
+            <Link to={`/misiones/${previa.id}/armar`} className={ENLACE}>
+              Cambiar las misiones
+            </Link>
+            <Link to="/misiones/armar" className={ENLACE}>
+              Armar otras misiones
+            </Link>
+          </>
         )}
       </div>
     </Panel>

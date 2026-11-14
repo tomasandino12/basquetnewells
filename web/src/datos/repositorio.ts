@@ -5,7 +5,19 @@
 import type { RepositorioCoord } from './repositorioCoord';
 
 export interface Sesion {
-  user: { id: string; email?: string };
+  /** `user_metadata` lo edita la propia persona: sirve para mostrar su nombre, nunca para autorizar nada. */
+  user: { id: string; email?: string; user_metadata?: { nombre?: unknown; [campo: string]: unknown } };
+}
+
+/** Lo que se manda a guardar_previa (lo arma `prepararPayloadPrevia`, que ya validó el borrador). */
+export interface PayloadDePrevia {
+  previaId: string;
+  clubId: string;
+  plantelId: string;
+  fecha: string;
+  rival: string | null;
+  misionesJugador: unknown[];
+  misionesEquipo: unknown[];
 }
 
 export interface Club {
@@ -429,6 +441,10 @@ export interface Repositorio extends RepositorioCoord {
   obtenerPrevia(previaId: string): Promise<PreviaCompleta | null>;
   obtenerEstadisticasParaMisiones(partidoId: string): Promise<{ jugadorId: string; [columna: string]: unknown }[]>;
   evaluarMisiones(datos: EvaluacionAGuardar): Promise<unknown>;
+  /** Todo o nada: guarda la previa con sus misiones. Un reintento con los mismos ids no duplica. */
+  guardarPrevia(payload: PayloadDePrevia): Promise<unknown>;
+  /** Guarda el nombre propio en los metadatos de la cuenta y devuelve el usuario ya actualizado. */
+  guardarMiNombre(nombre: string): Promise<Sesion['user']>;
   obtenerPlanesFisicos(clubId: string, plantelId: string): Promise<PlanFisico[]>;
   obtenerPlanFisico(planId: string): Promise<SesionFisico[]>;
   obtenerPasos(clubId: string): Promise<PasoFuerza[]>;
