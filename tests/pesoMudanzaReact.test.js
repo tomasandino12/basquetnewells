@@ -12,15 +12,31 @@ import { gzipSync } from 'node:zlib';
  * 12/11: coordinación entera (7 pantallas: panorama con gráficos, profes, temporada, rubros,
  * finanzas, papeles y formularios) subió el total a 341 kB; el tope pasó de 330 a 360.
  *
+ * 13/11: importar planillas y Datos (partidos, tiro, cargas y pruebas con sus gráficos) sumaron ~24 kB;
+ * el tope pasó de 360 a 385. El lector de xlsx (~120 kB) no cuenta: es un trozo aparte que el celular
+ * sólo baja cuando alguien sube una planilla (import dinámico), no al abrir la app. Otra prueba, abajo,
+ * vigila que siga siendo así.
+ *
  * Mide web/dist, que sólo existe después de `npm --prefix web run build`: sin
  * armar, se saltea (Vercel la arma en el deploy, no en las pruebas).
  */
 
-const PRESUPUESTO_KB = 360;
+const PRESUPUESTO_KB = 385;
 const DIST = 'web/dist/assets';
+const LECTOR_XLSX = /^xlsx-/;
 
 test('lo que baja el celular de /nueva entra en el presupuesto', { skip: !existsSync(DIST) && 'web/dist no está armado' }, () => {
-  const peso = readdirSync(DIST).filter((a) => /\.(js|css)$/.test(a))
+  const peso = readdirSync(DIST).filter((a) => /\.(js|css)$/.test(a) && !LECTOR_XLSX.test(a))
     .reduce((suma, a) => suma + gzipSync(readFileSync(join(DIST, a)), { level: 9 }).length, 0);
   assert.ok(peso <= PRESUPUESTO_KB * 1024, `/nueva pesa ${(peso / 1024).toFixed(0)} kB comprimida (tope ${PRESUPUESTO_KB})`);
+});
+
+test('el lector de xlsx no se baja al abrir la app: sólo al subir una planilla', { skip: !existsSync(DIST) && 'web/dist no está armado' }, () => {
+  const html = readFileSync('web/dist/index.html', 'utf8');
+  assert.ok(!/xlsx/i.test(html), 'index.html no carga el lector de xlsx');
+  const trozos = readdirSync(DIST).filter((a) => LECTOR_XLSX.test(a));
+  assert.equal(trozos.length, 1, 'el lector de xlsx es un trozo aparte');
+  const entrada = readdirSync(DIST).filter((a) => /^index-.*\.js$/.test(a)).map((a) => readFileSync(join(DIST, a), 'utf8')).join('\n');
+  // Un import estático empezaría con «from"./xlsx-»; el dinámico sólo lo nombra dentro de la lista de precarga.
+  assert.ok(!/from\s*["']\.\/xlsx-/.test(entrada), 'la entrada no importa el lector de xlsx de entrada');
 });

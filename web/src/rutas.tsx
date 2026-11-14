@@ -7,7 +7,9 @@ import { irALaDeSiempre } from './clasica';
 import { BarraDeCategorias } from './pantallas/BarraDeCategorias';
 import { Asistencia } from './pantallas/Asistencia';
 import { AsistenciaHistorial } from './pantallas/AsistenciaHistorial';
+import { Datos } from './pantallas/Datos';
 import { Entrar } from './pantallas/Entrar';
+import { CargarPartido } from './pantallas/importar/CargarPartido';
 import { FichaEjemplo, PantallaDeFicha } from './pantallas/PantallaDeFicha';
 import { Fisico } from './pantallas/Fisico';
 import { FisicoEscalones } from './pantallas/FisicoEscalones';
@@ -102,6 +104,9 @@ export const rutas: RouteObject[] = [
         { path: '/asistencia', element: <RedirigirConBusqueda a="/plantel/asistencia" /> },
         { path: '/asistencia/historial', element: <RedirigirConBusqueda a="/plantel/asistencia/historial" /> },
         { path: '/medir', element: <Medir /> },
+        { path: '/datos', element: <Datos /> },
+        // Cargar un partido cuelga de Datos (y del plantel vacío): no tiene ítem propio en el menú.
+        { path: '/datos/cargar-partido', element: <CargarPartido /> },
         { path: '/recursos', element: <Recursos /> },
         { path: '/misiones/:previaId', element: <MisionesPartido /> },
         { path: '/fisico', element: <Fisico /> },

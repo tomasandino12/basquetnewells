@@ -330,9 +330,20 @@ describe('Plantel con datos: estados y permisos', () => {
     simular(true);
     abrir(repo({ obtenerJugadoresDelPlantel: async () => [] }));
     expect(await screen.findByText('Sub 13 todavía no tiene jugadores')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Cargar un partido de la CABB' })).toBeTruthy();
+    // Cargar partido ya se mudó: lleva a la pantalla nueva y no a la app de siempre.
+    expect(screen.getByRole('link', { name: 'Cargar un partido de la CABB' }).getAttribute('href')).toBe('/datos/cargar-partido');
     expect(screen.getByRole('button', { name: 'Agregar jugador a mano' })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Importar inscriptos' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Importar inscriptos' })).toBeTruthy();
+  });
+
+  it('con chicos en el plantel, las tres importaciones están en la misma pantalla y ya no mandan a la app anterior', async () => {
+    simular(true);
+    abrir(repo({ obtenerJugadoresDelPlantel: async () => [{ id: 'j-1', nombreClave: 'acosta bruno', nombreLimpio: 'Acosta, Bruno', fechaNacimiento: '2013-03-02' }] }));
+    const zona = await screen.findByRole('region', { name: 'Importar planillas' });
+    expect(within(zona).getByRole('button', { name: 'Importar inscriptos' })).toBeTruthy();
+    expect(within(zona).getByRole('button', { name: 'Importar emergencias' })).toBeTruthy();
+    expect(within(zona).getByRole('link', { name: 'Cargar partido' }).getAttribute('href')).toBe('/datos/cargar-partido');
+    expect(screen.queryByText('Todavía en la app anterior')).toBeNull();
   });
 
   it('si falla la lista de chicos, lo cuenta con salida; si fallan los agregados, la lista se dibuja igual', async () => {
