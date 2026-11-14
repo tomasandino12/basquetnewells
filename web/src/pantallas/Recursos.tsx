@@ -289,7 +289,7 @@ function DeEjercicio({ clubId, ejercicio }: { clubId: string; ejercicio: Ejercic
         <dl className="flex flex-col gap-3">
           {ejercicio.material && <Dato icono={Package} tono="bg-baja-fondo text-baja" clave="Material" valor={ejercicio.material} />}
           {ejercicio.jugadores != null && <Dato icono={Users} tono="bg-sube-fondo text-sube" clave="Jugadores" valor={String(ejercicio.jugadores)} />}
-          {ejercicio.categorias && ejercicio.categorias.length > 0 && <Dato icono={Tag} tono="bg-club-cl text-club-texto" clave="Categorías" valor={ejercicio.categorias.join(', ')} />}
+          {ejercicio.categorias?.trim() && <Dato icono={Tag} tono="bg-club-cl text-club-texto" clave="Categorías" valor={ejercicio.categorias.trim()} />}
         </dl>
         {ejercicio.enlace && <VideoDeEjercicio link={ejercicio.enlace} titulo={ejercicio.titulo} />}
         {conPizarra && (

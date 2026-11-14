@@ -38,7 +38,8 @@ describe('un solo ancho para todas las pantallas', () => {
     }
     const pantallas = [...rutas.matchAll(/element: <(\w+) \/>/g)].map((m) => m[1]).filter((n) => archivoDe.has(n));
     expect(pantallas.length).toBeGreaterThanOrEqual(8);
-    const marcos = ['<Pagina', '<ConPlantel', '<MarcoDeHoy', '<MarcoDelPlantel'];
+    // PantallaDeTest (medir/MarcoDeTest.tsx) es ConPlantel con los chicos cargados.
+    const marcos = ['<Pagina', '<ConPlantel', '<MarcoDeHoy', '<MarcoDelPlantel', '<PantallaDeTest'];
     // RequiereCoordinacion pone <Pagina> en todos sus estados (cargando, sin permiso y con la pantalla).
     for (const nombre of pantallas) {
       // Las de pantallas/jugador/ se dibujan dentro de MarcoJugador (por <Outlet />): se comprueba abajo.

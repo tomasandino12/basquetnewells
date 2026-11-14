@@ -31,7 +31,7 @@ function repo(piso: Partial<Repositorio> = {}) {
 const abrir = (r: Repositorio = repo()) => renderConDatos(rutas, { repo: r, ruta: '/medir' });
 
 describe('Medir', () => {
-  it('muestra una franja por test, con cuántas sesiones hay y la última, y lleva a la app de siempre', async () => {
+  it('muestra una franja por test, con cuántas sesiones hay y la última, y lleva a su prueba', async () => {
     abrir();
     // Los tests están desde el principio; lo de las sesiones llega cuando carga la lista.
     await screen.findByText(/2 sesiones · última 20\/10\/26/);
@@ -43,23 +43,16 @@ describe('Medir', () => {
     expect(links[1].textContent).toContain('1 sesión · última 15/09/26');
     expect(links[2].textContent).toContain('Sin mediciones todavía');
     expect(links[3].textContent).toContain('Yo-Yo');
-    // Cada botón lleva a SU test en la app de siempre, no a la portada.
-    expect(links.map((l) => l.getAttribute('href')?.split('ir=')[1])).toEqual(['tiro', 'salto', 'sprint', 'yoyo']);
-    expect(links[0].getAttribute('href')).toContain('clasica');
-  });
-
-  it('cada botón abre su prueba en la app de siempre', async () => {
-    abrir();
-    const links = within(await screen.findByRole('region', { name: 'Tests' })).getAllByRole('link');
-    expect(links.map((l) => new URL(l.getAttribute('href')!, 'http://x').searchParams.get('ir'))).toEqual(['tiro', 'salto', 'sprint', 'yoyo']);
-    links.forEach((l) => expect(l.getAttribute('href')).toContain('desde=nueva'));
+    // Cada botón lleva a SU test en esta app: ya no se pasa por la de siempre.
+    expect(links.map((l) => l.getAttribute('href'))).toEqual(['/medir/tiro', '/medir/salto', '/medir/sprint', '/medir/yoyo']);
+    links.forEach((l) => expect(l.getAttribute('href')).not.toContain('clasica'));
   });
 
   it('Continuar retoma la prueba de esa sesión sin terminar', async () => {
     guardarBorrador(claveBorrador('u-1', 'c-1', 'p-1', 'sprint'), { fecha: '2026-11-05', valores: { a: { tiempo: 3 } } });
     abrir();
     const aviso = within(await screen.findByRole('region', { name: 'Sesiones sin terminar' }));
-    expect(aviso.getByRole('link', { name: /Continuar/ }).getAttribute('href')).toContain('ir=sprint');
+    expect(aviso.getByRole('link', { name: /Continuar/ }).getAttribute('href')).toBe('/medir/sprint');
   });
 
   it('lista las sesiones cargadas, la más nueva primero', async () => {

@@ -85,6 +85,17 @@ export interface SesionMedicion {
   tipo: string;
 }
 
+/** Lo que manda cada test a guardar_sesion_medicion (lo arma src/data/prepararPayloadMedicion.js). */
+export interface PayloadDeMedicion {
+  clubId: string;
+  plantelId: string;
+  fecha: string;
+  tipo: 'tiro' | 'salto' | 'sprint' | 'yoyo';
+  sesionId: string;
+  mediciones: Record<string, unknown>[];
+  [extra: string]: unknown;
+}
+
 export interface MedicionTiro {
   sesionId: string;
   jugadorId: string;
@@ -186,7 +197,7 @@ export interface EjercicioDeLista {
   enlace: string | null;
   material: string | null;
   jugadores: number | null;
-  categorias: string[] | null;
+  categorias: string | null;
   creadoPor: string | null;
   creadoEn: string;
   /** Señal de presencia (no un contador): hay alguna nota de uso. */
@@ -520,6 +531,8 @@ export interface Repositorio extends RepositorioCoord {
   obtenerEntrenamientos(plantelId: string, desde: string, hasta: string): Promise<Entrenamiento[]>;
   obtenerLesionesDelPlantel(plantelId: string): Promise<Lesion[]>;
   obtenerSesionesDeMedicion(clubId: string, plantelId: string): Promise<SesionMedicion[]>;
+  /** guardar_sesion_medicion: el payload lo arma prepararPayloadMedicion.js. Con el mismo sesionId no duplica. */
+  guardarSesionMedicion(payload: PayloadDeMedicion): Promise<unknown>;
   obtenerMedicionesTiroDelPlantel(clubId: string, plantelId: string): Promise<MedicionTiro[]>;
   obtenerMetasDelPlantel(clubId: string, plantelId: string): Promise<MetasDeZona>;
   obtenerPreviasDelPlantel(clubId: string, plantelId: string): Promise<PreviaDelPlantel[]>;

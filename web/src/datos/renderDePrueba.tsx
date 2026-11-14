@@ -35,6 +35,7 @@ export function repositorioInventado(piso: Partial<Repositorio> = {}): Repositor
     obtenerEntrenamientos: async () => [],
     obtenerLesionesDelPlantel: async () => [],
     obtenerSesionesDeMedicion: async () => [],
+    guardarSesionMedicion: async () => ({}),
     obtenerMedicionesTiroDelPlantel: async () => [],
     obtenerMetasDelPlantel: async () => ({}),
     obtenerPreviasDelPlantel: async () => [],

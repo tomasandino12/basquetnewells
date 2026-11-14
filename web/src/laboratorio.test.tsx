@@ -27,6 +27,8 @@ describe('menú de la app', () => {
         !['*', '/', '/entrar', '/asistencia', '/asistencia/historial', '/plantel/asistencia', '/plantel/asistencia/historial', '/datos/cargar-partido', '/misiones/armar', '/perfil'].includes(c) &&
         !c.includes(':') &&
         !c.startsWith('/jugador') &&
+        // Los cuatro tests se abren desde Medir.
+        !c.startsWith('/medir/') &&
         // Temporada, rubros y formularios se abren desde Profes, Finanzas y Familias (la barra de /coordinacion).
         !c.startsWith('/coordinacion/'),
     );

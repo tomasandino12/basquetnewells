@@ -1,6 +1,7 @@
 import { ArrowRight, ClipboardList } from 'lucide-react';
 import { useState } from 'react';
-import { medirEnLaDeSiempre } from '../clasica';
+import { Link, useLocation } from 'react-router';
+import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
 import { Consulta } from '../components/ui/consulta';
 import { Vacio } from '../components/ui/estados';
@@ -70,6 +71,8 @@ function MedirDeLaCategoria({ clubId, plantelId, categoria }: { clubId: string; 
     setVersion((v) => v + 1);
   };
   const pendiente = borradores.find((b) => b.tipo === aDescartar)?.borrador ?? null;
+  // Al volver de un test guardado: lo dice una vez (el estado de la navegación no sobrevive a recargar).
+  const guardada = (useLocation().state as { guardada?: string } | null)?.guardada;
 
   return (
     <>
@@ -79,6 +82,8 @@ function MedirDeLaCategoria({ clubId, plantelId, categoria }: { clubId: string; 
             <h1 className="font-titulo text-7xl leading-[.9] font-bold uppercase lg:text-8xl">Medir</h1>
             <p className={`${ETIQUETA} mt-2`}>{categoria}</p>
           </header>
+
+          {guardada && <Aviso tono="ok" titulo="Sesión guardada" className="mt-5">{guardada} quedó guardada en la base.</Aviso>}
 
           {borradores.length > 0 && (
             <section aria-label="Sesiones sin terminar" className="mt-5 flex flex-col gap-3">
@@ -138,13 +143,13 @@ function Pendiente({ tipo, borrador, alDescartar }: { tipo: TipoDeTest; borrador
       <p className="mt-1 text-sm">
         {nombre} del {formatearFecha(borrador.fecha)} · {cargados} {plural(cargados, 'jugador cargado', 'jugadores cargados')}
       </p>
-      <a
-        href={medirEnLaDeSiempre(tipo)}
+      <Link
+        to={`/medir/${tipo}`}
         className="group mt-4 inline-flex min-h-11 items-center gap-2 rounded-btn bg-negro px-5 font-titulo text-lg font-semibold tracking-[.14em] text-sobre-negro uppercase outline-offset-2 focus-visible:outline-2 focus-visible:outline-sobre-lima"
       >
         Continuar<span className="sr-only"> {nombre}</span>
         <ArrowRight aria-hidden strokeWidth={2.5} className="size-5 transition-transform duration-[var(--dur-2)] ease-[var(--ease-salida)] [@media(hover:hover)]:group-hover:translate-x-1" />
-      </a>
+      </Link>
       <button
         type="button"
         onClick={alDescartar}
@@ -171,8 +176,8 @@ function Tests({ lista }: { lista: SesionMedicion[] | undefined }) {
             const color = COLOR_DE_TEST[t.tipo];
             return (
               <li key={t.tipo}>
-                <a
-                  href={medirEnLaDeSiempre(t.tipo)}
+                <Link
+                  to={`/medir/${t.tipo}`}
                   className="group flex min-h-28 items-center justify-between gap-3 rounded-tarjeta border border-linea bg-sup px-4 py-4 outline-offset-2 transition-transform duration-[var(--dur-1)] active:scale-[.985] focus-visible:outline-2 focus-visible:outline-tinta sm:px-6"
                 >
                   <span className="min-w-0 flex-1">
@@ -189,7 +194,7 @@ function Tests({ lista }: { lista: SesionMedicion[] | undefined }) {
                     Medir
                     <ArrowRight strokeWidth={2.5} className="size-5 transition-transform duration-[var(--dur-2)] ease-[var(--ease-salida)] [@media(hover:hover)]:group-hover:translate-x-1" />
                   </span>
-                </a>
+                </Link>
               </li>
             );
           })}

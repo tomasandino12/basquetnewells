@@ -17,11 +17,15 @@ import { gzipSync } from 'node:zlib';
  * sólo baja cuando alguien sube una planilla (import dinámico), no al abrir la app. Otra prueba, abajo,
  * vigila que siga siendo así.
  *
+ * 14/11: los cuatro tests de Medir (batería, salto con el marcador de cuadros, sprint con el
+ * cronómetro de salida y Yo-Yo con los pitidos) dejaron de abrirse en la app de siempre: el total
+ * llegó a ~400 kB y el tope pasó de 385 a 410.
+ *
  * Mide web/dist, que sólo existe después de `npm --prefix web run build`: sin
  * armar, se saltea (Vercel la arma en el deploy, no en las pruebas).
  */
 
-const PRESUPUESTO_KB = 385;
+const PRESUPUESTO_KB = 410;
 const DIST = 'web/dist/assets';
 const LECTOR_XLSX = /^xlsx-/;
 

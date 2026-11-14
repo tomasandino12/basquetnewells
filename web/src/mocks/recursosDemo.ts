@@ -26,7 +26,7 @@ const PIZARRA: DatosDePizarra = {
 };
 
 const EJERCICIOS = [
-  ej('e1', 'Pase de pecho en parejas', 'pase', { descripcion: 'Dos filas enfrentadas a cuatro metros. Cada pase va con los dos pies firmes y los dedos hacia afuera.\n\nDespués de pasar, se cambia de fila.', material: '2 pelotas', jugadores: 8, categorias: ['U13', 'U15'], tieneNotas: true, cantidadVariaciones: 2 }),
+  ej('e1', 'Pase de pecho en parejas', 'pase', { descripcion: 'Dos filas enfrentadas a cuatro metros. Cada pase va con los dos pies firmes y los dedos hacia afuera.\n\nDespués de pasar, se cambia de fila.', material: '2 pelotas', jugadores: 8, categorias: 'U13, U15', tieneNotas: true, cantidadVariaciones: 2 }),
   ej('e2', 'Cierre de línea de pase', 'defensa', { descripcion: 'El defensor se mueve para quedar entre la pelota y su atacante, con una mano en la línea de pase.', material: 'Conos', jugadores: 6 }),
   ej('e3', 'Tres contra dos en 6 segundos', 'contraataque', { descripcion: 'Salida rápida con tres jugadores contra dos defensores. Hay que terminar antes de los 6 segundos.', material: 'Muchas pelotas', jugadores: 10, tieneNotas: true }),
   ej('e4', 'Pelotas en el centro', 'juego', { descripcion: 'Se agrupan en grupos de 2 a 3 chicos y aros al lado. Los chicos corren a buscar las pelotas y van con su grupo con dribbling.', material: 'Muchas pelotas', jugadores: 12 }),

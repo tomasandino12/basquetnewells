@@ -17,6 +17,10 @@ import { FisicoEscalones } from './pantallas/FisicoEscalones';
 import { FisicoSesion } from './pantallas/FisicoSesion';
 import { Hoy } from './pantallas/Hoy';
 import { Medir } from './pantallas/Medir';
+import { MedirBateria } from './pantallas/MedirBateria';
+import { MedirSalto } from './pantallas/MedirSalto';
+import { MedirSprint } from './pantallas/MedirSprint';
+import { MedirYoyo } from './pantallas/MedirYoyo';
 import { Piezas } from './pantallas/Piezas';
 import { Recursos } from './pantallas/Recursos';
 import { DatosEjemplo, HoyEjemplo, RecursosEjemplo } from './pantallas/HoyEjemplo';
@@ -124,6 +128,11 @@ export const rutas: RouteObject[] = [
         { path: '/asistencia', element: <RedirigirConBusqueda a="/plantel/asistencia" /> },
         { path: '/asistencia/historial', element: <RedirigirConBusqueda a="/plantel/asistencia/historial" /> },
         { path: '/medir', element: <Medir /> },
+        // Los cuatro tests, con su cronómetro, video y pitidos (antes se hacían en la app de siempre).
+        { path: '/medir/tiro', element: <MedirBateria /> },
+        { path: '/medir/salto', element: <MedirSalto /> },
+        { path: '/medir/sprint', element: <MedirSprint /> },
+        { path: '/medir/yoyo', element: <MedirYoyo /> },
         { path: '/datos', element: <Datos /> },
         // Cargar un partido cuelga de Datos (y del plantel vacío): no tiene ítem propio en el menú.
         { path: '/datos/cargar-partido', element: <CargarPartido /> },

@@ -49,6 +49,10 @@ const VERSION = 1;
 export interface Borrador {
   fecha: string;
   valores?: Record<string, Record<string, unknown> | undefined>;
+  /** Se genera con el borrador y se reusa en cada reintento: la base no duplica la sesión (0038). */
+  sesionId?: string;
+  /** Lo propio de cada test (testSalto, distanciaM). */
+  [extra: string]: unknown;
 }
 
 export const claveBorrador = (usuarioId: string | undefined, clubId: string, plantelId: string, tipo: TipoDeTest) =>
@@ -64,6 +68,22 @@ export function leerBorrador(clave: string): Borrador | null {
   } catch {
     return null;
   }
+}
+
+/** Se llama en cada toque: la sesión en curso no puede depender de que el celular no se bloquee. */
+export function guardarBorrador(clave: string, estado: Omit<Borrador, 'version'>): boolean {
+  try {
+    localStorage.setItem(clave, JSON.stringify({ ...estado, version: VERSION }));
+    return true;
+  } catch {
+    // En modo privado localStorage tira al escribir: perder el borrador nunca rompe la pantalla.
+    return false;
+  }
+}
+
+/** Fecha local, no UTC: después de las 21:00 en Argentina toISOString() ya da mañana. */
+export function hoyLocal(d = new Date()): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 export function borrarBorrador(clave: string): void {
