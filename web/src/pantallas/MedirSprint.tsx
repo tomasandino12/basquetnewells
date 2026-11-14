@@ -6,6 +6,7 @@ import {
 } from '@datos/sprint.js';
 import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
+import { REJILLA } from '../components/ui/pagina';
 import { Campo } from '../components/ui/campo';
 import { Hoja } from '../components/ui/sheet';
 import type { JugadorDelPlantel, PayloadDeMedicion } from '../datos/repositorio';
@@ -104,7 +105,7 @@ function Sprint({ clubId, plantelId, categoria, jugadores }: Categoria & { jugad
         <CampoFecha fecha={t.estado.fecha} alCambiar={(f) => t.cambiar((s) => ({ ...s, fecha: f }))} />
       </Encabezado>
 
-      <ul className="mt-5 grid gap-2 lg:grid-cols-2">
+      <ul className={cn('mt-5', REJILLA)}>
         {jugadores.map((j) => {
           const v = t.estado.valores[j.id];
           const ausente = !!v && 'ausente' in v;

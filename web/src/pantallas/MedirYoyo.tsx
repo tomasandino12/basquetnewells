@@ -5,6 +5,7 @@ import { cronograma, metrosDe, nivelYIda, posicionEn, segundosAlPitido, TABLA_YY
 import { crearPitidosYoyo, CUENTA_S } from '@ui/componentes/pitidosYoyo.js';
 import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
+import { REJILLA, REJILLA_CHICA } from '../components/ui/pagina';
 import { Campo } from '../components/ui/campo';
 import { Hoja } from '../components/ui/sheet';
 import type { JugadorDelPlantel, PayloadDeMedicion } from '../datos/repositorio';
@@ -106,7 +107,7 @@ function Yoyo({ clubId, plantelId, categoria, jugadores }: Categoria & { jugador
         <span className="cifra font-mono text-sm">{corren.size} de {jugadores.length}</span>
       </div>
       <p className="mt-1 text-sm text-gris">Los que no marques quedan como ausentes. Mejor de 8 a 10 por tanda, para poder mirarlos a todos.</p>
-      <ul className="mt-3 grid gap-2 lg:grid-cols-2">
+      <ul className={cn('mt-3', REJILLA)}>
         {jugadores.map((j) => {
           const corre = corren.has(j.id);
           return (
@@ -235,7 +236,7 @@ function EnCurso({ jugadores, pitidos, aviso, alTerminar }: {
       </header>
       <p className="mt-3 text-sm text-gris">Tocá a un jugador cuando no llegue a la línea con el pitido: la primera vez es un aviso, la segunda lo saca.</p>
       {aviso && <Aviso tono="error" titulo={aviso} className="mt-3" />}
-      <ul className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-3">
+      <ul className={cn('mt-3', REJILLA_CHICA)}>
         {jugadores.map((j) => {
           const e = estados[j.id];
           return (
@@ -317,7 +318,7 @@ function Resumen({ categoria, fecha, jugadores, valores, alCorregir, alRepetir, 
       <Encabezado tipo="yoyo" categoria={categoria} fecha={fecha} />
       <h2 className="mt-5 font-titulo text-2xl leading-none font-bold uppercase">Resumen</h2>
       <p className="mt-1 text-sm text-gris">Revisá los resultados y corregí lo que haga falta antes de guardar.</p>
-      <ul className="mt-3 grid gap-2 lg:grid-cols-2">
+      <ul className={cn('mt-3', REJILLA)}>
         {ordenados.map((j) => {
           const v = valores[j.id];
           const corrio = !!v && 'idas' in v;

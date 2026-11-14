@@ -9,6 +9,7 @@ import {
 import { decimalEstricto } from '@datos/numeros.js';
 import { Aviso } from '../components/ui/aviso';
 import { Boton, claseBoton } from '../components/ui/button';
+import { REJILLA_CHICA } from '../components/ui/pagina';
 import { Card, Panel } from '../components/ui/card';
 import { Campo } from '../components/ui/campo';
 import { ChipBoton } from '../components/ui/chip';
@@ -226,7 +227,7 @@ function Formulario({ clubId, plantelId, categoria, previa, jugadores }: Formula
           Sumá jugadores al plantel para asignarles misiones.
         </Vacio>
       ) : (
-        <ul aria-label="Jugadores del plantel" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <ul aria-label="Jugadores del plantel" className={REJILLA_CHICA}>
           {jugadores.map((j) => {
             const suyas = borrador.misionesJugador.filter((m) => m.jugadorId === j.id);
             return (

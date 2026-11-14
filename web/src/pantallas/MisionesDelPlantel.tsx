@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { siguientePasoDeMisiones, vincularPrevias } from '@datos/misiones.js';
 import { claseBoton } from '../components/ui/button';
+import { REJILLA_CHICA } from '../components/ui/pagina';
 import { Panel } from '../components/ui/card';
 import { Chip } from '../components/ui/chip';
 import { Consulta } from '../components/ui/consulta';
@@ -73,7 +74,7 @@ function Contenido({ previas, partidos, plantelId }: { previas: PreviaDelPlantel
       {sorted.length > 0 && (
         <section aria-label="Misiones anteriores">
           <h3 className="mb-2 font-mono text-xs tracking-wide text-gris uppercase">Anteriores</h3>
-          <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          <ul className={REJILLA_CHICA}>
             {sorted.map((p) => {
               // Con el partido cargado lo que falta es evaluar; si no, se abre la previa (que también lleva a evaluar desde su pie).
               const evaluable = vinculos.get(p.id)?.partidoId != null;

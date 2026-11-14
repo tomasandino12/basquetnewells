@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { prepararPayloadSalto } from '@datos/prepararPayloadMedicion.js';
 import { alturaDeSalto, INTENTOS_SALTO, TESTS_SALTO } from '@datos/salto.js';
 import { Boton } from '../components/ui/button';
+import { REJILLA } from '../components/ui/pagina';
 import type { JugadorDelPlantel, PayloadDeMedicion } from '../datos/repositorio';
 import { cn } from '../lib/cn';
 import { MarcadorDeSalto, prepararVideo, RechazoDeVideo, type Intento, type Preparado } from '../medir/MarcadorDeSalto';
@@ -82,7 +83,7 @@ function Salto({ clubId, plantelId, categoria, jugadores }: Categoria & { jugado
       <p className="mt-4 text-sm text-gris">Tocá un salto y elegí el video en cámara lenta. El video no se sube: sólo se usa para marcar los cuadros.</p>
       {leyendo && <p role="status" className="mt-2 text-sm">Leyendo el video…</p>}
 
-      <ul className="mt-4 grid gap-2 lg:grid-cols-2">
+      <ul className={cn('mt-4', REJILLA)}>
         {jugadores.map((j) => {
           const v = t.estado.valores[j.id];
           const ausente = !!v && 'ausente' in v;
