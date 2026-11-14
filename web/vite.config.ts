@@ -26,5 +26,10 @@ export default defineConfig({
   // Las fuentes se reusan de /public de la app vieja, que queda fuera de web/.
   server: { fs: { allow: ['..'] } },
   build: { outDir: 'dist', emptyOutDir: true },
-  test: { environment: 'jsdom', include: ['src/**/*.test.{ts,tsx}'] },
+  test: {
+    environment: 'jsdom',
+    include: ['src/**/*.test.{ts,tsx}'],
+    setupFiles: ['src/configurarPruebas.ts'],
+    testTimeout: 15000,
+  },
 });
