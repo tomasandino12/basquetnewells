@@ -32,6 +32,25 @@ export function vieneDeLaNueva(search) {
   return new URLSearchParams(String(search ?? '').replace(/^\?/, '')).get('desde') === 'nueva';
 }
 
+/**
+ * Pantallas de la de siempre a las que la nueva puede mandar con `?ir=`. Lista cerrada:
+ * lo que viene en la dirección nunca se usa como id de pantalla sin pasar por acá.
+ */
+export const PANTALLAS_PEDIDAS = {
+  medir: 'p-medir',
+  tiro: 'p-medir-bateria',
+  salto: 'p-medir-salto',
+  sprint: 'p-medir-sprint',
+  yoyo: 'p-medir-yoyo',
+};
+
+/** La pantalla que pidió la nueva (`?desde=nueva&ir=salto`), o null si no pidió una conocida. */
+export function pantallaPedida(search) {
+  if (!vieneDeLaNueva(search)) return null;
+  const ir = new URLSearchParams(String(search ?? '').replace(/^\?/, '')).get('ir');
+  return Object.hasOwn(PANTALLAS_PEDIDAS, ir ?? '') ? PANTALLAS_PEDIDAS[ir] : null;
+}
+
 export function normalizarNueva(valor) {
   return valor === 'no' ? 'no' : 'si';
 }

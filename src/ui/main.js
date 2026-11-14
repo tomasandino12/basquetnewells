@@ -21,6 +21,7 @@ import {
   setCuenta, setFichaJugador, setPlantelActivoId, obtenerRoles, obtenerCuenta, setChicos, obtenerPlantelActivo,
 } from './sesion.js';
 import { abrirAlEntrar, abrirEnNueva } from './pantallaNueva.js';
+import { pantallaPedida } from '../data/interruptorNueva.js';
 import { GUIAS, guiaParaAbrir } from '../data/guias.js';
 import { claveGuia, yaVista } from './guiaVista.js';
 import { abrirGuia } from './componentes/guia.js';
@@ -422,6 +423,13 @@ async function entrarConSesion() {
   // Entrenando arranca en PLANTEL, donde empieza el flujo de quien arranca de
   // cero; coordinando, en el Panorama.
   await ir(pantallaInicialDelModo());
+  // La nueva mandó a una prueba de Medir (?desde=nueva&ir=salto): se abre encima, y Atrás vuelve.
+  // Sólo entrenando: la coordinación no mide.
+  const pedida = pantallaPedida(window.location.search);
+  if (pedida && obtenerModo() === 'entrenar') {
+    await ir(pedida, { push: true });
+    return;
+  }
   abrirGuiaSiFalta();
 }
 

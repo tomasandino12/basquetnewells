@@ -10,6 +10,13 @@ import { CLAVE_NUEVA, RUTA_CLASICA } from '@datos/interruptorNueva.js';
  */
 export const APP_DE_SIEMPRE = `${RUTA_CLASICA}?desde=nueva`;
 
+/**
+ * La de siempre abierta directo en una prueba de Medir (`tiro`, `salto`, `sprint`, `yoyo`) o en la
+ * lista de pruebas (`medir`). La lista cerrada vive en `interruptorNueva.js`.
+ */
+export const medirEnLaDeSiempre = (destino: 'medir' | 'tiro' | 'salto' | 'sprint' | 'yoyo') =>
+  `${APP_DE_SIEMPRE}&ir=${destino}`;
+
 /** En el armado de producción; en la compu (/nueva/ del servidor de Vite) no existe la de siempre. */
 const PUBLICADA = import.meta.env.PROD && typeof window !== 'undefined' && window.location.pathname.startsWith('/app');
 

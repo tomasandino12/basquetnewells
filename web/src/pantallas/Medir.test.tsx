@@ -44,6 +44,20 @@ describe('Medir', () => {
     expect(links[0].getAttribute('href')).toContain('clasica');
   });
 
+  it('cada botón abre su prueba en la app de siempre', async () => {
+    abrir();
+    const links = within(await screen.findByRole('region', { name: 'Tests' })).getAllByRole('link');
+    expect(links.map((l) => new URL(l.getAttribute('href')!, 'http://x').searchParams.get('ir'))).toEqual(['tiro', 'salto', 'sprint', 'yoyo']);
+    links.forEach((l) => expect(l.getAttribute('href')).toContain('desde=nueva'));
+  });
+
+  it('Continuar retoma la prueba de esa sesión sin terminar', async () => {
+    guardarBorrador(claveBorrador('u-1', 'c-1', 'p-1', 'sprint'), { fecha: '2026-11-05', valores: { a: { tiempo: 3 } } });
+    abrir();
+    const aviso = within(await screen.findByRole('region', { name: 'Sesiones sin terminar' }));
+    expect(aviso.getByRole('link', { name: /Continuar/ }).getAttribute('href')).toContain('ir=sprint');
+  });
+
   it('lista las sesiones cargadas, la más nueva primero', async () => {
     abrir();
     const lista = within(await screen.findByRole('region', { name: 'Sesiones cargadas' }));
