@@ -7,6 +7,7 @@ import {
 import { idDeYoutube, urlDeMiniatura, urlDeReproductor } from '@datos/youtube.js';
 import { APP_DE_SIEMPRE } from '../clasica';
 import { Boton } from '../components/ui/button';
+import { REJILLA_CHICA } from '../components/ui/pagina';
 import { Chip, ChipBoton } from '../components/ui/chip';
 import { Consulta } from '../components/ui/consulta';
 import { Vacio } from '../components/ui/estados';
@@ -114,7 +115,7 @@ function Tarjetas({ recursos, resumen, jugadores, categoria, tipo, setTipo }: {
           ))}
         </div>
       )}
-      <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <ul className={REJILLA_CHICA}>
         {visibles.map((r) => {
           const fila = filaDe(r.id);
           return (

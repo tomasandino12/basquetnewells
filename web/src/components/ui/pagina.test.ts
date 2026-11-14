@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ANCHO_DE_PAGINA, TOPE_DE_PAGINA } from './pagina';
+import { ANCHO_DE_PAGINA, REJILLA, REJILLA_CHICA, TOPE_DE_PAGINA } from './pagina';
 
 // Se leen los archivos como texto: la prueba falla si una pantalla vuelve a inventarse su propio ancho.
 const todos = import.meta.glob<string>('../../**/*.tsx', { query: '?raw', import: 'default', eager: true });
@@ -62,6 +62,20 @@ describe('un solo ancho para todas las pantallas', () => {
     ] as const) {
       const texto = fuentes[archivo];
       expect(texto.slice(texto.indexOf(`function ${marco}`)), marco).toContain('<Pagina');
+    }
+  });
+
+  it('las listas de tarjetas usan REJILLA (1 y 2 columnas) o REJILLA_CHICA (hasta 3), no columnas propias', () => {
+    expect(REJILLA).toContain('md:grid-cols-2');
+    expect(REJILLA).not.toMatch(/grid-cols-[3-9]/);
+    expect(REJILLA_CHICA).toContain('xl:grid-cols-3');
+    // Pantallas ya migradas: una lista nueva con `<ul className="… grid-cols-…">` propio las rompe.
+    const migradas = ['MedirSalto', 'MedirSprint', 'MedirYoyo', 'MedirBateria', 'MisionesDelPlantel', 'ArmarMisiones', 'RecursosVideos'];
+    for (const nombre of migradas) {
+      const texto = fuentes[`pantallas/${nombre}.tsx`];
+      expect(texto, nombre).toBeDefined();
+      const propias = [...texto.matchAll(/<ul[^>]*className="[^"]*grid-cols-[^"]*"/g)].map((m) => m[0]);
+      expect(propias, `${nombre} define columnas propias en una lista`).toEqual([]);
     }
   });
 

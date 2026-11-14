@@ -3,6 +3,7 @@ import { POSICIONES_BATERIA, INTENTOS_POR_POSICION } from '@datos/posiciones.js'
 import { prepararPayloadBateria } from '@datos/prepararPayloadMedicion.js';
 import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
+import { REJILLA } from '../components/ui/pagina';
 import type { JugadorDelPlantel, PayloadDeMedicion } from '../datos/repositorio';
 import { cn } from '../lib/cn';
 import { Encabezado, PantallaDeTest, PieDeGuardado, type Categoria } from '../medir/MarcoDeTest';
@@ -107,7 +108,7 @@ function Bateria({ clubId, plantelId, categoria, jugadores }: Categoria & { juga
             Se guarda como «no midió», no como 0 de 10. Se lo puede medir otro día en una sesión nueva.
           </Aviso>
         ) : (
-          <ul className="mt-4 grid gap-4 lg:grid-cols-2">
+          <ul className={cn('mt-4', REJILLA)}>
             {POSICIONES.map((p) => (
               <li key={p.id}>
                 <p className="mb-1.5 flex items-baseline justify-between text-sm font-semibold">

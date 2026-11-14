@@ -11,6 +11,14 @@ import { cn } from '../../lib/cn';
 export const TOPE_DE_PAGINA = 'max-w-[96rem]';
 export const ANCHO_DE_PAGINA = `mx-auto w-full ${TOPE_DE_PAGINA} px-4 sm:px-6 lg:px-8`;
 
+/**
+ * Las columnas de TODAS las listas de tarjetas: 1 en celular, 2 desde tablet.
+ * Para tarjetas chicas (jugadores, misiones, videos) hay una versión con 3 en compu.
+ * Una lista nueva usa una de estas dos y no escribe su propio `grid-cols-*`.
+ */
+export const REJILLA = 'grid gap-3 md:grid-cols-2';
+export const REJILLA_CHICA = 'grid gap-3 md:grid-cols-2 xl:grid-cols-3';
+
 interface Props {
   children: ReactNode;
   /** Sólo para cosas que no son de ancho (por ejemplo, alto mínimo). Nunca un `max-w-*`. */
