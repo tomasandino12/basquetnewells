@@ -16,6 +16,9 @@ export default defineConfig({
       '@datos': fileURLToPath(new URL('../src/data', import.meta.url)),
       // Los textos de error de la app vieja (sin DOM al importarlos), para no redactarlos dos veces.
       '@ui': fileURLToPath(new URL('../src/ui', import.meta.url)),
+      // El lector de planillas (src/parser) no se toca: se importa tal cual, y sólo cuando se sube un archivo.
+      '@parser': fileURLToPath(new URL('../src/parser', import.meta.url)),
+      xlsx: fileURLToPath(new URL('../public/vendor/xlsx.mjs', import.meta.url)),
       // La app vieja resuelve esto con el importmap de index.html; acá, con la copia vendorizada.
       '@supabase/supabase-js': fileURLToPath(new URL('../public/vendor/supabase-js.mjs', import.meta.url)),
     },
@@ -23,5 +26,10 @@ export default defineConfig({
   // Las fuentes se reusan de /public de la app vieja, que queda fuera de web/.
   server: { fs: { allow: ['..'] } },
   build: { outDir: 'dist', emptyOutDir: true },
-  test: { environment: 'jsdom', include: ['src/**/*.test.{ts,tsx}'] },
+  test: {
+    environment: 'jsdom',
+    include: ['src/**/*.test.{ts,tsx}'],
+    setupFiles: ['src/configurarPruebas.ts'],
+    testTimeout: 15000,
+  },
 });

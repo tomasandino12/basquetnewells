@@ -23,7 +23,7 @@ describe('menú de la app', () => {
     // La vista del jugador tiene su propio marco: sus destinos se controlan en la prueba de abajo.
     const directas = caminos(rutas).filter(
       (c) =>
-        !['*', '/', '/entrar', '/asistencia', '/asistencia/historial', '/plantel/asistencia', '/plantel/asistencia/historial'].includes(c) &&
+        !['*', '/', '/entrar', '/asistencia', '/asistencia/historial', '/plantel/asistencia', '/plantel/asistencia/historial', '/datos/cargar-partido'].includes(c) &&
         !c.includes(':') &&
         !c.startsWith('/jugador') &&
         // Temporada, rubros y formularios se abren desde Profes, Finanzas y Familias (la barra de /coordinacion).
@@ -40,8 +40,8 @@ describe('menú de la app', () => {
     expect(DESTINOS_DEL_JUGADOR.some((d) => d.a.includes('misiones'))).toBe(false);
   });
 
-  it('lleva a Hoy, Plantel, Físico, Medir, Recursos y Coordinación sin ids en la dirección; la asistencia se toma desde Plantel', () => {
-    expect(ENLACES_DEL_MENU.map((e) => e.a)).toEqual(['/hoy', '/plantel', '/fisico', '/medir', '/recursos', '/coordinacion']);
+  it('lleva a Hoy, Plantel, Físico, Medir, Datos, Recursos y Coordinación sin ids en la dirección; la asistencia se toma desde Plantel y el partido se carga desde Datos', () => {
+    expect(ENLACES_DEL_MENU.map((e) => e.a)).toEqual(['/hoy', '/plantel', '/fisico', '/medir', '/datos', '/recursos', '/coordinacion']);
   });
 
   it('Coordinación sólo aparece en el menú para quien coordina', async () => {
