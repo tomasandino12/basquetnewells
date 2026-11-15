@@ -16,7 +16,6 @@ import {
   ordenarPorNombre,
   ponerEstado,
   tarjetasIniciales,
-  tocarTarjeta,
   type Estado,
   type Tarjeta,
 } from '../asistencia/toma';
@@ -38,9 +37,6 @@ import { mensajeDeGuardado } from '../datos/errores';
 import type { Entrenamiento, JugadorDelPlantel, Lesion } from '../datos/repositorio';
 import { cn } from '../lib/cn';
 import { ConPlantel } from './ConPlantel';
-
-const TEXTO_ESTADO: Record<string, string> = { presente: 'Presente', ausente: 'Ausente', justificada: 'Justificada' };
-const textoEstado = (e: Estado) => (e ? TEXTO_ESTADO[e] : 'Sin tomar');
 
 /** Desde dónde se abrió la toma (el historial, por ejemplo): ahí se vuelve al guardar. */
 interface EstadoDeNavegacion {
@@ -277,7 +273,7 @@ function DiaDeAsistencia({
 
           {hubo ? (
             <>
-              <p className="mt-3 text-sm text-gris">Tocá a cada jugador para marcar presente o ausente. Los que dicen «Sin tomar» no se guardan.</p>
+              <p className="mt-3 text-sm text-gris">Tocá Presente, Ausente o Justificada en cada jugador. Los que no marques no se guardan.</p>
               <ul aria-label="Jugadores" className="mt-3 flex flex-col gap-2 pb-4">
                 {tarjetas.map((t) => {
                   const j = porId.get(t.jugadorId)!;
@@ -287,7 +283,7 @@ function DiaDeAsistencia({
                       nombre={j.nombreLimpio}
                       estado={t.estado}
                       lesionado={estabaLesionado(lesionDe(lesiones, t.jugadorId), fecha)}
-                      alTocar={() => setTarjetas((ts) => tocarTarjeta(ts, t.jugadorId))}
+                      alMarcar={(e) => setTarjetas((ts) => ponerEstado(ts, t.jugadorId, e))}
                       alMenu={() => setMenuDe(t.jugadorId)}
                     />
                   );
@@ -320,10 +316,6 @@ function DiaDeAsistencia({
           estado={tarjetaDelMenu.estado}
           lesiones={lesionDe(lesiones, jugadorDelMenu.id)}
           fecha={fecha}
-          alJustificar={() => {
-            setTarjetas((ts) => ponerEstado(ts, jugadorDelMenu.id, 'justificada'));
-            setMenuDe(null);
-          }}
           alCerrar={() => setMenuDe(null)}
         />
       )}
@@ -347,46 +339,62 @@ interface FilaProps {
   nombre: string;
   estado: Estado;
   lesionado: boolean;
-  alTocar: () => void;
+  alMarcar: (estado: Estado) => void;
   alMenu: () => void;
 }
 
+const OPCIONES: { estado: 'presente' | 'ausente' | 'justificada'; texto: string }[] = [
+  { estado: 'presente', texto: 'Presente' },
+  { estado: 'ausente', texto: 'Ausente' },
+  { estado: 'justificada', texto: 'Justificada' },
+];
+
 /**
- * Un gesto por fila: tocar el nombre marca presente (la fila se pinta de negro) o ausente (queda
- * tachada). El menú es un botón aparte, hermano de la fila: un botón adentro de otro no es válido
- * y el toque frecuente es el de presente/ausente.
+ * Un toque por fila: Presente, Ausente y Justificada están siempre a la vista y marcan directo
+ * (volver a tocar el mismo no desmarca: marcar es idempotente). El botón de los tres puntos queda
+ * sólo para la lesión.
  */
-function FilaDeToma({ nombre, estado, lesionado, alTocar, alMenu }: FilaProps) {
-  const presente = estado === 'presente';
+function FilaDeToma({ nombre, estado, lesionado, alMarcar, alMenu }: FilaProps) {
   const falto = estado === 'ausente' || estado === 'justificada';
   return (
-    <li className="flex items-stretch gap-1">
-      <button
-        type="button"
-        aria-pressed={presente}
-        onClick={alTocar}
-        className={cn(
-          'flex min-h-14 min-w-0 flex-1 items-center justify-between gap-3 rounded-tarjeta border px-4 text-left transition-transform duration-[var(--dur-1)] active:scale-[.985] outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta',
-          presente && 'border-tinta bg-tinta text-fondo',
-          falto && 'border-linea bg-sup text-gris',
-          estado === null && 'border-borde-control bg-sup',
-        )}
-      >
-        <span className={cn('truncate font-titulo text-2xl leading-none font-semibold', falto && 'line-through decoration-2')}>{nombre}</span>
-        <span className="flex shrink-0 items-center gap-2 text-xs font-semibold">
-          {lesionado && <span className={cn('rounded-chip px-1.5 py-0.5', presente ? 'bg-fondo text-tinta' : 'bg-baja-fondo text-baja')}>Lesionado</span>}
-          <span className="font-mono">{textoEstado(estado)}</span>
-        </span>
-      </button>
-      <button
-        type="button"
-        onClick={alMenu}
-        aria-label={`Justificada o lesión de ${nombre}`}
-        title="Justificada o lesión"
-        className="grid size-14 shrink-0 place-items-center rounded-tarjeta border border-linea bg-sup text-gris outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:border-tinta"
-      >
-        <EllipsisVertical aria-hidden className="size-5" />
-      </button>
+    <li
+      data-estado={estado ?? 'sin-tomar'}
+      className={cn('rounded-tarjeta border p-2', estado === null ? 'border-borde-control bg-sup' : 'border-linea bg-sup')}
+    >
+      <div className="flex items-center gap-2 pb-2 pl-2">
+        <span className={cn('min-w-0 flex-1 truncate font-titulo text-2xl leading-none font-semibold', falto && 'text-gris line-through decoration-2')}>{nombre}</span>
+        {lesionado && <span className="shrink-0 rounded-chip bg-baja-fondo px-1.5 py-0.5 text-xs font-semibold text-baja">Lesionado</span>}
+        <button
+          type="button"
+          onClick={alMenu}
+          aria-label={`Lesión de ${nombre}`}
+          title="Lesión"
+          className="grid size-11 shrink-0 place-items-center rounded-tarjeta border border-linea bg-sup text-gris outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:border-tinta"
+        >
+          <EllipsisVertical aria-hidden className="size-5" />
+        </button>
+      </div>
+      {/* Los tres estados a la vista: un toque marca directo, sin menú ni segundo toque. */}
+      <div role="group" aria-label={`Asistencia de ${nombre}`} className="grid grid-cols-3 gap-1">
+        {OPCIONES.map((o) => {
+          const activa = estado === o.estado;
+          return (
+            <button
+              key={o.estado}
+              type="button"
+              aria-pressed={activa}
+              aria-label={`${o.texto}: ${nombre}`}
+              onClick={() => alMarcar(o.estado)}
+              className={cn(
+                'min-h-12 rounded-tarjeta border px-2 text-sm font-semibold transition-transform duration-[var(--dur-1)] active:scale-[.97] outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta',
+                activa ? 'border-tinta bg-tinta text-fondo' : 'border-borde-control bg-fondo text-tinta',
+              )}
+            >
+              {o.texto}
+            </button>
+          );
+        })}
+      </div>
     </li>
   );
 }
@@ -398,7 +406,6 @@ interface MenuProps {
   estado: Estado;
   lesiones: Lesion[];
   fecha: string;
-  alJustificar: () => void;
   alCerrar: () => void;
 }
 
@@ -411,17 +418,17 @@ const GRUPOS = [
 type Marcas = { zona: string | null; lado: string | null; tipo: string | null };
 
 /**
- * El menú de un jugador: falta justificada (se guarda con el día), lesión y alta (se guardan al
+ * El menú de un jugador: lesión y alta (se guardan al
  * instante: son del jugador, no de este entrenamiento). Zona, lado y tipo son listas cerradas y
  * opcionales —«no sé» es un dato válido en la cancha—: es un dato de salud de un menor, sin texto libre.
  */
-function MenuDeJugador({ clubId, nombre, jugadorId, estado, lesiones, fecha, alJustificar, alCerrar }: MenuProps) {
+function MenuDeJugador({ clubId, nombre, jugadorId, estado, lesiones, fecha, alCerrar }: MenuProps) {
   const [modo, setModo] = useState<'opciones' | 'lesion'>('opciones');
   const [marcas, setMarcas] = useState<Marcas>({ zona: null, lado: null, tipo: null });
   const [error, setError] = useState<string | null>(null);
   const lesionar = useRegistrarLesion(clubId, fecha);
   const alta = useDarAlta(fecha);
-  const { justificada, lesionar: puedeLesionar, altaDe } = accionesDelMenu(estado, lesiones, fecha);
+  const { lesionar: puedeLesionar, altaDe } = accionesDelMenu(estado, lesiones, fecha);
   const ocupado = lesionar.isPending || alta.isPending;
 
   const guardarLesion = async () => {
@@ -458,14 +465,13 @@ function MenuDeJugador({ clubId, nombre, jugadorId, estado, lesiones, fecha, alJ
       abierta
       alCambiar={(abierta) => !abierta && alCerrar()}
       titulo={nombre}
-      descripcion="Falta justificada, lesión o alta del jugador."
+      descripcion="Lesión o alta del jugador."
       etiquetaCerrar="Cerrar el menú"
     >
       <div className="flex flex-col gap-3 p-5 pt-12">
         <h2 className="font-titulo text-2xl font-semibold">{nombre}</h2>
         {modo === 'opciones' ? (
           <>
-            {justificada && <Boton variante="contorno" onClick={alJustificar}>Falta justificada</Boton>}
             {puedeLesionar && <Boton variante="contorno" onClick={() => setModo('lesion')}>Se lesionó</Boton>}
             {altaDe && <Boton variante="contorno" disabled={ocupado} onClick={() => void darAlta()}>Dar el alta</Boton>}
             {error && <Aviso tono="error" titulo={error} />}
