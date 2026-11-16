@@ -506,6 +506,16 @@ export interface Repositorio extends RepositorioCoord {
   guardarPrevia(payload: PayloadDePrevia): Promise<unknown>;
   /** Guarda el nombre propio en los metadatos de la cuenta y devuelve el usuario ya actualizado. */
   guardarMiNombre(nombre: string): Promise<Sesion['user']>;
+  /** El usuario tal como lo guarda el servidor (el nombre y las marcas de la cuenta), o null sin sesión. */
+  obtenerMiUsuario(): Promise<Sesion['user'] | null>;
+  /** Si esta cuenta ya aceptó esa versión de los Términos y la Política de privacidad. */
+  yaAceptoLegal(version: string): Promise<boolean>;
+  /** Deja constancia de la aceptación (autor y fecha los sella el servidor). */
+  aceptarLegal(version: string): Promise<void>;
+  /** ¿Coordinación rechazó el pedido de esta cuenta? Sólo el hecho. */
+  miPedidoDescartado(): Promise<boolean>;
+  /** «Fue un error»: la cuenta rechazada vuelve a la lista de pendientes. */
+  volverAPedirAcceso(): Promise<void>;
   obtenerPlanesFisicos(clubId: string, plantelId: string): Promise<PlanFisico[]>;
   obtenerPlanFisico(planId: string): Promise<SesionFisico[]>;
   obtenerPasos(clubId: string): Promise<PasoFuerza[]>;

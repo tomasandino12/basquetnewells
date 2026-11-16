@@ -2,7 +2,7 @@ import { CalendarCheck, Library, LineChart, PlaySquare, Users, Zap, type LucideI
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 import escudo from '../../../../public/escudo.png';
-import { irALaDeSiempre } from '../../clasica';
+import { PasosDeCuenta } from '../cuenta/PasosDeCuenta';
 import { Consulta } from '../../components/ui/consulta';
 import { Pagina, TOPE_DE_PAGINA } from '../../components/ui/pagina';
 import { useSesion } from '../../datos/contexto';
@@ -108,13 +108,12 @@ export function MarcoJugador() {
   );
 }
 
-/** Sólo entra quien tiene ficha de jugador. Sin sesión: a entrar (en la app de siempre, publicada). */
+/** Sólo entra quien tiene ficha de jugador. Sin sesión: a entrar. */
 function RequiereJugador({ children }: { children: ReactNode }) {
   const { estado, error, reintentar } = useSesion();
   const lugar = useLocation();
   const ficha = useMiFicha(estado === 'con-sesion');
 
-  if (estado === 'sin-sesion' && irALaDeSiempre({ volver: true })) return null;
   if (estado === 'sin-sesion') return <Navigate to="/entrar" replace state={{ desde: lugar.pathname }} />;
   if (estado !== 'con-sesion') {
     return (
@@ -129,18 +128,20 @@ function RequiereJugador({ children }: { children: ReactNode }) {
     );
   }
   return (
-    <Consulta consulta={ficha} errorGenerico="No pudimos revisar tu cuenta">
-      {(f) =>
-        f ? (
-          children
-        ) : (
-          <Pagina>
-            <Vacio icono={Users} titulo="Esta cuenta no es de jugador" accion={<Link to="/hoy" className="text-sm font-semibold underline">Ir a Hoy</Link>}>
-              Tu profe te habilita desde el plantel. Si sos del cuerpo técnico, tu pantalla es Hoy.
-            </Vacio>
-          </Pagina>
-        )
-      }
-    </Consulta>
+    <PasosDeCuenta>
+      <Consulta consulta={ficha} errorGenerico="No pudimos revisar tu cuenta">
+        {(f) =>
+          f ? (
+            children
+          ) : (
+            <Pagina>
+              <Vacio icono={Users} titulo="Esta cuenta no es de jugador" accion={<Link to="/hoy" className="text-sm font-semibold underline">Ir a Hoy</Link>}>
+                Tu profe te habilita desde el plantel. Si sos del cuerpo técnico, tu pantalla es Hoy.
+              </Vacio>
+            </Pagina>
+          )
+        }
+      </Consulta>
+    </PasosDeCuenta>
   );
 }

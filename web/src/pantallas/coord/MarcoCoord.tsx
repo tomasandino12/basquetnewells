@@ -1,7 +1,7 @@
 import { ShieldAlert } from 'lucide-react';
 import { createContext, useContext } from 'react';
 import { Link, NavLink, Navigate, Outlet, useLocation } from 'react-router';
-import { irALaDeSiempre } from '../../clasica';
+import { PasosDeCuenta } from '../cuenta/PasosDeCuenta';
 import { Consulta } from '../../components/ui/consulta';
 import { Vacio } from '../../components/ui/estados';
 import { Pagina } from '../../components/ui/pagina';
@@ -58,14 +58,13 @@ function BarraDeSecciones() {
 }
 
 /**
- * La puerta de coordinación. No pasa por RequiereSesion a propósito: ése manda a la app de siempre a
- * quien sólo coordina, y acá es justo quien entra. La base es la que decide qué se puede leer; esta
+ * La puerta de coordinación. No pasa por RequiereSesion a propósito: ése pide ser del cuerpo técnico
+ * de una categoría, y acá es justo quien sólo coordina el que entra. La base es la que decide qué se puede leer; esta
  * puerta sólo evita mostrar pantallas que a un profe le darían error.
  */
 export function RequiereCoordinacion() {
   const { estado, error, reintentar } = useSesion();
   const lugar = useLocation();
-  if (estado === 'sin-sesion' && irALaDeSiempre({ volver: true })) return null;
   if (estado === 'sin-sesion') return <Navigate to="/entrar" replace state={{ desde: lugar.pathname }} />;
   if (estado !== 'con-sesion') {
     return (
@@ -79,7 +78,7 @@ export function RequiereCoordinacion() {
       </Pagina>
     );
   }
-  return <ConSesion />;
+  return <PasosDeCuenta><ConSesion /></PasosDeCuenta>;
 }
 
 function ConSesion() {

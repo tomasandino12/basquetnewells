@@ -4,13 +4,13 @@ import { Consulta } from './components/ui/consulta';
 import { Pagina } from './components/ui/pagina';
 import { Marco } from './laboratorio';
 import { useSesion } from './datos/contexto';
-import { irALaDeSiempre } from './clasica';
 import { BarraDeCategorias } from './pantallas/BarraDeCategorias';
 import { Asistencia } from './pantallas/Asistencia';
 import { AsistenciaHistorial } from './pantallas/AsistenciaHistorial';
 import { Datos } from './pantallas/Datos';
 import { Entrar } from './pantallas/Entrar';
 import { NuevaClave } from './pantallas/NuevaClave';
+import { PasosDeCuenta } from './pantallas/cuenta/PasosDeCuenta';
 import { useRecuperacionPendiente } from './cuenta/recuperacion';
 import { CargarPartido } from './pantallas/importar/CargarPartido';
 import { FichaEjemplo, PantallaDeFicha } from './pantallas/PantallaDeFicha';
@@ -59,9 +59,9 @@ function Entrada() {
 }
 
 /**
- * Todo lo que lleva datos reales pasa por acá. Sin sesión, publicada, se entra en la app de
- * siempre (tiene el alta, Google y la clave olvidada) y de ahí vuelve; en la compu, a /entrar.
- * Con sesión, la categoría elegida (los chips de arriba) vale para todas las pantallas.
+ * Todo lo que lleva datos reales pasa por acá. Sin sesión, a /entrar (ahí están el alta, Google y la
+ * clave olvidada) y de ahí vuelve. Con sesión, primero el nombre, los Términos y el acceso
+ * (PasosDeCuenta); después, la categoría elegida (los chips de arriba) vale para todas las pantallas.
  */
 export function RequiereSesion() {
   return (
@@ -80,20 +80,19 @@ export function RequiereSesion() {
  */
 export function RequiereSoloSesion() {
   return (
-    <PuertaDeSesion>
+    <PuertaDeSesion sinAcceso>
       <Outlet />
     </PuertaDeSesion>
   );
 }
 
-function PuertaDeSesion({ children }: { children: ReactNode }) {
+function PuertaDeSesion({ children, sinAcceso = false }: { children: ReactNode; sinAcceso?: boolean }) {
   const { estado, error, reintentar } = useSesion();
   const lugar = useLocation();
   const faltaClaveNueva = useRecuperacionPendiente();
   // Volvió del mail de nueva clave: no pasa a ninguna pantalla hasta elegirla.
   if (estado === 'con-sesion' && faltaClaveNueva) return <Navigate to="/nueva-clave" replace />;
-  if (estado === 'con-sesion') return <>{children}</>;
-  if (estado === 'sin-sesion' && irALaDeSiempre({ volver: true })) return null;
+  if (estado === 'con-sesion') return <PasosDeCuenta sinAcceso={sinAcceso}>{children}</PasosDeCuenta>;
   if (estado === 'sin-sesion') return <Navigate to="/entrar" replace state={{ desde: lugar.pathname }} />;
   return (
     <Pagina>
