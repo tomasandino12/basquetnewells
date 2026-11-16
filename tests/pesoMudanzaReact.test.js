@@ -25,12 +25,14 @@ import { gzipSync } from 'node:zlib';
  * (~5 kB); el tope pasó de 410 a 420. El lector de xlsx sigue siendo un trozo aparte.
  * 16/11: el editor de jugadas (cancha interactiva, pasos, deshacer, alta y borrado) dejó de abrirse en la
  * app de siempre: el total llegó a ~413 kB y el tope pasó de 410 a 420.
+ * 16/11 (junta): cuenta y mails, planillas, ejercicios editables y editor de jugadas, todo junto, llegaron a
+ * ~433 kB; el tope pasó de 420 a 440. Cada rama había medido sola.
  *
  * Mide web/dist, que sólo existe después de `npm --prefix web run build`: sin
  * armar, se saltea (Vercel la arma en el deploy, no en las pruebas).
  */
 
-const PRESUPUESTO_KB = 420;
+const PRESUPUESTO_KB = 440;
 const DIST = 'web/dist/assets';
 const LECTOR_XLSX = /^xlsx-/;
 
