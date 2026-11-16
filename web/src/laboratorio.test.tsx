@@ -23,8 +23,8 @@ describe('menú de la app', () => {
     // La vista del jugador tiene su propio marco: sus destinos se controlan en la prueba de abajo.
     const directas = caminos(rutas).filter(
       (c) =>
-        // Armar misiones cuelga de Plantel y de Hoy; Mi perfil se abre desde la cabecera (iniciales del nombre).
-        !['*', '/', '/entrar', '/asistencia', '/asistencia/historial', '/plantel/asistencia', '/plantel/asistencia/historial', '/datos/cargar-partido', '/misiones/armar', '/perfil'].includes(c) &&
+        // Las metas cuelgan de Hoy y el inventario en lectura, de Físico. Armar misiones cuelga de Plantel y de Hoy; Mi perfil se abre desde la cabecera (iniciales del nombre).
+        !['*', '/', '/entrar', '/asistencia', '/asistencia/historial', '/plantel/asistencia', '/plantel/asistencia/historial', '/datos/cargar-partido', '/misiones/armar', '/perfil', '/metas', '/fisico/inventario'].includes(c) &&
         !c.includes(':') &&
         !c.startsWith('/jugador') &&
         // Los cuatro tests se abren desde Medir.

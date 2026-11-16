@@ -293,7 +293,7 @@ function Tiro({ resumen, categoria, plantelId, misiones }: { resumen: Completo; 
 
       <div className="flex flex-wrap gap-2">
         <a href={APP_ANTERIOR} className={ENLACE_LINEA}>Cargar otra medición</a>
-        <a href={APP_ANTERIOR} className={ENLACE_LINEA}>{hayMetas ? 'Editar las metas' : 'Fijar las metas'}</a>
+        <Link to="/metas" className={ENLACE_LINEA}>{hayMetas ? 'Editar las metas' : 'Fijar las metas'}</Link>
       </div>
 
       {porDebajo && (

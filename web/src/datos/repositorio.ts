@@ -107,6 +107,25 @@ export interface MedicionTiro {
 /** Meta del cuerpo técnico por zona (porcentaje). Una zona que no está en el mapa no tiene meta: no es 0 %. */
 export type MetasDeZona = Record<string, number>;
 
+/** Una fila del inventario de material del club. `pesoKg` null = sin peso (no es 0). */
+export interface MaterialDelClub {
+  id: string;
+  tipo: string;
+  pesoKg: number | null;
+  detalle: string;
+  cantidad: number;
+  actualizadoPor: string | null;
+  actualizadoEn: string;
+}
+
+/** Lo que valida `validarMaterial` (src/data/inventario.js) y se manda a guardar. */
+export interface FilaDeMaterial {
+  tipo: string;
+  pesoKg: number | null;
+  detalle: string;
+  cantidad: number;
+}
+
 export interface PreviaDelPlantel {
   id: string;
   fecha: string;
@@ -540,6 +559,17 @@ export interface Repositorio extends RepositorioCoord {
   guardarSesionMedicion(payload: PayloadDeMedicion): Promise<unknown>;
   obtenerMedicionesTiroDelPlantel(clubId: string, plantelId: string): Promise<MedicionTiro[]>;
   obtenerMetasDelPlantel(clubId: string, plantelId: string): Promise<MetasDeZona>;
+  /** Todo o nada (hasta 6 zonas). Una zona con `objetivoPct: null` borra su meta. */
+  guardarMetasPlantel(datos: { clubId: string; plantelId: string; metas: { zona: string; objetivoPct: number | null }[] }): Promise<unknown>;
+  // Inventario de material: lo lee cualquier miembro del club; sólo coordinación escribe (lo impone la base).
+  obtenerMaterial(clubId: string): Promise<MaterialDelClub[]>;
+  /** Insert simple: si la variante ya existe la base responde 23505 y la pantalla ofrece editar esa. */
+  agregarMaterial(datos: FilaDeMaterial & { clubId: string }): Promise<MaterialDelClub>;
+  /** El tipo y el club no cambian. */
+  editarMaterial(id: string, datos: Omit<FilaDeMaterial, 'tipo'>): Promise<MaterialDelClub>;
+  quitarMaterial(id: string): Promise<void>;
+  /** Nombre por usuario de quienes cargaron uno; quien no lo cargó no figura. */
+  obtenerPerfilesDelClub(clubId: string): Promise<Record<string, string>>;
   obtenerPreviasDelPlantel(clubId: string, plantelId: string): Promise<PreviaDelPlantel[]>;
   obtenerPartidosDelPlantel(clubId: string, plantelId: string): Promise<PartidoDelPlantel[]>;
   /** `estado: null` desmarca a ese chico; los que no vienen quedan como estaban. */

@@ -174,7 +174,7 @@ function Pie() {
     <section aria-label="Más acciones de Físico" className="mt-8 flex flex-wrap gap-2 border-t border-linea pt-4">
       <p className="w-full text-sm text-gris">Todavía en la app anterior:</p>
       <a href={APP_ANTERIOR} className={enlaceBoton}>Cargar plan de fuerza</a>
-      <a href={APP_ANTERIOR} className={enlaceBoton}>Inventario del club</a>
+      <Link to="/fisico/inventario" className={enlaceBoton}>Inventario del club</Link>
     </section>
   );
 }

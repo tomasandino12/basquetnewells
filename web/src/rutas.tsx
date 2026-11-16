@@ -16,7 +16,9 @@ import { Fisico } from './pantallas/Fisico';
 import { FisicoEscalones } from './pantallas/FisicoEscalones';
 import { FisicoSesion } from './pantallas/FisicoSesion';
 import { Hoy } from './pantallas/Hoy';
+import { CoordInventario, InventarioLectura } from './pantallas/Inventario';
 import { Medir } from './pantallas/Medir';
+import { Metas } from './pantallas/Metas';
 import { MedirBateria } from './pantallas/MedirBateria';
 import { MedirSalto } from './pantallas/MedirSalto';
 import { MedirSprint } from './pantallas/MedirSprint';
@@ -141,6 +143,9 @@ export const rutas: RouteObject[] = [
         { path: '/misiones/armar', element: <ArmarMisiones /> },
         { path: '/misiones/:previaId/armar', element: <ArmarMisiones /> },
         { path: '/misiones/:previaId', element: <MisionesPartido /> },
+        // Metas del cuerpo técnico (cuelgan de Hoy) e inventario en lectura (cuelga de Físico).
+        { path: '/metas', element: <Metas /> },
+        { path: '/fisico/inventario', element: <InventarioLectura /> },
         { path: '/fisico', element: <Fisico /> },
         { path: '/fisico/plan/:planId/sesion/:sesionId', element: <FisicoSesion /> },
         { path: '/fisico/plan/:planId/sesion/:sesionId/ejercicio/:lineaId', element: <FisicoEscalones /> },
@@ -158,6 +163,7 @@ export const rutas: RouteObject[] = [
         { path: '/coordinacion/rubros', element: <CoordRubros /> },
         { path: '/coordinacion/familias', element: <CoordFamilias /> },
         { path: '/coordinacion/formularios', element: <CoordFormularios /> },
+        { path: '/coordinacion/inventario', element: <CoordInventario /> },
       ],
     },
     { path: '*', element: <Navigate to="/" replace /> },
