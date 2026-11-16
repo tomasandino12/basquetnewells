@@ -13,6 +13,7 @@ import { NuevaClave } from './pantallas/NuevaClave';
 import { PasosDeCuenta } from './pantallas/cuenta/PasosDeCuenta';
 import { useRecuperacionPendiente } from './cuenta/recuperacion';
 import { CargarPartido } from './pantallas/importar/CargarPartido';
+import { CargarPlanFisico } from './pantallas/importar/CargarPlanFisico';
 import { FichaEjemplo, PantallaDeFicha } from './pantallas/PantallaDeFicha';
 import { Fisico } from './pantallas/Fisico';
 import { FisicoEscalones } from './pantallas/FisicoEscalones';
@@ -151,6 +152,7 @@ export const rutas: RouteObject[] = [
         { path: '/misiones/:previaId', element: <MisionesPartido /> },
         // Metas del cuerpo técnico (cuelgan de Hoy) e inventario en lectura (cuelga de Físico).
         { path: '/metas', element: <Metas /> },
+        { path: '/fisico/cargar-plan', element: <CargarPlanFisico /> },
         { path: '/fisico/inventario', element: <InventarioLectura /> },
         { path: '/fisico', element: <Fisico /> },
         { path: '/fisico/plan/:planId/sesion/:sesionId', element: <FisicoSesion /> },

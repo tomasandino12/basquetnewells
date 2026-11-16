@@ -114,10 +114,10 @@ describe('Físico: la lista de planes', () => {
     expect(caja.className).toContain('min-h-[60svh]');
   });
 
-  it('con plan, los dos enlaces también están', async () => {
+  it('con plan, los dos enlaces también están, y «Cargar plan de fuerza» ya es de esta app', async () => {
     abrir();
     await screen.findByRole('heading', { name: 'Plan de ejemplo.xlsx' });
-    expect(screen.getByRole('link', { name: 'Cargar plan de fuerza' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Cargar plan de fuerza' }).getAttribute('href')).toBe('/fisico/cargar-plan');
     expect(screen.getByRole('link', { name: 'Inventario del club' })).toBeTruthy();
   });
 

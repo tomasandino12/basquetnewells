@@ -22,7 +22,7 @@ Una fila por cada `p-*` registrada. Cada `p-*` del registro tiene que figurar ac
 | p-ejercicio | Ficha de ejercicio | Ver: pizarra animada, variaciones, notas de uso, enlace, material. Editar, borrar con confirmación y agregar notas/variaciones | Ver: dentro de Recursos. Editar y borrar: falta | ⬜ | | 1 (ver) y 3 (editar) |
 | p-jugada | Ficha de jugada | Ver la jugada animada y a qué planteles está asignada; asignar planteles; borrar | Ver: dentro de Recursos. Asignar y borrar: falta verificar | ⬜ | | 1 (ver) y 3 (editar) |
 | p-jugada-editor | Editor de jugadas (pizarra táctica) | Fichas, pasos, acciones, pelota, aviso de salida sin guardar | Falta (`crearJugada` y `crearPaso` ya están en el repositorio nuevo) | ⬜ | | 3 |
-| p-plan-fisico | Plan físico desde .xlsx | Leer la planilla, validar, guardar todo o nada | Falta; la nueva sólo muestra el plan ya guardado (Físico) | ⬜ | | 2 |
+| p-plan-fisico | Plan físico desde .xlsx | Leer la planilla, validar, guardar todo o nada | `/fisico/cargar-plan` (`CargarPlanFisico.tsx`), enlazada desde Físico. Lector de planillas pedido recién al elegir el archivo; resumen, videos opcionales (elegir de la biblioteca o cargar link) y guardado todo o nada | ✅ | `web/src/pantallas/importar/CargarPlanFisico.test.tsx::Cargar plan de fuerza` | 2 |
 | p-fisico | Físico | Lista de planes, plan visible, otros planes | `/fisico` | 🔎 | | |
 | p-fisico-sesion | Sesión de Físico | Ejercicios de la sesión, videos | `/fisico/plan/:planId/sesion/:sesionId` | 🔎 | | |
 | p-fisico-escalones | Escalones de fuerza | Peso por chico y ejercicio, escalón + y − | `…/ejercicio/:lineaId` | 🔎 | | |
@@ -68,7 +68,7 @@ Lo que vive en otros archivos de la vieja y también hay que mudar antes de borr
 | x-vuelta-de-mails | Vuelta de un mail de confirmación, de nueva clave o de Google: abre la sesión y sigue por los pasos de la cuenta; un link vencido se explica en Entrar | Resuelta en esta app: `clasica.ts` ya no reenvía ninguna vuelta (ni con el interruptor apagado); `cuenta/vuelta.ts` guarda el error de un link vencido | ✅ | `web/src/cuenta/vuelta.test.ts::no pasa por la app de siempre`, `web/src/pantallas/Entrar.test.tsx::volver de un link vencido` | 4 |
 | x-nueva-clave | Pantalla de elegir una nueva clave: la vuelta del mail abre sesión, no deja pasar a la app hasta elegirla (8+ caracteres, repetida), link vencido lleva a entrar | `/nueva-clave` (`NuevaClave.tsx`; el aviso PASSWORD_RECOVERY lo marca `cuenta/recuperacion.ts`). La vuelta de recuperación ya no se reenvía a la de siempre | ✅ | `web/src/pantallas/NuevaClave.test.tsx::Nueva clave` | 4 |
 | x-alta-jugador | Alta de jugador / pedido de entrada con código, aprobar solicitud | Plantel (alta manual y pedidos); el pedido del propio jugador está en `SinClub` (ver x-crear-cuenta) | 🔎 | | 4 |
-| x-planilla-area | Planilla del área desde .xlsx | Falta | ⬜ | | 2 |
+| x-planilla-area | Planilla del área desde .xlsx | «Bajar planilla» en el historial de asistencia (`AsistenciaHistorial.tsx`, `asistencia/planilla.ts`): una hoja por categoría del profe, armada en el dispositivo; el lector se pide recién al bajar | ✅ | `web/src/pantallas/AsistenciaHistorial.test.tsx::baja la planilla del área` | 2 |
 
 ## Qué se borra al final (sólo con todo en ✅ y backup confirmado)
 

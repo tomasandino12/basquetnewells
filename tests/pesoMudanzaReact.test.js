@@ -21,11 +21,14 @@ import { gzipSync } from 'node:zlib';
  * cronómetro de salida y Yo-Yo con los pitidos) dejaron de abrirse en la app de siempre: el total
  * llegó a ~400 kB y el tope pasó de 385 a 410.
  *
+ * 16/11: cargar el plan de fuerza (resumen y videos) y armar la planilla de asistencia pasaron a React
+ * (~5 kB); el tope pasó de 410 a 420. El lector de xlsx sigue siendo un trozo aparte.
+ *
  * Mide web/dist, que sólo existe después de `npm --prefix web run build`: sin
  * armar, se saltea (Vercel la arma en el deploy, no en las pruebas).
  */
 
-const PRESUPUESTO_KB = 410;
+const PRESUPUESTO_KB = 420;
 const DIST = 'web/dist/assets';
 const LECTOR_XLSX = /^xlsx-/;
 

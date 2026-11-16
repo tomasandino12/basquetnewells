@@ -165,6 +165,14 @@ export interface CargasDelPlantel {
 }
 
 /** Un plan de fuerza importado de una planilla: las fechas son las de sus sesiones. */
+export interface EjercicioDeFuerza {
+  id: string;
+  clave: string;
+  nombre: string;
+  bloque: string | null;
+  link: string | null;
+}
+
 export interface PlanFisico {
   id: string;
   nombreArchivo: string;
@@ -546,6 +554,10 @@ export interface Repositorio extends RepositorioCoord {
   volverAPedirAcceso(): Promise<void>;
   obtenerPlanesFisicos(clubId: string, plantelId: string): Promise<PlanFisico[]>;
   obtenerPlanFisico(planId: string): Promise<SesionFisico[]>;
+  /** La biblioteca de ejercicios de fuerza del club: contra ella se reconoce qué ejercicio del plan ya tiene video. */
+  obtenerEjerciciosFuerza(clubId: string): Promise<EjercicioDeFuerza[]>;
+  /** importar_plan_fisico: el plan, sus sesiones y sus ejercicios entran juntos o no entra nada. El payload lo arma prepararPayloadPlanFisico.js. */
+  importarPlanFisico(payload: unknown): Promise<{ sesiones: number; ejercicios: number; pendientes: number }>;
   obtenerPasos(clubId: string): Promise<PasoFuerza[]>;
   crearPaso(datos: { clubId: string; clave: string; nombre: string; paso: number | null }): Promise<PasoFuerza>;
   editarPaso(pasoId: string, paso: number): Promise<PasoFuerza>;

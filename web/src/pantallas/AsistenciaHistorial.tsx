@@ -1,6 +1,10 @@
 import { ChevronRight, ClipboardCheck, Download } from 'lucide-react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
-import { usePlantelId } from '../plantel/activo';
+import { usePlantelActivo, usePlantelId } from '../plantel/activo';
+import { bajarLibro, hojasDeAsistencia } from '../asistencia/planilla';
+import { mensajeDeError } from '../datos/errores';
+import { useRepositorio } from '../familias/consultas';
 import { hoyLocal } from '@datos/antropometria.js';
 import { detalleDelDia, textoDeFecha } from '../asistencia/toma';
 import { Aviso } from '../components/ui/aviso';
@@ -8,10 +12,9 @@ import { Consulta } from '../components/ui/consulta';
 import { Vacio } from '../components/ui/estados';
 import { useHistorialDeAsistencia } from '../datos/consultas';
 import { ConPlantel } from './ConPlantel';
-import { APP_DE_SIEMPRE } from '../clasica';
 
-// La planilla del área (un .xlsx con una hoja por categoría) se arma todavía en la app anterior.
-const APP_ANTERIOR = APP_DE_SIEMPRE;
+const BOTON_PLANILLA =
+  'inline-flex min-h-11 items-center gap-2 rounded-btn border border-borde-control px-3 font-titulo text-base font-semibold tracking-[.14em] uppercase outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta disabled:cursor-not-allowed disabled:text-gris [@media(hover:hover)]:hover:border-tinta';
 
 const PLURAL = (n: number, uno: string, varios: string) => (n === 1 ? uno : varios);
 
@@ -24,12 +27,12 @@ export function AsistenciaHistorial() {
       volver={{ a: `/plantel`, texto: 'Plantel' }}
       soloCuerpoTecnico="La coordinación ve la asistencia de cada categoría en conjunto, no la de cada chico."
     >
-      {(p) => <Dias plantelId={p.plantelId} categoria={p.categoria} />}
+      {(p) => <Dias clubId={p.clubId} plantelId={p.plantelId} categoria={p.categoria} />}
     </ConPlantel>
   );
 }
 
-function Dias({ plantelId, categoria }: { plantelId: string; categoria: string }) {
+function Dias({ clubId, plantelId, categoria }: { clubId: string; plantelId: string; categoria: string }) {
   const hoy = hoyLocal() as string;
   const dias = useHistorialDeAsistencia(plantelId, hoy);
   const aviso = (useLocation().state as { aviso?: string } | null)?.aviso;
@@ -45,13 +48,7 @@ function Dias({ plantelId, categoria }: { plantelId: string; categoria: string }
           <>
             <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm text-gris">{lista.length} {PLURAL(lista.length, 'día', 'días')}</p>
-              <a
-                href={APP_ANTERIOR}
-                className="inline-flex min-h-11 items-center gap-2 rounded-btn border border-borde-control px-3 font-titulo text-base font-semibold tracking-[.14em] uppercase outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:border-tinta"
-              >
-                <Download aria-hidden className="size-4" />
-                Bajar planilla
-              </a>
+              <BajarPlanilla clubId={clubId} hoy={hoy} />
             </div>
             {lista.length === 0 ? (
               <Vacio
@@ -97,6 +94,44 @@ function Dias({ plantelId, categoria }: { plantelId: string; categoria: string }
           </>
         )}
       </Consulta>
+    </>
+  );
+}
+
+/**
+ * Un .xlsx con una hoja por categoría del profe, para entregar al área. Se arma acá, en el dispositivo:
+ * los nombres de los chicos no pasan por ningún servidor más que la base.
+ */
+function BajarPlanilla({ clubId, hoy }: { clubId: string; hoy: string }) {
+  const cargar = useRepositorio();
+  const planteles = usePlantelActivo()?.visibles ?? [];
+  const [estado, setEstado] = useState<'libre' | 'armando'>('libre');
+  const [resultado, setResultado] = useState<{ tono: 'ok' | 'error'; texto: string } | null>(null);
+
+  async function bajar() {
+    if (estado === 'armando') return;
+    setEstado('armando');
+    setResultado(null);
+    try {
+      const hojas = await hojasDeAsistencia(await cargar(), clubId, planteles, hoy);
+      await bajarLibro(hojas, `Asistencia ${hoy}.xlsx`);
+      setResultado({ tono: 'ok', texto: 'Planilla lista' });
+    } catch (e) {
+      setResultado({ tono: 'error', texto: mensajeDeError(e, 'No se pudo armar la planilla. Probá de nuevo.') });
+    } finally {
+      setEstado('libre');
+    }
+  }
+
+  return (
+    <>
+      <button type="button" onClick={() => void bajar()} disabled={estado === 'armando' || planteles.length === 0} className={BOTON_PLANILLA}>
+        <Download aria-hidden className="size-4" />
+        {estado === 'armando' ? 'Armando…' : 'Bajar planilla'}
+      </button>
+      <div aria-live="polite" className="w-full empty:hidden">
+        {resultado && <Aviso tono={resultado.tono} titulo={resultado.texto} />}
+      </div>
     </>
   );
 }
