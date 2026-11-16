@@ -66,7 +66,7 @@ Lo que vive en otros archivos de la vieja y también hay que mudar antes de borr
 | x-entrar | Entrar con mail y clave, con Google, clave olvidada | `Entrar.tsx` (básico: la vuelta de mails la resuelve la vieja) | 🔎 | | 4 |
 | x-crear-cuenta | Crear cuenta (profe, jugador), confirmar mail, aceptar la política (con fecha de versión) | Falta | ⬜ | | 4 |
 | x-vuelta-de-mails | Vuelta de un mail de confirmación o de nueva clave | Falta (`clasica.ts` reenvía) | ⬜ | | 4 |
-| x-nueva-clave | Pantalla de elegir una nueva clave | Falta | ⬜ | | 4 |
+| x-nueva-clave | Pantalla de elegir una nueva clave: la vuelta del mail abre sesión, no deja pasar a la app hasta elegirla (8+ caracteres, repetida), link vencido lleva a entrar | `/nueva-clave` (`NuevaClave.tsx`; el aviso PASSWORD_RECOVERY lo marca `cuenta/recuperacion.ts`). La vuelta de recuperación ya no se reenvía a la de siempre | ✅ | `web/src/pantallas/NuevaClave.test.tsx::Nueva clave` | 4 |
 | x-alta-jugador | Alta de jugador / pedido de entrada con código, aprobar solicitud | Plantel (alta manual y pedidos) | 🔎 | | 4 |
 | x-planilla-area | Planilla del área desde .xlsx | Falta | ⬜ | | 2 |
 

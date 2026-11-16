@@ -24,7 +24,7 @@ describe('menú de la app', () => {
     const directas = caminos(rutas).filter(
       (c) =>
         // Las metas cuelgan de Hoy y el inventario en lectura, de Físico. Armar misiones cuelga de Plantel y de Hoy; Mi perfil se abre desde la cabecera (iniciales del nombre).
-        !['*', '/', '/entrar', '/asistencia', '/asistencia/historial', '/plantel/asistencia', '/plantel/asistencia/historial', '/datos/cargar-partido', '/misiones/armar', '/perfil', '/metas', '/fisico/inventario'].includes(c) &&
+        !['*', '/', '/entrar', '/nueva-clave', '/asistencia', '/asistencia/historial', '/plantel/asistencia', '/plantel/asistencia/historial', '/datos/cargar-partido', '/misiones/armar', '/perfil', '/metas', '/fisico/inventario'].includes(c) &&
         !c.includes(':') &&
         !c.startsWith('/jugador') &&
         // Los cuatro tests se abren desde Medir.

@@ -13,6 +13,7 @@ export function repositorioInventado(piso: Partial<Repositorio> = {}): Repositor
     cerrarSesion: async () => {},
     crearCuenta: async () => ({ sesion: null, usuario: {} }),
     enviarRecuperacionDeClave: async () => {},
+    cambiarClave: async () => {},
     entrarConGoogle: async () => {},
     alCambiarAuth: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
     fueSalidaVoluntaria: () => true,

@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useEffect, useMemo, type ReactNode } from 'react';
+import { marcarRecuperacion, soltarRecuperacion } from '../cuenta/recuperacion';
 import { desmarcarSesionCerrada, marcarSesionCerrada, reintentar } from './errores';
 import { cargarRepositorioReal, type CargarRepositorio, type Repositorio, type Sesion } from './repositorio';
 
@@ -73,10 +74,13 @@ function ProveedorSesion({ children }: { children: ReactNode }) {
           // Si la sesión se cayó sola (token vencido) y no por «Salir», el aviso de permiso tiene que decir «volvé a entrar».
           if (!repo.fueSalidaVoluntaria()) marcarSesionCerrada();
           soltarDatos();
+          soltarRecuperacion();
           consultas.setQueryData(CLAVE_SESION, null);
           return;
         }
         desmarcarSesionCerrada();
+        // Antes de guardar la sesión: así, cuando las pantallas se enteran de que hay sesión, ya saben que falta la clave nueva.
+        if (evento === 'PASSWORD_RECOVERY') marcarRecuperacion();
         if (anterior && sesion && anterior.user.id !== sesion.user.id) soltarDatos();
         if (sesion) consultas.setQueryData(CLAVE_SESION, sesion);
       });
