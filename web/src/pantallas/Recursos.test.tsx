@@ -121,6 +121,16 @@ describe('Recursos: ejercicios', () => {
     expect(await screen.findByRole('link', { name: /Ver video/ })).toBeTruthy();
   });
 
+  it('un ejercicio con video de YouTube muestra su miniatura en la lista; sin video, no', async () => {
+    abrir(repo({ obtenerEjercicios: async () => [
+      ej('Con video', { enlace: 'https://youtu.be/dQw4w9WgXcQ' }),
+      ej('Sin video'),
+    ] }));
+    await within(await screen.findByRole('region', { name: 'Lista' })).findByRole('button', { name: /Con video/ });
+    expect(within(lista()).getByRole('button', { name: /Con video/ }).querySelector('img')).not.toBeNull();
+    expect(within(lista()).getByRole('button', { name: /Sin video/ }).querySelector('img')).toBeNull();
+  });
+
   it('la biblioteca vacía explica qué es y dónde se carga', async () => {
     abrir(repo({ obtenerEjercicios: async () => [] }));
     expect(await screen.findByText('La biblioteca está vacía')).toBeTruthy();
