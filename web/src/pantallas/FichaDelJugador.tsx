@@ -18,6 +18,7 @@ import { cn } from '../lib/cn';
 import { ESTADO_DE_BOTON, type FilaPlantel } from '../plantel/filas';
 import { TiraDeAsistencia } from './TiraDeAsistencia';
 import { APP_DE_SIEMPRE } from '../clasica';
+import { PestanaHistoria, PestanaPartidos } from './FichaPartidosHistoria';
 
 const SALIDA: [number, number, number, number] = [0.16, 1, 0.3, 1];
 const BOTONES = [
@@ -332,8 +333,8 @@ export function FichaDelJugador({ fila: f, clubId, plantelId, hoy, alSacar }: Pr
           </ListaPestanas>
           <PanelPestana value="fisico"><Fisico f={f} /></PanelPestana>
           <PanelPestana value="tiro"><Tiro f={f} /></PanelPestana>
-          <PanelPestana value="partidos"><PendienteEnLaApp titulo="Partido a partido y misiones" /></PanelPestana>
-          <PanelPestana value="historia"><PendienteEnLaApp titulo="Temporadas y recursos enviados" /></PanelPestana>
+          <PanelPestana value="partidos"><PestanaPartidos clubId={clubId} plantelId={plantelId} jugadorId={f.id} /></PanelPestana>
+          <PanelPestana value="historia"><PestanaHistoria clubId={clubId} jugadorId={f.id} /></PanelPestana>
         </Pestanas>
 
         <FamiliaDelJugador clubId={clubId} jugadorId={f.id} nombre={nombre} />

@@ -389,6 +389,28 @@ export interface MisionDePrevia {
   [campo: string]: unknown;
 }
 
+/** Una misión de un chico con la fecha y el rival de su previa (la forma que arma `misionesConPrevia`). */
+export interface MisionDelJugador {
+  id: string;
+  previaId: string;
+  metrica: string | null;
+  valor?: number | null;
+  texto?: string | null;
+  estado: 'logrado' | 'en_proceso' | 'no_logrado' | null;
+  comentario: string | null;
+  fecha: string;
+  rival: string | null;
+  partidoId: string | null;
+}
+
+/** Un recurso que se le mandó a un chico. */
+export interface EnvioDeRecurso {
+  fecha: string;
+  recursoId: string | null;
+  titulo: string | null;
+  enlace: string | null;
+}
+
 export interface PreviaCompleta {
   id: string;
   fecha: string;
@@ -500,6 +522,8 @@ export interface Repositorio extends RepositorioCoord {
   registrarAperturaDeRecurso(recursoId: string): Promise<void>;
   // Misiones de un partido (las evalúa el profe).
   obtenerPrevia(previaId: string): Promise<PreviaCompleta | null>;
+  obtenerMisionesDelJugador(jugadorId: string): Promise<{ misiones: { previaId: string; [campo: string]: unknown }[]; previas: { id: string; [campo: string]: unknown }[] }>;
+  obtenerEnviosDeJugador(clubId: string, jugadorId: string): Promise<EnvioDeRecurso[]>;
   obtenerEstadisticasParaMisiones(partidoId: string): Promise<{ jugadorId: string; [columna: string]: unknown }[]>;
   evaluarMisiones(datos: EvaluacionAGuardar): Promise<unknown>;
   /** Todo o nada: guarda la previa con sus misiones. Un reintento con los mismos ids no duplica. */
