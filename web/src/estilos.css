@@ -181,6 +181,11 @@ body::before {
 @keyframes hoja-sube { from { transform: translateY(100%); } }
 @keyframes velo-entra { from { opacity: 0; } }
 .hoja-contenido[data-state='open'] { animation: hoja-sube 280ms var(--ease-salida); }
+/* Panel lateral (compu): entra desde la derecha con el mismo transform. */
+@keyframes hoja-entra-lado { from { transform: translateX(100%); } }
+@media (min-width: 768px) {
+  .hoja-contenido.hoja-lateral[data-state='open'] { animation: hoja-entra-lado 280ms var(--ease-salida); }
+}
 .hoja-velo[data-state='open'] { animation: velo-entra 200ms var(--ease-salida); }
 
 @media (prefers-reduced-motion: reduce) {

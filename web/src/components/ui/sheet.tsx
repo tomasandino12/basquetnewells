@@ -15,10 +15,16 @@ interface HojaProps {
   etiquetaCerrar?: string;
   /** Un video necesita lugar: en pantalla grande la hoja se ensancha, en el celular sigue igual. */
   ancha?: boolean;
+  /**
+   * Para leer datos con calma en compu: desde 768 px la hoja deja de subir desde abajo y pasa a ser
+   * un panel pegado a la derecha, de punta a punta de alto. Anchos: 448 px (28 rem) desde 768 px
+   * y 512 px (32 rem) desde 1024 px; en celular (menos de 768 px) sigue igual que siempre.
+   */
+  lateral?: boolean;
 }
 
 /** Hoja inferior para celular: se cierra con la cruz, el velo o Escape. */
-export function Hoja({ abierta, alCambiar, titulo, descripcion, children, rojo = false, etiquetaCerrar = 'Cerrar la ficha', ancha = false }: HojaProps) {
+export function Hoja({ abierta, alCambiar, titulo, descripcion, children, rojo = false, etiquetaCerrar = 'Cerrar la ficha', ancha = false, lateral = false }: HojaProps) {
   return (
     <Dialog.Root open={abierta} onOpenChange={alCambiar}>
       <Dialog.Portal>
@@ -27,6 +33,8 @@ export function Hoja({ abierta, alCambiar, titulo, descripcion, children, rojo =
           className={cn(
             'hoja-contenido fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[88svh] w-full max-w-[24.375rem] flex-col overflow-y-auto rounded-t-[1.125rem] border border-b-0 border-linea bg-sup text-tinta outline-none',
             ancha && 'md:max-w-4xl',
+            lateral &&
+              'hoja-lateral md:top-0 md:right-0 md:bottom-0 md:left-auto md:mx-0 md:h-svh md:max-h-none md:max-w-[28rem] md:rounded-l-[1.125rem] md:rounded-tr-none md:border-r-0 md:border-b lg:max-w-[32rem]',
             rojo && 'border-club-osc bg-club-osc text-sobre-club',
           )}
         >
