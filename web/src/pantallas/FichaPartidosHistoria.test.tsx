@@ -93,3 +93,40 @@ describe('Ficha: pestaña Historia', () => {
     expect(await screen.findByText('Todavía no se le mandó ningún recurso.')).toBeTruthy();
   });
 });
+
+describe('Ficha: historia por temporada', () => {
+  const HISTORIA = {
+    temporadas: [{ id: 't-1', nombre: '2025' }, { id: 't-2', nombre: '2026' }],
+    planteles: [
+      { id: 'p-a', categoria: 'Sub 12', temporadaId: 't-1', profes: ['Profe Uno'] },
+      { id: 'p-b', categoria: 'Sub 13', temporadaId: 't-2', profes: [] },
+    ],
+    pertenencias: [
+      { plantelId: 'p-a', temporadaId: 't-1', desde: '2025-03-01', hasta: '2025-12-15' },
+      { plantelId: 'p-b', temporadaId: 't-2', desde: '2026-03-01', hasta: null },
+    ],
+    partidos: [{ plantelId: 'p-a', pts: 6, minSegundos: 600, dosAnotados: 3, dosIntentados: 6, tresAnotados: null, tresIntentados: null, libresAnotados: null, libresIntentados: null }],
+    corporales: [{ fechaMedicion: '2025-11-10', alturaCm: 150, pesoKg: 41.5 }],
+  };
+
+  it('muestra una tarjeta por temporada, la actual marcada, y «cómo llega» con lo último anterior', async () => {
+    await abrirPestana('Historia', repo({ obtenerHistoriaDelJugador: async () => HISTORIA }));
+    const region = await screen.findByRole('region', { name: 'Historia por temporada' });
+    expect(region.textContent).toContain('Cómo llega a Sub 13');
+    expect(region.textContent).toContain('2026 · Sub 13');
+    expect(region.textContent).toContain('Temporada actual');
+    expect(region.textContent).toContain('2025 · Sub 12');
+    expect(region.textContent).toContain('Profes: Profe Uno');
+    expect(region.textContent).toContain('1 partido');
+    expect(region.textContent).toContain('150 cm');
+  });
+
+  it('sin temporadas lo dice; si falla, el resto de la pestaña se ve igual', async () => {
+    await abrirPestana('Historia');
+    expect(await screen.findByText('Todavía no hay temporadas anteriores cargadas.')).toBeTruthy();
+    cleanup();
+    await abrirPestana('Historia', repo({ obtenerHistoriaDelJugador: async () => { throw new Error('x'); } }));
+    expect(await screen.findByRole('region', { name: 'Recursos enviados' })).toBeTruthy();
+    expect(screen.getByText(/No pudimos cargar la historia por temporada/)).toBeTruthy();
+  });
+});

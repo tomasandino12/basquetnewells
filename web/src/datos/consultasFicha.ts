@@ -40,6 +40,15 @@ export function useHistorialDePartidos(clubId: string, plantelId: string, jugado
   });
 }
 
+/** El recorrido del chico por todas las temporadas (migración 0056). */
+export function useHistoriaDelJugador(jugadorId: string) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['plantel', 'ficha', 'temporadas', jugadorId],
+    queryFn: async () => (await cargar()).obtenerHistoriaDelJugador(jugadorId),
+  });
+}
+
 /** Los recursos que se le mandaron al chico. */
 export function useEnviosDelJugador(clubId: string, jugadorId: string) {
   const cargar = useCargarRepositorio();

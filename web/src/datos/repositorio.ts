@@ -411,6 +411,9 @@ export interface EnvioDeRecurso {
   enlace: string | null;
 }
 
+/** Lo que devuelve la historia por temporada de un chico (listas crudas; las agrupa `@datos/historiaJugador.js`). */
+export type HistoriaDelJugadorCruda = Record<string, unknown[]>;
+
 export interface PreviaCompleta {
   id: string;
   fecha: string;
@@ -523,6 +526,7 @@ export interface Repositorio extends RepositorioCoord {
   // Misiones de un partido (las evalúa el profe).
   obtenerPrevia(previaId: string): Promise<PreviaCompleta | null>;
   obtenerMisionesDelJugador(jugadorId: string): Promise<{ misiones: { previaId: string; [campo: string]: unknown }[]; previas: { id: string; [campo: string]: unknown }[] }>;
+  obtenerHistoriaDelJugador(jugadorId: string): Promise<HistoriaDelJugadorCruda>;
   obtenerEnviosDeJugador(clubId: string, jugadorId: string): Promise<EnvioDeRecurso[]>;
   obtenerEstadisticasParaMisiones(partidoId: string): Promise<{ jugadorId: string; [columna: string]: unknown }[]>;
   evaluarMisiones(datos: EvaluacionAGuardar): Promise<unknown>;

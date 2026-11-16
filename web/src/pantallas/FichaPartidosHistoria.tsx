@@ -1,7 +1,7 @@
 import { textoDeMision } from '@datos/misiones.js';
 import { Consulta } from '../components/ui/consulta';
 import { useEnviosDelJugador, useHistorialDePartidos, type Porcentaje } from '../datos/consultasFicha';
-import { APP_DE_SIEMPRE } from '../clasica';
+import { HistoriaPorTemporada } from './FichaTemporadas';
 
 const TITULO = 'mb-2 font-mono text-xs tracking-wide text-gris uppercase';
 const SIN_DATO = <span className="text-gris">sin dato</span>;
@@ -94,7 +94,7 @@ export function PestanaPartidos({ clubId, plantelId, jugadorId }: { clubId: stri
 /** Sólo se enlaza lo que es una dirección web: el enlace lo escribió un profe. */
 const enlaceSeguro = (e: string | null) => (e && /^https?:\/\//i.test(e) ? e : null);
 
-/** Pestaña HISTORIA: los recursos que se le mandaron. El recorrido por temporadas sigue en la app anterior. */
+/** Pestaña HISTORIA: los recursos que se le mandaron. Y el recorrido por temporadas. */
 export function PestanaHistoria({ clubId, jugadorId }: { clubId: string; jugadorId: string }) {
   const consulta = useEnviosDelJugador(clubId, jugadorId);
   return (
@@ -126,10 +126,7 @@ export function PestanaHistoria({ clubId, jugadorId }: { clubId: string; jugador
           </section>
         )}
       </Consulta>
-      <p className="text-sm text-gris">
-        El recorrido por temporadas todavía se ve en la{' '}
-        <a href={APP_DE_SIEMPRE} className="font-semibold text-tinta underline underline-offset-2">app anterior</a>.
-      </p>
+      <HistoriaPorTemporada jugadorId={jugadorId} />
     </div>
   );
 }
