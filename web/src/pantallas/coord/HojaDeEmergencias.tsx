@@ -65,6 +65,7 @@ export function HojaDeEmergencias({ plantel, jugadorId, alCerrar }: Props) {
       titulo={titulo}
       descripcion={jugadorId ? 'Teléfonos y alertas médicas del chico, sólo para leer' : 'Teléfonos y alertas médicas de la categoría, sólo para leer'}
       etiquetaCerrar="Cerrar"
+      lateral
     >
       <div className="flex flex-col gap-3 p-5 pt-12">
         <h2 className="font-titulo text-3xl leading-none font-semibold uppercase">{titulo}</h2>

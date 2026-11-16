@@ -51,6 +51,7 @@ export function HojaSolicitudes({ plantel, clubId, jugadores, alCerrar, alResolv
       titulo="Pidieron entrar"
       descripcion={`Chicos que pidieron acceso a ${plantel.categoria}`}
       etiquetaCerrar="Cerrar"
+      lateral
     >
       <div className="flex flex-col gap-4 p-5 pt-12">
         <Consulta consulta={datos} errorGenerico="No se pudieron cargar los pedidos.">
