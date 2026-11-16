@@ -383,6 +383,24 @@ export interface RecursoDelClub {
   envios: { jugadorId: string; fecha: string }[];
 }
 
+/**
+ * Lo que recibe `guardar_recurso` (0038). Sin `recursoId` crea un recurso (con `recursoIdNuevo`, el id del
+ * formulario abierto, para que un reintento no lo duplique); con `recursoId` sólo suma envíos a ese.
+ */
+export interface PayloadDeRecurso {
+  clubId: string;
+  recursoId: string | null;
+  recursoIdNuevo: string | null;
+  titulo: string | null;
+  descripcion: string | null;
+  enlace: string | null;
+  tipo?: string | null;
+  frecuenciaSemanal?: number | null;
+  minutos?: number | null;
+  fecha: string;
+  jugadorIds: string[];
+}
+
 /** Conteos del plantel sin nombres; `abrieron` viene null si hay tan pocas cuentas que delataría a alguien. */
 export interface ResumenDeRecursos {
   conCuenta: number;
@@ -549,6 +567,9 @@ export interface Repositorio extends RepositorioCoord {
   obtenerRecursos(clubId: string): Promise<RecursoDelClub[]>;
   /** Null si quien llama no es entrenador del plantel. */
   obtenerResumenRecursos(plantelId: string): Promise<ResumenDeRecursos | null>;
+  guardarRecurso(payload: PayloadDeRecurso): Promise<unknown>;
+  /** Se lleva los envíos y las aperturas. Lanza 'NO_ES_TUYO' si es de otro profe. */
+  borrarRecurso(clubId: string, recursoId: string): Promise<void>;
   /** No lanza: abrir un recurso no depende de que se anote. */
   registrarAperturaDeRecurso(recursoId: string): Promise<void>;
   // Misiones de un partido (las evalúa el profe).

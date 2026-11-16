@@ -61,7 +61,7 @@ export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId
   const jugadas = useJugadasDelClub(clubId);
   // El editor vuelve con ?pestana=jugadas&jugada=<id>: la jugada que se estaba editando queda elegida.
   const [params] = useSearchParams();
-  const [pestana, setPestana] = useState<Pestana>(params.get('pestana') === 'jugadas' ? 'jugadas' : 'ejercicios');
+  const [pestana, setPestana] = useState<Pestana>(params.get('pestana') === 'jugadas' ? 'jugadas' : params.get('pestana') === 'videos' ? 'videos' : 'ejercicios');
   const [texto, setTexto] = useState('');
   const [filtro, setFiltro] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
