@@ -181,7 +181,7 @@ describe('Hoy: metas del cuerpo técnico', () => {
   it('sin metas ofrece fijarlas y no habla del tema', async () => {
     abrir();
     await esperar();
-    expect(screen.getByRole('link', { name: 'Fijar las metas' }).getAttribute('href')).toBe('/app/clasica?desde=nueva');
+    expect(screen.getByRole('link', { name: 'Fijar las metas' }).getAttribute('href')).toBe('/metas');
     expect(screen.queryByText(/llegó a su meta|llegó a la meta|por debajo de la meta/)).toBeNull();
   });
 

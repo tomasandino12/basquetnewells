@@ -39,7 +39,7 @@ describe('la puerta de coordinación', () => {
     abrir('/coordinacion');
     expect(await screen.findByRole('heading', { level: 1, name: 'Panorama' })).toBeTruthy();
     const barra = screen.getByRole('navigation', { name: 'Secciones de coordinación' });
-    expect(within(barra).getAllByRole('link').map((l) => l.textContent)).toEqual(['Panorama', 'Profes', 'Finanzas', 'Familias']);
+    expect(within(barra).getAllByRole('link').map((l) => l.textContent)).toEqual(['Panorama', 'Profes', 'Finanzas', 'Familias', 'Inventario']);
   });
 
   it('sin sesión va a Entrar', async () => {

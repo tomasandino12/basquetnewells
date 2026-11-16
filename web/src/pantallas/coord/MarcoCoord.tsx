@@ -24,6 +24,7 @@ export const SECCIONES = [
   { a: '/coordinacion/profes', nombre: 'Profes', fin: false },
   { a: '/coordinacion/finanzas', nombre: 'Finanzas', fin: false },
   { a: '/coordinacion/familias', nombre: 'Familias', fin: false },
+  { a: '/coordinacion/inventario', nombre: 'Inventario', fin: false },
 ] as const;
 
 function BarraDeSecciones() {
