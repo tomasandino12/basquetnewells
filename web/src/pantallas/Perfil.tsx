@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { inicialesDeNombre, LARGO_MAXIMO_NOMBRE, nombreDeUsuario, normalizarNombre, rolesLegibles } from '@datos/cuenta.js';
+import { LineaCargando } from '../components/ui/estados';
 import { irALaDeSiempre } from '../clasica';
 import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
@@ -124,7 +125,7 @@ function Categorias({ datos }: { datos: ReturnType<typeof useDatosDelPerfil> }) 
   const entrena = datos.rolesListos && datos.esEntrenador && !datos.esFamilia && !datos.esJugador;
   const q = useCategoriasDelEntrenador(datos.clubId, entrena);
 
-  if (!datos.rolesListos) return <span role="status" className="text-gris">Cargando…</span>;
+  if (!datos.rolesListos) return <LineaCargando />;
   if (datos.esFamilia) {
     return <Etiquetas lista={datos.chicos.map((c) => c.nombre)} vacio="Todavía no hay chicos vinculados." />;
   }
@@ -132,7 +133,7 @@ function Categorias({ datos }: { datos: ReturnType<typeof useDatosDelPerfil> }) 
     return <Etiquetas lista={datos.categoriasDeJugador} vacio="Todavía no estás en ninguna categoría." />;
   }
   if (!datos.esEntrenador) return <span className="text-gris">Coordinación no tiene categorías a cargo: ve el panorama de todas.</span>;
-  if (q.isPending) return <span role="status" className="text-gris">Cargando…</span>;
+  if (q.isPending) return <LineaCargando />;
   if (q.isError) {
     return (
       <span className="flex flex-wrap items-center gap-2 text-gris">

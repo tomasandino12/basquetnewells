@@ -122,6 +122,8 @@ function RequiereJugador({ children }: { children: ReactNode }) {
         <Consulta
           consulta={{ isPending: estado === 'cargando', isError: estado === 'error', error, data: undefined, refetch: reintentar }}
           errorGenerico="No pudimos revisar tu sesión"
+          conTitulo
+          filas={4}
         >
           {() => null}
         </Consulta>
@@ -129,7 +131,7 @@ function RequiereJugador({ children }: { children: ReactNode }) {
     );
   }
   return (
-    <Consulta consulta={ficha} errorGenerico="No pudimos revisar tu cuenta">
+    <Consulta consulta={ficha} errorGenerico="No pudimos revisar tu cuenta" conTitulo filas={4}>
       {(f) =>
         f ? (
           children

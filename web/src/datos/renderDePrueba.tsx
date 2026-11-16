@@ -54,6 +54,7 @@ export function repositorioInventado(piso: Partial<Repositorio> = {}): Repositor
     abrirLesion: async () => {},
     darAlta: async () => {},
     sacarDelPlantel: async () => {},
+    actualizarFechaNacimiento: async () => {},
     obtenerMisionesDelJugador: async () => ({ misiones: [], previas: [] }),
     obtenerEnviosDeJugador: async () => [],
     obtenerHistoriaDelJugador: async () => ({ temporadas: [], planteles: [], pertenencias: [] }),

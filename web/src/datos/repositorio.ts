@@ -621,6 +621,8 @@ export interface Repositorio extends RepositorioCoord {
   }): Promise<void>;
   darAlta(lesionId: string, hasta: string): Promise<void>;
   sacarDelPlantel(clubId: string, jugadorId: string, plantelId: string): Promise<void>;
+  /** `null` es «no se sabe». */
+  actualizarFechaNacimiento(clubId: string, jugadorId: string, fechaNacimiento: string | null): Promise<void>;
 }
 
 export type CargarRepositorio = () => Promise<Repositorio>;

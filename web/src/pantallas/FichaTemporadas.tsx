@@ -188,3 +188,23 @@ export function HistoriaPorTemporada({ jugadorId }: { jugadorId: string }) {
     </Consulta>
   );
 }
+
+/** Lo último que se le midió en la temporada actual: salto, sprint, Yo-Yo, altura, peso, tiro y cargas. */
+export function UltimasMediciones({ jugadorId }: { jugadorId: string }) {
+  const consulta = useHistoriaDelJugador(jugadorId);
+  return (
+    <Consulta consulta={consulta} errorGenerico="No pudimos cargar las mediciones" filas={4}>
+      {(datos) => {
+        const grupos = agruparHistoria(datos) as Cualquiera[];
+        const actual = grupos.find((g) => g.actual);
+        const u: Cualquiera = actual ? comoTermino(actual) : null;
+        return (
+          <section aria-label="Últimas mediciones">
+            <h3 className={TITULO}>Últimas mediciones</h3>
+            {u === null || u.vacio ? <p className="text-sm text-gris">Todavía no se le midió nada esta temporada.</p> : <Ultimas u={u} />}
+          </section>
+        );
+      }}
+    </Consulta>
+  );
+}

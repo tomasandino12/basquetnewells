@@ -54,7 +54,7 @@ import { RequiereCoordinacion } from './pantallas/coord/MarcoCoord';
 /** La puerta de entrada: quien tiene cuenta de jugador va a lo suyo; el resto, a Hoy. */
 function Entrada() {
   const ficha = useMiFicha();
-  if (ficha.isPending) return <Pagina><Cargando filas={2} /></Pagina>;
+  if (ficha.isPending) return <Pagina><Cargando titulo filas={3} /></Pagina>;
   return <Navigate to={ficha.data ? '/jugador/fisico' : '/hoy'} replace />;
 }
 

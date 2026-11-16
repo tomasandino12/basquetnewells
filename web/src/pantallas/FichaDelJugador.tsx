@@ -17,7 +17,8 @@ import type { EstadoAsistencia, Lesion, MotivoFalta } from '../datos/repositorio
 import { cn } from '../lib/cn';
 import { ESTADO_DE_BOTON, type FilaPlantel } from '../plantel/filas';
 import { TiraDeAsistencia } from './TiraDeAsistencia';
-import { APP_DE_SIEMPRE } from '../clasica';
+import { EditarNacimiento } from './EditarNacimiento';
+import { UltimasMediciones } from './FichaTemporadas';
 import { PestanaHistoria, PestanaPartidos } from './FichaPartidosHistoria';
 
 const SALIDA: [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -76,7 +77,7 @@ function Fisico({ f }: { f: FilaPlantel }) {
           <Dato etiqueta="Edad" valor={f.edad === null ? '—' : `${f.edad} años`} />
         </dl>
       </section>
-      <PendienteEnLaApp titulo="Mediciones, salto, sprint, Yo-Yo y cargas" />
+      <UltimasMediciones jugadorId={f.id} />
     </div>
   );
 }
@@ -101,16 +102,6 @@ function Tiro({ f }: { f: FilaPlantel }) {
         </div>
       </dl>
     </div>
-  );
-}
-
-/** Lo que todavía se hace en la app anterior: se dice y se enlaza, para que nada quede sin salida. */
-function PendienteEnLaApp({ titulo }: { titulo: string }) {
-  return (
-    <p className="rounded-tarjeta border border-linea p-3 text-sm text-gris">
-      {titulo}: todavía se ven en la{' '}
-      <a href={APP_DE_SIEMPRE} className="font-semibold text-tinta underline underline-offset-2">app anterior</a>.
-    </p>
   );
 }
 
@@ -357,10 +348,9 @@ export function FichaDelJugador({ fila: f, clubId, plantelId, hoy, alSacar }: Pr
           ) : (
             <Boton variante="contorno" tamano="chico" onClick={() => setConfirmando(true)}>Sacar del plantel</Boton>
           )}
-          <p className="mt-3 text-xs text-gris">
-            Editar la fecha de nacimiento: en la{' '}
-            <a href={APP_DE_SIEMPRE} className="underline underline-offset-2">app anterior</a>.
-          </p>
+          <div className="mt-3">
+            <EditarNacimiento clubId={clubId} jugadorId={f.id} nombre={nombre} nacimiento={f.nacimiento ?? null} />
+          </div>
         </footer>
         </div>
       </div>

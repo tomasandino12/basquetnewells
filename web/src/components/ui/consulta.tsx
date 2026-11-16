@@ -10,6 +10,8 @@ interface Props<T> {
   /** Lo que se cuenta si falla por algo que no es la conexión ni el permiso: «No pudimos cargar los planteles». */
   errorGenerico: string;
   filas?: number;
+  /** Dibuja también el lugar del título: para pantallas que cargan antes de mostrar su título. */
+  conTitulo?: boolean;
   children: (datos: T) => ReactNode;
 }
 
@@ -17,8 +19,8 @@ interface Props<T> {
  * Carga, error y sin conexión iguales en todas las pantallas que piden datos.
  * El error siempre trae una salida (reintentar); nunca queda una pantalla en blanco.
  */
-export function Consulta<T>({ consulta, errorGenerico, filas, children }: Props<T>) {
-  if (consulta.isPending) return <Cargando filas={filas} />;
+export function Consulta<T>({ consulta, errorGenerico, filas, conTitulo, children }: Props<T>) {
+  if (consulta.isPending) return <Cargando filas={filas} titulo={conTitulo} />;
   if (consulta.isError || consulta.data === undefined) {
     const sinRed = esSinConexion(consulta.error);
     return (

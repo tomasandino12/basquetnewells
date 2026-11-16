@@ -49,7 +49,7 @@ function PlanDeLaCategoria({ clubId, plantelId, categoria }: { clubId: string; p
           if (!eleccion.visible) {
             return (
               <>
-                <Vacio icono={Dumbbell} titulo="Plan de fuerza">
+                <Vacio llena icono={Dumbbell} titulo="Plan de fuerza">
                   Cargá el plan de fuerza en .xlsx y queda guardado en la categoría elegida, con sus sesiones y sus ejercicios.
                 </Vacio>
                 <Pie />

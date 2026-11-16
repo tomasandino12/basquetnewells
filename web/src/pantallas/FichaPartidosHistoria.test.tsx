@@ -130,3 +130,47 @@ describe('Ficha: historia por temporada', () => {
     expect(screen.getByText(/No pudimos cargar la historia por temporada/)).toBeTruthy();
   });
 });
+
+describe('Ficha: pestaña Físico y fecha de nacimiento', () => {
+  it('la pestaña Físico muestra lo último medido de la temporada actual, sin mandar a la app anterior', async () => {
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: true, media: q, addEventListener: () => {}, removeEventListener: () => {} }));
+    renderConDatos(rutas, {
+      repo: repo({
+        obtenerHistoriaDelJugador: async () => ({
+          temporadas: [{ id: 't-2', nombre: '2026' }],
+          planteles: [{ id: 'p-b', categoria: 'Sub 13', temporadaId: 't-2', profes: [] }],
+          pertenencias: [{ plantelId: 'p-b', temporadaId: 't-2', desde: '2026-03-01', hasta: null }],
+          corporales: [{ fechaMedicion: '2026-10-10', alturaCm: 158, pesoKg: 47.5 }],
+        }),
+      }),
+      ruta: '/plantel/bruno-acosta',
+    });
+    await userEvent.click(await screen.findByRole('tab', { name: 'Físico' }));
+    const region = await screen.findByRole('region', { name: 'Últimas mediciones' });
+    expect(region.textContent).toContain('158 cm');
+    expect(region.textContent).toContain('47,5 kg');
+    expect(screen.getByRole('tabpanel').querySelector('a')).toBeNull();
+  });
+
+  it('se edita la fecha de nacimiento desde la ficha, y una futura se rechaza sin guardar', async () => {
+    const guardado: unknown[] = [];
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: true, media: q, addEventListener: () => {}, removeEventListener: () => {} }));
+    renderConDatos(rutas, {
+      repo: repo({ actualizarFechaNacimiento: async (_c, j, f) => { guardado.push([j, f]); } }),
+      ruta: '/plantel/bruno-acosta',
+    });
+    const u = userEvent.setup();
+    await u.click(await screen.findByRole('button', { name: 'Editar fecha de nacimiento' }));
+    await screen.findByRole('dialog');
+    const campo = document.querySelector('input[type=date]') as HTMLInputElement;
+    await u.clear(campo);
+    await u.type(campo, '2999-01-01');
+    await u.click(screen.getByRole('button', { name: 'Guardar' }));
+    expect(await screen.findByText(/no puede ser futura/)).toBeTruthy();
+    expect(guardado).toEqual([]);
+    await u.clear(campo);
+    await u.type(campo, '2013-04-05');
+    await u.click(screen.getByRole('button', { name: 'Guardar' }));
+    await vi.waitFor(() => expect(guardado).toEqual([['j-1', '2013-04-05']]));
+  });
+});
