@@ -5,17 +5,19 @@ import {
   alcanceDeRecurso, claseDeEnlace, contarPorTipo, estadoDeEnvio, etiquetaDeTipo, filtrarPorTipo, SIN_TIPO, TIPOS_RECURSO,
 } from '@datos/recursos.js';
 import { idDeYoutube, urlDeMiniatura, urlDeReproductor } from '@datos/youtube.js';
-import { APP_DE_SIEMPRE } from '../clasica';
+import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
 import { REJILLA_CHICA } from '../components/ui/pagina';
 import { Chip, ChipBoton } from '../components/ui/chip';
 import { Consulta } from '../components/ui/consulta';
 import { Vacio } from '../components/ui/estados';
 import { Hoja } from '../components/ui/sheet';
+import { useSesion } from '../datos/contexto';
 import { useJugadoresDeAsistencia } from '../datos/consultas';
 import { useRecursosDelClub, useResumenDeRecursos } from '../datos/consultasRecursos';
-import type { RecursoDelClub, ResumenDeRecursos } from '../datos/repositorio';
+import type { JugadorDelPlantel, RecursoDelClub, ResumenDeRecursos } from '../datos/repositorio';
 import { cn } from '../lib/cn';
+import { BorrarRecurso, HojaDeEnvio } from './RecursosOfrecer';
 
 type Alcance = ReturnType<typeof alcanceDeRecurso>;
 type Envio = ReturnType<typeof estadoDeEnvio>;
@@ -41,13 +43,16 @@ function textoDeEnvio(envio: Envio, categoria: string): string {
 /**
  * Videos y links que el profe ofrece a sus jugadores: una tarjeta por recurso, con la miniatura, los datos de
  * dedicación y cuántos lo vieron (un número y una barra, nunca quiénes: con adolescentes, controlar por nombre
- * convierte una herramienta de desarrollo en una de vigilancia). Ofrecer o borrar uno sigue en la app de siempre.
+ * convierte una herramienta de desarrollo en una de vigilancia).
  */
 export function Videos({ clubId, plantelId, categoria }: { clubId: string; plantelId: string; categoria: string }) {
   const recursos = useRecursosDelClub(clubId);
   const resumen = useResumenDeRecursos(plantelId);
   const chicos = useJugadoresDeAsistencia(clubId, plantelId);
   const [tipo, setTipo] = useState('todos');
+  const [ofreciendo, setOfreciendo] = useState(false);
+  // Un aviso con lo que acaba de pasar (enviado, borrado): las tarjetas se refrescan solas debajo.
+  const [aviso, setAviso] = useState<string | null>(null);
 
   return (
     <section aria-label="Videos para jugadores" className="flex flex-col gap-4 lg:min-h-[calc(100dvh-10rem)]">
@@ -55,21 +60,25 @@ export function Videos({ clubId, plantelId, categoria }: { clubId: string; plant
         <p className="max-w-prose text-sm text-gris">
           Material que dejás disponible para que cada uno progrese por su cuenta. No es obligación ni control.
         </p>
-        <a
-          href={APP_DE_SIEMPRE}
-          className="inline-flex min-h-11 items-center gap-2 rounded-btn border border-borde-control px-3 text-sm font-semibold outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:border-tinta"
-        >
+        <Boton variante="contorno" disabled={!chicos.data} onClick={() => setOfreciendo(true)}>
           <Plus aria-hidden className="size-4" />
           Ofrecer un recurso
-        </a>
+        </Boton>
       </div>
+      {aviso && <Aviso tono="ok" titulo={aviso} />}
+      {chicos.isError && <Aviso tono="error" titulo="No pudimos cargar el plantel: sin eso no se puede enviar un recurso." />}
+      {chicos.data && (
+        <HojaDeEnvio abierta={ofreciendo} alCambiar={setOfreciendo} clubId={clubId} categoria={categoria} jugadores={chicos.data} alEnviar={setAviso} />
+      )}
       <Consulta consulta={{ isPending: recursos.isPending, isError: recursos.isError, error: recursos.error, data: recursos.data as unknown, refetch: recursos.refetch }} errorGenerico="No pudimos cargar los videos">
         {() => (
           <Tarjetas
             recursos={recursos.data ?? []}
             resumen={resumen.data ?? null}
             jugadores={chicos.data ?? []}
+            clubId={clubId}
             categoria={categoria}
+            alAvisar={setAviso}
             tipo={tipo}
             setTipo={setTipo}
           />
@@ -79,11 +88,13 @@ export function Videos({ clubId, plantelId, categoria }: { clubId: string; plant
   );
 }
 
-function Tarjetas({ recursos, resumen, jugadores, categoria, tipo, setTipo }: {
+function Tarjetas({ recursos, resumen, jugadores, clubId, categoria, alAvisar, tipo, setTipo }: {
   recursos: RecursoDelClub[];
   resumen: ResumenDeRecursos | null;
-  jugadores: { id: string }[];
+  jugadores: JugadorDelPlantel[];
+  clubId: string;
   categoria: string;
+  alAvisar: (aviso: string) => void;
   tipo: string;
   setTipo: (t: string) => void;
 }) {
@@ -124,7 +135,10 @@ function Tarjetas({ recursos, resumen, jugadores, categoria, tipo, setTipo }: {
                 recurso={r}
                 alcance={alcanceDeRecurso(fila) as Alcance}
                 envio={estadoDeEnvio(r.envios, jugadores) as Envio}
+                clubId={clubId}
+                jugadores={jugadores}
                 categoria={categoria}
+                alAvisar={alAvisar}
               />
             </li>
           );
@@ -135,8 +149,22 @@ function Tarjetas({ recursos, resumen, jugadores, categoria, tipo, setTipo }: {
   );
 }
 
-function TarjetaDeRecurso({ recurso: r, alcance, envio, categoria }: { recurso: RecursoDelClub; alcance: Alcance; envio: Envio; categoria: string }) {
+function TarjetaDeRecurso({ recurso: r, alcance, envio, clubId, jugadores, categoria, alAvisar }: {
+  recurso: RecursoDelClub;
+  alcance: Alcance;
+  envio: Envio;
+  clubId: string;
+  jugadores: JugadorDelPlantel[];
+  categoria: string;
+  alAvisar: (aviso: string) => void;
+}) {
   const [viendo, setViendo] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [borrando, setBorrando] = useState(false);
+  const { sesion } = useSesion();
+  // Borrar es sólo de quien lo cargó: la policy de la base lo impone, el botón sólo se esconde por comodidad.
+  const esMio = sesion?.user.id != null && r.creadoPor === sesion.user.id;
+  const faltan = envio.faltan as JugadorDelPlantel[];
   const esVideo = Boolean(idDeYoutube(r.enlace ?? ''));
   const eyebrow = [etiquetaDeTipo(r.tipo) as string | null, diaMes(r.creadoEn.slice(0, 10))].filter(Boolean).join(' · ');
   return (
@@ -179,8 +207,23 @@ function TarjetaDeRecurso({ recurso: r, alcance, envio, categoria }: { recurso: 
               Material<span className="sr-only">: {r.titulo}</span>
             </a>
           )}
+          {esMio && (
+            <Boton variante="contorno" tamano="chico" onClick={() => setBorrando(true)}>
+              Borrar<span className="sr-only">: {r.titulo}</span>
+            </Boton>
+          )}
         </div>
+        {envio.estado === 'todos' ? (
+          <Boton variante="contorno" disabled>Ya lo recibieron todos</Boton>
+        ) : (
+          <Boton variante="contorno" onClick={() => setEnviando(true)}>
+            {envio.estado === 'parcial' ? `Enviar a los ${faltan.length} que faltan` : 'Enviar a jugadores'}
+            <span className="sr-only">: {r.titulo}</span>
+          </Boton>
+        )}
       </div>
+      <HojaDeEnvio abierta={enviando} alCambiar={setEnviando} clubId={clubId} categoria={categoria} jugadores={faltan} recurso={r} yaLoTienen={jugadores.length - faltan.length} alEnviar={alAvisar} />
+      {esMio && <BorrarRecurso abierta={borrando} alCerrar={() => setBorrando(false)} clubId={clubId} recurso={r} />}
       {esVideo && <Reproductor recurso={r} abierto={viendo} alCambiar={setViendo} />}
     </article>
   );

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCargarRepositorio } from './contexto';
-import type { CamposDeEjercicio, CamposDeVariacion, DatosDePizarra, Repositorio } from './repositorio';
+import type { CamposDeEjercicio, CamposDeVariacion, DatosDePizarra, PayloadDeRecurso, Repositorio } from './repositorio';
 
 // Recursos: la biblioteca de ejercicios y de jugadas del club. Las claves empiezan con «recursos».
 
@@ -162,4 +162,23 @@ export function useBorrarJugada(clubId: string) {
     mutationFn: async (jugadaId: string) => (await cargar()).borrarJugada(clubId, jugadaId),
     onSettled: () => consultas.invalidateQueries({ queryKey: ['recursos', 'jugadas'] }),
   });
+}
+
+/** Un envío o un recurso nuevo cambia las tarjetas, el conteo y lo que ven los fichas de los chicos. */
+function useEscrituraDeVideos<T>(hacer: (repo: Repositorio, datos: T) => Promise<unknown>) {
+  const cargar = useCargarRepositorio();
+  const consultas = useQueryClient();
+  return useMutation({
+    mutationFn: async (datos: T) => hacer(await cargar(), datos),
+    onSettled: () => consultas.invalidateQueries({ queryKey: ['recursos', 'videos'] }).then(() => consultas.invalidateQueries({ queryKey: ['recursos', 'resumen'] })),
+  });
+}
+
+/** Ofrecer un recurso nuevo o enviar uno existente a los que faltan (ver `PayloadDeRecurso`). */
+export function useGuardarRecurso() {
+  return useEscrituraDeVideos<PayloadDeRecurso>((repo, payload) => repo.guardarRecurso(payload));
+}
+
+export function useBorrarRecurso(clubId: string) {
+  return useEscrituraDeVideos<string>((repo, recursoId) => repo.borrarRecurso(clubId, recursoId));
 }

@@ -365,7 +365,7 @@ function FilaDeZona({ zona }: { zona: Zona }) {
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
         <Link
-          to="/recursos"
+          to="/recursos?pestana=videos"
           aria-label={`Mandar un recurso para ${zona.nombre}`}
           className="inline-flex min-h-11 items-center text-sm font-semibold text-club-texto underline decoration-1 underline-offset-4 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta"
         >
