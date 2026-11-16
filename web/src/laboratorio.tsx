@@ -220,6 +220,9 @@ export function Marco() {
   useEffect(() => aplicarTema(tema), [tema]);
   const cambiarTema = () => guardarTema(tema === 'oscuro' ? 'claro' : 'oscuro');
 
+  // Quien llega sin cuenta ve la portada limpia: sin menú de la app ni pantallas de ejemplo.
+  if (pathname === '/entrar') return <Outlet />;
+
   return (
     <div className="min-h-svh lg:pl-60 print:pl-0">
       {/* Compu */}

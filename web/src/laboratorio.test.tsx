@@ -65,10 +65,11 @@ describe('menú de la app', () => {
     expect(within(ejemplos).getByRole('link', { name: /Piezas/ }).getAttribute('aria-current')).toBe('page');
   });
 
-  it('también está en Entrar, así se llega a las pantallas de ejemplo sin cuenta', async () => {
+  it('en la portada de Entrar no hay menú de la app ni pantallas de ejemplo: la ve limpia quien llega sin cuenta', async () => {
     renderConDatos(rutas, { repo: repositorioInventado({ obtenerSesionActual: async () => null }) });
-    expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeTruthy();
-    expect(screen.getAllByRole('navigation', { name: 'Menú de la app' }).length).toBeGreaterThan(0);
+    expect(await screen.findByRole('heading', { level: 1, name: /Lo que se trabaja en inferiores/ })).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: 'Menú de la app' })).toBeNull();
+    expect(screen.queryByRole('navigation', { name: 'Pantallas de ejemplo' })).toBeNull();
   });
 
   it('el botón de tema cambia toda la app y lo recuerda', async () => {

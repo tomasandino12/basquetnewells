@@ -128,7 +128,7 @@ describe('Mi perfil: la cuenta', () => {
 
   it('sin sesión manda a entrar', async () => {
     abrir(repo({ obtenerSesionActual: async () => null }));
-    expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 1, name: /Lo que se trabaja en inferiores/ })).toBeTruthy();
   });
 });
 

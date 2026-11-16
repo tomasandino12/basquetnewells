@@ -4,8 +4,26 @@
     {
       "name": "app",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["esbuild", "--serve=5173", "--servedir=."],
+      "runtimeArgs": [
+        "esbuild",
+        "--serve=5173",
+        "--servedir=."
+      ],
       "port": 5173
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "web",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5180"
+      ],
+      "port": 5180
     }
   ]
 }

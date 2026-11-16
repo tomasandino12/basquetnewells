@@ -5,6 +5,7 @@ import { Campo } from '../components/ui/campo';
 import { Aviso } from '../components/ui/aviso';
 import { Cargando } from '../components/ui/estados';
 import { Pagina } from '../components/ui/pagina';
+import { Portada } from './Portada';
 import { useCrearCuenta, useEntrar, useEntrarConGoogle, useRecuperarClave } from '../datos/consultas';
 import { useSesion } from '../datos/contexto';
 import { esSinConexion, mensajeDeError } from '../datos/errores';
@@ -13,7 +14,7 @@ import { anotarJugadorPorGoogle } from '../cuenta/jugadorPorGoogle';
 import { soltarFallaDeLaVuelta, useFallaDeLaVuelta } from '../cuenta/vuelta';
 import { emailValido, mensajeDeCreacion, mensajeDeGoogle, mensajeDeIngreso, validarCuenta } from '../cuenta/validaciones';
 
-type Modo = 'entrar' | 'crear' | 'recuperar';
+type Modo = 'portada' | 'entrar' | 'crear' | 'recuperar';
 
 export function Entrar() {
   const sesion = useSesion();
@@ -22,14 +23,15 @@ export function Entrar() {
   const recuperar = useRecuperarClave();
   const google = useEntrarConGoogle();
   const desde = (useLocation().state as { desde?: string } | null)?.desde ?? '/';
-  const [modo, setModo] = useState<Modo>('entrar');
+  const falla = useFallaDeLaVuelta();
+  // Quien llega sin cuenta ve primero la portada; quien vuelve de un link vencido, directo el formulario (ahí se le explica).
+  const [modo, setModo] = useState<Modo>(falla ? 'entrar' : 'portada');
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [clave, setClave] = useState('');
   const [repetida, setRepetida] = useState('');
   const [esJugador, setEsJugador] = useState(false);
   const [problema, setProblema] = useState<string | null>(null);
-  const falla = useFallaDeLaVuelta();
 
   if (sesion.estado === 'cargando') return <Pagina><Cargando titulo filas={3} /></Pagina>;
   if (sesion.estado === 'con-sesion') return <Navigate to={desde} replace />;
@@ -73,10 +75,20 @@ export function Entrar() {
   const recuperarEnviado = recuperar.isSuccess || (recuperar.isError && !esSinConexion(recuperar.error));
   const mailDeConfirmacion = crear.isSuccess && !crear.data.sesion;
 
+  if (modo === 'portada') {
+    return (
+      <div className="min-h-svh bg-negro text-sobre-negro">
+        <Pagina><Portada alCrear={() => cambiarModo('crear')} alEntrar={() => cambiarModo('entrar')} /></Pagina>
+      </div>
+    );
+  }
+
   return (
+    <div className="min-h-svh bg-negro text-sobre-negro">
     <Pagina className="flex min-h-svh flex-col justify-center">
-      {/* La página ocupa todo el ancho como las demás; sólo el formulario es una columna angosta. */}
-      <div className="mx-auto flex w-full max-w-sm flex-col gap-4">
+      {/* La página ocupa todo el ancho como las demás; sólo el formulario es una columna angosta, sobre una caja clara. */}
+      <div className="mx-auto flex w-full max-w-sm flex-col gap-4 rounded-tarjeta bg-sup p-5 text-tinta">
+        <button type="button" className="self-start text-sm underline" onClick={() => cambiarModo('portada')}>‹ Volver</button>
         <h1 className="font-titulo text-4xl leading-none font-semibold">
           {modo === 'entrar' ? 'Entrar' : modo === 'crear' ? 'Crear cuenta' : 'Recuperar la clave'}
         </h1>
@@ -157,5 +169,6 @@ export function Entrar() {
         </div>
       </div>
     </Pagina>
+    </div>
   );
 }

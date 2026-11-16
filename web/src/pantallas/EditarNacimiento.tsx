@@ -1,3 +1,4 @@
+import { Pencil } from 'lucide-react';
 import { useState } from 'react';
 import { hoyLocal, validarFechaNacimiento } from '@datos/antropometria.js';
 import { Aviso } from '../components/ui/aviso';
@@ -47,7 +48,15 @@ export function EditarNacimiento({ clubId, jugadorId, nombre, nacimiento }: Prop
 
   return (
     <>
-      <Boton variante="contorno" tamano="chico" onClick={() => abrir(true)}>Editar fecha de nacimiento</Boton>
+      {/* Pegado al dato que corrige: un lápiz con área de toque grande, sobre el negro de la cabecera. */}
+      <button
+        type="button"
+        aria-label="Editar fecha de nacimiento"
+        onClick={() => abrir(true)}
+        className="-my-3 grid size-11 place-items-center rounded-full text-sobre-negro outline-offset-[-4px] focus-visible:outline-2 focus-visible:outline-lima [@media(hover:hover)]:hover:bg-white/10"
+      >
+        <Pencil aria-hidden className="size-4" />
+      </button>
       <Hoja abierta={abierta} alCambiar={abrir} titulo="Fecha de nacimiento" descripcion={`Corregir la fecha de nacimiento de ${nombre}`} etiquetaCerrar="Cerrar">
         <form
           noValidate

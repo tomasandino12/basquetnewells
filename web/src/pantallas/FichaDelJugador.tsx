@@ -247,7 +247,10 @@ export function FichaDelJugador({ fila: f, clubId, plantelId, hoy, alSacar }: Pr
             <p className="mt-1.5 flex flex-wrap gap-x-3 font-mono text-xs text-sobre-negro/75">
               <span className="inline-flex items-center gap-1"><Ruler aria-hidden className="size-3.5" />{cifra(f.alturaCm, 'cm')}</span>
               <span className="inline-flex items-center gap-1"><Weight aria-hidden className="size-3.5" />{cifra(f.pesoKg, 'kg')}</span>
-              <span>{f.edad === null ? 'Sin fecha de nacimiento' : `${f.edad} años`}</span>
+              <span className="inline-flex items-center gap-1.5">
+                {f.edad === null ? 'Sin fecha de nacimiento' : `${f.edad} años`}
+                <EditarNacimiento clubId={clubId} jugadorId={f.id} nombre={nombre} nacimiento={f.nacimiento ?? null} />
+              </span>
             </p>
           </div>
         </div>
@@ -348,9 +351,6 @@ export function FichaDelJugador({ fila: f, clubId, plantelId, hoy, alSacar }: Pr
           ) : (
             <Boton variante="contorno" tamano="chico" onClick={() => setConfirmando(true)}>Sacar del plantel</Boton>
           )}
-          <div className="mt-3">
-            <EditarNacimiento clubId={clubId} jugadorId={f.id} nombre={nombre} nacimiento={f.nacimiento ?? null} />
-          </div>
         </footer>
         </div>
       </div>
