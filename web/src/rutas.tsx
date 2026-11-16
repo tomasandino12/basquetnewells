@@ -34,6 +34,7 @@ import { ProveedorPlantelActivo } from './plantel/activo';
 import { Cargando } from './components/ui/estados';
 import { useMiFicha } from './datos/consultasJugador';
 import { JugadorFisico } from './pantallas/jugador/JugadorFisico';
+import { EditorDeJugada } from './pantallas/EditorDeJugada';
 import { JugadorJugadas } from './pantallas/jugador/JugadorJugadas';
 import { JugadorProgreso } from './pantallas/jugador/JugadorProgreso';
 import { JugadorRecursos } from './pantallas/jugador/JugadorRecursos';
@@ -146,6 +147,7 @@ export const rutas: RouteObject[] = [
         // Cargar un partido cuelga de Datos (y del plantel vacío): no tiene ítem propio en el menú.
         { path: '/datos/cargar-partido', element: <CargarPartido /> },
         { path: '/recursos', element: <Recursos /> },
+        { path: '/recursos/jugadas/:jugadaId/editar', element: <EditorDeJugada /> },
         // Armar las misiones cuelga de Plantel y de Hoy; sin id es una previa nueva, con id se edita la que está.
         { path: '/misiones/armar', element: <ArmarMisiones /> },
         { path: '/misiones/:previaId/armar', element: <ArmarMisiones /> },

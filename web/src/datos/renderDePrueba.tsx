@@ -81,7 +81,10 @@ export function repositorioInventado(piso: Partial<Repositorio> = {}): Repositor
     listarJugadas: async () => [],
     plantelesDeJugada: async () => [],
     asignarJugada: async () => {},
-    crearJugada: async () => ({}),
+    crearJugada: async () => 'ju-nueva',
+    obtenerJugada: async () => null,
+    guardarJugada: async () => {},
+    borrarJugada: async () => {},
     // Familias y altas.
     obtenerJugadoresDelClub: async () => [],
     altaJugadorManual: async () => ({}),

@@ -522,7 +522,13 @@ export interface Repositorio extends RepositorioCoord {
   plantelesDeJugada(clubId: string, jugadaId: string): Promise<string[]>;
   /** Deja la jugada asignada exactamente a estos planteles. */
   asignarJugada(clubId: string, jugadaId: string, plantelIds: string[]): Promise<void>;
-  crearJugada(datos: { clubId: string; nombre: string; tipo: string; datos: DatosDePizarra }): Promise<unknown>;
+  /** Devuelve el id de la jugada nueva. */
+  crearJugada(datos: { clubId: string; nombre: string; tipo: string; datos: DatosDePizarra }): Promise<string>;
+  obtenerJugada(clubId: string, jugadaId: string): Promise<JugadaDelClub | null>;
+  /** Lanza `NO_ES_TUYA` si la jugada es de otro profe. */
+  guardarJugada(clubId: string, jugadaId: string, datos: { nombre: string; tipo: string; datos: DatosDePizarra }): Promise<void>;
+  /** Lanza `NO_ES_TUYA` si la jugada es de otro profe. */
+  borrarJugada(clubId: string, jugadaId: string): Promise<void>;
   obtenerSesionActual(): Promise<Sesion | null>;
   iniciarSesion(email: string, password: string): Promise<Sesion>;
   cerrarSesion(): Promise<void>;
