@@ -23,6 +23,8 @@ import { gzipSync } from 'node:zlib';
  *
  * 16/11: cargar el plan de fuerza (resumen y videos) y armar la planilla de asistencia pasaron a React
  * (~5 kB); el tope pasó de 410 a 420. El lector de xlsx sigue siendo un trozo aparte.
+ * 16/11: el editor de jugadas (cancha interactiva, pasos, deshacer, alta y borrado) dejó de abrirse en la
+ * app de siempre: el total llegó a ~413 kB y el tope pasó de 410 a 420.
  *
  * Mide web/dist, que sólo existe después de `npm --prefix web run build`: sin
  * armar, se saltea (Vercel la arma en el deploy, no en las pruebas).

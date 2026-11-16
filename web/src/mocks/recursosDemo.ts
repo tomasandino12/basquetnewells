@@ -72,5 +72,8 @@ export const PARA_RECURSOS: Partial<Repositorio> = {
   listarJugadas: async () => JUGADAS,
   plantelesDeJugada: async () => [],
   asignarJugada: async () => {},
-  crearJugada: async () => ({}),
+  crearJugada: async () => 'ju-nueva',
+  obtenerJugada: async () => null,
+  guardarJugada: async () => {},
+  borrarJugada: async () => {},
 };

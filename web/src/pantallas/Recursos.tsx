@@ -1,5 +1,6 @@
 import { BookOpen, Copy, Package, Pencil, Play, Plus, Printer, Search, Tag, Trash2, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { duplicarDatos, etiquetaDeTipo, nosotrosDefiende, pantallaAptaParaEditar } from '@datos/jugadas.js';
 import { LIMITE } from '@datos/limites.js';
 import { nombreDeEje, ordenarVariaciones } from '@datos/variaciones.js';
@@ -7,35 +8,41 @@ import { urlDeMiniatura } from '@datos/youtube.js';
 import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
 import { Chip, ChipBoton, Etiqueta } from '../components/ui/chip';
+import { Campo } from '../components/ui/campo';
 import { Consulta } from '../components/ui/consulta';
 import { Vacio } from '../components/ui/estados';
 import { Pizarra } from '../components/ui/pizarra';
 import { Hoja } from '../components/ui/sheet';
-import { APP_DE_SIEMPRE } from '../clasica';
-import { useAsignarJugada, useDetalleDeEjercicio, useDuplicarJugada, useEjercicios, useJugadasDelClub, usePlantelesDeJugada } from '../datos/consultasRecursos';
+import { useAsignarJugada, useBorrarJugada, useDetalleDeEjercicio, useDuplicarJugada, useEjercicios, useJugadasDelClub, usePlantelesDeJugada } from '../datos/consultasRecursos';
 import { useSesion } from '../datos/contexto';
 import { mensajeDeError } from '../datos/errores';
 import type { EjercicioDeLista, JugadaDelClub, NotaDeEjercicio, PlantelDelClub, VariacionDeEjercicio } from '../datos/repositorio';
 import { cn } from '../lib/cn';
 import { usePlantelActivo } from '../plantel/activo';
 import { colorDeTema, colorDeTipo } from '../recursos/colores';
+import { FORMACIONES, TIPOS_JUGADA } from '../recursos/operaciones';
 import { filtrarEjercicios, filtrarJugadas, nombreDeCopia, nombreDeTema, temasConEjercicios, textoDeVariaciones, tiposConJugadas } from '../recursos/biblioteca';
 import { Pagina } from '../components/ui/pagina';
 import { SinCategoria } from './PlantelDelClub';
 import { VideoDeEjercicio } from '../fisico/VideoDeEjercicio';
 import { BorrarEjercicio, BorrarNota, BorrarVariacion, HojaDeEjercicio, HojaDeNota, HojaDeVariacion } from './RecursosEscritura';
 import { Videos } from './RecursosVideos';
+import { rutaDelEditor } from './EditorDeJugada';
 
 type Pestana = 'ejercicios' | 'jugadas' | 'videos';
 const NOMBRE_DE_PESTANA: Record<Pestana, string> = { ejercicios: 'Ejercicios', jugadas: 'Jugadas', videos: 'Videos' };
+
+// Un enlace con forma de botón recto y a la vista; el texto largo entra en una línea (el botón de mayúsculas lo partía).
+const BOTON_DE_ENLACE =
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-btn border border-borde-control px-3 text-sm font-semibold outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:border-tinta';
 
 const ENLACE_TEXTO =
   'inline-flex min-h-11 items-center text-sm font-semibold underline decoration-linea decoration-2 underline-offset-4 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:decoration-club';
 
 /**
  * Recursos: la biblioteca del club. En compu, tres columnas (la lista, la pizarra, el detalle); en
- * el celular, la pizarra arriba, después el detalle y la lista abajo. Los ejercicios se cargan, editan
- * y borran acá; dibujar su pizarra y armar jugadas siguen en la app de siempre (hace falta compu o tablet).
+ * el celular, la pizarra arriba, después el detalle y la lista abajo. Los ejercicios y las jugadas se crean, editan,
+ * asignan y borran acá (el editor de jugadas necesita compu o tablet).
  */
 export function Recursos() {
   const activo = usePlantelActivo();
@@ -52,11 +59,14 @@ export function Recursos() {
 export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId: string; planteles: PlantelDelClub[]; plantelId?: string; categoria?: string }) {
   const ejercicios = useEjercicios(clubId);
   const jugadas = useJugadasDelClub(clubId);
-  const [pestana, setPestana] = useState<Pestana>('ejercicios');
+  // El editor vuelve con ?pestana=jugadas&jugada=<id>: la jugada que se estaba editando queda elegida.
+  const [params] = useSearchParams();
+  const [pestana, setPestana] = useState<Pestana>(params.get('pestana') === 'jugadas' ? 'jugadas' : 'ejercicios');
   const [texto, setTexto] = useState('');
   const [filtro, setFiltro] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
-  const [elegida, setElegida] = useState<Record<Pestana, string | null>>({ ejercicios: null, jugadas: null, videos: null });
+  const [creando, setCreando] = useState(false);
+  const [elegida, setElegida] = useState<Record<Pestana, string | null>>({ ejercicios: null, jugadas: params.get('jugada'), videos: null });
 
   const cambiarPestana = (p: Pestana) => {
     setPestana(p);
@@ -110,6 +120,12 @@ export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId
       ) : (
       <div className="flex flex-col gap-5 lg:grid lg:min-h-[calc(100dvh-12rem)] lg:grid-cols-[minmax(16rem,1fr)_minmax(0,2fr)_minmax(16rem,1fr)] lg:items-start">
         <section aria-label="Lista" className="order-3 flex flex-col gap-3 lg:sticky lg:top-4 lg:order-1 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto print:hidden">
+          {pestana === 'jugadas' && (
+            <Boton variante="secundario" onClick={() => setCreando(true)}>
+              <Plus aria-hidden className="size-4" />
+              Nueva jugada
+            </Boton>
+          )}
           <label className="relative block">
             <span className="sr-only">{pestana === 'ejercicios' ? 'Buscar ejercicio' : 'Buscar jugada'}</span>
             <Search aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gris" />
@@ -137,12 +153,6 @@ export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId
               )
             }
           </Consulta>
-          {pestana === 'jugadas' && (
-            <p className="text-sm text-gris">
-              Las jugadas nuevas se arman en{' '}
-              <a href={APP_DE_SIEMPRE} className="font-semibold underline">la app de siempre</a>.
-            </p>
-          )}
         </section>
 
         {idElegido !== null &&
@@ -161,6 +171,7 @@ export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId
       </div>
       )}
       {cargando && <HojaDeEjercicio abierta alCambiar={(a) => !a && setCargando(false)} clubId={clubId} />}
+      <NuevaJugada abierta={creando} alCambiar={setCreando} clubId={clubId} />
     </Pagina>
   );
 }
@@ -250,7 +261,7 @@ function ListaDeJugadas({ todas, visibles, filtro, setFiltro, elegido, elegir }:
   if (todas.length === 0) {
     return (
       <Vacio icono={BookOpen} titulo="Todavía no hay jugadas">
-        La biblioteca del club: cada profe carga las suyas y todos las ven. Las nuevas se arman en la app de siempre, en compu o tablet.
+        La biblioteca del club: cada profe carga las suyas y todos las ven. Las nuevas se arman acá, en compu o tablet: tocá «Nueva jugada».
       </Vacio>
     );
   }
@@ -478,6 +489,7 @@ function Dato({ icono: Icono, tono, clave, valor }: { icono: typeof Package; ton
 
 function DeJugada({ clubId, jugada, planteles }: { clubId: string; jugada: JugadaDelClub; planteles: PlantelDelClub[] }) {
   const [asignando, setAsignando] = useState(false);
+  const [borrando, setBorrando] = useState(false);
   const duplicar = useDuplicarJugada(clubId);
   const [copiada, setCopiada] = useState(false);
   // El editor necesita espacio: en un celular las jugadas se ven, se asignan y se duplican.
@@ -522,14 +534,21 @@ function DeJugada({ clubId, jugada, planteles }: { clubId: string; jugada: Jugad
           </div>
           {jugada.esMia &&
             (puedeEditar ? (
-              <a href={APP_DE_SIEMPRE} className={ENLACE_TEXTO}>
-                <Pencil aria-hidden className="mr-2 size-4" />
-                Editar en la app de siempre
-              </a>
+              <Link to={rutaDelEditor(jugada.id)} className={BOTON_DE_ENLACE}>
+                <Pencil aria-hidden className="size-4" />
+                Editar jugada
+              </Link>
             ) : (
               <p className="text-sm text-gris">El editor de jugadas es para compu o tablet. Desde acá podés verlas, asignarlas y duplicarlas.</p>
             ))}
+          {jugada.esMia && (
+            <button type="button" onClick={() => setBorrando(true)} className={cn(ENLACE_TEXTO, 'text-club-texto')}>
+              <Trash2 aria-hidden className="mr-2 size-4" />
+              Borrar jugada
+            </button>
+          )}
         </div>
+        <Borrar abierta={borrando} alCambiar={setBorrando} clubId={clubId} jugada={jugada} />
         <Asignar abierta={asignando} alCambiar={setAsignando} clubId={clubId} jugada={jugada} planteles={planteles} />
       </aside>
     </>
@@ -591,5 +610,104 @@ function FormularioDeAsignacion({ inicial, planteles, guardando, error, alGuarda
         Guardar
       </Boton>
     </>
+  );
+}
+
+/** Borrar una jugada propia: se pide confirmación porque desaparece también de los planteles a los que estaba asignada. */
+function Borrar({ abierta, alCambiar, clubId, jugada }: { abierta: boolean; alCambiar: (a: boolean) => void; clubId: string; jugada: JugadaDelClub }) {
+  const borrar = useBorrarJugada(clubId);
+  const error = borrar.isError ? (borrar.error?.message === 'NO_ES_TUYA' ? 'Esta jugada ya no es tuya: no se puede borrar.' : mensajeDeError(borrar.error, 'No se pudo borrar la jugada.')) : null;
+  return (
+    <Hoja abierta={abierta} alCambiar={alCambiar} titulo="Borrar esta jugada" descripcion="Confirmá que querés borrar la jugada." etiquetaCerrar="Cerrar">
+      <div className="flex flex-col gap-4 p-5 pt-12">
+        <h2 className="font-titulo text-2xl font-semibold uppercase">Borrar esta jugada</h2>
+        <p className="text-base">«{jugada.nombre}» se borra para todo el club y deja de verse en los planteles a los que estaba asignada. No se puede deshacer.</p>
+        {error && <Aviso tono="error" titulo="No se borró">{error}</Aviso>}
+        <Boton variante="club" disabled={borrar.isPending} onClick={() => borrar.mutate(jugada.id, { onSuccess: () => alCambiar(false) })}>
+          {borrar.isPending ? 'Borrando…' : 'Borrar de todos modos'}
+        </Boton>
+        <Boton variante="contorno" onClick={() => alCambiar(false)}>
+          Cancelar
+        </Boton>
+      </div>
+    </Hoja>
+  );
+}
+
+/** Alta de una jugada: nombre, tipo y formación inicial; al crearla se abre el editor. */
+function NuevaJugada({ abierta, alCambiar, clubId }: { abierta: boolean; alCambiar: (a: boolean) => void; clubId: string }) {
+  const crear = useDuplicarJugada(clubId);
+  const navegar = useNavigate();
+  const [nombre, setNombre] = useState('');
+  const [tipo, setTipo] = useState<string | null>(null);
+  const [formacion, setFormacion] = useState<string | null>(null);
+  const [falta, setFalta] = useState(false);
+  const [apta, setApta] = useState(true);
+  useEffect(() => {
+    if (abierta) setApta(pantallaAptaParaEditar(window.innerWidth, window.innerHeight) as boolean);
+  }, [abierta]);
+
+  const enviar = () => {
+    const elegida = FORMACIONES.find((f) => f.clave === formacion);
+    if (!nombre.trim() || !tipo || !elegida) return setFalta(true);
+    setFalta(false);
+    crear.mutate(
+      { nombre: nombre.trim(), tipo, datos: duplicarDatos(elegida.datos) as typeof elegida.datos },
+      {
+        onSuccess: (id) => {
+          alCambiar(false);
+          setNombre('');
+          setTipo(null);
+          setFormacion(null);
+          void navegar(rutaDelEditor(id));
+        },
+      },
+    );
+  };
+
+  return (
+    <Hoja abierta={abierta} alCambiar={alCambiar} titulo="Nueva jugada" descripcion="Elegí un nombre, el tipo y desde qué formación arrancar." etiquetaCerrar="Cerrar">
+      <div className="flex flex-col gap-4 p-5 pt-12">
+        <h2 className="font-titulo text-2xl font-semibold uppercase">Nueva jugada</h2>
+        {!apta ? (
+          <p className="text-sm text-gris">El editor de jugadas es para compu o tablet. Desde acá podés verlas, asignarlas y duplicarlas.</p>
+        ) : (
+          <form
+            className="flex flex-col gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              enviar();
+            }}
+          >
+            <Campo etiqueta="Nombre" value={nombre} maxLength={LIMITE.titulo} autoComplete="off" onChange={(e) => setNombre(e.target.value)} />
+            <fieldset className="flex flex-col gap-1">
+              <legend className="mb-1 text-sm font-semibold">Tipo</legend>
+              <div className="flex flex-wrap gap-x-1">
+                {TIPOS_JUGADA.map((t) => (
+                  <ChipBoton key={t.clave} type="button" activo={tipo === t.clave} aria-pressed={tipo === t.clave} onClick={() => setTipo(t.clave)}>
+                    {t.etiqueta}
+                  </ChipBoton>
+                ))}
+              </div>
+            </fieldset>
+            <fieldset className="flex flex-col gap-1">
+              <legend className="mb-1 text-sm font-semibold">Formación</legend>
+              <div className="flex flex-wrap gap-x-1">
+                {FORMACIONES.map((f) => (
+                  <ChipBoton key={f.clave} type="button" activo={formacion === f.clave} aria-pressed={formacion === f.clave} onClick={() => setFormacion(f.clave)}>
+                    {f.etiqueta}
+                  </ChipBoton>
+                ))}
+              </div>
+            </fieldset>
+            {falta && <Aviso tono="error" titulo="Poné un nombre y elegí tipo y formación." />}
+            {crear.isError && <Aviso tono="error" titulo="No pudimos crear la jugada">{mensajeDeError(crear.error, 'Probá de nuevo en un momento.')}</Aviso>}
+            <Boton type="submit" disabled={crear.isPending}>
+              {crear.isPending ? 'Creando…' : 'Crear jugada'}
+            </Boton>
+          </form>
+        )}
+      </div>
+    </Hoja>
   );
 }
