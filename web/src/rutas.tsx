@@ -10,6 +10,8 @@ import { Asistencia } from './pantallas/Asistencia';
 import { AsistenciaHistorial } from './pantallas/AsistenciaHistorial';
 import { Datos } from './pantallas/Datos';
 import { Entrar } from './pantallas/Entrar';
+import { NuevaClave } from './pantallas/NuevaClave';
+import { useRecuperacionPendiente } from './cuenta/recuperacion';
 import { CargarPartido } from './pantallas/importar/CargarPartido';
 import { FichaEjemplo, PantallaDeFicha } from './pantallas/PantallaDeFicha';
 import { Fisico } from './pantallas/Fisico';
@@ -87,6 +89,9 @@ export function RequiereSoloSesion() {
 function PuertaDeSesion({ children }: { children: ReactNode }) {
   const { estado, error, reintentar } = useSesion();
   const lugar = useLocation();
+  const faltaClaveNueva = useRecuperacionPendiente();
+  // Volvió del mail de nueva clave: no pasa a ninguna pantalla hasta elegirla.
+  if (estado === 'con-sesion' && faltaClaveNueva) return <Navigate to="/nueva-clave" replace />;
   if (estado === 'con-sesion') return <>{children}</>;
   if (estado === 'sin-sesion' && irALaDeSiempre({ volver: true })) return null;
   if (estado === 'sin-sesion') return <Navigate to="/entrar" replace state={{ desde: lugar.pathname }} />;
@@ -111,6 +116,8 @@ export const rutas: RouteObject[] = [
   // El menú (laboratorio.tsx) va en todas: así se llega a cada pantalla sin saberse la dirección.
   { element: <Marco />, children: [
     { path: '/entrar', element: <Entrar /> },
+    // La vuelta del mail de «olvidé la clave»: ya hay sesión, falta elegir la nueva.
+    { path: '/nueva-clave', element: <NuevaClave /> },
     // Pantallas con datos de ejemplo: las enlaza el menú, nunca la app de siempre.
     { path: '/piezas', element: <Piezas /> },
     { path: '/maqueta/plantel', element: <PlantelEjemplo /> },

@@ -1,5 +1,6 @@
 import { destinoDeAuth } from '@datos/entradaAuth.js';
 import { CLAVE_NUEVA, RUTA_CLASICA } from '@datos/interruptorNueva.js';
+import { esVueltaDeRecuperacion } from './cuenta/recuperacion';
 
 /**
  * Desde el 09/11/2026 esta app es /app (vercel.json) y la de siempre vive en
@@ -39,7 +40,8 @@ export function irALaDeSiempre({ volver = false }: { volver?: boolean } = {}): b
 export function reenviarSiCorresponde(): boolean {
   if (!PUBLICADA) return false;
   const { search, hash } = window.location;
-  if (destinoDeAuth(search, hash)) {
+  // La nueva clave ya se pide acá (pantalla NuevaClave); el resto de las vueltas sigue en la de siempre.
+  if (destinoDeAuth(search, hash) && !esVueltaDeRecuperacion(search, hash)) {
     window.location.replace(`${RUTA_CLASICA}${search}${hash}`);
     return true;
   }

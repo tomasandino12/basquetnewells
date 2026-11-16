@@ -332,6 +332,11 @@ export function useRecuperarClave() {
   return useMutation({ mutationFn: async (email: string) => (await cargar()).enviarRecuperacionDeClave(email) });
 }
 
+export function useCambiarClave() {
+  const cargar = useCargarRepositorio();
+  return useMutation({ mutationFn: async (clave: string) => (await cargar()).cambiarClave(clave) });
+}
+
 export function useEntrarConGoogle() {
   const cargar = useCargarRepositorio();
   return useMutation({ mutationFn: async () => (await cargar()).entrarConGoogle() });
