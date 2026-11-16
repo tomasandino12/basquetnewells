@@ -1,3 +1,4 @@
+import { ChevronDown } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { valorContado } from '@datos/animacion.js';
 import { JUGADA_DEMO_LANDING } from '@datos/jugadaDemoLanding.js';
@@ -26,10 +27,12 @@ export function Portada({ alCrear, alEntrar }: { alCrear: () => void; alEntrar: 
   }, []);
 
   return (
-    <div className="portada flex flex-col gap-10 py-10 lg:py-16">
-      <section className="flex flex-col items-center gap-6 text-center" aria-label="Qué es Inferiores">
-        {/* El nombre del club está escrito como texto: el anillo es decorativo. textLength = circunferencia, así llena el círculo justo. */}
-        <div className="relative size-52 shrink-0 md:size-72">
+    <div className="portada flex flex-col gap-10 pb-10 lg:pb-16">
+      {/* La primera pantalla es una sola composición: ocupa todo el alto y el resto de la portada empieza recién al bajar. */}
+      <section className="relative flex min-h-svh flex-col items-center justify-center gap-6 py-10 text-center" aria-label="Qué es Inferiores">
+        {/* El nombre del club está escrito como texto: el anillo es decorativo. textLength = circunferencia, así llena el círculo justo.
+            El tamaño sigue al alto de la ventana: en una pantalla baja el escudo se achica en vez de empujar el texto fuera. */}
+        <div className="relative size-[min(13rem,30svh)] shrink-0 md:size-[min(18rem,36svh)]">
           <svg ref={anillo} viewBox="0 0 200 200" aria-hidden focusable="false" className="anillo absolute inset-0 size-full">
             <defs>
               <path id="circulo-anillo" d="M100,22 a78,78 0 1,1 0,156 a78,78 0 1,1 0,-156" />
@@ -53,9 +56,14 @@ export function Portada({ alCrear, alEntrar }: { alCrear: () => void; alEntrar: 
           <Boton variante="club" onClick={alCrear}>Crear cuenta</Boton>
           <Boton variante="contorno" className="border-sobre-negro/40 text-sobre-negro" onClick={alEntrar}>Ya tengo cuenta</Boton>
         </div>
+        {/* Avisa que hay más abajo, así lo que asoma no parece cortado. */}
+        <a href="#que-hace" className="absolute bottom-4 flex flex-col items-center gap-0.5 text-xs tracking-widest uppercase opacity-70 hover:opacity-100">
+          Qué hace
+          <ChevronDown aria-hidden className="size-5 motion-safe:animate-bounce" />
+        </a>
       </section>
 
-      <section aria-label="Qué hace" className="mx-auto grid w-full max-w-6xl gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+      <section id="que-hace" aria-label="Qué hace" className="mx-auto grid w-full max-w-6xl gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
         <Beneficio ancho titulo="El plantel se arma solo" texto="Subís la planilla del partido de la CABB y los jugadores se crean solos. Un partido trae la enorme mayoría del plantel sin escribir un nombre a mano.">
           {() => (
             <div aria-hidden className="demo">
