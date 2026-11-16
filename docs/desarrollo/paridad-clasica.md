@@ -55,7 +55,7 @@ Una fila por cada `p-*` registrada. Cada `p-*` del registro tiene que figurar ac
 | p-jug-sesion | Jugador: sesión | Sólo lectura | `/jugador/sesion` | 🔎 | | |
 | p-jug-progreso | Jugador: mi progreso | Sólo lectura | `/jugador/progreso` | 🔎 | | |
 | p-jug-jugadas | Jugador: jugadas | Sólo lectura | `/jugador/jugadas` | 🔎 | | |
-| p-fam-chicos | Familia: mis chicos | Sólo lectura | Vista de familia | 🔎 | | |
+| p-fam-chicos | Familia: mis chicos | Sólo lectura: los hijos vinculados con categoría y club, cómo anotarlos si no aparecen, volver a mirar | `/familia` (`pantallas/familia/Familia.tsx`): marco propio sin menú; `Entrada` manda ahí a quien sólo es familia | ✅ | `web/src/pantallas/familia/Familia.test.tsx::Portal de familias` | |
 
 ## Funciones que no son una `p-*` del registro
 
@@ -69,6 +69,11 @@ Lo que vive en otros archivos de la vieja y también hay que mudar antes de borr
 | x-nueva-clave | Pantalla de elegir una nueva clave: la vuelta del mail abre sesión, no deja pasar a la app hasta elegirla (8+ caracteres, repetida), link vencido lleva a entrar | `/nueva-clave` (`NuevaClave.tsx`; el aviso PASSWORD_RECOVERY lo marca `cuenta/recuperacion.ts`). La vuelta de recuperación ya no se reenvía a la de siempre | ✅ | `web/src/pantallas/NuevaClave.test.tsx::Nueva clave` | 4 |
 | x-alta-jugador | Alta de jugador / pedido de entrada con código, aprobar solicitud | Plantel (alta manual y pedidos); el pedido del propio jugador está en `SinClub` (ver x-crear-cuenta) | 🔎 | | 4 |
 | x-planilla-area | Planilla del área desde .xlsx | «Bajar planilla» en el historial de asistencia (`AsistenciaHistorial.tsx`, `asistencia/planilla.ts`): una hoja por categoría del profe, armada en el dispositivo; el lector se pide recién al bajar | ✅ | `web/src/pantallas/AsistenciaHistorial.test.tsx::baja la planilla del área` | 2 |
+| x-portada | Portada de quien llega sin cuenta (landing animada): escudo con el nombre girando, tarjetas con demos (planilla, línea de tiempo, curva y salto que cuenta, jugada animada), dos puertas, legales | `/entrar` (`Portada.tsx`, `PizarraDeLaPortada`): sin menú de la app; las animaciones corren al entrar en pantalla y se repiten al tocar | ✅ | `web/src/pantallas/Entrar.test.tsx::Entrar: portada` | 4 |
+| x-guias | Intro de primer uso por modo (entrenar, coordinar, jugar, familia) y pistas de una vez (Medir, editor de jugadas) | `guia/GuiaDePrimerUso.tsx` (misma clave guardada que la vieja) | ✅ | `web/src/pantallas/familia/Familia.test.tsx::la intro de primer uso` | |
+| x-pwa | App instalable (service worker `public/sw.js`, manifest) | `web/src/pwa.ts`, registrado en `main.tsx` | ✅ | `tests/contratoMudanzaReact.test.js::la vuelta del login llega a /app` | |
+| x-reporte-errores | Errores que nadie atrapó: aviso al usuario y registro depurado en la base | `errores/reporte.tsx` (con `PantallaRota` para una pantalla que se rompe al dibujarse) | ✅ | `web/src/errores/reporte.test.tsx::Errores que nadie atrapó` | |
+| x-recursos-ofrecer | Ofrecer un recurso a los jugadores, enviarlo a quienes faltan, borrarlo y «Mandar un recurso» por zona desde Hoy | Falta: hoy esos botones llevan a `/recursos` | ⬜ | | 3 |
 
 ## Qué se borra al final (sólo con todo en ✅ y backup confirmado)
 

@@ -8,6 +8,7 @@ import { Campo } from '../components/ui/campo';
 import { Chip, Etiqueta } from '../components/ui/chip';
 import { Consulta } from '../components/ui/consulta';
 import { Pagina } from '../components/ui/pagina';
+import { PistaDeUnaVez } from '../guia/GuiaDePrimerUso';
 import { Pizarra } from '../components/ui/pizarra';
 import { PizarraEditable, type Herramienta, type Seleccion } from '../components/ui/pizarra-editable';
 import { Hoja } from '../components/ui/sheet';
@@ -203,6 +204,7 @@ function Editor({ clubId, jugada }: { clubId: string; jugada: JugadaDelClub }) {
 
   return (
     <div className="flex flex-col gap-4">
+      <PistaDeUnaVez id="jugada-editor" />
       <header className="flex flex-wrap items-center gap-3">
         <Link to={rutaDeLaBiblioteca(jugada.id)} className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold underline decoration-linea decoration-2 underline-offset-4">
           <ArrowLeft aria-hidden className="size-4" />

@@ -85,14 +85,14 @@ export function GuiaDePrimerUso({ modo, esCoordinador = false }: { modo: Modo; e
  * Pista de una vez: un aviso arriba de una pantalla que no se entiende sola, con «Entendido». No bloquea nada:
  * si alguien la ignora y sigue, la pantalla funciona igual, y vuelve hasta que la cierre.
  */
-export function PistaDeUnaVez({ id }: { id: keyof typeof PISTAS }) {
+export function PistaDeUnaVez({ id, className = 'mb-3' }: { id: keyof typeof PISTAS; className?: string }) {
   const { sesion } = useSesion();
   const clave = claveGuia(sesion?.user.id, `pista.${id}`);
   const [vista, setVista] = useState(() => yaVista(clave, 1));
   const texto = (PISTAS as Record<string, string>)[id];
   if (!texto || vista) return null;
   return (
-    <Aviso titulo="Antes de empezar" className="mb-3">
+    <Aviso titulo="Antes de empezar" className={className}>
       <span className="flex flex-wrap items-center gap-3">
         <span>{texto}</span>
         <Boton variante="contorno" tamano="chico" onClick={() => { marcarVista(clave, 1); setVista(true); }}>Entendido</Boton>

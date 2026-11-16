@@ -72,3 +72,18 @@ describe('Entrada por rol', () => {
     await import('@testing-library/react').then(({ waitFor }) => waitFor(() => expect(router.state.location.pathname).toBe('/coordinacion')));
   });
 });
+
+describe('Pistas de una vez', () => {
+  it('Medir muestra su pista hasta que se toca «Entendido», y no vuelve', async () => {
+    const u = userEvent.setup();
+    const repo = repositorioInventado({
+      obtenerMisRoles: async () => ({ esEntrenador: true, esCoordinador: false }),
+      obtenerMisPlantelesAsignados: async () => new Set(['p-1']),
+    });
+    renderConDatos(rutas, { repo, ruta: '/medir' });
+    expect(await screen.findByText(/Elegí la prueba y a quién medís/)).toBeTruthy();
+    await u.click(screen.getByRole('button', { name: 'Entendido' }));
+    expect(screen.queryByText(/Elegí la prueba y a quién medís/)).toBeNull();
+    expect(localStorage.getItem('guia.v1.u-1.pista.medir')).toBe('{"version":1}');
+  });
+});
