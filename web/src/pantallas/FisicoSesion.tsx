@@ -18,7 +18,7 @@ export function FisicoSesion() {
     <ConPlantel
       plantelId={plantelId}
       volver={{ a: `/fisico`, texto: 'Plan de fuerza' }}
-      soloCuerpoTecnico="La coordinación ve el plan de fuerza en la app anterior."
+      soloCuerpoTecnico="El plan de fuerza lo ve y lo carga el cuerpo técnico de cada categoría."
     >
       {(p) => <Sesion {...p} planId={planId!} sesionId={sesionId!} />}
     </ConPlantel>

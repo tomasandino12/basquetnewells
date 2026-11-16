@@ -27,12 +27,14 @@ import { gzipSync } from 'node:zlib';
  * app de siempre: el total llegó a ~413 kB y el tope pasó de 410 a 420.
  * 16/11 (junta): cuenta y mails, planillas, ejercicios editables y editor de jugadas, todo junto, llegaron a
  * ~433 kB; el tope pasó de 420 a 440. Cada rama había medido sola.
+ * 16/11 (portada): la portada de entrada con sus animaciones, el portal de familias, las guías de primer uso, el
+ * reporte de errores y la edición de la ficha llegaron a ~441 kB; el tope pasó de 440 a 460.
  *
  * Mide web/dist, que sólo existe después de `npm --prefix web run build`: sin
  * armar, se saltea (Vercel la arma en el deploy, no en las pruebas).
  */
 
-const PRESUPUESTO_KB = 440;
+const PRESUPUESTO_KB = 460;
 const DIST = 'web/dist/assets';
 const LECTOR_XLSX = /^xlsx-/;
 

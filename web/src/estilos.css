@@ -193,3 +193,72 @@ body::before {
 /* Las líneas y los polígonos de Datos aparecen suaves al prender una (se apaga con «reducir movimiento»). */
 @keyframes grafico-entra { from { opacity: 0; } to { opacity: 1; } }
 .grafico-entra { animation: grafico-entra var(--dur-2, 240ms) ease-out both; }
+
+/* ---- Portada de entrada (la landing de siempre, ahora en React) ----
+   Las demos son gráficos chicos con datos INVENTADOS y decorativos (aria-hidden). Corren una sola vez:
+   quedan pausadas en su primer cuadro hasta que su tarjeta entra en pantalla (Portada.tsx le pone
+   .en-vista) y se repiten al pasar el mouse o tocar. La única animación continua es el anillo del escudo,
+   que se pausa fuera de pantalla. Sólo se animan transform y opacity; el texto se ve desde el primer cuadro. */
+.portada {
+  --dur-demo: 1400ms;
+  --dur-giro: 25s;
+  --pub-tarjeta: rgb(255 255 255 / 0.04);
+  --pub-borde: rgb(255 255 255 / 0.14);
+  --pub-fondo: var(--negro);
+}
+.portada .anillo { animation: p-giro var(--dur-giro) linear infinite; }
+.portada .anillo.quieto { animation-play-state: paused; }
+@keyframes p-giro { from { transform: rotate(-360deg); } }
+.portada .ben { position: relative; background: var(--pub-tarjeta); border: 1px solid var(--pub-borde); transition: transform var(--dur-2) var(--ease-salida); animation: p-subir var(--dur-3) var(--ease-salida) backwards; }
+@keyframes p-subir { from { transform: translateY(0.75rem); } }
+.portada .ben:nth-child(2) { animation-delay: 60ms; }
+.portada .ben:nth-child(3) { animation-delay: 120ms; }
+.portada .ben:nth-child(4) { animation-delay: 180ms; }
+.portada .ben:nth-child(5) { animation-delay: 240ms; }
+.portada .ben:nth-child(6) { animation-delay: 300ms; }
+.portada .ben::after { content: ''; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; box-shadow: 0 0 0 1px var(--club), 0 0 24px rgb(217 18 46 / 0.35); opacity: 0; transition: opacity var(--dur-2) var(--ease-salida); }
+@media (hover: hover) {
+  .portada .ben:hover { transform: translateY(-4px); }
+  .portada .ben:hover::after { opacity: 1; }
+}
+.portada .demo { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+.portada .ben:not(.en-vista) .demo *, .portada .ben:not(.en-vista) .demo *::before { animation-play-state: paused; }
+@keyframes p-entra-demo { from { transform: translateY(0.5rem); opacity: 0; } }
+@keyframes p-aparece-demo { from { opacity: 0; } }
+@keyframes p-destapa-demo { from { transform: translateX(0); } }
+@keyframes p-barre-fila { from { opacity: 0.4; } }
+@keyframes p-llena-demo { from { transform: scaleY(0); } }
+@keyframes p-nodo-demo { from { transform: scale(0); opacity: 0; } }
+.portada .planilla { background: var(--pub-fondo); border: 1px solid var(--pub-borde); border-radius: 0.375rem; overflow: hidden; font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.72rem; min-width: 13.5rem; }
+.portada .planilla .fila { position: relative; display: grid; grid-template-columns: 2rem 1fr 2rem; gap: 0.5rem; padding: 0.25rem 0.5rem; }
+.portada .planilla .fila + .fila { border-top: 1px solid var(--pub-borde); }
+.portada .planilla .fila > :first-child, .portada .planilla .fila > :last-child { text-align: right; }
+.portada .planilla .fila.cab { background: var(--pub-tarjeta); opacity: 0.8; font-weight: 500; }
+.portada .planilla .fila:not(.cab)::before { content: ''; position: absolute; inset: 0; background: var(--club); opacity: 0; pointer-events: none; animation: p-barre-fila var(--dur-3) var(--ease-salida); }
+.portada .planilla .fila:nth-child(2)::before { animation-delay: 150ms; }
+.portada .planilla .fila:nth-child(3)::before { animation-delay: 450ms; }
+.portada .planilla .fila:nth-child(4)::before { animation-delay: 750ms; }
+.portada .planilla .fila:nth-child(5)::before { animation-delay: 1050ms; }
+.portada .planilla .fila:nth-child(6)::before { animation-delay: 1350ms; }
+.portada .chips-j { display: flex; flex-wrap: wrap; gap: 0.5rem; flex: 1 1 12rem; }
+.portada .chips-j span { font-family: var(--font-mono, ui-monospace, monospace); font-weight: 500; font-size: 0.72rem; background: var(--pub-fondo); border: 1px solid var(--pub-borde); border-radius: 0.375rem; padding: 0.25rem 0.5rem; animation: p-entra-demo var(--dur-3) var(--ease-salida) backwards; }
+.portada .chips-j span:nth-child(1) { animation-delay: 300ms; }
+.portada .chips-j span:nth-child(2) { animation-delay: 600ms; }
+.portada .chips-j span:nth-child(3) { animation-delay: 900ms; }
+.portada .chips-j span:nth-child(4) { animation-delay: 1200ms; }
+.portada .chips-j span:nth-child(5) { animation-delay: 1500ms; }
+.portada .chips-j span:nth-child(6) { animation-delay: 1800ms; }
+.portada .curva-demo { fill: none; stroke: var(--club); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.portada .tapa { fill: #1d1819; transform: translateX(100%); animation: p-destapa-demo var(--dur-demo) var(--ease-salida) backwards; }
+.portada .punto { fill: var(--club); animation: p-aparece-demo var(--dur-3) var(--ease-salida) var(--dur-demo) backwards; }
+.portada .cifra-tiro { fill: var(--sobre-negro); font-family: var(--font-mono, ui-monospace, monospace); font-weight: 600; animation: p-aparece-demo var(--dur-3) var(--ease-salida) var(--dur-demo) backwards; }
+.portada .sube-osc { font-family: var(--font-mono, ui-monospace, monospace); font-weight: 600; font-size: 0.72rem; color: var(--lima); background: var(--pub-fondo); border-radius: 0.375rem; padding: 0.25rem 0.5rem; animation: p-aparece-demo var(--dur-3) var(--ease-salida) var(--dur-demo) backwards; }
+.portada .linea-t { list-style: none; margin: 0; padding: 0; position: relative; display: grid; gap: 0.75rem; flex: 1 1 100%; }
+.portada .linea-t li { position: relative; padding-left: 1.5rem; font-size: 0.8rem; line-height: 1.2rem; }
+.portada .linea-t::before { content: ''; position: absolute; left: calc(0.3125rem - 1px); top: 0.6rem; bottom: 0.6rem; width: 2px; background: var(--club); transform-origin: top; animation: p-llena-demo var(--dur-demo) var(--ease-salida) backwards; }
+.portada .linea-t li::before { content: ''; position: absolute; left: 0; top: 0.3rem; width: 0.625rem; height: 0.625rem; border-radius: 50%; background: var(--club); animation: p-nodo-demo var(--dur-3) var(--ease-salida) backwards; }
+.portada .linea-t li:nth-child(2)::before { animation-delay: 300ms; }
+.portada .linea-t li:nth-child(3)::before { animation-delay: 600ms; }
+@media (prefers-reduced-motion: reduce) {
+  .portada .anillo, .portada .ben, .portada .demo *, .portada .demo *::before { animation: none !important; }
+}

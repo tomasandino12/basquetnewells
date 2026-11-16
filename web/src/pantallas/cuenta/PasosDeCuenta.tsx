@@ -33,7 +33,7 @@ export function PasosDeCuenta({ children, sinAcceso = false }: { children: React
       </Pagina>
     );
   }
-  if (usuario.isPending || legal.isPending) return <Pagina><Cargando filas={2} /></Pagina>;
+  if (usuario.isPending || legal.isPending) return <Pagina><Cargando titulo filas={3} /></Pagina>;
   if (usuario.data && necesitaNombre(usuario.data)) return <PedirNombre sugerido={nombreSugerido(usuario.data)} />;
   if (!legal.data) return <AceptarLegal />;
   // El acceso se pregunta recién con nombre y Términos resueltos: una cuenta incompleta no pasa a nada.
@@ -43,7 +43,7 @@ export function PasosDeCuenta({ children, sinAcceso = false }: { children: React
 
 function ConAcceso({ children, mail }: { children: ReactNode; mail: string | undefined }) {
   const acceso = useAcceso();
-  if (acceso.estado === 'cargando') return <Pagina><Cargando filas={2} /></Pagina>;
+  if (acceso.estado === 'cargando') return <Pagina><Cargando titulo filas={3} /></Pagina>;
   if (acceso.estado === 'error') {
     return (
       <Pagina>

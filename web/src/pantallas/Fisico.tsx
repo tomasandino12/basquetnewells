@@ -23,7 +23,7 @@ export function Fisico() {
     <ConPlantel
       plantelId={plantelId}
       volver={{ a: `/plantel`, texto: 'Plantel' }}
-      soloCuerpoTecnico="La coordinación ve el plan de fuerza en la app anterior."
+      soloCuerpoTecnico="El plan de fuerza lo ve y lo carga el cuerpo técnico de cada categoría."
     >
       {(p) => <PlanDeLaCategoria {...p} />}
     </ConPlantel>

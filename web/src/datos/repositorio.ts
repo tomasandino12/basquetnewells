@@ -681,6 +681,8 @@ export interface Repositorio extends RepositorioCoord {
   darAlta(lesionId: string, hasta: string): Promise<void>;
   sacarDelPlantel(clubId: string, jugadorId: string, plantelId: string): Promise<void>;
   /** `null` es «no se sabe». */
+  /** No tira nunca: si no se puede guardar, el registro se pierde (es lo que se hace cuando se cayó la red). */
+  guardarErrorDeCliente(registro: { mensaje: string; stack: string | null; pantalla: string; agente: string }, clubId: string | null): Promise<void>;
   actualizarFechaNacimiento(clubId: string, jugadorId: string, fechaNacimiento: string | null): Promise<void>;
 }
 

@@ -376,3 +376,62 @@ export function Pizarra({ datos, nosotrosDefiende = false, etiqueta, className }
     </div>
   );
 }
+
+/**
+ * La pizarra de la portada: la misma cancha y el mismo motor que el visor, sin controles. Reposa en el primer
+ * paso (con su trazo a la vista, para que no sea una cancha vacía) y, cada vez que `corre` cambia, recorre los
+ * pasos una vez. Con movimiento reducido queda en el primer paso.
+ */
+export function PizarraDeLaPortada({ datos, corre }: { datos: DatosDePizarra; corre: number }) {
+  const idFlecha = `pz-${useId().replace(/:/g, '')}`;
+  const [cuadro, setCuadro] = useState<{ k: number; t: number } | null>(null);
+  const raf = useRef(0);
+
+  useEffect(() => {
+    cancelAnimationFrame(raf.current);
+    setCuadro(null);
+    if (corre === 0 || reducirMovimiento()) return;
+    const total = datos.pasos.length;
+    const inicio = performance.now();
+    const marcar = (ahora: number) => {
+      const avance = (ahora - inicio) / DURACION_PASO_MS;
+      if (avance >= total) {
+        setCuadro({ k: total - 1, t: 1 });
+        return;
+      }
+      setCuadro({ k: Math.floor(avance), t: avance % 1 });
+      raf.current = requestAnimationFrame(marcar);
+    };
+    raf.current = requestAnimationFrame(marcar);
+    return () => cancelAnimationFrame(raf.current);
+  }, [corre, datos]);
+
+  const alto = altoDe(datos.cancha);
+  const k = cuadro ? cuadro.k : 0;
+  const estado = cuadro ? estadoAnimado(datos, cuadro.k, cuadro.t) : estadoQuieto(datos, 0);
+  const inicioDelPaso = estadoQuieto(datos, k);
+  return (
+    <svg
+      aria-hidden
+      viewBox={`${-MARGEN} ${-MARGEN} ${W + MARGEN * 2} ${alto + MARGEN * 2}`}
+      preserveAspectRatio="xMidYMid meet"
+      className="mx-auto block h-auto w-full max-w-sm border border-linea bg-sup"
+    >
+      <defs>
+        <marker id={idFlecha} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--tinta)" />
+        </marker>
+      </defs>
+      <Cancha cancha={datos.cancha} />
+      {(datos.pasos[k]?.acciones ?? []).map((a, i) => (
+        <Trazo key={i} a={a} inicio={inicioDelPaso} cancha={datos.cancha} alto={alto} idFlecha={idFlecha} />
+      ))}
+      {datos.fichas.map((f) => (
+        <Ficha key={f.id} ficha={f} p={estado.posiciones.get(f.id) ?? f} alto={alto} nosotrosDefiende={false} />
+      ))}
+      {estado.pelotas.map((p, i) => (
+        <circle key={i} cx={(p.x + 0.026) * W} cy={(p.y + 0.026) * alto} r={5} fill="var(--ambar)" stroke="var(--tinta)" strokeWidth={1.5} />
+      ))}
+    </svg>
+  );
+}

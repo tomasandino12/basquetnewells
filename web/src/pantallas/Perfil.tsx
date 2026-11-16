@@ -1,7 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { inicialesDeNombre, LARGO_MAXIMO_NOMBRE, nombreDeUsuario, normalizarNombre, rolesLegibles } from '@datos/cuenta.js';
 import { LineaCargando } from '../components/ui/estados';
-import { irALaDeSiempre } from '../clasica';
 import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
 import { Campo } from '../components/ui/campo';
@@ -14,7 +13,6 @@ import { useSalir } from '../datos/consultas';
 import { useCategoriasDelEntrenador, useDatosDelPerfil, useGuardarNombre } from '../datos/consultasPerfil';
 import { useSesion } from '../datos/contexto';
 import { esSinConexion, mensajeDeError } from '../datos/errores';
-import { guardarNueva, nuevaPrendida } from '../perfil/interruptorNueva';
 import { aplicarTema, guardarTema, useTema } from '../tema';
 import { TituloDeHoja } from './familias/piezas';
 
@@ -77,11 +75,6 @@ export function Perfil() {
           <Panel titulo="Apariencia">
             <SelectorDeTema />
           </Panel>
-          {datos.esEntrenador && (
-            <Panel titulo="Versión de la app">
-              <SelectorDeVersion alAvisar={setHecho} />
-            </Panel>
-          )}
           <div className="flex flex-col items-start gap-3">
             <Boton variante="contorno" onClick={() => salir.mutate()} disabled={salir.isPending}>
               {salir.isPending ? 'Saliendo…' : 'Cerrar sesión'}
@@ -173,33 +166,6 @@ function SelectorDeTema() {
         }}
       />
       {sinRecordar && <p role="status" className="mt-1 text-sm text-gris">No se pudo recordar en este teléfono.</p>}
-    </>
-  );
-}
-
-/** Apagar la versión nueva manda a la de siempre en este teléfono. Si no se puede guardar, queda como estaba. */
-function SelectorDeVersion({ alAvisar }: { alAvisar: (texto: string | null) => void }) {
-  const [prendida, setPrendida] = useState(nuevaPrendida);
-  const [error, setError] = useState<string | null>(null);
-  return (
-    <>
-      <Interruptor
-        etiqueta="Versión nueva de la app"
-        descripcion="Si la apagás, volvés a la versión de siempre en este teléfono."
-        activo={prendida}
-        alCambiar={(nueva) => {
-          if (!guardarNueva(nueva)) {
-            setError('No se pudo guardar en este teléfono.');
-            return;
-          }
-          setError(null);
-          setPrendida(nueva);
-          if (nueva) alAvisar('La versión nueva quedó prendida.');
-          // Sin la de siempre a mano (en la compu) no hay adónde ir: el cambio vale la próxima vez que se abra.
-          else if (!irALaDeSiempre()) alAvisar('Listo: la próxima vez que abras la app se abre la de siempre.');
-        }}
-      />
-      {error && <p role="alert" className="mt-1 text-sm font-semibold text-club-texto">{error}</p>}
     </>
   );
 }

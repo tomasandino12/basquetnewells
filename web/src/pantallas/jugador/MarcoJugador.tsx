@@ -3,6 +3,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 import escudo from '../../../../public/escudo.png';
 import { PasosDeCuenta } from '../cuenta/PasosDeCuenta';
+import { GuiaDePrimerUso } from '../../guia/GuiaDePrimerUso';
 import { Consulta } from '../../components/ui/consulta';
 import { Pagina, TOPE_DE_PAGINA } from '../../components/ui/pagina';
 import { useSesion } from '../../datos/contexto';
@@ -92,6 +93,7 @@ export function MarcoJugador() {
           <Pagina>
             <Outlet />
           </Pagina>
+          <GuiaDePrimerUso modo="jugar" />
         </RequiereJugador>
       </div>
 

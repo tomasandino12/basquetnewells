@@ -42,7 +42,7 @@ export function Medir() {
     <ConPlantel
       plantelId={plantelId}
       volver={{ a: '/hoy', texto: 'Hoy' }}
-      soloCuerpoTecnico="La coordinación ve las mediciones en la app anterior."
+      soloCuerpoTecnico="La coordinación ve el panorama del club en Coordinación, no las mediciones de cada chico."
     >
       {(p) => <MedirDeLaCategoria {...p} />}
     </ConPlantel>

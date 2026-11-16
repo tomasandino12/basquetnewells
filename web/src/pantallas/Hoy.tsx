@@ -16,11 +16,8 @@ import type { PreviaDelPlantel } from '../datos/repositorio';
 import { armarResumen, fechaCorta, type Valor, type Variacion, type Zona } from '../hoy/resumen';
 import { cn } from '../lib/cn';
 import { plantelesVisibles } from '../plantel/visibles';
-import { APP_DE_SIEMPRE } from '../clasica';
 import { MisionesDeHoy } from './MisionesRapidas';
 
-// Lo que todavía se hace en la app anterior (cargar mediciones y partidos, fijar metas, recursos, misiones).
-const APP_ANTERIOR = APP_DE_SIEMPRE;
 
 // Una sola acción lima por pantalla (Tomar asistencia); el resto, de contorno o de línea.
 const ENLACE_BOTON = claseBoton({ variante: 'contorno', tamano: 'chico' });
@@ -75,8 +72,8 @@ export function Hoy() {
                 if (r.esCoordinador && !r.esEntrenador) {
                   return (
                     <Vacio icono={Users} titulo="El tiro lo ve el cuerpo técnico">
-                      La coordinación ve la categoría en conjunto, no las mediciones de cada chico. El panorama del club está en la{' '}
-                      <a href={APP_ANTERIOR} className="font-semibold underline">app anterior</a>.
+                      La coordinación ve la categoría en conjunto, no las mediciones de cada chico. El panorama del club está en{' '}
+                      <Link to="/coordinacion" className="font-semibold underline">Coordinación</Link>.
                     </Vacio>
                   );
                 }
@@ -130,8 +127,8 @@ export function ContenidoDeHoy({ clubId, plantelId, categoria }: { clubId: strin
                   accion={
                     <div className="flex flex-col gap-2">
                       <Link to={`/plantel`} className={ENLACE_FUERTE}>Cargar el plantel</Link>
-                      <a href={APP_ANTERIOR} className={ENLACE_BOTON}>Cargar un partido</a>
-                      <a href={APP_ANTERIOR} className={ENLACE_BOTON}>Hacer la primera medición</a>
+                      <Link to="/datos/cargar-partido" className={ENLACE_BOTON}>Cargar un partido</Link>
+                      <Link to="/medir" className={ENLACE_BOTON}>Hacer la primera medición</Link>
                     </div>
                   }
                 >
@@ -144,7 +141,7 @@ export function ContenidoDeHoy({ clubId, plantelId, categoria }: { clubId: strin
                   <p className="text-sm">
                     Hubo una batería el {fechaCorta(resumen.fecha)} en {categoria}, pero quedó sin ninguna medición: todos los jugadores figuran como ausentes.
                   </p>
-                  <a href={APP_ANTERIOR} className={ENLACE_FUERTE}>Hacer una medición</a>
+                  <Link to="/medir" className={ENLACE_FUERTE}>Hacer una medición</Link>
                 </div>
               )}
 
@@ -214,13 +211,13 @@ function Tiro({ resumen, categoria, plantelId, misiones }: { resumen: Completo; 
                         ? `Una sola batería: ${fechaCorta(serie[0].fecha)} · ${serie[0].valor.anotados}/${serie[0].valor.intentos}`
                         : `${serie.length} baterías · primera ${serie[0].valor.pct}% (${serie[0].valor.anotados}/${serie[0].valor.intentos}) · última ${serie[serie.length - 1].valor.pct}% (${serie[serie.length - 1].valor.anotados}/${serie[serie.length - 1].valor.intentos})`}
                     </span>
-                    <a
-                      href={APP_ANTERIOR}
+                    <Link
+                      to="/datos"
                       aria-label="Ver la evolución completa en Datos"
                       className="inline-flex min-h-11 shrink-0 items-center font-semibold text-tinta underline decoration-linea underline-offset-4 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:decoration-tinta"
                     >
                       Ver todo ›
-                    </a>
+                    </Link>
                   </p>
                 </div>
               )}
@@ -292,7 +289,7 @@ function Tiro({ resumen, categoria, plantelId, misiones }: { resumen: Completo; 
       )}
 
       <div className="flex flex-wrap gap-2">
-        <a href={APP_ANTERIOR} className={ENLACE_LINEA}>Cargar otra medición</a>
+        <Link to="/medir" className={ENLACE_LINEA}>Cargar otra medición</Link>
         <Link to="/metas" className={ENLACE_LINEA}>{hayMetas ? 'Editar las metas' : 'Fijar las metas'}</Link>
       </div>
 
@@ -367,13 +364,13 @@ function FilaDeZona({ zona }: { zona: Zona }) {
         <span className="cifra w-12 text-right font-titulo text-xl leading-none font-bold">{pct === null ? '—' : `${pct}%`}</span>
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-        <a
-          href={APP_ANTERIOR}
+        <Link
+          to="/recursos"
           aria-label={`Mandar un recurso para ${zona.nombre}`}
           className="inline-flex min-h-11 items-center text-sm font-semibold text-club-texto underline decoration-1 underline-offset-4 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta"
         >
           Mandar un recurso
-        </a>
+        </Link>
         {zona.meta !== null && (
           <span className={llego ? 'font-semibold text-sube' : 'text-gris'}>{llego ? '✓ llegó a la meta' : `meta ${zona.meta}%`}</span>
         )}

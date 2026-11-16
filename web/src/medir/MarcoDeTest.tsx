@@ -24,7 +24,7 @@ export interface Categoria {
 export function PantallaDeTest({ children }: { children: (c: Categoria & { jugadores: JugadorDelPlantel[] }) => ReactNode }) {
   const plantelId = usePlantelId();
   return (
-    <ConPlantel plantelId={plantelId} volver={{ a: '/medir', texto: 'Medir' }} soloCuerpoTecnico="La coordinación ve las mediciones en la app anterior.">
+    <ConPlantel plantelId={plantelId} volver={{ a: '/medir', texto: 'Medir' }} soloCuerpoTecnico="La coordinación ve el panorama del club en Coordinación, no las mediciones de cada chico.">
       {(c) => <ConJugadores {...c}>{children}</ConJugadores>}
     </ConPlantel>
   );

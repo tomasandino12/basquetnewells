@@ -44,6 +44,10 @@ import { MarcoJugador } from './pantallas/jugador/MarcoJugador';
 import { ArmarMisiones } from './pantallas/ArmarMisiones';
 import { MisionesPartido } from './pantallas/MisionesPartido';
 import { Perfil } from './pantallas/Perfil';
+import { FamiliaChicos, MarcoFamilia } from './pantallas/familia/Familia';
+import { GuiaDePrimerUso } from './guia/GuiaDePrimerUso';
+import { useDatosDelPerfil } from './datos/consultasPerfil';
+import { useMisClubes, useMisRoles } from './datos/consultas';
 import { CoordFamilias } from './pantallas/coord/CoordFamilias';
 import { CoordFinanzas } from './pantallas/coord/CoordFinanzas';
 import { CoordFormularios } from './pantallas/coord/CoordFormularios';
@@ -55,9 +59,22 @@ import { RequiereCoordinacion } from './pantallas/coord/MarcoCoord';
 
 /** La puerta de entrada: quien tiene cuenta de jugador va a lo suyo; el resto, a Hoy. */
 function Entrada() {
-  const ficha = useMiFicha();
-  if (ficha.isPending) return <Pagina><Cargando titulo filas={3} /></Pagina>;
-  return <Navigate to={ficha.data ? '/jugador/fisico' : '/hoy'} replace />;
+  const perfil = useDatosDelPerfil();
+  if (!perfil.rolesListos) return <Pagina><Cargando titulo filas={3} /></Pagina>;
+  if (perfil.esJugador) return <Navigate to="/jugador/fisico" replace />;
+  // Una familia (sin club propio) tiene su portal: ve a sus hijos y nada más.
+  if (perfil.esFamilia && !perfil.esEntrenador && !perfil.esCoordinador) return <Navigate to="/familia" replace />;
+  // Quien sólo coordina no tiene categorías propias: arranca en el panorama del club.
+  if (perfil.esCoordinador && !perfil.esEntrenador) return <Navigate to="/coordinacion" replace />;
+  return <Navigate to="/hoy" replace />;
+}
+
+/** La intro de primer uso de quien entrena o coordina (entrenar gana si es las dos cosas, como siempre). */
+function GuiaDelCuerpoTecnico() {
+  const club = useMisClubes().data?.[0];
+  const roles = useMisRoles(club?.id).data;
+  if (!roles || (!roles.esEntrenador && !roles.esCoordinador)) return null;
+  return <GuiaDePrimerUso modo={roles.esEntrenador ? 'entrenar' : 'coordinar'} esCoordinador={roles.esCoordinador} />;
 }
 
 /**
@@ -71,6 +88,7 @@ export function RequiereSesion() {
       <ProveedorPlantelActivo>
         <BarraDeCategorias />
         <Outlet />
+        <GuiaDelCuerpoTecnico />
       </ProveedorPlantelActivo>
     </PuertaDeSesion>
   );
@@ -180,6 +198,8 @@ export const rutas: RouteObject[] = [
   ] },
   // La vista del jugador tiene su propio marco (barra de abajo con sus cinco destinos) y no pasa por RequiereSesion:
   // quien entra es un jugador, sin club ni categoría activa. El marco mismo pide la ficha y la sesión.
+  // El portal de familias, igual: su propio marco, sin menú. Una familia sólo ve a sus hijos.
+  { element: <MarcoFamilia />, children: [{ path: '/familia', element: <FamiliaChicos /> }] },
   { element: <MarcoJugador />, children: [
     { path: '/jugador', element: <Navigate to="/jugador/fisico" replace /> },
     { path: '/jugador/fisico', element: <JugadorFisico /> },
