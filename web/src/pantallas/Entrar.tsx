@@ -33,7 +33,8 @@ export function Entrar() {
   const [esJugador, setEsJugador] = useState(false);
   const [problema, setProblema] = useState<string | null>(null);
 
-  if (sesion.estado === 'cargando') return <Pagina><Cargando titulo filas={3} /></Pagina>;
+  // Sobre el mismo negro de la portada: así no hay un destello claro antes de que aparezca.
+  if (sesion.estado === 'cargando') return <div className="min-h-svh bg-negro"><Pagina><Cargando titulo filas={3} className="pt-10 opacity-30" /></Pagina></div>;
   if (sesion.estado === 'con-sesion') return <Navigate to={desde} replace />;
 
   const cambiarModo = (m: Modo) => {
@@ -76,8 +77,9 @@ export function Entrar() {
   const mailDeConfirmacion = crear.isSuccess && !crear.data.sesion;
 
   if (modo === 'portada') {
+    // Un resplandor rojo apagado arriba (el rojo de la camiseta) sobre el negro del club.
     return (
-      <div className="min-h-svh bg-negro text-sobre-negro">
+      <div className="min-h-svh bg-negro bg-[radial-gradient(ellipse_80%_45%_at_50%_0%,rgb(168_5_25/0.45),transparent)] text-sobre-negro">
         <Pagina><Portada alCrear={() => cambiarModo('crear')} alEntrar={() => cambiarModo('entrar')} /></Pagina>
       </div>
     );

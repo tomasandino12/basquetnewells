@@ -27,36 +27,35 @@ export function Portada({ alCrear, alEntrar }: { alCrear: () => void; alEntrar: 
 
   return (
     <div className="portada flex flex-col gap-10 py-10 lg:py-16">
-      <section className="flex flex-col-reverse items-center gap-8 text-center md:flex-row md:justify-between md:text-left" aria-label="Qué es Inferiores">
-        <div className="max-w-2xl">
-          <p className="font-mono text-xs tracking-widest text-sobre-negro uppercase opacity-70">Inferiores · Newell&apos;s Old Boys</p>
-          <h1 className="mt-3 font-titulo text-5xl leading-none font-bold uppercase md:text-6xl">
-            Lo que se trabaja en inferiores, <span className="text-club">queda</span>
-          </h1>
-          <p className="mt-4 text-lg opacity-80">
-            Partidos, mediciones y ejercicios de las formativas en un solo lugar, que sigue estando cuando cambia el cuerpo técnico.
-          </p>
-        </div>
-        <div className="relative size-36 shrink-0">
-          {/* El nombre del club está escrito como texto: el anillo es decorativo. textLength = circunferencia, así llena el círculo justo. */}
+      <section className="flex flex-col items-center gap-6 text-center" aria-label="Qué es Inferiores">
+        {/* El nombre del club está escrito como texto: el anillo es decorativo. textLength = circunferencia, así llena el círculo justo. */}
+        <div className="relative size-52 shrink-0 md:size-72">
           <svg ref={anillo} viewBox="0 0 200 200" aria-hidden focusable="false" className="anillo absolute inset-0 size-full">
             <defs>
               <path id="circulo-anillo" d="M100,22 a78,78 0 1,1 0,156 a78,78 0 1,1 0,-156" />
             </defs>
-            <text fontSize="15" className="fill-current font-titulo font-semibold opacity-60" letterSpacing="0.6">
+            <text fontSize="15" className="fill-current font-titulo font-semibold opacity-70" letterSpacing="0.6">
               <textPath href="#circulo-anillo" textLength="490" lengthAdjust="spacing">BÁSQUET · NEWELL&apos;S OLD BOYS · </textPath>
             </text>
           </svg>
           <img src={escudo} alt="" width={96} height={96} className="absolute inset-[26%] size-[48%] object-contain" />
         </div>
+        <div className="max-w-3xl">
+          <p className="font-mono text-xs tracking-widest text-sobre-negro uppercase opacity-70">Inferiores · Newell&apos;s Old Boys</p>
+          <h1 className="mt-3 font-titulo text-5xl leading-none font-bold uppercase md:text-7xl">
+            Lo que se trabaja en inferiores, <span className="text-club">queda</span>
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-lg opacity-80 md:text-xl">
+            Partidos, mediciones y ejercicios de las formativas en un solo lugar, que sigue estando cuando cambia el cuerpo técnico.
+          </p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-3">
+          <Boton variante="club" onClick={alCrear}>Crear cuenta</Boton>
+          <Boton variante="contorno" className="border-sobre-negro/40 text-sobre-negro" onClick={alEntrar}>Ya tengo cuenta</Boton>
+        </div>
       </section>
 
-      <div className="flex flex-wrap justify-center gap-3 md:justify-start">
-        <Boton onClick={alCrear}>Crear cuenta</Boton>
-        <Boton variante="contorno" className="border-sobre-negro/40 text-sobre-negro" onClick={alEntrar}>Ya tengo cuenta</Boton>
-      </div>
-
-      <section aria-label="Qué hace" className="mx-auto grid w-full max-w-5xl gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+      <section aria-label="Qué hace" className="mx-auto grid w-full max-w-6xl gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
         <Beneficio ancho titulo="El plantel se arma solo" texto="Subís la planilla del partido de la CABB y los jugadores se crean solos. Un partido trae la enorme mayoría del plantel sin escribir un nombre a mano.">
           {() => (
             <div aria-hidden className="demo">
@@ -204,7 +203,7 @@ function Beneficio({ titulo, texto, ancho, alta, horizontal, children }: { titul
         'ben flex flex-col gap-3 rounded-tarjeta p-5 lg:last:col-span-3',
         ancho && 'sm:col-span-2',
         // Bento: en dos columnas la «alta» ocupa el ancho; en tres, una columna y dos filas.
-        alta && 'sm:col-span-2 lg:col-span-1 lg:row-span-2',
+        alta && 'sm:col-span-2 lg:col-span-1 lg:row-span-2 lg:justify-center',
         // La pizarra es cuadrada: al costado del texto la tarjeta no queda altísima.
         horizontal && 'lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:content-center lg:gap-x-6 lg:[&>div]:row-span-2 lg:[&>h2]:col-start-2 lg:[&>h2]:self-end lg:[&>p]:col-start-2 lg:[&>p]:self-start',
         enVista && 'en-vista',
