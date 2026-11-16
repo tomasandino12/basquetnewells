@@ -33,7 +33,7 @@ const PIZARRA: DatosDePizarra = {
 };
 
 const EJERCICIOS = [
-  ej('Pase de pecho', { tema: 'pase', descripcion: 'Dos filas enfrentadas', material: '2 pelotas', jugadores: 8, tieneNotas: true, cantidadVariaciones: 2 }),
+  ej('Pase de pecho', { tema: 'pase', descripcion: 'Dos filas enfrentadas', material: '2 pelotas', jugadores: '8', tieneNotas: true, cantidadVariaciones: 2 }),
   ej('Cierre de línea de pase', { tema: 'defensa' }),
   ej('Sentadilla con salto', { tema: 'fisico', enlace: 'https://ejemplo.test/video' }),
 ];
@@ -131,10 +131,11 @@ describe('Recursos: ejercicios', () => {
     expect(within(lista()).getByRole('button', { name: /Sin video/ }).querySelector('img')).toBeNull();
   });
 
-  it('la biblioteca vacía explica qué es y dónde se carga', async () => {
+  it('la biblioteca vacía explica qué es y ofrece cargar el primero acá, sin mandar a la app de siempre', async () => {
     abrir(repo({ obtenerEjercicios: async () => [] }));
     expect(await screen.findByText('La biblioteca está vacía')).toBeTruthy();
-    expect(screen.getAllByRole('link', { name: 'la app de siempre' }).length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: /Cargar un ejercicio/ })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'la app de siempre' })).toBeNull();
   });
 
   it('si no se pueden cargar, lo dice con una salida para reintentar', async () => {

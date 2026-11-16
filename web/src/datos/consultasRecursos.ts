@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCargarRepositorio } from './contexto';
-import type { DatosDePizarra } from './repositorio';
+import type { CamposDeEjercicio, CamposDeVariacion, DatosDePizarra, Repositorio } from './repositorio';
 
 // Recursos: la biblioteca de ejercicios y de jugadas del club. Las claves empiezan con «recursos».
 
@@ -86,4 +86,47 @@ export function useDuplicarJugada(clubId: string) {
       (await cargar()).crearJugada({ clubId, ...datos }),
     onSettled: () => consultas.invalidateQueries({ queryKey: ['recursos', 'jugadas'] }),
   });
+}
+
+/**
+ * Escribir en la biblioteca: cada acción refresca la lista y el detalle (así el título nuevo o la
+ * nota recién anotada se ven sin recargar). `hacer` recibe el repositorio ya cargado.
+ */
+function useEscrituraDeEjercicios<T>(hacer: (repo: Repositorio, datos: T) => Promise<unknown>) {
+  const cargar = useCargarRepositorio();
+  const consultas = useQueryClient();
+  return useMutation({
+    mutationFn: async (datos: T) => hacer(await cargar(), datos),
+    onSettled: () => consultas.invalidateQueries({ queryKey: ['recursos', 'ejercicio'] }).then(() => consultas.invalidateQueries({ queryKey: ['recursos', 'ejercicios'] })),
+  });
+}
+
+/** Sin `ejercicioId` crea uno; con él, edita ese. */
+export function useGuardarEjercicio(clubId: string) {
+  return useEscrituraDeEjercicios<{ ejercicioId?: string; campos: CamposDeEjercicio }>(async (repo, { ejercicioId, campos }) =>
+    ejercicioId ? repo.actualizarEjercicio(clubId, ejercicioId, campos) : repo.crearEjercicio({ clubId, ...campos }),
+  );
+}
+
+export function useBorrarEjercicio(clubId: string) {
+  return useEscrituraDeEjercicios<string>((repo, ejercicioId) => repo.borrarEjercicio(clubId, ejercicioId));
+}
+
+export function useAgregarNota(clubId: string, ejercicioId: string) {
+  return useEscrituraDeEjercicios<string>((repo, texto) => repo.crearNota({ clubId, ejercicioId, texto }));
+}
+
+export function useBorrarNota(clubId: string) {
+  return useEscrituraDeEjercicios<string>((repo, notaId) => repo.borrarNota(clubId, notaId));
+}
+
+/** Sin `variacionId` suma una al ejercicio; con él, edita esa. */
+export function useGuardarVariacion(clubId: string, ejercicioId: string) {
+  return useEscrituraDeEjercicios<{ variacionId?: string; campos: CamposDeVariacion }>(async (repo, { variacionId, campos }) =>
+    variacionId ? repo.actualizarVariacion(clubId, variacionId, campos) : repo.crearVariacion({ clubId, ejercicioId, ...campos }),
+  );
+}
+
+export function useBorrarVariacion(clubId: string) {
+  return useEscrituraDeEjercicios<string>((repo, variacionId) => repo.borrarVariacion(clubId, variacionId));
 }

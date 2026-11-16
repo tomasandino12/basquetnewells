@@ -215,7 +215,8 @@ export interface EjercicioDeLista {
   descripcion: string | null;
   enlace: string | null;
   material: string | null;
-  jugadores: number | null;
+  /** Texto libre: «6 a 12» es la respuesta real de un profe. */
+  jugadores: string | null;
   categorias: string | null;
   creadoPor: string | null;
   creadoEn: string;
@@ -227,6 +228,24 @@ export interface EjercicioDeLista {
 /** Un ejercicio pedido solo: trae la pizarra, que la lista no trae. */
 export interface EjercicioCompleto extends Omit<EjercicioDeLista, 'tieneNotas' | 'cantidadVariaciones'> {
   pizarra: DatosDePizarra | null;
+}
+
+/** Los campos de texto de un ejercicio, tal cual los escribió el profe (vacío = no se cargó). */
+export interface CamposDeEjercicio {
+  titulo: string;
+  tema: string;
+  descripcion: string;
+  enlace: string;
+  material: string;
+  jugadores: string;
+  categorias: string;
+}
+
+export interface CamposDeVariacion {
+  titulo: string;
+  nivel: number;
+  eje: string | null;
+  descripcion: string;
 }
 
 export interface NotaDeEjercicio {
@@ -242,6 +261,7 @@ export interface VariacionDeEjercicio {
   eje: string | null;
   titulo: string;
   descripcion: string | null;
+  creadoPor?: string | null;
   creadoEn: string;
 }
 
@@ -518,6 +538,17 @@ export interface Repositorio extends RepositorioCoord {
   obtenerEjercicio(clubId: string, ejercicioId: string): Promise<EjercicioCompleto | null>;
   obtenerNotas(clubId: string, ejercicioId: string): Promise<NotaDeEjercicio[]>;
   obtenerVariaciones(clubId: string, ejercicioId: string): Promise<VariacionDeEjercicio[]>;
+  /** Devuelve el id nuevo. */
+  crearEjercicio(datos: CamposDeEjercicio & { clubId: string }): Promise<string>;
+  /** Lanza 'NO_ES_TUYO' si el ejercicio es de otro: la base no devuelve ninguna fila. */
+  actualizarEjercicio(clubId: string, ejercicioId: string, campos: CamposDeEjercicio): Promise<void>;
+  /** Se lleva las notas y variaciones. Lanza 'NO_ES_TUYO' si es de otro. */
+  borrarEjercicio(clubId: string, ejercicioId: string): Promise<void>;
+  crearNota(datos: { clubId: string; ejercicioId: string; texto: string }): Promise<string>;
+  borrarNota(clubId: string, notaId: string): Promise<void>;
+  crearVariacion(datos: CamposDeVariacion & { clubId: string; ejercicioId: string }): Promise<string>;
+  actualizarVariacion(clubId: string, variacionId: string, campos: CamposDeVariacion): Promise<void>;
+  borrarVariacion(clubId: string, variacionId: string): Promise<void>;
   listarJugadas(clubId: string): Promise<JugadaDelClub[]>;
   plantelesDeJugada(clubId: string, jugadaId: string): Promise<string[]>;
   /** Deja la jugada asignada exactamente a estos planteles. */

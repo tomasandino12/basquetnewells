@@ -1,4 +1,4 @@
-import { BookOpen, Copy, Package, Pencil, Play, Printer, Search, Tag, Users } from 'lucide-react';
+import { BookOpen, Copy, Package, Pencil, Play, Plus, Printer, Search, Tag, Trash2, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { duplicarDatos, etiquetaDeTipo, nosotrosDefiende, pantallaAptaParaEditar } from '@datos/jugadas.js';
 import { LIMITE } from '@datos/limites.js';
@@ -13,6 +13,7 @@ import { Pizarra } from '../components/ui/pizarra';
 import { Hoja } from '../components/ui/sheet';
 import { APP_DE_SIEMPRE } from '../clasica';
 import { useAsignarJugada, useDetalleDeEjercicio, useDuplicarJugada, useEjercicios, useJugadasDelClub, usePlantelesDeJugada } from '../datos/consultasRecursos';
+import { useSesion } from '../datos/contexto';
 import { mensajeDeError } from '../datos/errores';
 import type { EjercicioDeLista, JugadaDelClub, NotaDeEjercicio, PlantelDelClub, VariacionDeEjercicio } from '../datos/repositorio';
 import { cn } from '../lib/cn';
@@ -22,22 +23,19 @@ import { filtrarEjercicios, filtrarJugadas, nombreDeCopia, nombreDeTema, temasCo
 import { Pagina } from '../components/ui/pagina';
 import { SinCategoria } from './PlantelDelClub';
 import { VideoDeEjercicio } from '../fisico/VideoDeEjercicio';
+import { BorrarEjercicio, BorrarNota, BorrarVariacion, HojaDeEjercicio, HojaDeNota, HojaDeVariacion } from './RecursosEscritura';
 import { Videos } from './RecursosVideos';
 
 type Pestana = 'ejercicios' | 'jugadas' | 'videos';
 const NOMBRE_DE_PESTANA: Record<Pestana, string> = { ejercicios: 'Ejercicios', jugadas: 'Jugadas', videos: 'Videos' };
-
-// Un enlace con forma de botón recto y a la vista; el texto largo entra en una línea (el botón de mayúsculas lo partía).
-const BOTON_DE_ENLACE =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-btn border border-borde-control px-3 text-sm font-semibold outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:border-tinta';
 
 const ENLACE_TEXTO =
   'inline-flex min-h-11 items-center text-sm font-semibold underline decoration-linea decoration-2 underline-offset-4 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:decoration-club';
 
 /**
  * Recursos: la biblioteca del club. En compu, tres columnas (la lista, la pizarra, el detalle); en
- * el celular, la pizarra arriba, después el detalle y la lista abajo. Crear, editar y borrar siguen
- * en la app de siempre (hace falta compu o tablet para la pizarra).
+ * el celular, la pizarra arriba, después el detalle y la lista abajo. Los ejercicios se cargan, editan
+ * y borran acá; dibujar su pizarra y armar jugadas siguen en la app de siempre (hace falta compu o tablet).
  */
 export function Recursos() {
   const activo = usePlantelActivo();
@@ -57,6 +55,7 @@ export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId
   const [pestana, setPestana] = useState<Pestana>('ejercicios');
   const [texto, setTexto] = useState('');
   const [filtro, setFiltro] = useState<string | null>(null);
+  const [cargando, setCargando] = useState(false);
   const [elegida, setElegida] = useState<Record<Pestana, string | null>>({ ejercicios: null, jugadas: null, videos: null });
 
   const cambiarPestana = (p: Pestana) => {
@@ -123,6 +122,12 @@ export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId
               className="h-11 w-full rounded-campo border border-borde-control bg-sup pr-3 pl-9 text-base outline-offset-2 placeholder:text-gris focus-visible:outline-2 focus-visible:outline-tinta"
             />
           </label>
+          {pestana === 'ejercicios' && (
+            <Boton variante="secundario" onClick={() => setCargando(true)}>
+              <Plus aria-hidden className="size-4" />
+              Cargar un ejercicio
+            </Boton>
+          )}
           <Consulta consulta={{ isPending: lista.isPending, isError: lista.isError, error: lista.error, data: lista.data as unknown, refetch: lista.refetch }} errorGenerico={pestana === 'ejercicios' ? 'No pudimos cargar los ejercicios' : 'No pudimos cargar las jugadas'}>
             {() =>
               pestana === 'ejercicios' ? (
@@ -132,10 +137,12 @@ export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId
               )
             }
           </Consulta>
-          <p className="text-sm text-gris">
-            Crear, editar y borrar, los jugadores y el inventario siguen en{' '}
-            <a href={APP_DE_SIEMPRE} className="font-semibold underline">la app de siempre</a>.
-          </p>
+          {pestana === 'jugadas' && (
+            <p className="text-sm text-gris">
+              Las jugadas nuevas se arman en{' '}
+              <a href={APP_DE_SIEMPRE} className="font-semibold underline">la app de siempre</a>.
+            </p>
+          )}
         </section>
 
         {idElegido !== null &&
@@ -153,6 +160,7 @@ export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId
         )}
       </div>
       )}
+      {cargando && <HojaDeEjercicio abierta alCambiar={(a) => !a && setCargando(false)} clubId={clubId} />}
     </Pagina>
   );
 }
@@ -214,7 +222,7 @@ function ListaDeEjercicios({ todos, visibles, filtro, setFiltro, elegido, elegir
   if (todos.length === 0) {
     return (
       <Vacio icono={BookOpen} titulo="La biblioteca está vacía">
-        Acá van los ejercicios del club, con lo que cada profe aprendió al usarlos. Cargar uno son dos campos: título y tema, desde la app de siempre.
+        Acá van los ejercicios del club, con lo que cada profe aprendió al usarlos. Cargar uno son dos campos: título y tema.
       </Vacio>
     );
   }
@@ -267,8 +275,22 @@ function ListaDeJugadas({ todas, visibles, filtro, setFiltro, elegido, elegir }:
 
 /* ---------- Ejercicio: pizarra al centro, detalle a la derecha ---------- */
 
+type Dialogo =
+  | { tipo: 'editar' }
+  | { tipo: 'borrar' }
+  | { tipo: 'nota' }
+  | { tipo: 'borrarNota'; id: string }
+  | { tipo: 'variacion'; previa?: VariacionDeEjercicio }
+  | { tipo: 'borrarVariacion'; variacion: VariacionDeEjercicio };
+
 function DeEjercicio({ clubId, ejercicio }: { clubId: string; ejercicio: EjercicioDeLista }) {
   const detalle = useDetalleDeEjercicio(clubId, ejercicio.id);
+  const { sesion } = useSesion();
+  const yo = sesion?.user.id ?? null;
+  const esMio = (autor: string | null | undefined) => yo !== null && autor === yo;
+  const propio = esMio(ejercicio.creadoPor);
+  const [dialogo, setDialogo] = useState<Dialogo | null>(null);
+  const cerrar = () => setDialogo(null);
   const conPizarra = Boolean(detalle.data?.ejercicio?.pizarra);
   const textos = (notas: NotaDeEjercicio[], variaciones: VariacionDeEjercicio[]) => (
     <>
@@ -278,8 +300,14 @@ function DeEjercicio({ clubId, ejercicio }: { clubId: string; ejercicio: Ejercic
           <p className="text-base leading-relaxed whitespace-pre-line">{ejercicio.descripcion}</p>
         </section>
       )}
-      <Variaciones variaciones={variaciones} />
-      <Notas notas={notas} />
+      <Variaciones
+        variaciones={variaciones}
+        esMia={(v) => esMio(v.creadoPor)}
+        alSumar={() => setDialogo({ tipo: 'variacion' })}
+        alEditar={(v) => setDialogo({ tipo: 'variacion', previa: v })}
+        alBorrar={(v) => setDialogo({ tipo: 'borrarVariacion', variacion: v })}
+      />
+      <Notas notas={notas} esMia={(n) => esMio(n.creadoPor)} alAgregar={() => setDialogo({ tipo: 'nota' })} alBorrar={(n) => setDialogo({ tipo: 'borrarNota', id: n.id })} />
     </>
   );
   return (
@@ -301,17 +329,25 @@ function DeEjercicio({ clubId, ejercicio }: { clubId: string; ejercicio: Ejercic
         </Consulta>
       </section>
       <aside aria-label="Detalle" className="order-2 flex min-w-0 flex-col gap-5 lg:order-3 print:hidden">
-        <a href={APP_DE_SIEMPRE} className={BOTON_DE_ENLACE}>
-          <Pencil aria-hidden className="size-4" />
-          Editar o anotar en la app de siempre
-        </a>
+        {propio && (
+          <div className="flex gap-2">
+            <Boton variante="contorno" tamano="chico" className="flex-1" onClick={() => setDialogo({ tipo: 'editar' })}>
+              <Pencil aria-hidden className="size-4" />
+              Editar
+            </Boton>
+            <Boton variante="contorno" tamano="chico" className="flex-1" onClick={() => setDialogo({ tipo: 'borrar' })}>
+              <Trash2 aria-hidden className="size-4" />
+              Borrar
+            </Boton>
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-2">
           <Etiqueta className={cn('min-h-7 px-2.5 text-xs', colorDeTema(ejercicio.tema))}>{nombreDeTema(ejercicio.tema)}</Etiqueta>
           {ejercicio.tieneNotas && <span className="text-sm font-semibold text-sube">✓ probado</span>}
         </div>
         <dl className="flex flex-col gap-3">
           {ejercicio.material && <Dato icono={Package} tono="bg-baja-fondo text-baja" clave="Material" valor={ejercicio.material} />}
-          {ejercicio.jugadores != null && <Dato icono={Users} tono="bg-sube-fondo text-sube" clave="Jugadores" valor={String(ejercicio.jugadores)} />}
+          {ejercicio.jugadores?.trim() && <Dato icono={Users} tono="bg-sube-fondo text-sube" clave="Jugadores" valor={ejercicio.jugadores.trim()} />}
           {ejercicio.categorias?.trim() && <Dato icono={Tag} tono="bg-club-cl text-club-texto" clave="Categorías" valor={ejercicio.categorias.trim()} />}
         </dl>
         {ejercicio.enlace && <VideoDeEjercicio link={ejercicio.enlace} titulo={ejercicio.titulo} />}
@@ -321,64 +357,104 @@ function DeEjercicio({ clubId, ejercicio }: { clubId: string; ejercicio: Ejercic
           </Consulta>
         )}
       </aside>
+      {dialogo?.tipo === 'editar' && <HojaDeEjercicio abierta alCambiar={(a) => !a && cerrar()} clubId={clubId} previo={ejercicio} />}
+      {dialogo?.tipo === 'borrar' && <BorrarEjercicio abierta alCerrar={cerrar} clubId={clubId} ejercicio={ejercicio} alBorrar={cerrar} />}
+      {dialogo?.tipo === 'nota' && <HojaDeNota abierta alCambiar={(a) => !a && cerrar()} clubId={clubId} ejercicioId={ejercicio.id} />}
+      {dialogo?.tipo === 'borrarNota' && <BorrarNota abierta alCerrar={cerrar} clubId={clubId} notaId={dialogo.id} />}
+      {dialogo?.tipo === 'variacion' && (
+        <HojaDeVariacion abierta alCambiar={(a) => !a && cerrar()} clubId={clubId} ejercicioId={ejercicio.id} variaciones={detalle.data?.variaciones ?? []} previa={dialogo.previa} />
+      )}
+      {dialogo?.tipo === 'borrarVariacion' && <BorrarVariacion abierta alCerrar={cerrar} clubId={clubId} variacion={dialogo.variacion} />}
     </>
   );
 }
 
 const SECCION = 'mb-2 font-titulo text-xl leading-none font-semibold tracking-wide uppercase';
 
+/** Un botón chico de texto para agregar, al lado del título de la sección. */
+function Agregar({ alTocar, children }: { alTocar: () => void; children: React.ReactNode }) {
+  return (
+    <button type="button" onClick={alTocar} className={cn(ENLACE_TEXTO, 'gap-1')}>
+      <Plus aria-hidden className="size-4" />
+      {children}
+    </button>
+  );
+}
+
+/** Editar o borrar lo propio: ícono solo, con nombre para el lector de pantalla y alto táctil. */
+function AccionPropia({ nombre, alTocar, children }: { nombre: string; alTocar: () => void; children: React.ReactNode }) {
+  return (
+    <button type="button" aria-label={nombre} onClick={alTocar} className="grid min-h-11 w-11 shrink-0 place-items-center text-gris outline-offset-[-4px] focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:text-tinta">
+      {children}
+    </button>
+  );
+}
+
 /** Cuántas hay, al lado del título; vacía no ocupa lugar con un cartel grande. */
-function Variaciones({ variaciones }: { variaciones: VariacionDeEjercicio[] }) {
-  if (variaciones.length === 0) {
-    return (
-      <section aria-label="Variaciones">
-        <h3 className={cn(SECCION, 'text-gris')}>Variaciones</h3>
-        <p className="text-sm text-gris">Todavía no hay variaciones.</p>
-      </section>
-    );
-  }
+function Variaciones({ variaciones, esMia, alSumar, alEditar, alBorrar }: { variaciones: VariacionDeEjercicio[]; esMia: (v: VariacionDeEjercicio) => boolean; alSumar: () => void; alEditar: (v: VariacionDeEjercicio) => void; alBorrar: (v: VariacionDeEjercicio) => void }) {
   return (
     <section aria-label="Variaciones">
-      <h3 className={SECCION}>
-        Variaciones <span className="ml-1 font-mono text-xs font-medium text-gris">{variaciones.length}</span>
-      </h3>
-      <ol className="flex flex-col divide-y divide-linea border-y border-linea">
-        {(ordenarVariaciones(variaciones) as VariacionDeEjercicio[]).map((v) => (
-          <li key={v.id} className="flex items-start gap-3 py-3 text-sm">
-            <Etiqueta className="mt-0.5 shrink-0 bg-tinta text-sup">Nivel {v.nivel}</Etiqueta>
-            <div className="min-w-0">
-              <p className="font-semibold">{v.titulo}</p>
-              {v.eje && <p className="font-mono text-xs tracking-wide text-gris uppercase">{nombreDeEje(v.eje) as string}</p>}
-              {v.descripcion && <p className="mt-1 text-gris">{v.descripcion}</p>}
-            </div>
-          </li>
-        ))}
-      </ol>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className={cn(SECCION, variaciones.length === 0 && 'text-gris')}>
+          Variaciones {variaciones.length > 0 && <span className="ml-1 font-mono text-xs font-medium text-gris">{variaciones.length}</span>}
+        </h3>
+        <Agregar alTocar={alSumar}>Sumar una variación</Agregar>
+      </div>
+      {variaciones.length === 0 ? (
+        <p className="text-sm text-gris">Todavía no hay variaciones. ¿Cómo le subís la dificultad? Con un defensor, menos espacio, un límite de tiempo…</p>
+      ) : (
+        <ol className="flex flex-col divide-y divide-linea border-y border-linea">
+          {(ordenarVariaciones(variaciones) as VariacionDeEjercicio[]).map((v) => (
+            <li key={v.id} className="flex items-start gap-3 py-3 text-sm">
+              <Etiqueta className="mt-0.5 shrink-0 bg-tinta text-sup">Nivel {v.nivel}</Etiqueta>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">{v.titulo}</p>
+                {v.eje && <p className="font-mono text-xs tracking-wide text-gris uppercase">{nombreDeEje(v.eje) as string}</p>}
+                {v.descripcion && <p className="mt-1 text-gris">{v.descripcion}</p>}
+              </div>
+              {esMia(v) && (
+                <>
+                  <AccionPropia nombre={`Editar la variación ${v.titulo}`} alTocar={() => alEditar(v)}>
+                    <Pencil aria-hidden className="size-4" />
+                  </AccionPropia>
+                  <AccionPropia nombre={`Borrar la variación ${v.titulo}`} alTocar={() => alBorrar(v)}>
+                    <Trash2 aria-hidden className="size-4" />
+                  </AccionPropia>
+                </>
+              )}
+            </li>
+          ))}
+        </ol>
+      )}
     </section>
   );
 }
 
-function Notas({ notas }: { notas: NotaDeEjercicio[] }) {
-  if (notas.length === 0) {
-    return (
-      <section aria-label="Notas de uso">
-        <h3 className={cn(SECCION, 'text-gris')}>Notas de uso</h3>
-        <p className="text-sm text-gris">Nadie anotó nada todavía.</p>
-      </section>
-    );
-  }
+function Notas({ notas, esMia, alAgregar, alBorrar }: { notas: NotaDeEjercicio[]; esMia: (n: NotaDeEjercicio) => boolean; alAgregar: () => void; alBorrar: (n: NotaDeEjercicio) => void }) {
   return (
     <section aria-label="Notas de uso">
-      <h3 className={SECCION}>
-        Notas de uso <span className="ml-1 font-mono text-xs font-medium text-gris">{notas.length}</span>
-      </h3>
-      <ul className="flex flex-col divide-y divide-linea border-y border-linea">
-        {notas.map((n) => (
-          <li key={n.id} className="py-3 text-sm whitespace-pre-line">
-            {n.texto}
-          </li>
-        ))}
-      </ul>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className={cn(SECCION, notas.length === 0 && 'text-gris')}>
+          Notas de uso {notas.length > 0 && <span className="ml-1 font-mono text-xs font-medium text-gris">{notas.length}</span>}
+        </h3>
+        <Agregar alTocar={alAgregar}>Agregar una nota</Agregar>
+      </div>
+      {notas.length === 0 ? (
+        <p className="text-sm text-gris">Nadie anotó nada todavía. Si lo probaste, lo que aprendiste le sirve al que venga.</p>
+      ) : (
+        <ul className="flex flex-col divide-y divide-linea border-y border-linea">
+          {notas.map((n) => (
+            <li key={n.id} className="flex items-start gap-2 py-3 text-sm">
+              <span className="min-w-0 flex-1 whitespace-pre-line">{n.texto}</span>
+              {esMia(n) && (
+                <AccionPropia nombre="Borrar esta nota" alTocar={() => alBorrar(n)}>
+                  <Trash2 aria-hidden className="size-4" />
+                </AccionPropia>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

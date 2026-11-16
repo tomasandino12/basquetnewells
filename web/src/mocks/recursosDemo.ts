@@ -26,11 +26,11 @@ const PIZARRA: DatosDePizarra = {
 };
 
 const EJERCICIOS = [
-  ej('e1', 'Pase de pecho en parejas', 'pase', { descripcion: 'Dos filas enfrentadas a cuatro metros. Cada pase va con los dos pies firmes y los dedos hacia afuera.\n\nDespués de pasar, se cambia de fila.', material: '2 pelotas', jugadores: 8, categorias: 'U13, U15', tieneNotas: true, cantidadVariaciones: 2 }),
-  ej('e2', 'Cierre de línea de pase', 'defensa', { descripcion: 'El defensor se mueve para quedar entre la pelota y su atacante, con una mano en la línea de pase.', material: 'Conos', jugadores: 6 }),
-  ej('e3', 'Tres contra dos en 6 segundos', 'contraataque', { descripcion: 'Salida rápida con tres jugadores contra dos defensores. Hay que terminar antes de los 6 segundos.', material: 'Muchas pelotas', jugadores: 10, tieneNotas: true }),
-  ej('e4', 'Pelotas en el centro', 'juego', { descripcion: 'Se agrupan en grupos de 2 a 3 chicos y aros al lado. Los chicos corren a buscar las pelotas y van con su grupo con dribbling.', material: 'Muchas pelotas', jugadores: 12 }),
-  ej('e5', 'Rebote de dos en dos', 'rebote', { descripcion: 'Dos jugadores pelean el rebote de un tiro del entrenador.', jugadores: 4 }),
+  ej('e1', 'Pase de pecho en parejas', 'pase', { descripcion: 'Dos filas enfrentadas a cuatro metros. Cada pase va con los dos pies firmes y los dedos hacia afuera.\n\nDespués de pasar, se cambia de fila.', material: '2 pelotas', jugadores: '8', categorias: 'U13, U15', tieneNotas: true, cantidadVariaciones: 2 }),
+  ej('e2', 'Cierre de línea de pase', 'defensa', { descripcion: 'El defensor se mueve para quedar entre la pelota y su atacante, con una mano en la línea de pase.', material: 'Conos', jugadores: '6' }),
+  ej('e3', 'Tres contra dos en 6 segundos', 'contraataque', { descripcion: 'Salida rápida con tres jugadores contra dos defensores. Hay que terminar antes de los 6 segundos.', material: 'Muchas pelotas', jugadores: '10', tieneNotas: true }),
+  ej('e4', 'Pelotas en el centro', 'juego', { descripcion: 'Se agrupan en grupos de 2 a 3 chicos y aros al lado. Los chicos corren a buscar las pelotas y van con su grupo con dribbling.', material: 'Muchas pelotas', jugadores: '12' }),
+  ej('e5', 'Rebote de dos en dos', 'rebote', { descripcion: 'Dos jugadores pelean el rebote de un tiro del entrenador.', jugadores: '4' }),
   ej('e6', 'Sentadilla con salto', 'fisico', { enlace: 'https://ejemplo.test/video', descripcion: 'Tres series de ocho saltos con buena técnica de aterrizaje.' }),
   ej('e7', 'Movimiento sin balón con 3 atacantes', 'otro'),
 ];
@@ -60,6 +60,15 @@ export const PARA_RECURSOS: Partial<Repositorio> = {
           { id: 'v1', nivel: 1, eje: 'espacio', titulo: 'Más cerca', descripcion: 'Un paso menos de distancia.', creadoEn: '2026-10-01T10:00:00Z' },
         ]
       : [],
+  // En la demo nada se guarda: las escrituras responden sin tocar nada.
+  crearEjercicio: async () => 'demo',
+  actualizarEjercicio: async () => {},
+  borrarEjercicio: async () => {},
+  crearNota: async () => 'demo',
+  borrarNota: async () => {},
+  crearVariacion: async () => 'demo',
+  actualizarVariacion: async () => {},
+  borrarVariacion: async () => {},
   listarJugadas: async () => JUGADAS,
   plantelesDeJugada: async () => [],
   asignarJugada: async () => {},
