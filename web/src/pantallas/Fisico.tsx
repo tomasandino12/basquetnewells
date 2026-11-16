@@ -11,9 +11,6 @@ import {
 } from '../fisico/plan';
 import { enlaceBoton } from '../fisico/estilos';
 import { ConPlantel } from './ConPlantel';
-import { APP_DE_SIEMPRE } from '../clasica';
-
-const APP_ANTERIOR = APP_DE_SIEMPRE;
 
 /**
  * El plan de fuerza de una categoría. Cuál se muestra lo decide elegirPlanVisible (el que contiene hoy,
@@ -165,15 +162,11 @@ function FilaDeSesion({ plantelId, planId, sesion, hoy }: { plantelId: string; p
   );
 }
 
-/**
- * Cargar el plan (lee un .xlsx) y el inventario todavía viven en la app anterior: el lector de planillas
- * no entra en el peso de la app nueva. Los enlaces están siempre, aunque no haya plan.
- */
+/** Cargar el plan y el inventario: los enlaces están siempre, aunque no haya plan. */
 function Pie() {
   return (
     <section aria-label="Más acciones de Físico" className="mt-8 flex flex-wrap gap-2 border-t border-linea pt-4">
-      <p className="w-full text-sm text-gris">Todavía en la app anterior:</p>
-      <a href={APP_ANTERIOR} className={enlaceBoton}>Cargar plan de fuerza</a>
+      <Link to="/fisico/cargar-plan" className={enlaceBoton}>Cargar plan de fuerza</Link>
       <Link to="/fisico/inventario" className={enlaceBoton}>Inventario del club</Link>
     </section>
   );
