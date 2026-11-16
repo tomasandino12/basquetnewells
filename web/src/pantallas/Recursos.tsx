@@ -104,8 +104,8 @@ export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId
           <Videos clubId={clubId} plantelId={plantelId} categoria={categoria} />
         ) : null
       ) : (
-      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(16rem,1fr)_minmax(0,2fr)_minmax(16rem,1fr)] lg:items-start">
-        <section aria-label="Lista" className="order-3 flex flex-col gap-3 lg:order-1 print:hidden">
+      <div className="flex flex-col gap-5 lg:grid lg:min-h-[calc(100dvh-12rem)] lg:grid-cols-[minmax(16rem,1fr)_minmax(0,2fr)_minmax(16rem,1fr)] lg:items-start">
+        <section aria-label="Lista" className="order-3 flex flex-col gap-3 lg:sticky lg:top-4 lg:order-1 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto print:hidden">
           <label className="relative block">
             <span className="sr-only">{pestana === 'ejercicios' ? 'Buscar ejercicio' : 'Buscar jugada'}</span>
             <Search aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gris" />
