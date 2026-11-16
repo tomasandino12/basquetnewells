@@ -70,7 +70,7 @@ describe('un solo ancho para todas las pantallas', () => {
     expect(REJILLA).not.toMatch(/grid-cols-[3-9]/);
     expect(REJILLA_CHICA).toContain('xl:grid-cols-3');
     // Pantallas ya migradas: una lista nueva con `<ul className="… grid-cols-…">` propio las rompe.
-    const migradas = ['MedirSalto', 'MedirSprint', 'MedirYoyo', 'MedirBateria', 'MisionesDelPlantel', 'ArmarMisiones', 'RecursosVideos'];
+    const migradas = ['Medir', 'MedirSalto','MedirSprint', 'MedirYoyo', 'MedirBateria', 'MisionesDelPlantel', 'ArmarMisiones', 'RecursosVideos'];
     for (const nombre of migradas) {
       const texto = fuentes[`pantallas/${nombre}.tsx`];
       expect(texto, nombre).toBeDefined();

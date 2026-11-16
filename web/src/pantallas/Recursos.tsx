@@ -1,8 +1,9 @@
-import { BookOpen, Copy, Package, Pencil, Printer, Search, Tag, Users } from 'lucide-react';
+import { BookOpen, Copy, Package, Pencil, Play, Printer, Search, Tag, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { duplicarDatos, etiquetaDeTipo, nosotrosDefiende, pantallaAptaParaEditar } from '@datos/jugadas.js';
 import { LIMITE } from '@datos/limites.js';
 import { nombreDeEje, ordenarVariaciones } from '@datos/variaciones.js';
+import { urlDeMiniatura } from '@datos/youtube.js';
 import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
 import { Chip, ChipBoton, Etiqueta } from '../components/ui/chip';
@@ -102,7 +103,11 @@ export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId
       {pestana === 'videos' ? (
         plantelId && categoria ? (
           <Videos clubId={clubId} plantelId={plantelId} categoria={categoria} />
-        ) : null
+        ) : (
+          <Vacio icono={BookOpen} titulo="Elegí una categoría">
+            Los videos se ofrecen por plantel: elegí una categoría arriba para ver los de ese grupo.
+          </Vacio>
+        )
       ) : (
       <div className="flex flex-col gap-5 lg:grid lg:min-h-[calc(100dvh-12rem)] lg:grid-cols-[minmax(16rem,1fr)_minmax(0,2fr)_minmax(16rem,1fr)] lg:items-start">
         <section aria-label="Lista" className="order-3 flex flex-col gap-3 lg:sticky lg:top-4 lg:order-1 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto print:hidden">
@@ -188,6 +193,23 @@ function Filtros({ opciones, filtro, setFiltro, color }: { opciones: { id: strin
   );
 }
 
+/** Si el ejercicio trae un video de YouTube, su miniatura 16:9 arriba del renglón (como las tarjetas de Videos); sin video, nada. */
+function MiniaturaDeEjercicio({ enlace }: { enlace: string | null }) {
+  const src = urlDeMiniatura(enlace ?? '') as string | null;
+  const [rota, setRota] = useState(false);
+  if (!src || rota) return null;
+  return (
+    <span aria-hidden className="relative block aspect-video w-full overflow-hidden rounded-btn bg-sup-2">
+      <img src={src} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setRota(true)} className="absolute inset-0 size-full object-cover" />
+      <span className="absolute inset-0 grid place-items-center">
+        <span className="grid size-9 place-items-center rounded-full bg-negro/80 text-sobre-negro">
+          <Play className="size-4 translate-x-px fill-current" />
+        </span>
+      </span>
+    </span>
+  );
+}
+
 function ListaDeEjercicios({ todos, visibles, filtro, setFiltro, elegido, elegir }: { todos: EjercicioDeLista[]; visibles: EjercicioDeLista[]; filtro: string | null; setFiltro: (f: string | null) => void; elegido: string | null; elegir: (id: string) => void }) {
   if (todos.length === 0) {
     return (
@@ -202,6 +224,7 @@ function ListaDeEjercicios({ todos, visibles, filtro, setFiltro, elegido, elegir
       <ul className={LISTA}>
         {visibles.map((e) => (
           <Item key={e.id} elegido={e.id === elegido} alTocar={() => elegir(e.id)}>
+            <MiniaturaDeEjercicio enlace={e.enlace} />
             <span className="flex w-full items-center gap-2">
               <Etiqueta className={colorDeTema(e.tema)}>{nombreDeTema(e.tema)}</Etiqueta>
               {e.tieneNotas && <span className="ml-auto text-xs font-semibold text-sube">✓ probado</span>}
