@@ -4,12 +4,16 @@ import userEvent from '@testing-library/user-event';
 import { desmarcarSesionCerrada } from '../datos/errores';
 import { renderConDatos, repositorioInventado } from '../datos/renderDePrueba';
 import { rutas } from '../rutas';
+import { reiniciarFallaDeLaVuelta, registrarFallaDeLaVuelta } from '../cuenta/vuelta';
+import { VERSION_LEGAL } from '@datos/legal.js';
 
 afterEach(() => {
   cleanup();
   desmarcarSesionCerrada();
   localStorage.clear();
   sessionStorage.clear();
+  reiniciarFallaDeLaVuelta();
+  window.history.replaceState(null, '', '/');
 });
 
 const sinSesion = (piso = {}) => repositorioInventado({ obtenerSesionActual: async () => null, ...piso });
@@ -91,5 +95,42 @@ describe('Entrar: cuenta', () => {
     renderConDatos(rutas, { repo: sinSesion({ entrarConGoogle }), ruta: '/entrar' });
     await u.click(await screen.findByRole('button', { name: 'Entrar con Google' }));
     expect(await screen.findByText(/todavía no está habilitado/)).toBeTruthy();
+  });
+
+  it('sin sesión, cualquier pantalla con datos lleva a Entrar (no a la app de siempre)', async () => {
+    const { router } = renderConDatos(rutas, { repo: sinSesion(), ruta: '/hoy' });
+    expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeTruthy();
+    expect(router.state.location.pathname).toBe('/entrar');
+  });
+
+  it('crear cuenta avisa que hay que aceptar la política y de qué versión', async () => {
+    const u = userEvent.setup();
+    renderConDatos(rutas, { repo: sinSesion(), ruta: '/entrar' });
+    await u.click(await screen.findByRole('button', { name: 'No tengo cuenta' }));
+    const [ano, mes, dia] = VERSION_LEGAL.split('-');
+    expect(screen.getByText(new RegExp(`versión del ${dia}/${mes}/${ano}`))).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Política de privacidad' }).getAttribute('href')).toBe('/privacidad');
+  });
+
+  it('volver de un link vencido lo cuenta en vez de dejar un Entrar mudo', async () => {
+    window.history.replaceState(null, '', '/#error=access_denied&error_code=otp_expired');
+    registrarFallaDeLaVuelta();
+    const u = userEvent.setup();
+    renderConDatos(rutas, { repo: sinSesion(), ruta: '/entrar' });
+    expect(await screen.findByText(/El link venció o ya se usó/)).toBeTruthy();
+    await u.click(screen.getByRole('button', { name: 'Olvidé la clave' }));
+    expect(screen.queryByText(/El link venció o ya se usó/)).toBeNull();
+  });
+
+  it('un mail sin confirmar no deja entrar y lo dice', async () => {
+    const iniciarSesion = async () => {
+      throw new Error('Email not confirmed');
+    };
+    const u = userEvent.setup();
+    renderConDatos(rutas, { repo: sinSesion({ iniciarSesion }), ruta: '/entrar' });
+    await u.type(await screen.findByLabelText('Email'), 'ana@ejemplo.test');
+    await u.type(screen.getByLabelText('Clave'), 'clave-larga');
+    await u.click(screen.getByRole('button', { name: 'Entrar' }));
+    expect(await screen.findByText(/Todavía no confirmaste tu mail/)).toBeTruthy();
   });
 });

@@ -8,22 +8,12 @@ import { Pagina } from '../components/ui/pagina';
 import { useCrearCuenta, useEntrar, useEntrarConGoogle, useRecuperarClave } from '../datos/consultas';
 import { useSesion } from '../datos/contexto';
 import { esSinConexion, mensajeDeError } from '../datos/errores';
-import { emailValido, mensajeDeCreacion, mensajeDeGoogle, validarCuenta } from '../cuenta/validaciones';
+import { VERSION_LEGAL } from '@datos/legal.js';
+import { anotarJugadorPorGoogle } from '../cuenta/jugadorPorGoogle';
+import { soltarFallaDeLaVuelta, useFallaDeLaVuelta } from '../cuenta/vuelta';
+import { emailValido, mensajeDeCreacion, mensajeDeGoogle, mensajeDeIngreso, validarCuenta } from '../cuenta/validaciones';
 
 type Modo = 'entrar' | 'crear' | 'recuperar';
-
-// Google no lleva nuestros metadatos: «Soy jugador» se anota en la pestaña antes de salir y la
-// vuelta (que hoy resuelve la app de siempre) lo lee. Sólo decide a qué formulario llevarla.
-const CLAVE_JUGADOR_POR_GOOGLE = 'alta.jugador-por-google';
-
-function anotarJugadorPorGoogle(esJugador: boolean) {
-  try {
-    if (esJugador) sessionStorage.setItem(CLAVE_JUGADOR_POR_GOOGLE, '1');
-    else sessionStorage.removeItem(CLAVE_JUGADOR_POR_GOOGLE);
-  } catch {
-    // Sin almacenamiento, el jugador cae en «falta el acceso», que tiene su botón.
-  }
-}
 
 export function Entrar() {
   const sesion = useSesion();
@@ -39,6 +29,7 @@ export function Entrar() {
   const [repetida, setRepetida] = useState('');
   const [esJugador, setEsJugador] = useState(false);
   const [problema, setProblema] = useState<string | null>(null);
+  const falla = useFallaDeLaVuelta();
 
   if (sesion.estado === 'cargando') return <Pagina><Cargando titulo filas={3} /></Pagina>;
   if (sesion.estado === 'con-sesion') return <Navigate to={desde} replace />;
@@ -46,6 +37,7 @@ export function Entrar() {
   const cambiarModo = (m: Modo) => {
     setModo(m);
     setProblema(null);
+    soltarFallaDeLaVuelta();
     entrar.reset();
     crear.reset();
     recuperar.reset();
@@ -89,13 +81,15 @@ export function Entrar() {
           {modo === 'entrar' ? 'Entrar' : modo === 'crear' ? 'Crear cuenta' : 'Recuperar la clave'}
         </h1>
 
+        {falla && <Aviso tono="error" titulo="No pudimos abrir el link">{falla}</Aviso>}
+
         {modo === 'entrar' && (
           <form onSubmit={enviarEntrar} className="flex flex-col gap-3">
             <Campo etiqueta="Email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={(e) => setEmail(e.target.value)} />
             <Campo etiqueta="Clave" type="password" autoComplete="current-password" required maxLength={200} value={clave} onChange={(e) => setClave(e.target.value)} />
             {entrar.isError && (
               <Aviso tono="error" titulo="No pudimos entrar">
-                {mensajeDeError(entrar.error, 'Revisá el email y la clave.')}
+                {esSinConexion(entrar.error) ? mensajeDeError(entrar.error, '') : mensajeDeIngreso(entrar.error)}
               </Aviso>
             )}
             <Boton type="submit" disabled={entrar.isPending}>{entrar.isPending ? 'Entrando…' : 'Entrar'}</Boton>
@@ -124,6 +118,11 @@ export function Entrar() {
                 {esJugador ? ': te va a llevar a pedir acceso a tu categoría' : ''}.
               </Aviso>
             )}
+            <p className="text-xs text-gris">
+              Al entrar por primera vez te pedimos leer y aceptar la{' '}
+              <a className="underline" href="/privacidad" target="_blank" rel="noopener">Política de privacidad</a> y los{' '}
+              <a className="underline" href="/terminos" target="_blank" rel="noopener">Términos</a> (versión del {VERSION_LEGAL.split('-').reverse().join('/')}).
+            </p>
             <Boton type="submit" disabled={crear.isPending}>{crear.isPending ? 'Creando…' : 'Crear cuenta'}</Boton>
           </form>
         )}

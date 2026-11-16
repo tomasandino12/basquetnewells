@@ -63,11 +63,11 @@ Lo que vive en otros archivos de la vieja y también hay que mudar antes de borr
 
 | id | qué hace | en la nueva | estado | prueba | tanda |
 |---|---|---|---|---|---|
-| x-entrar | Entrar con mail y clave, con Google, clave olvidada | `Entrar.tsx` (básico: la vuelta de mails la resuelve la vieja) | 🔎 | | 4 |
-| x-crear-cuenta | Crear cuenta (profe, jugador), confirmar mail, aceptar la política (con fecha de versión) | Falta | ⬜ | | 4 |
-| x-vuelta-de-mails | Vuelta de un mail de confirmación o de nueva clave | Falta (`clasica.ts` reenvía) | ⬜ | | 4 |
+| x-entrar | Entrar con mail y clave (un mail sin confirmar lo dice), con Google, clave olvidada; sin sesión, toda pantalla con datos lleva a `/entrar` | `/entrar` (`Entrar.tsx`) | ✅ | `web/src/pantallas/Entrar.test.tsx::Entrar: cuenta` | 4 |
+| x-crear-cuenta | Crear cuenta (profe, jugador), confirmar mail, nombre obligatorio, aceptar la política (con fecha de versión), pantalla «falta el acceso» con pedido de jugador | `Entrar.tsx` (crear, con la versión de la política a la vista) y, ya con sesión, `pantallas/cuenta/` (`PasosDeCuenta`: nombre → Términos y Política de `VERSION_LEGAL` → acceso; `SinClub`: pedido de jugador, pedido pendiente con código, rechazo y «pedir de nuevo», reintentar) | ✅ | `web/src/pantallas/cuenta/PasosDeCuenta.test.tsx::Cuenta: aceptar la política`, `web/src/pantallas/cuenta/PasosDeCuenta.test.tsx::Cuenta: todavía sin acceso` | 4 |
+| x-vuelta-de-mails | Vuelta de un mail de confirmación, de nueva clave o de Google: abre la sesión y sigue por los pasos de la cuenta; un link vencido se explica en Entrar | Resuelta en esta app: `clasica.ts` ya no reenvía ninguna vuelta (ni con el interruptor apagado); `cuenta/vuelta.ts` guarda el error de un link vencido | ✅ | `web/src/cuenta/vuelta.test.ts::no pasa por la app de siempre`, `web/src/pantallas/Entrar.test.tsx::volver de un link vencido` | 4 |
 | x-nueva-clave | Pantalla de elegir una nueva clave: la vuelta del mail abre sesión, no deja pasar a la app hasta elegirla (8+ caracteres, repetida), link vencido lleva a entrar | `/nueva-clave` (`NuevaClave.tsx`; el aviso PASSWORD_RECOVERY lo marca `cuenta/recuperacion.ts`). La vuelta de recuperación ya no se reenvía a la de siempre | ✅ | `web/src/pantallas/NuevaClave.test.tsx::Nueva clave` | 4 |
-| x-alta-jugador | Alta de jugador / pedido de entrada con código, aprobar solicitud | Plantel (alta manual y pedidos) | 🔎 | | 4 |
+| x-alta-jugador | Alta de jugador / pedido de entrada con código, aprobar solicitud | Plantel (alta manual y pedidos); el pedido del propio jugador está en `SinClub` (ver x-crear-cuenta) | 🔎 | | 4 |
 | x-planilla-area | Planilla del área desde .xlsx | Falta | ⬜ | | 2 |
 
 ## Qué se borra al final (sólo con todo en ✅ y backup confirmado)

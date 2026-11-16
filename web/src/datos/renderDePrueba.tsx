@@ -71,6 +71,12 @@ export function repositorioInventado(piso: Partial<Repositorio> = {}): Repositor
     evaluarMisiones: async () => ({}),
     guardarPrevia: async () => ({}),
     guardarMiNombre: async (nombre) => ({ ...sesionInventada.user, user_metadata: { nombre } }),
+    // Una cuenta ya completa: con nombre y los Términos aceptados. La puerta de cuenta no la frena.
+    obtenerMiUsuario: async () => ({ ...sesionInventada.user, user_metadata: { nombre: 'Profe de Ejemplo' } }),
+    yaAceptoLegal: async () => true,
+    aceptarLegal: async () => {},
+    miPedidoDescartado: async () => false,
+    volverAPedirAcceso: async () => {},
     obtenerPlanesFisicos: async () => [],
     obtenerPlanFisico: async () => [],
     obtenerPasos: async () => [],
