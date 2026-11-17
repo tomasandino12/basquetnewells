@@ -29,7 +29,7 @@ describe('rutas con datos', () => {
   it('sin sesión manda a /entrar', async () => {
     const repo = repositorioInventado({ obtenerSesionActual: async () => null });
     renderConDatos(rutas, { repo });
-    expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 1, name: /Lo que se trabaja en inferiores/ })).toBeTruthy();
   });
 
   it('entrar con email y clave vuelve a donde quería ir', async () => {
@@ -43,6 +43,7 @@ describe('rutas con datos', () => {
     });
     const u = userEvent.setup();
     const { router } = renderConDatos(rutas, { repo, ruta: '/plantel' });
+    await u.click(await screen.findByRole('button', { name: 'Ya tengo cuenta' }));
     await u.type(await screen.findByLabelText('Email'), 'profe@ejemplo.test');
     await u.type(screen.getByLabelText('Clave'), 'una-clave');
     await u.click(screen.getByRole('button', { name: 'Entrar' }));
@@ -96,7 +97,7 @@ describe('rutas con datos', () => {
     expect(screen.getAllByRole('button', { name: 'Salir' }).length).toBeGreaterThan(0);
     await waitFor(() => expect(aviso).toBeDefined());
     aviso!('SIGNED_OUT', null);
-    expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 1, name: /Lo que se trabaja en inferiores/ })).toBeTruthy();
     expect(container.textContent).not.toContain('Sub 13');
   });
 });

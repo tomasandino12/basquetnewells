@@ -1,11 +1,10 @@
 import { destinoDeAuth } from '@datos/entradaAuth.js';
 import { CLAVE_NUEVA, RUTA_CLASICA } from '@datos/interruptorNueva.js';
-import { esVueltaDeRecuperacion } from './cuenta/recuperacion';
 
 /**
  * Desde el 09/11/2026 esta app es /app (vercel.json) y la de siempre vive en
- * /app/clasica. Lo que todavía no se mudó (entrar y crear cuenta, Medir,
- * Recursos, Datos, coordinación, jugador y familia) sigue allá (H-175).
+ * /app/clasica. Entrar, crear cuenta y la vuelta de los mails y de Google ya viven acá (cuenta/);
+ * lo que todavía no se mudó sigue allá (H-175).
  *
  * `?desde=nueva` le dice a la de siempre que no la mande de vuelta acá.
  */
@@ -33,18 +32,15 @@ export function irALaDeSiempre({ volver = false }: { volver?: boolean } = {}): b
 }
 
 /**
- * Antes de dibujar nada: la vuelta de un mail o del login con Google llega a /app
- * (la dirección permitida en Supabase) y la resuelve la de siempre, que tiene la
- * pantalla de nueva clave y el alta. Con el interruptor apagado en Mi perfil, también.
+ * Antes de dibujar nada: con el interruptor apagado en Mi perfil, se abre la de siempre.
+ * La vuelta de un mail o del login con Google (a /app, la dirección permitida en Supabase)
+ * NO se reenvía: la resuelve esta app, apagada o no. Si se mandara a otro lado con el
+ * interruptor apagado, el link de confirmar la cuenta se perdería.
  */
 export function reenviarSiCorresponde(): boolean {
   if (!PUBLICADA) return false;
   const { search, hash } = window.location;
-  // La nueva clave ya se pide acá (pantalla NuevaClave); el resto de las vueltas sigue en la de siempre.
-  if (destinoDeAuth(search, hash) && !esVueltaDeRecuperacion(search, hash)) {
-    window.location.replace(`${RUTA_CLASICA}${search}${hash}`);
-    return true;
-  }
+  if (destinoDeAuth(search, hash)) return false;
   let apagada = false;
   try {
     apagada = localStorage.getItem(CLAVE_NUEVA) === 'no';

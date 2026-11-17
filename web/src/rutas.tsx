@@ -4,15 +4,16 @@ import { Consulta } from './components/ui/consulta';
 import { Pagina } from './components/ui/pagina';
 import { Marco } from './laboratorio';
 import { useSesion } from './datos/contexto';
-import { irALaDeSiempre } from './clasica';
-import { BarraDeCategorias } from './pantallas/BarraDeCategorias';
+import { BarraDeCategorias, ReservaDeCategorias } from './pantallas/BarraDeCategorias';
 import { Asistencia } from './pantallas/Asistencia';
 import { AsistenciaHistorial } from './pantallas/AsistenciaHistorial';
 import { Datos } from './pantallas/Datos';
 import { Entrar } from './pantallas/Entrar';
 import { NuevaClave } from './pantallas/NuevaClave';
+import { PasosDeCuenta } from './pantallas/cuenta/PasosDeCuenta';
 import { useRecuperacionPendiente } from './cuenta/recuperacion';
 import { CargarPartido } from './pantallas/importar/CargarPartido';
+import { CargarPlanFisico } from './pantallas/importar/CargarPlanFisico';
 import { FichaEjemplo, PantallaDeFicha } from './pantallas/PantallaDeFicha';
 import { Fisico } from './pantallas/Fisico';
 import { FisicoEscalones } from './pantallas/FisicoEscalones';
@@ -34,6 +35,7 @@ import { ProveedorPlantelActivo } from './plantel/activo';
 import { Cargando } from './components/ui/estados';
 import { useMiFicha } from './datos/consultasJugador';
 import { JugadorFisico } from './pantallas/jugador/JugadorFisico';
+import { EditorDeJugada } from './pantallas/EditorDeJugada';
 import { JugadorJugadas } from './pantallas/jugador/JugadorJugadas';
 import { JugadorProgreso } from './pantallas/jugador/JugadorProgreso';
 import { JugadorRecursos } from './pantallas/jugador/JugadorRecursos';
@@ -42,6 +44,10 @@ import { MarcoJugador } from './pantallas/jugador/MarcoJugador';
 import { ArmarMisiones } from './pantallas/ArmarMisiones';
 import { MisionesPartido } from './pantallas/MisionesPartido';
 import { Perfil } from './pantallas/Perfil';
+import { FamiliaChicos, MarcoFamilia } from './pantallas/familia/Familia';
+import { GuiaDePrimerUso } from './guia/GuiaDePrimerUso';
+import { useDatosDelPerfil } from './datos/consultasPerfil';
+import { useMisClubes, useMisRoles } from './datos/consultas';
 import { CoordFamilias } from './pantallas/coord/CoordFamilias';
 import { CoordFinanzas } from './pantallas/coord/CoordFinanzas';
 import { CoordFormularios } from './pantallas/coord/CoordFormularios';
@@ -53,22 +59,36 @@ import { RequiereCoordinacion } from './pantallas/coord/MarcoCoord';
 
 /** La puerta de entrada: quien tiene cuenta de jugador va a lo suyo; el resto, a Hoy. */
 function Entrada() {
-  const ficha = useMiFicha();
-  if (ficha.isPending) return <Pagina><Cargando filas={2} /></Pagina>;
-  return <Navigate to={ficha.data ? '/jugador/fisico' : '/hoy'} replace />;
+  const perfil = useDatosDelPerfil();
+  if (!perfil.rolesListos) return <Pagina><Cargando titulo filas={3} /></Pagina>;
+  if (perfil.esJugador) return <Navigate to="/jugador/fisico" replace />;
+  // Una familia (sin club propio) tiene su portal: ve a sus hijos y nada más.
+  if (perfil.esFamilia && !perfil.esEntrenador && !perfil.esCoordinador) return <Navigate to="/familia" replace />;
+  // Quien sólo coordina no tiene categorías propias: arranca en el panorama del club.
+  if (perfil.esCoordinador && !perfil.esEntrenador) return <Navigate to="/coordinacion" replace />;
+  return <Navigate to="/hoy" replace />;
+}
+
+/** La intro de primer uso de quien entrena o coordina (entrenar gana si es las dos cosas, como siempre). */
+function GuiaDelCuerpoTecnico() {
+  const club = useMisClubes().data?.[0];
+  const roles = useMisRoles(club?.id).data;
+  if (!roles || (!roles.esEntrenador && !roles.esCoordinador)) return null;
+  return <GuiaDePrimerUso modo={roles.esEntrenador ? 'entrenar' : 'coordinar'} esCoordinador={roles.esCoordinador} />;
 }
 
 /**
- * Todo lo que lleva datos reales pasa por acá. Sin sesión, publicada, se entra en la app de
- * siempre (tiene el alta, Google y la clave olvidada) y de ahí vuelve; en la compu, a /entrar.
- * Con sesión, la categoría elegida (los chips de arriba) vale para todas las pantallas.
+ * Todo lo que lleva datos reales pasa por acá. Sin sesión, a /entrar (ahí están el alta, Google y la
+ * clave olvidada) y de ahí vuelve. Con sesión, primero el nombre, los Términos y el acceso
+ * (PasosDeCuenta); después, la categoría elegida (los chips de arriba) vale para todas las pantallas.
  */
 export function RequiereSesion() {
   return (
-    <PuertaDeSesion>
+    <PuertaDeSesion conBarra>
       <ProveedorPlantelActivo>
         <BarraDeCategorias />
         <Outlet />
+        <GuiaDelCuerpoTecnico />
       </ProveedorPlantelActivo>
     </PuertaDeSesion>
   );
@@ -80,30 +100,37 @@ export function RequiereSesion() {
  */
 export function RequiereSoloSesion() {
   return (
-    <PuertaDeSesion>
+    <PuertaDeSesion sinAcceso>
       <Outlet />
     </PuertaDeSesion>
   );
 }
 
-function PuertaDeSesion({ children }: { children: ReactNode }) {
+/**
+ * `conBarra`: la pantalla lleva arriba los chips de categoría (BarraDeCategorias). Mientras se revisa la
+ * sesión se reserva su lugar, así la carga de la sesión y la de la categoría se ven como una sola y no
+ * hay un salto entre las dos.
+ */
+function PuertaDeSesion({ children, sinAcceso = false, conBarra = false }: { children: ReactNode; sinAcceso?: boolean; conBarra?: boolean }) {
   const { estado, error, reintentar } = useSesion();
   const lugar = useLocation();
   const faltaClaveNueva = useRecuperacionPendiente();
   // Volvió del mail de nueva clave: no pasa a ninguna pantalla hasta elegirla.
   if (estado === 'con-sesion' && faltaClaveNueva) return <Navigate to="/nueva-clave" replace />;
-  if (estado === 'con-sesion') return <>{children}</>;
-  if (estado === 'sin-sesion' && irALaDeSiempre({ volver: true })) return null;
+  if (estado === 'con-sesion') return <PasosDeCuenta sinAcceso={sinAcceso}>{children}</PasosDeCuenta>;
   if (estado === 'sin-sesion') return <Navigate to="/entrar" replace state={{ desde: lugar.pathname }} />;
   return (
-    <Pagina>
-      <Consulta
-        consulta={{ isPending: estado === 'cargando', isError: estado === 'error', error, data: undefined, refetch: reintentar }}
-        errorGenerico="No pudimos revisar tu sesión"
-      >
-        {() => null}
-      </Consulta>
-    </Pagina>
+    <>
+      {conBarra && estado === 'cargando' && <ReservaDeCategorias />}
+      <Pagina>
+        <Consulta
+          consulta={{ isPending: estado === 'cargando', isError: estado === 'error', error, data: undefined, refetch: reintentar }}
+          errorGenerico="No pudimos revisar tu sesión"
+        >
+          {() => null}
+        </Consulta>
+      </Pagina>
+    </>
   );
 }
 
@@ -146,12 +173,14 @@ export const rutas: RouteObject[] = [
         // Cargar un partido cuelga de Datos (y del plantel vacío): no tiene ítem propio en el menú.
         { path: '/datos/cargar-partido', element: <CargarPartido /> },
         { path: '/recursos', element: <Recursos /> },
+        { path: '/recursos/jugadas/:jugadaId/editar', element: <EditorDeJugada /> },
         // Armar las misiones cuelga de Plantel y de Hoy; sin id es una previa nueva, con id se edita la que está.
         { path: '/misiones/armar', element: <ArmarMisiones /> },
         { path: '/misiones/:previaId/armar', element: <ArmarMisiones /> },
         { path: '/misiones/:previaId', element: <MisionesPartido /> },
         // Metas del cuerpo técnico (cuelgan de Hoy) e inventario en lectura (cuelga de Físico).
         { path: '/metas', element: <Metas /> },
+        { path: '/fisico/cargar-plan', element: <CargarPlanFisico /> },
         { path: '/fisico/inventario', element: <InventarioLectura /> },
         { path: '/fisico', element: <Fisico /> },
         { path: '/fisico/plan/:planId/sesion/:sesionId', element: <FisicoSesion /> },
@@ -177,6 +206,8 @@ export const rutas: RouteObject[] = [
   ] },
   // La vista del jugador tiene su propio marco (barra de abajo con sus cinco destinos) y no pasa por RequiereSesion:
   // quien entra es un jugador, sin club ni categoría activa. El marco mismo pide la ficha y la sesión.
+  // El portal de familias, igual: su propio marco, sin menú. Una familia sólo ve a sus hijos.
+  { element: <MarcoFamilia />, children: [{ path: '/familia', element: <FamiliaChicos /> }] },
   { element: <MarcoJugador />, children: [
     { path: '/jugador', element: <Navigate to="/jugador/fisico" replace /> },
     { path: '/jugador/fisico', element: <JugadorFisico /> },

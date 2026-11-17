@@ -112,6 +112,12 @@ describe('estados', () => {
     expect(screen.getByRole('button', { name: 'Cargar' })).toBeTruthy();
   });
 
+  it('la carga con título deja el lugar del título y sigue anunciándose una sola vez', () => {
+    const { container } = render(<Cargando titulo filas={2} />);
+    expect(screen.getAllByText('Cargando…')).toHaveLength(1);
+    expect(container.querySelectorAll('[aria-hidden]')).toHaveLength(3);
+  });
+
   it('la carga se anuncia con un solo «Cargando…»', () => {
     render(<Cargando filas={3} />);
     expect(screen.getAllByText('Cargando…')).toHaveLength(1);

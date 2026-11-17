@@ -10,7 +10,7 @@
     "noEmit": true,
     "skipLibCheck": true,
     "isolatedModules": true,
-    "paths": { "@datos/*": ["../src/data/*"], "@ui/*": ["../src/ui/*"], "@parser/*": ["../src/parser/*"] }
+    "paths": { "xlsx": ["../public/vendor/xlsx.mjs"], "@datos/*": ["../src/data/*"], "@ui/*": ["../src/ui/*"], "@parser/*": ["../src/parser/*"] }
   },
   "include": ["src"]
 }

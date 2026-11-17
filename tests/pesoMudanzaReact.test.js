@@ -21,11 +21,20 @@ import { gzipSync } from 'node:zlib';
  * cronómetro de salida y Yo-Yo con los pitidos) dejaron de abrirse en la app de siempre: el total
  * llegó a ~400 kB y el tope pasó de 385 a 410.
  *
+ * 16/11: cargar el plan de fuerza (resumen y videos) y armar la planilla de asistencia pasaron a React
+ * (~5 kB); el tope pasó de 410 a 420. El lector de xlsx sigue siendo un trozo aparte.
+ * 16/11: el editor de jugadas (cancha interactiva, pasos, deshacer, alta y borrado) dejó de abrirse en la
+ * app de siempre: el total llegó a ~413 kB y el tope pasó de 410 a 420.
+ * 16/11 (junta): cuenta y mails, planillas, ejercicios editables y editor de jugadas, todo junto, llegaron a
+ * ~433 kB; el tope pasó de 420 a 440. Cada rama había medido sola.
+ * 16/11 (portada): la portada de entrada con sus animaciones, el portal de familias, las guías de primer uso, el
+ * reporte de errores y la edición de la ficha llegaron a ~441 kB; el tope pasó de 440 a 460.
+ *
  * Mide web/dist, que sólo existe después de `npm --prefix web run build`: sin
  * armar, se saltea (Vercel la arma en el deploy, no en las pruebas).
  */
 
-const PRESUPUESTO_KB = 410;
+const PRESUPUESTO_KB = 460;
 const DIST = 'web/dist/assets';
 const LECTOR_XLSX = /^xlsx-/;
 

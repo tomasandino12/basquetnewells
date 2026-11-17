@@ -89,7 +89,7 @@ describe('Recursos: videos para jugadores', () => {
   it('sin recursos lo explica y deja el camino para ofrecer uno', async () => {
     await abrirVideos(repo({ obtenerRecursos: async () => [] }));
     expect(await screen.findByText('Todavía no compartiste ningún recurso')).toBeTruthy();
-    expect(screen.getByRole('link', { name: /Ofrecer un recurso/ }).getAttribute('href')).toContain('clasica');
+    expect(await screen.findByRole('button', { name: /Ofrecer un recurso/ })).toBeTruthy();
   });
 
   it('si el resumen falla, las tarjetas salen igual y dicen que no se pudo leer', async () => {

@@ -165,6 +165,14 @@ export interface CargasDelPlantel {
 }
 
 /** Un plan de fuerza importado de una planilla: las fechas son las de sus sesiones. */
+export interface EjercicioDeFuerza {
+  id: string;
+  clave: string;
+  nombre: string;
+  bloque: string | null;
+  link: string | null;
+}
+
 export interface PlanFisico {
   id: string;
   nombreArchivo: string;
@@ -215,7 +223,8 @@ export interface EjercicioDeLista {
   descripcion: string | null;
   enlace: string | null;
   material: string | null;
-  jugadores: number | null;
+  /** Texto libre: «6 a 12» es la respuesta real de un profe. */
+  jugadores: string | null;
   categorias: string | null;
   creadoPor: string | null;
   creadoEn: string;
@@ -227,6 +236,24 @@ export interface EjercicioDeLista {
 /** Un ejercicio pedido solo: trae la pizarra, que la lista no trae. */
 export interface EjercicioCompleto extends Omit<EjercicioDeLista, 'tieneNotas' | 'cantidadVariaciones'> {
   pizarra: DatosDePizarra | null;
+}
+
+/** Los campos de texto de un ejercicio, tal cual los escribió el profe (vacío = no se cargó). */
+export interface CamposDeEjercicio {
+  titulo: string;
+  tema: string;
+  descripcion: string;
+  enlace: string;
+  material: string;
+  jugadores: string;
+  categorias: string;
+}
+
+export interface CamposDeVariacion {
+  titulo: string;
+  nivel: number;
+  eje: string | null;
+  descripcion: string;
 }
 
 export interface NotaDeEjercicio {
@@ -242,6 +269,7 @@ export interface VariacionDeEjercicio {
   eje: string | null;
   titulo: string;
   descripcion: string | null;
+  creadoPor?: string | null;
   creadoEn: string;
 }
 
@@ -355,6 +383,24 @@ export interface RecursoDelClub {
   envios: { jugadorId: string; fecha: string }[];
 }
 
+/**
+ * Lo que recibe `guardar_recurso` (0038). Sin `recursoId` crea un recurso (con `recursoIdNuevo`, el id del
+ * formulario abierto, para que un reintento no lo duplique); con `recursoId` sólo suma envíos a ese.
+ */
+export interface PayloadDeRecurso {
+  clubId: string;
+  recursoId: string | null;
+  recursoIdNuevo: string | null;
+  titulo: string | null;
+  descripcion: string | null;
+  enlace: string | null;
+  tipo?: string | null;
+  frecuenciaSemanal?: number | null;
+  minutos?: number | null;
+  fecha: string;
+  jugadorIds: string[];
+}
+
 /** Conteos del plantel sin nombres; `abrieron` viene null si hay tan pocas cuentas que delataría a alguien. */
 export interface ResumenDeRecursos {
   conCuenta: number;
@@ -388,6 +434,31 @@ export interface MisionDePrevia {
   comentario: string | null;
   [campo: string]: unknown;
 }
+
+/** Una misión de un chico con la fecha y el rival de su previa (la forma que arma `misionesConPrevia`). */
+export interface MisionDelJugador {
+  id: string;
+  previaId: string;
+  metrica: string | null;
+  valor?: number | null;
+  texto?: string | null;
+  estado: 'logrado' | 'en_proceso' | 'no_logrado' | null;
+  comentario: string | null;
+  fecha: string;
+  rival: string | null;
+  partidoId: string | null;
+}
+
+/** Un recurso que se le mandó a un chico. */
+export interface EnvioDeRecurso {
+  fecha: string;
+  recursoId: string | null;
+  titulo: string | null;
+  enlace: string | null;
+}
+
+/** Lo que devuelve la historia por temporada de un chico (listas crudas; las agrupa `@datos/historiaJugador.js`). */
+export type HistoriaDelJugadorCruda = Record<string, unknown[]>;
 
 export interface PreviaCompleta {
   id: string;
@@ -496,18 +567,38 @@ export interface Repositorio extends RepositorioCoord {
   obtenerRecursos(clubId: string): Promise<RecursoDelClub[]>;
   /** Null si quien llama no es entrenador del plantel. */
   obtenerResumenRecursos(plantelId: string): Promise<ResumenDeRecursos | null>;
+  guardarRecurso(payload: PayloadDeRecurso): Promise<unknown>;
+  /** Se lleva los envíos y las aperturas. Lanza 'NO_ES_TUYO' si es de otro profe. */
+  borrarRecurso(clubId: string, recursoId: string): Promise<void>;
   /** No lanza: abrir un recurso no depende de que se anote. */
   registrarAperturaDeRecurso(recursoId: string): Promise<void>;
   // Misiones de un partido (las evalúa el profe).
   obtenerPrevia(previaId: string): Promise<PreviaCompleta | null>;
+  obtenerMisionesDelJugador(jugadorId: string): Promise<{ misiones: { previaId: string; [campo: string]: unknown }[]; previas: { id: string; [campo: string]: unknown }[] }>;
+  obtenerHistoriaDelJugador(jugadorId: string): Promise<HistoriaDelJugadorCruda>;
+  obtenerEnviosDeJugador(clubId: string, jugadorId: string): Promise<EnvioDeRecurso[]>;
   obtenerEstadisticasParaMisiones(partidoId: string): Promise<{ jugadorId: string; [columna: string]: unknown }[]>;
   evaluarMisiones(datos: EvaluacionAGuardar): Promise<unknown>;
   /** Todo o nada: guarda la previa con sus misiones. Un reintento con los mismos ids no duplica. */
   guardarPrevia(payload: PayloadDePrevia): Promise<unknown>;
   /** Guarda el nombre propio en los metadatos de la cuenta y devuelve el usuario ya actualizado. */
   guardarMiNombre(nombre: string): Promise<Sesion['user']>;
+  /** El usuario tal como lo guarda el servidor (el nombre y las marcas de la cuenta), o null sin sesión. */
+  obtenerMiUsuario(): Promise<Sesion['user'] | null>;
+  /** Si esta cuenta ya aceptó esa versión de los Términos y la Política de privacidad. */
+  yaAceptoLegal(version: string): Promise<boolean>;
+  /** Deja constancia de la aceptación (autor y fecha los sella el servidor). */
+  aceptarLegal(version: string): Promise<void>;
+  /** ¿Coordinación rechazó el pedido de esta cuenta? Sólo el hecho. */
+  miPedidoDescartado(): Promise<boolean>;
+  /** «Fue un error»: la cuenta rechazada vuelve a la lista de pendientes. */
+  volverAPedirAcceso(): Promise<void>;
   obtenerPlanesFisicos(clubId: string, plantelId: string): Promise<PlanFisico[]>;
   obtenerPlanFisico(planId: string): Promise<SesionFisico[]>;
+  /** La biblioteca de ejercicios de fuerza del club: contra ella se reconoce qué ejercicio del plan ya tiene video. */
+  obtenerEjerciciosFuerza(clubId: string): Promise<EjercicioDeFuerza[]>;
+  /** importar_plan_fisico: el plan, sus sesiones y sus ejercicios entran juntos o no entra nada. El payload lo arma prepararPayloadPlanFisico.js. */
+  importarPlanFisico(payload: unknown): Promise<{ sesiones: number; ejercicios: number; pendientes: number }>;
   obtenerPasos(clubId: string): Promise<PasoFuerza[]>;
   crearPaso(datos: { clubId: string; clave: string; nombre: string; paso: number | null }): Promise<PasoFuerza>;
   editarPaso(pasoId: string, paso: number): Promise<PasoFuerza>;
@@ -518,11 +609,28 @@ export interface Repositorio extends RepositorioCoord {
   obtenerEjercicio(clubId: string, ejercicioId: string): Promise<EjercicioCompleto | null>;
   obtenerNotas(clubId: string, ejercicioId: string): Promise<NotaDeEjercicio[]>;
   obtenerVariaciones(clubId: string, ejercicioId: string): Promise<VariacionDeEjercicio[]>;
+  /** Devuelve el id nuevo. */
+  crearEjercicio(datos: CamposDeEjercicio & { clubId: string }): Promise<string>;
+  /** Lanza 'NO_ES_TUYO' si el ejercicio es de otro: la base no devuelve ninguna fila. */
+  actualizarEjercicio(clubId: string, ejercicioId: string, campos: CamposDeEjercicio): Promise<void>;
+  /** Se lleva las notas y variaciones. Lanza 'NO_ES_TUYO' si es de otro. */
+  borrarEjercicio(clubId: string, ejercicioId: string): Promise<void>;
+  crearNota(datos: { clubId: string; ejercicioId: string; texto: string }): Promise<string>;
+  borrarNota(clubId: string, notaId: string): Promise<void>;
+  crearVariacion(datos: CamposDeVariacion & { clubId: string; ejercicioId: string }): Promise<string>;
+  actualizarVariacion(clubId: string, variacionId: string, campos: CamposDeVariacion): Promise<void>;
+  borrarVariacion(clubId: string, variacionId: string): Promise<void>;
   listarJugadas(clubId: string): Promise<JugadaDelClub[]>;
   plantelesDeJugada(clubId: string, jugadaId: string): Promise<string[]>;
   /** Deja la jugada asignada exactamente a estos planteles. */
   asignarJugada(clubId: string, jugadaId: string, plantelIds: string[]): Promise<void>;
-  crearJugada(datos: { clubId: string; nombre: string; tipo: string; datos: DatosDePizarra }): Promise<unknown>;
+  /** Devuelve el id de la jugada nueva. */
+  crearJugada(datos: { clubId: string; nombre: string; tipo: string; datos: DatosDePizarra }): Promise<string>;
+  obtenerJugada(clubId: string, jugadaId: string): Promise<JugadaDelClub | null>;
+  /** Lanza `NO_ES_TUYA` si la jugada es de otro profe. */
+  guardarJugada(clubId: string, jugadaId: string, datos: { nombre: string; tipo: string; datos: DatosDePizarra }): Promise<void>;
+  /** Lanza `NO_ES_TUYA` si la jugada es de otro profe. */
+  borrarJugada(clubId: string, jugadaId: string): Promise<void>;
   obtenerSesionActual(): Promise<Sesion | null>;
   iniciarSesion(email: string, password: string): Promise<Sesion>;
   cerrarSesion(): Promise<void>;
@@ -593,6 +701,10 @@ export interface Repositorio extends RepositorioCoord {
   }): Promise<void>;
   darAlta(lesionId: string, hasta: string): Promise<void>;
   sacarDelPlantel(clubId: string, jugadorId: string, plantelId: string): Promise<void>;
+  /** `null` es «no se sabe». */
+  /** No tira nunca: si no se puede guardar, el registro se pierde (es lo que se hace cuando se cayó la red). */
+  guardarErrorDeCliente(registro: { mensaje: string; stack: string | null; pantalla: string; agente: string }, clubId: string | null): Promise<void>;
+  actualizarFechaNacimiento(clubId: string, jugadorId: string, fechaNacimiento: string | null): Promise<void>;
 }
 
 export type CargarRepositorio = () => Promise<Repositorio>;

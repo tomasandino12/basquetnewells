@@ -6,7 +6,20 @@ import { renderConDatos, repositorioInventado } from '../datos/renderDePrueba';
 import type { Repositorio } from '../datos/repositorio';
 import { rutas } from '../rutas';
 
+// El lector de planillas se pide recién al bajar: acá se reemplaza para ver qué armaría.
+const libro = vi.hoisted(() => ({ hojas: [] as { nombre: string; filas: unknown[][] }[], archivo: '' as string }));
+vi.mock('xlsx', () => ({
+  utils: {
+    book_new: () => { libro.hojas = []; return {}; },
+    aoa_to_sheet: (filas: unknown[][]) => ({ filas }),
+    book_append_sheet: (_l: unknown, hoja: { filas: unknown[][] }, nombre: string) => { libro.hojas.push({ nombre, filas: hoja.filas }); },
+  },
+  writeFile: (_l: unknown, nombre: string) => { libro.archivo = nombre; },
+}));
+
 afterEach(() => {
+  libro.hojas = [];
+  libro.archivo = '';
   cleanup();
   desmarcarSesionCerrada();
 });
@@ -75,9 +88,32 @@ describe('Asistencia: historial', () => {
     expect(await screen.findByText('1 día')).toBeTruthy();
   });
 
-  it('la planilla para el área se baja todavía en la app anterior', async () => {
+  it('baja la planilla del área: una hoja por categoría del profe, con los encabezados de siempre', async () => {
+    const u = userEvent.setup();
+    abrir(repo({ obtenerMisPlantelesAsignados: async () => new Set(['p-1', 'p-2']) }));
+    await u.click(await screen.findByRole('button', { name: 'Bajar planilla' }));
+    expect(await screen.findByText('Planilla lista')).toBeTruthy();
+    expect(libro.archivo).toMatch(/^Asistencia \d{4}-\d{2}-\d{2}\.xlsx$/);
+    expect(libro.hojas.map((h) => h.nombre)).toEqual(['Sub 13', 'Sub 15']);
+    const [encabezado, ...filas] = libro.hojas[0].filas;
+    expect(encabezado.slice(0, 5)).toEqual(['Jugador', 'DNI', 'SOCIO NUM', '% Asistencia', 'Estado']);
+    expect(filas.map((f) => f[0])).toEqual(['Acosta, Bruno', 'Benítez, Tomás']);
+  });
+
+  it('el link ya no manda a la app anterior', async () => {
     abrir();
-    expect((await screen.findByRole('link', { name: 'Bajar planilla' })).getAttribute('href')).toBe('/app/clasica?desde=nueva');
+    await screen.findByRole('button', { name: 'Bajar planilla' });
+    expect(screen.queryByRole('link', { name: 'Bajar planilla' })).toBeNull();
+  });
+
+  it('si no se pueden leer las lesiones no baja nada: la planilla saldría con los «L» de menos', async () => {
+    const u = userEvent.setup();
+    abrir(repo({ obtenerLesionesDelPlantel: async () => { throw new Error('boom'); } }));
+    await u.click(await screen.findByRole('button', { name: 'Bajar planilla' }));
+    expect(await screen.findByText(/No se pudo armar la planilla/)).toBeTruthy();
+    expect(libro.archivo).toBe('');
+    // Y se puede volver a probar.
+    expect((screen.getByRole('button', { name: 'Bajar planilla' }) as HTMLButtonElement).disabled).toBe(false);
   });
 
   it('muestra la carga y, si falla, ofrece reintentar', async () => {

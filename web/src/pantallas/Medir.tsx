@@ -1,6 +1,7 @@
 import { ArrowRight, ClipboardList } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
+import { PistaDeUnaVez } from '../guia/GuiaDePrimerUso';
 import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
 import { Consulta } from '../components/ui/consulta';
@@ -42,7 +43,7 @@ export function Medir() {
     <ConPlantel
       plantelId={plantelId}
       volver={{ a: '/hoy', texto: 'Hoy' }}
-      soloCuerpoTecnico="La coordinación ve las mediciones en la app anterior."
+      soloCuerpoTecnico="La coordinación ve el panorama del club en Coordinación, no las mediciones de cada chico."
     >
       {(p) => <MedirDeLaCategoria {...p} />}
     </ConPlantel>
@@ -82,6 +83,8 @@ function MedirDeLaCategoria({ clubId, plantelId, categoria }: { clubId: string; 
             <h1 className="font-titulo text-7xl leading-[.9] font-bold uppercase lg:text-8xl">Medir</h1>
             <p className={`${ETIQUETA} mt-2`}>{categoria}</p>
           </header>
+
+          <PistaDeUnaVez id="medir" className="mt-5" />
 
           {guardada && <Aviso tono="ok" titulo="Sesión guardada" className="mt-5">{guardada} quedó guardada en la base.</Aviso>}
 

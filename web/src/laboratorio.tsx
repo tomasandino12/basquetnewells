@@ -1,4 +1,4 @@
-import { Activity, ArrowUpRight, Building2, LogOut, CalendarCheck,LineChart, Moon, MoreHorizontal, PlaySquare, Ruler, Sun, User, Users, type LucideIcon } from 'lucide-react';
+import { Activity, Building2, LogOut, CalendarCheck,LineChart, Moon, PlaySquare, Ruler, Sun, User, Users, type LucideIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import { inicialesDeNombre, nombreDeUsuario } from '@datos/cuenta.js';
@@ -9,7 +9,6 @@ import { useSesion } from './datos/contexto';
 import { useSalir } from './datos/consultas';
 import { useEsCoordinador } from './coord/consultas';
 import { aplicarTema, guardarTema, useTema, type Tema } from './tema';
-import { APP_DE_SIEMPRE } from './clasica';
 
 interface Enlace {
   a: string;
@@ -36,47 +35,6 @@ export const ENLACES_DEL_MENU: Enlace[] = [
   // Panorama, profes, finanzas y familias: el resto de coordinación cuelga de /coordinacion/….
   { a: '/coordinacion', nombre: 'Coordinación', icono: Building2, soloCoordinacion: true, corto: 'Coord.' },
 ];
-
-/**
- * Lo que todavía no se mudó: se abre en la app de siempre (/app/clasica), así no se pierde
- * ninguna función (H-175). Va con `?desde=nueva`: la de siempre no la manda de vuelta acá.
- */
-export const EN_LA_DE_SIEMPRE: { nombre: string; icono: LucideIcon }[] = [];
-
-function DeSiempre({ compacto }: { compacto?: boolean }) {
-  // Datos ya se mudó: sin nada pendiente, el menú no manda a ningún lado.
-  if (EN_LA_DE_SIEMPRE.length === 0) return null;
-  if (compacto) {
-    return (
-      <a
-        href={APP_DE_SIEMPRE}
-        className="flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-[0.6875rem] text-sobre-negro opacity-70 outline-offset-2 focus-visible:outline-2 focus-visible:outline-lima"
-      >
-        <MoreHorizontal aria-hidden className="size-5" strokeWidth={1.8} />
-        <span>Más</span>
-      </a>
-    );
-  }
-  return (
-    <div className="mt-6 border-t border-white/10 pt-4">
-      <p className="px-3 pb-2 font-mono text-[0.6875rem] tracking-wide text-sobre-negro uppercase opacity-60">En la app de siempre</p>
-      <ul className="flex flex-col gap-1">
-        {EN_LA_DE_SIEMPRE.map(({ nombre, icono: Icono }) => (
-          <li key={nombre}>
-            <a
-              href={APP_DE_SIEMPRE}
-              className="flex min-h-11 items-center gap-3 rounded-[0.5rem] px-3 text-[0.9375rem] text-sobre-negro opacity-70 outline-offset-2 focus-visible:outline-2 focus-visible:outline-lima [@media(hover:hover)]:hover:opacity-100"
-            >
-              <Icono aria-hidden className="size-5" strokeWidth={1.8} />
-              <span>{nombre}</span>
-              <ArrowUpRight aria-hidden className="ml-auto size-4" />
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
 
 /** Pantallas con datos inventados: fuera del menú, en una línea aparte que lo dice. */
 export const EJEMPLOS = [
@@ -220,6 +178,9 @@ export function Marco() {
   useEffect(() => aplicarTema(tema), [tema]);
   const cambiarTema = () => guardarTema(tema === 'oscuro' ? 'claro' : 'oscuro');
 
+  // Quien llega sin cuenta ve la portada limpia: sin menú de la app ni pantallas de ejemplo.
+  if (pathname === '/entrar') return <Outlet />;
+
   return (
     <div className="min-h-svh lg:pl-60 print:pl-0">
       {/* Compu */}
@@ -236,7 +197,6 @@ export function Marco() {
               </li>
             ))}
           </ul>
-          <DeSiempre />
         </nav>
         <div className="mt-auto flex flex-col gap-1">
           <BotonPerfil />
@@ -266,11 +226,6 @@ export function Marco() {
               <ItemMenu enlace={e} compacto />
             </li>
           ))}
-          {EN_LA_DE_SIEMPRE.length > 0 && (
-            <li className="flex flex-1">
-              <DeSiempre compacto />
-            </li>
-          )}
         </ul>
       </nav>
 

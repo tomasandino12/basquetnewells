@@ -21,6 +21,19 @@
 @font-face{font-family:'IBM Plex Mono';font-weight:500;font-display:swap;src:url(/public/fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2')}
 @font-face{font-family:'IBM Plex Mono';font-weight:600;font-display:swap;src:url(/public/fonts/ibm-plex-mono-latin-600-normal.woff2) format('woff2')}
 
+/* ---- tipografías de respaldo con las medidas de las propias ----
+   Mientras llega la fuente real (font-display:swap), el navegador pinta con una del sistema; si esa
+   mide distinto, al llegar la real todo el texto se acomoda de golpe (el título del hero saltaba ~90 px
+   y la marca pasaba de dos renglones a uno). Estas caras son Arial escalada (size-adjust) y con el
+   ascenso y descenso de la fuente real, así que ocupan casi el mismo lugar y el cambio no mueve nada.
+   Los porcentajes salen de medir el mismo texto con cada fuente (canvas, 100 px); si cambia la fuente,
+   se vuelven a medir. tests/tipografiasRespaldo.test.js vigila que cada peso tenga su cara. */
+@font-face{font-family:'Barlow Condensed Respaldo';font-weight:400 500;src:local('Arial'),local('ArialMT');size-adjust:66%;ascent-override:151.5%;descent-override:30.3%;line-gap-override:0%}
+@font-face{font-family:'Barlow Condensed Respaldo';font-weight:600;src:local('Arial Bold'),local('Arial-BoldMT');size-adjust:68.4%;ascent-override:146.2%;descent-override:29.2%;line-gap-override:0%}
+@font-face{font-family:'Barlow Condensed Respaldo';font-weight:700;src:local('Arial Bold'),local('Arial-BoldMT');size-adjust:70%;ascent-override:142.9%;descent-override:28.6%;line-gap-override:0%}
+@font-face{font-family:'Inter Respaldo';font-weight:400 500;src:local('Arial'),local('ArialMT');size-adjust:105.9%;ascent-override:91.6%;descent-override:22.7%;line-gap-override:0%}
+@font-face{font-family:'Inter Respaldo';font-weight:600 700;src:local('Arial Bold'),local('Arial-BoldMT');size-adjust:101.3%;ascent-override:95.8%;descent-override:23.7%;line-gap-override:0%}
+
 :root{
   /* ---- marca: el color del club ----
      --club y --sobre-club son LOS ÚNICOS dos valores que cambia un club (el
@@ -143,8 +156,8 @@
   --google-hover:#EDEDED;
 
   /* ---- tipografías ---- */
-  --ff-titulo:'Barlow Condensed',system-ui,sans-serif;
-  --ff-cuerpo:'Inter',system-ui,sans-serif;
+  --ff-titulo:'Barlow Condensed','Barlow Condensed Respaldo',system-ui,sans-serif;
+  --ff-cuerpo:'Inter','Inter Respaldo',system-ui,sans-serif;
   --ff-mono:'IBM Plex Mono',ui-monospace,monospace;
 
   /* ---- escala tipográfica (mismos nombres que el prototipo, en rem) ---- */

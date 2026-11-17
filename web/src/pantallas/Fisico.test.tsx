@@ -107,10 +107,17 @@ describe('Físico: la lista de planes', () => {
     expect(screen.getByRole('link', { name: 'Inventario del club' })).toBeTruthy();
   });
 
-  it('con plan, los dos enlaces también están', async () => {
+  it('sin plan, el vacío ocupa todo el ancho y buena parte del alto, como la pantalla con datos', async () => {
+    abrir(repo({ obtenerPlanesFisicos: async () => [] }));
+    const caja = (await screen.findByText('Plan de fuerza', { selector: 'h3' })).parentElement!;
+    expect(caja.className).toContain('w-full');
+    expect(caja.className).toContain('min-h-[60svh]');
+  });
+
+  it('con plan, los dos enlaces también están, y «Cargar plan de fuerza» ya es de esta app', async () => {
     abrir();
     await screen.findByRole('heading', { name: 'Plan de ejemplo.xlsx' });
-    expect(screen.getByRole('link', { name: 'Cargar plan de fuerza' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Cargar plan de fuerza' }).getAttribute('href')).toBe('/fisico/cargar-plan');
     expect(screen.getByRole('link', { name: 'Inventario del club' })).toBeTruthy();
   });
 

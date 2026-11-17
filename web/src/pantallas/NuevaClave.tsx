@@ -25,7 +25,7 @@ export function NuevaClave() {
   const [repetida, setRepetida] = useState('');
   const [problema, setProblema] = useState<string | null>(null);
 
-  if (sesion.estado === 'cargando') return <Pagina><Cargando filas={2} /></Pagina>;
+  if (sesion.estado === 'cargando') return <Pagina><Cargando titulo filas={3} /></Pagina>;
 
   if (sesion.estado !== 'con-sesion') {
     return (

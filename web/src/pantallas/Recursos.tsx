@@ -1,5 +1,6 @@
-import { BookOpen, Copy, Package, Pencil, Play, Printer, Search, Tag, Users } from 'lucide-react';
+import { BookOpen, Copy, Package, Pencil, Play, Plus, Printer, Search, Tag, Trash2, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { duplicarDatos, etiquetaDeTipo, nosotrosDefiende, pantallaAptaParaEditar } from '@datos/jugadas.js';
 import { LIMITE } from '@datos/limites.js';
 import { nombreDeEje, ordenarVariaciones } from '@datos/variaciones.js';
@@ -7,22 +8,26 @@ import { urlDeMiniatura } from '@datos/youtube.js';
 import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
 import { Chip, ChipBoton, Etiqueta } from '../components/ui/chip';
+import { Campo } from '../components/ui/campo';
 import { Consulta } from '../components/ui/consulta';
 import { Vacio } from '../components/ui/estados';
 import { Pizarra } from '../components/ui/pizarra';
 import { Hoja } from '../components/ui/sheet';
-import { APP_DE_SIEMPRE } from '../clasica';
-import { useAsignarJugada, useDetalleDeEjercicio, useDuplicarJugada, useEjercicios, useJugadasDelClub, usePlantelesDeJugada } from '../datos/consultasRecursos';
+import { useAsignarJugada, useBorrarJugada, useDetalleDeEjercicio, useDuplicarJugada, useEjercicios, useJugadasDelClub, usePlantelesDeJugada } from '../datos/consultasRecursos';
+import { useSesion } from '../datos/contexto';
 import { mensajeDeError } from '../datos/errores';
 import type { EjercicioDeLista, JugadaDelClub, NotaDeEjercicio, PlantelDelClub, VariacionDeEjercicio } from '../datos/repositorio';
 import { cn } from '../lib/cn';
 import { usePlantelActivo } from '../plantel/activo';
 import { colorDeTema, colorDeTipo } from '../recursos/colores';
+import { FORMACIONES, TIPOS_JUGADA } from '../recursos/operaciones';
 import { filtrarEjercicios, filtrarJugadas, nombreDeCopia, nombreDeTema, temasConEjercicios, textoDeVariaciones, tiposConJugadas } from '../recursos/biblioteca';
 import { Pagina } from '../components/ui/pagina';
 import { SinCategoria } from './PlantelDelClub';
 import { VideoDeEjercicio } from '../fisico/VideoDeEjercicio';
+import { BorrarEjercicio, BorrarNota, BorrarVariacion, HojaDeEjercicio, HojaDeNota, HojaDeVariacion } from './RecursosEscritura';
 import { Videos } from './RecursosVideos';
+import { rutaDelEditor } from './EditorDeJugada';
 
 type Pestana = 'ejercicios' | 'jugadas' | 'videos';
 const NOMBRE_DE_PESTANA: Record<Pestana, string> = { ejercicios: 'Ejercicios', jugadas: 'Jugadas', videos: 'Videos' };
@@ -36,8 +41,8 @@ const ENLACE_TEXTO =
 
 /**
  * Recursos: la biblioteca del club. En compu, tres columnas (la lista, la pizarra, el detalle); en
- * el celular, la pizarra arriba, después el detalle y la lista abajo. Crear, editar y borrar siguen
- * en la app de siempre (hace falta compu o tablet para la pizarra).
+ * el celular, la pizarra arriba, después el detalle y la lista abajo. Los ejercicios y las jugadas se crean, editan,
+ * asignan y borran acá (el editor de jugadas necesita compu o tablet).
  */
 export function Recursos() {
   const activo = usePlantelActivo();
@@ -54,10 +59,14 @@ export function Recursos() {
 export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId: string; planteles: PlantelDelClub[]; plantelId?: string; categoria?: string }) {
   const ejercicios = useEjercicios(clubId);
   const jugadas = useJugadasDelClub(clubId);
-  const [pestana, setPestana] = useState<Pestana>('ejercicios');
+  // El editor vuelve con ?pestana=jugadas&jugada=<id>: la jugada que se estaba editando queda elegida.
+  const [params] = useSearchParams();
+  const [pestana, setPestana] = useState<Pestana>(params.get('pestana') === 'jugadas' ? 'jugadas' : params.get('pestana') === 'videos' ? 'videos' : 'ejercicios');
   const [texto, setTexto] = useState('');
   const [filtro, setFiltro] = useState<string | null>(null);
-  const [elegida, setElegida] = useState<Record<Pestana, string | null>>({ ejercicios: null, jugadas: null, videos: null });
+  const [cargando, setCargando] = useState(false);
+  const [creando, setCreando] = useState(false);
+  const [elegida, setElegida] = useState<Record<Pestana, string | null>>({ ejercicios: null, jugadas: params.get('jugada'), videos: null });
 
   const cambiarPestana = (p: Pestana) => {
     setPestana(p);
@@ -111,6 +120,12 @@ export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId
       ) : (
       <div className="flex flex-col gap-5 lg:grid lg:min-h-[calc(100dvh-12rem)] lg:grid-cols-[minmax(16rem,1fr)_minmax(0,2fr)_minmax(16rem,1fr)] lg:items-start">
         <section aria-label="Lista" className="order-3 flex flex-col gap-3 lg:sticky lg:top-4 lg:order-1 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto print:hidden">
+          {pestana === 'jugadas' && (
+            <Boton variante="secundario" onClick={() => setCreando(true)}>
+              <Plus aria-hidden className="size-4" />
+              Nueva jugada
+            </Boton>
+          )}
           <label className="relative block">
             <span className="sr-only">{pestana === 'ejercicios' ? 'Buscar ejercicio' : 'Buscar jugada'}</span>
             <Search aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gris" />
@@ -123,6 +138,12 @@ export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId
               className="h-11 w-full rounded-campo border border-borde-control bg-sup pr-3 pl-9 text-base outline-offset-2 placeholder:text-gris focus-visible:outline-2 focus-visible:outline-tinta"
             />
           </label>
+          {pestana === 'ejercicios' && (
+            <Boton variante="secundario" onClick={() => setCargando(true)}>
+              <Plus aria-hidden className="size-4" />
+              Cargar un ejercicio
+            </Boton>
+          )}
           <Consulta consulta={{ isPending: lista.isPending, isError: lista.isError, error: lista.error, data: lista.data as unknown, refetch: lista.refetch }} errorGenerico={pestana === 'ejercicios' ? 'No pudimos cargar los ejercicios' : 'No pudimos cargar las jugadas'}>
             {() =>
               pestana === 'ejercicios' ? (
@@ -132,10 +153,6 @@ export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId
               )
             }
           </Consulta>
-          <p className="text-sm text-gris">
-            Crear, editar y borrar, los jugadores y el inventario siguen en{' '}
-            <a href={APP_DE_SIEMPRE} className="font-semibold underline">la app de siempre</a>.
-          </p>
         </section>
 
         {idElegido !== null &&
@@ -153,6 +170,8 @@ export function Biblioteca({ clubId, planteles, plantelId, categoria }: { clubId
         )}
       </div>
       )}
+      {cargando && <HojaDeEjercicio abierta alCambiar={(a) => !a && setCargando(false)} clubId={clubId} />}
+      <NuevaJugada abierta={creando} alCambiar={setCreando} clubId={clubId} />
     </Pagina>
   );
 }
@@ -214,7 +233,7 @@ function ListaDeEjercicios({ todos, visibles, filtro, setFiltro, elegido, elegir
   if (todos.length === 0) {
     return (
       <Vacio icono={BookOpen} titulo="La biblioteca está vacía">
-        Acá van los ejercicios del club, con lo que cada profe aprendió al usarlos. Cargar uno son dos campos: título y tema, desde la app de siempre.
+        Acá van los ejercicios del club, con lo que cada profe aprendió al usarlos. Cargar uno son dos campos: título y tema.
       </Vacio>
     );
   }
@@ -242,7 +261,7 @@ function ListaDeJugadas({ todas, visibles, filtro, setFiltro, elegido, elegir }:
   if (todas.length === 0) {
     return (
       <Vacio icono={BookOpen} titulo="Todavía no hay jugadas">
-        La biblioteca del club: cada profe carga las suyas y todos las ven. Las nuevas se arman en la app de siempre, en compu o tablet.
+        La biblioteca del club: cada profe carga las suyas y todos las ven. Las nuevas se arman acá, en compu o tablet: tocá «Nueva jugada».
       </Vacio>
     );
   }
@@ -267,8 +286,22 @@ function ListaDeJugadas({ todas, visibles, filtro, setFiltro, elegido, elegir }:
 
 /* ---------- Ejercicio: pizarra al centro, detalle a la derecha ---------- */
 
+type Dialogo =
+  | { tipo: 'editar' }
+  | { tipo: 'borrar' }
+  | { tipo: 'nota' }
+  | { tipo: 'borrarNota'; id: string }
+  | { tipo: 'variacion'; previa?: VariacionDeEjercicio }
+  | { tipo: 'borrarVariacion'; variacion: VariacionDeEjercicio };
+
 function DeEjercicio({ clubId, ejercicio }: { clubId: string; ejercicio: EjercicioDeLista }) {
   const detalle = useDetalleDeEjercicio(clubId, ejercicio.id);
+  const { sesion } = useSesion();
+  const yo = sesion?.user.id ?? null;
+  const esMio = (autor: string | null | undefined) => yo !== null && autor === yo;
+  const propio = esMio(ejercicio.creadoPor);
+  const [dialogo, setDialogo] = useState<Dialogo | null>(null);
+  const cerrar = () => setDialogo(null);
   const conPizarra = Boolean(detalle.data?.ejercicio?.pizarra);
   const textos = (notas: NotaDeEjercicio[], variaciones: VariacionDeEjercicio[]) => (
     <>
@@ -278,8 +311,14 @@ function DeEjercicio({ clubId, ejercicio }: { clubId: string; ejercicio: Ejercic
           <p className="text-base leading-relaxed whitespace-pre-line">{ejercicio.descripcion}</p>
         </section>
       )}
-      <Variaciones variaciones={variaciones} />
-      <Notas notas={notas} />
+      <Variaciones
+        variaciones={variaciones}
+        esMia={(v) => esMio(v.creadoPor)}
+        alSumar={() => setDialogo({ tipo: 'variacion' })}
+        alEditar={(v) => setDialogo({ tipo: 'variacion', previa: v })}
+        alBorrar={(v) => setDialogo({ tipo: 'borrarVariacion', variacion: v })}
+      />
+      <Notas notas={notas} esMia={(n) => esMio(n.creadoPor)} alAgregar={() => setDialogo({ tipo: 'nota' })} alBorrar={(n) => setDialogo({ tipo: 'borrarNota', id: n.id })} />
     </>
   );
   return (
@@ -301,17 +340,25 @@ function DeEjercicio({ clubId, ejercicio }: { clubId: string; ejercicio: Ejercic
         </Consulta>
       </section>
       <aside aria-label="Detalle" className="order-2 flex min-w-0 flex-col gap-5 lg:order-3 print:hidden">
-        <a href={APP_DE_SIEMPRE} className={BOTON_DE_ENLACE}>
-          <Pencil aria-hidden className="size-4" />
-          Editar o anotar en la app de siempre
-        </a>
+        {propio && (
+          <div className="flex gap-2">
+            <Boton variante="contorno" tamano="chico" className="flex-1" onClick={() => setDialogo({ tipo: 'editar' })}>
+              <Pencil aria-hidden className="size-4" />
+              Editar
+            </Boton>
+            <Boton variante="contorno" tamano="chico" className="flex-1" onClick={() => setDialogo({ tipo: 'borrar' })}>
+              <Trash2 aria-hidden className="size-4" />
+              Borrar
+            </Boton>
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-2">
           <Etiqueta className={cn('min-h-7 px-2.5 text-xs', colorDeTema(ejercicio.tema))}>{nombreDeTema(ejercicio.tema)}</Etiqueta>
           {ejercicio.tieneNotas && <span className="text-sm font-semibold text-sube">✓ probado</span>}
         </div>
         <dl className="flex flex-col gap-3">
           {ejercicio.material && <Dato icono={Package} tono="bg-baja-fondo text-baja" clave="Material" valor={ejercicio.material} />}
-          {ejercicio.jugadores != null && <Dato icono={Users} tono="bg-sube-fondo text-sube" clave="Jugadores" valor={String(ejercicio.jugadores)} />}
+          {ejercicio.jugadores?.trim() && <Dato icono={Users} tono="bg-sube-fondo text-sube" clave="Jugadores" valor={ejercicio.jugadores.trim()} />}
           {ejercicio.categorias?.trim() && <Dato icono={Tag} tono="bg-club-cl text-club-texto" clave="Categorías" valor={ejercicio.categorias.trim()} />}
         </dl>
         {ejercicio.enlace && <VideoDeEjercicio link={ejercicio.enlace} titulo={ejercicio.titulo} />}
@@ -321,64 +368,104 @@ function DeEjercicio({ clubId, ejercicio }: { clubId: string; ejercicio: Ejercic
           </Consulta>
         )}
       </aside>
+      {dialogo?.tipo === 'editar' && <HojaDeEjercicio abierta alCambiar={(a) => !a && cerrar()} clubId={clubId} previo={ejercicio} />}
+      {dialogo?.tipo === 'borrar' && <BorrarEjercicio abierta alCerrar={cerrar} clubId={clubId} ejercicio={ejercicio} alBorrar={cerrar} />}
+      {dialogo?.tipo === 'nota' && <HojaDeNota abierta alCambiar={(a) => !a && cerrar()} clubId={clubId} ejercicioId={ejercicio.id} />}
+      {dialogo?.tipo === 'borrarNota' && <BorrarNota abierta alCerrar={cerrar} clubId={clubId} notaId={dialogo.id} />}
+      {dialogo?.tipo === 'variacion' && (
+        <HojaDeVariacion abierta alCambiar={(a) => !a && cerrar()} clubId={clubId} ejercicioId={ejercicio.id} variaciones={detalle.data?.variaciones ?? []} previa={dialogo.previa} />
+      )}
+      {dialogo?.tipo === 'borrarVariacion' && <BorrarVariacion abierta alCerrar={cerrar} clubId={clubId} variacion={dialogo.variacion} />}
     </>
   );
 }
 
 const SECCION = 'mb-2 font-titulo text-xl leading-none font-semibold tracking-wide uppercase';
 
+/** Un botón chico de texto para agregar, al lado del título de la sección. */
+function Agregar({ alTocar, children }: { alTocar: () => void; children: React.ReactNode }) {
+  return (
+    <button type="button" onClick={alTocar} className={cn(ENLACE_TEXTO, 'gap-1')}>
+      <Plus aria-hidden className="size-4" />
+      {children}
+    </button>
+  );
+}
+
+/** Editar o borrar lo propio: ícono solo, con nombre para el lector de pantalla y alto táctil. */
+function AccionPropia({ nombre, alTocar, children }: { nombre: string; alTocar: () => void; children: React.ReactNode }) {
+  return (
+    <button type="button" aria-label={nombre} onClick={alTocar} className="grid min-h-11 w-11 shrink-0 place-items-center text-gris outline-offset-[-4px] focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:text-tinta">
+      {children}
+    </button>
+  );
+}
+
 /** Cuántas hay, al lado del título; vacía no ocupa lugar con un cartel grande. */
-function Variaciones({ variaciones }: { variaciones: VariacionDeEjercicio[] }) {
-  if (variaciones.length === 0) {
-    return (
-      <section aria-label="Variaciones">
-        <h3 className={cn(SECCION, 'text-gris')}>Variaciones</h3>
-        <p className="text-sm text-gris">Todavía no hay variaciones.</p>
-      </section>
-    );
-  }
+function Variaciones({ variaciones, esMia, alSumar, alEditar, alBorrar }: { variaciones: VariacionDeEjercicio[]; esMia: (v: VariacionDeEjercicio) => boolean; alSumar: () => void; alEditar: (v: VariacionDeEjercicio) => void; alBorrar: (v: VariacionDeEjercicio) => void }) {
   return (
     <section aria-label="Variaciones">
-      <h3 className={SECCION}>
-        Variaciones <span className="ml-1 font-mono text-xs font-medium text-gris">{variaciones.length}</span>
-      </h3>
-      <ol className="flex flex-col divide-y divide-linea border-y border-linea">
-        {(ordenarVariaciones(variaciones) as VariacionDeEjercicio[]).map((v) => (
-          <li key={v.id} className="flex items-start gap-3 py-3 text-sm">
-            <Etiqueta className="mt-0.5 shrink-0 bg-tinta text-sup">Nivel {v.nivel}</Etiqueta>
-            <div className="min-w-0">
-              <p className="font-semibold">{v.titulo}</p>
-              {v.eje && <p className="font-mono text-xs tracking-wide text-gris uppercase">{nombreDeEje(v.eje) as string}</p>}
-              {v.descripcion && <p className="mt-1 text-gris">{v.descripcion}</p>}
-            </div>
-          </li>
-        ))}
-      </ol>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className={cn(SECCION, variaciones.length === 0 && 'text-gris')}>
+          Variaciones {variaciones.length > 0 && <span className="ml-1 font-mono text-xs font-medium text-gris">{variaciones.length}</span>}
+        </h3>
+        <Agregar alTocar={alSumar}>Sumar una variación</Agregar>
+      </div>
+      {variaciones.length === 0 ? (
+        <p className="text-sm text-gris">Todavía no hay variaciones. ¿Cómo le subís la dificultad? Con un defensor, menos espacio, un límite de tiempo…</p>
+      ) : (
+        <ol className="flex flex-col divide-y divide-linea border-y border-linea">
+          {(ordenarVariaciones(variaciones) as VariacionDeEjercicio[]).map((v) => (
+            <li key={v.id} className="flex items-start gap-3 py-3 text-sm">
+              <Etiqueta className="mt-0.5 shrink-0 bg-tinta text-sup">Nivel {v.nivel}</Etiqueta>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">{v.titulo}</p>
+                {v.eje && <p className="font-mono text-xs tracking-wide text-gris uppercase">{nombreDeEje(v.eje) as string}</p>}
+                {v.descripcion && <p className="mt-1 text-gris">{v.descripcion}</p>}
+              </div>
+              {esMia(v) && (
+                <>
+                  <AccionPropia nombre={`Editar la variación ${v.titulo}`} alTocar={() => alEditar(v)}>
+                    <Pencil aria-hidden className="size-4" />
+                  </AccionPropia>
+                  <AccionPropia nombre={`Borrar la variación ${v.titulo}`} alTocar={() => alBorrar(v)}>
+                    <Trash2 aria-hidden className="size-4" />
+                  </AccionPropia>
+                </>
+              )}
+            </li>
+          ))}
+        </ol>
+      )}
     </section>
   );
 }
 
-function Notas({ notas }: { notas: NotaDeEjercicio[] }) {
-  if (notas.length === 0) {
-    return (
-      <section aria-label="Notas de uso">
-        <h3 className={cn(SECCION, 'text-gris')}>Notas de uso</h3>
-        <p className="text-sm text-gris">Nadie anotó nada todavía.</p>
-      </section>
-    );
-  }
+function Notas({ notas, esMia, alAgregar, alBorrar }: { notas: NotaDeEjercicio[]; esMia: (n: NotaDeEjercicio) => boolean; alAgregar: () => void; alBorrar: (n: NotaDeEjercicio) => void }) {
   return (
     <section aria-label="Notas de uso">
-      <h3 className={SECCION}>
-        Notas de uso <span className="ml-1 font-mono text-xs font-medium text-gris">{notas.length}</span>
-      </h3>
-      <ul className="flex flex-col divide-y divide-linea border-y border-linea">
-        {notas.map((n) => (
-          <li key={n.id} className="py-3 text-sm whitespace-pre-line">
-            {n.texto}
-          </li>
-        ))}
-      </ul>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className={cn(SECCION, notas.length === 0 && 'text-gris')}>
+          Notas de uso {notas.length > 0 && <span className="ml-1 font-mono text-xs font-medium text-gris">{notas.length}</span>}
+        </h3>
+        <Agregar alTocar={alAgregar}>Agregar una nota</Agregar>
+      </div>
+      {notas.length === 0 ? (
+        <p className="text-sm text-gris">Nadie anotó nada todavía. Si lo probaste, lo que aprendiste le sirve al que venga.</p>
+      ) : (
+        <ul className="flex flex-col divide-y divide-linea border-y border-linea">
+          {notas.map((n) => (
+            <li key={n.id} className="flex items-start gap-2 py-3 text-sm">
+              <span className="min-w-0 flex-1 whitespace-pre-line">{n.texto}</span>
+              {esMia(n) && (
+                <AccionPropia nombre="Borrar esta nota" alTocar={() => alBorrar(n)}>
+                  <Trash2 aria-hidden className="size-4" />
+                </AccionPropia>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }
@@ -402,6 +489,7 @@ function Dato({ icono: Icono, tono, clave, valor }: { icono: typeof Package; ton
 
 function DeJugada({ clubId, jugada, planteles }: { clubId: string; jugada: JugadaDelClub; planteles: PlantelDelClub[] }) {
   const [asignando, setAsignando] = useState(false);
+  const [borrando, setBorrando] = useState(false);
   const duplicar = useDuplicarJugada(clubId);
   const [copiada, setCopiada] = useState(false);
   // El editor necesita espacio: en un celular las jugadas se ven, se asignan y se duplican.
@@ -446,14 +534,21 @@ function DeJugada({ clubId, jugada, planteles }: { clubId: string; jugada: Jugad
           </div>
           {jugada.esMia &&
             (puedeEditar ? (
-              <a href={APP_DE_SIEMPRE} className={ENLACE_TEXTO}>
-                <Pencil aria-hidden className="mr-2 size-4" />
-                Editar en la app de siempre
-              </a>
+              <Link to={rutaDelEditor(jugada.id)} className={BOTON_DE_ENLACE}>
+                <Pencil aria-hidden className="size-4" />
+                Editar jugada
+              </Link>
             ) : (
               <p className="text-sm text-gris">El editor de jugadas es para compu o tablet. Desde acá podés verlas, asignarlas y duplicarlas.</p>
             ))}
+          {jugada.esMia && (
+            <button type="button" onClick={() => setBorrando(true)} className={cn(ENLACE_TEXTO, 'text-club-texto')}>
+              <Trash2 aria-hidden className="mr-2 size-4" />
+              Borrar jugada
+            </button>
+          )}
         </div>
+        <Borrar abierta={borrando} alCambiar={setBorrando} clubId={clubId} jugada={jugada} />
         <Asignar abierta={asignando} alCambiar={setAsignando} clubId={clubId} jugada={jugada} planteles={planteles} />
       </aside>
     </>
@@ -515,5 +610,104 @@ function FormularioDeAsignacion({ inicial, planteles, guardando, error, alGuarda
         Guardar
       </Boton>
     </>
+  );
+}
+
+/** Borrar una jugada propia: se pide confirmación porque desaparece también de los planteles a los que estaba asignada. */
+function Borrar({ abierta, alCambiar, clubId, jugada }: { abierta: boolean; alCambiar: (a: boolean) => void; clubId: string; jugada: JugadaDelClub }) {
+  const borrar = useBorrarJugada(clubId);
+  const error = borrar.isError ? (borrar.error?.message === 'NO_ES_TUYA' ? 'Esta jugada ya no es tuya: no se puede borrar.' : mensajeDeError(borrar.error, 'No se pudo borrar la jugada.')) : null;
+  return (
+    <Hoja abierta={abierta} alCambiar={alCambiar} titulo="Borrar esta jugada" descripcion="Confirmá que querés borrar la jugada." etiquetaCerrar="Cerrar">
+      <div className="flex flex-col gap-4 p-5 pt-12">
+        <h2 className="font-titulo text-2xl font-semibold uppercase">Borrar esta jugada</h2>
+        <p className="text-base">«{jugada.nombre}» se borra para todo el club y deja de verse en los planteles a los que estaba asignada. No se puede deshacer.</p>
+        {error && <Aviso tono="error" titulo="No se borró">{error}</Aviso>}
+        <Boton variante="club" disabled={borrar.isPending} onClick={() => borrar.mutate(jugada.id, { onSuccess: () => alCambiar(false) })}>
+          {borrar.isPending ? 'Borrando…' : 'Borrar de todos modos'}
+        </Boton>
+        <Boton variante="contorno" onClick={() => alCambiar(false)}>
+          Cancelar
+        </Boton>
+      </div>
+    </Hoja>
+  );
+}
+
+/** Alta de una jugada: nombre, tipo y formación inicial; al crearla se abre el editor. */
+function NuevaJugada({ abierta, alCambiar, clubId }: { abierta: boolean; alCambiar: (a: boolean) => void; clubId: string }) {
+  const crear = useDuplicarJugada(clubId);
+  const navegar = useNavigate();
+  const [nombre, setNombre] = useState('');
+  const [tipo, setTipo] = useState<string | null>(null);
+  const [formacion, setFormacion] = useState<string | null>(null);
+  const [falta, setFalta] = useState(false);
+  const [apta, setApta] = useState(true);
+  useEffect(() => {
+    if (abierta) setApta(pantallaAptaParaEditar(window.innerWidth, window.innerHeight) as boolean);
+  }, [abierta]);
+
+  const enviar = () => {
+    const elegida = FORMACIONES.find((f) => f.clave === formacion);
+    if (!nombre.trim() || !tipo || !elegida) return setFalta(true);
+    setFalta(false);
+    crear.mutate(
+      { nombre: nombre.trim(), tipo, datos: duplicarDatos(elegida.datos) as typeof elegida.datos },
+      {
+        onSuccess: (id) => {
+          alCambiar(false);
+          setNombre('');
+          setTipo(null);
+          setFormacion(null);
+          void navegar(rutaDelEditor(id));
+        },
+      },
+    );
+  };
+
+  return (
+    <Hoja abierta={abierta} alCambiar={alCambiar} titulo="Nueva jugada" descripcion="Elegí un nombre, el tipo y desde qué formación arrancar." etiquetaCerrar="Cerrar">
+      <div className="flex flex-col gap-4 p-5 pt-12">
+        <h2 className="font-titulo text-2xl font-semibold uppercase">Nueva jugada</h2>
+        {!apta ? (
+          <p className="text-sm text-gris">El editor de jugadas es para compu o tablet. Desde acá podés verlas, asignarlas y duplicarlas.</p>
+        ) : (
+          <form
+            className="flex flex-col gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              enviar();
+            }}
+          >
+            <Campo etiqueta="Nombre" value={nombre} maxLength={LIMITE.titulo} autoComplete="off" onChange={(e) => setNombre(e.target.value)} />
+            <fieldset className="flex flex-col gap-1">
+              <legend className="mb-1 text-sm font-semibold">Tipo</legend>
+              <div className="flex flex-wrap gap-x-1">
+                {TIPOS_JUGADA.map((t) => (
+                  <ChipBoton key={t.clave} type="button" activo={tipo === t.clave} aria-pressed={tipo === t.clave} onClick={() => setTipo(t.clave)}>
+                    {t.etiqueta}
+                  </ChipBoton>
+                ))}
+              </div>
+            </fieldset>
+            <fieldset className="flex flex-col gap-1">
+              <legend className="mb-1 text-sm font-semibold">Formación</legend>
+              <div className="flex flex-wrap gap-x-1">
+                {FORMACIONES.map((f) => (
+                  <ChipBoton key={f.clave} type="button" activo={formacion === f.clave} aria-pressed={formacion === f.clave} onClick={() => setFormacion(f.clave)}>
+                    {f.etiqueta}
+                  </ChipBoton>
+                ))}
+              </div>
+            </fieldset>
+            {falta && <Aviso tono="error" titulo="Poné un nombre y elegí tipo y formación." />}
+            {crear.isError && <Aviso tono="error" titulo="No pudimos crear la jugada">{mensajeDeError(crear.error, 'Probá de nuevo en un momento.')}</Aviso>}
+            <Boton type="submit" disabled={crear.isPending}>
+              {crear.isPending ? 'Creando…' : 'Crear jugada'}
+            </Boton>
+          </form>
+        )}
+      </div>
+    </Hoja>
   );
 }

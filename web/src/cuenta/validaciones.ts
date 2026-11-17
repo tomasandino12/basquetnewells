@@ -44,6 +44,19 @@ export function mensajeDeCreacion(e: unknown): string {
   return 'No se pudo crear la cuenta. Intentá de nuevo en un rato.';
 }
 
+/**
+ * Un error de ingreso NUNCA distingue entre «ese mail no existe» y «la clave está mal»: esa diferencia
+ * deja averiguar quién tiene cuenta. Sólo se separa «todavía no confirmó el mail», que le sirve a quien
+ * se acaba de registrar y no revela nada que no sepa (quien no es dueño del mail no ve ese mensaje
+ * sin la clave correcta: Supabase lo contesta recién con la clave bien).
+ */
+export function mensajeDeIngreso(e: unknown): string {
+  if (/email not confirmed/i.test((e as { message?: string } | null)?.message ?? '')) {
+    return 'Todavía no confirmaste tu mail. Buscá el mail de confirmación y abrí el link.';
+  }
+  return 'El mail o la contraseña no coinciden.';
+}
+
 /** El proveedor de Google se habilita en el panel de Supabase, no desde el código. */
 export function mensajeDeGoogle(e: unknown): string {
   if (/provider is not enabled|unsupported provider|validation_failed/i.test((e as { message?: string } | null)?.message ?? '')) {

@@ -83,7 +83,10 @@ const botonCerrado = (texto, clase = 'btn') => html`<button type="button" class=
  * pero sin "Pronto", para no anunciar un cierre que quizá no es.
  */
 function accion({ clase, icono, titulo, detalle, url, cerrado, cargando }) {
-  const cuerpo = html`<i>${ICONO[icono]}</i><span><b>${titulo}</b><small>${url ? detalle : cerrado}</small></span>`;
+  // Cargando lleva la misma línea que tendrá el botón abierto (no "Se habilita cuando abra el formulario", que es
+  // más larga y en compu ocupaba un renglón de más): así, al llegar la respuesta, el botón cambia de color y de
+  // texto pero no de alto, y no empuja el título ni "Pagar".
+  const cuerpo = html`<i>${ICONO[icono]}</i><span><b>${titulo}</b><small>${url || cargando ? detalle : cerrado}</small></span>`;
   if (cargando) return html`<div class="portal-accion ${clase} apagada" aria-disabled="true" aria-busy="true">${cuerpo}</div>`;
   if (!url) return html`<div class="portal-accion ${clase} apagada" aria-disabled="true">${cuerpo}<em>Pronto</em></div>`;
   return html`<a class="portal-accion ${clase}" href="${url}" target="_blank" rel="noopener">${cuerpo}<em aria-hidden="true">${ABRE}</em></a>`;
@@ -510,6 +513,8 @@ function pintarCinta(proximos) {
   $('portal-cinta').innerHTML = htmlCinta(proximos, frases);
   $('cinta').hidden = !$('portal-cinta').innerHTML.trim();
   $('cinta').setAttribute('aria-label', proximos.length ? 'Próximas fechas' : 'Para venir a probar');
+  // Ya no está cargando: se va el esqueleto (lo reemplazó el innerHTML de arriba) y el cartel de "ocupado".
+  $('cinta').removeAttribute('aria-busy');
 }
 
 /** Para tener el calendario entero en el celular, una vez, y que los eventos nuevos aparezcan solos. */

@@ -20,9 +20,7 @@ import { ImportarEmergencias } from './importar/ImportarEmergencias';
 import { ImportarInscriptos } from './importar/ImportarInscriptos';
 import { HojaSolicitudes } from './familias/HojaSolicitudes';
 import { LeyendaDeAsistencia, ULTIMAS_EN_LISTA } from './TiraDeAsistencia';
-import { APP_DE_SIEMPRE } from '../clasica';
 
-const APP_ANTERIOR = APP_DE_SIEMPRE;
 const ENLACE_TEXTO =
   'inline-flex min-h-11 items-center text-sm font-semibold underline decoration-linea decoration-2 underline-offset-4 outline-offset-2 focus-visible:outline-2 focus-visible:outline-tinta [@media(hover:hover)]:hover:decoration-club';
 
@@ -39,8 +37,8 @@ export function SinCategoria() {
 export function SoloCuerpoTecnico() {
   return (
     <Vacio icono={ShieldCheck} titulo="Los chicos los ve el cuerpo técnico">
-      La coordinación ve la categoría en conjunto, no los datos de cada chico. Los datos de emergencia se miran en la{' '}
-      <a href={APP_ANTERIOR} className="font-semibold underline">app anterior</a>.
+      La coordinación ve la categoría en conjunto, no los datos de cada chico. Los datos de emergencia se miran en{' '}
+      <Link to="/coordinacion" className="font-semibold underline">Coordinación</Link>.
     </Vacio>
   );
 }
