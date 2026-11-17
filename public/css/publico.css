@@ -220,7 +220,8 @@
 .portal-barra{position:absolute;inset:0 0 auto;z-index:5;display:flex;align-items:center;gap:var(--sp-2);max-width:64rem;margin-inline:auto;width:100%;padding:var(--sp-3) var(--sp-4)}
 .portal-barra img{width:2.25rem;height:2.25rem;flex:0 0 auto}
 .portal-marca{min-width:0}
-.portal-barra .t{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:var(--fs-190);line-height:1}
+/* nowrap: con la letra de respaldo la marca llegaba a partirse en dos renglones y al cambiar de fuente saltaba. */
+.portal-barra .t{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:var(--fs-190);line-height:1;white-space:nowrap}
 .portal-barra .t span{color:var(--primario)}
 /* El subtítulo no entra junto al link en el celular: aparece desde 40rem (layout.css). */
 .portal-barra .s{display:none;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc);margin-top:.125rem}
@@ -309,6 +310,12 @@
 .portal-accion.apagada i{background:var(--pub-fondo);color:var(--gris-osc)}
 .portal-accion.apagada small{color:var(--gris-osc)}
 .portal-accion.apagada em{font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-100);letter-spacing:.08em;text-transform:uppercase;color:var(--gris-osc);border:1px solid var(--pub-borde);border-radius:var(--r-btn);padding:.125rem var(--sp-2)}
+/* Esperando la respuesta de la base: la línea de abajo late despacio (el botón ya ocupa su lugar y su alto).
+   Al llegar la respuesta el botón de verdad entra con un fundido corto, en vez de cambiar de golpe. */
+.js .portal-accion[aria-busy="true"] small{animation:espera 1.4s ease-in-out 6 alternate}
+.js a.portal-accion{animation:aparecer-suave var(--dur-3) var(--ease-salida)}
+@keyframes espera{from{opacity:.45}}
+@keyframes aparecer-suave{from{opacity:.4}}
 
 /* El sticker de sponsor: un círculo dorado (el rojo es del botón del hero) con
    el pedido en un anillo que gira despacio y "Sumate" fijo al centro. Es el
@@ -337,6 +344,10 @@
    con .js-anim: sin JS o con movimiento reducido, todo está ya en su lugar. */
 .js-anim .entra{animation:subir var(--dur-rise) var(--ease-salida) backwards;animation-delay:calc(var(--retardo-entrada) + var(--i) * var(--paso-entrada))}
 .js-anim .portal-heroe .linea > span{animation:subir-linea var(--dur-linea) var(--ease-salida) backwards;animation-delay:calc(var(--retardo-entrada) + var(--i) * var(--paso-entrada))}
+/* La entrada espera a las tipografías (public/js/anim.js pone .fuentes cuando llegaron, o a los 1,2 s):
+   quieta en su punto de partida, o sea oculta, y recién ahí sube. Así el título aparece ya en su letra
+   y en su lugar, en vez de verse en una y saltar a otra. */
+.js-anim:not(.fuentes) .entra,.js-anim:not(.fuentes) .portal-heroe .linea > span{animation-play-state:paused}
 @keyframes subir{from{opacity:0;transform:translateY(1.5rem)}}
 @keyframes subir-linea{from{transform:translateY(105%)}}
 
@@ -567,6 +578,23 @@
    no se muestran las repeticiones. Se pausa con el mouse y con el botón. */
 .portal-cinta{position:relative;overflow:hidden;box-sizing:border-box;height:var(--alto-cinta);display:flex;flex-direction:column;justify-content:center}
 .portal-cinta-banda{border-block:1px solid var(--pub-borde);background:var(--pub-tarjeta);overflow:hidden}
+/* Mientras llega el calendario: la misma banda (49 px, como la cinta armada) con tres barras que brillan
+   despacio. Cuando llega la cinta real la reemplaza en el mismo lugar y aparece con un fundido, sin mover
+   nada de la página. Sin JS no hay quién la reemplace: no se ve (y la cinta entera queda oculta, como antes). */
+.cinta-esqueleto{box-sizing:border-box;height:3.0625rem;display:flex;align-items:center;gap:var(--sp-6);padding-inline:2rem}
+/* El brillo es un degradé que cruza cada barra con transform (no repinta) y dura 5 pasadas (~8 s, lo mismo que
+   el tope de espera de anim.js): el portal no tiene más animaciones infinitas que las tres de siempre. */
+.cinta-esqueleto span{position:relative;overflow:hidden;flex:0 0 auto;height:.875rem;border-radius:.4375rem;background:var(--pub-borde)}
+.cinta-esqueleto span::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 20%,var(--linea-osc) 50%,transparent 80%);transform:translateX(100%);animation:brillo-esqueleto 1.6s ease-in-out 5}
+.cinta-esqueleto span:nth-child(1){width:9rem}
+.cinta-esqueleto span:nth-child(2){width:12rem}
+.cinta-esqueleto span:nth-child(2)::after{animation-delay:.15s}
+.cinta-esqueleto span:nth-child(3){width:8rem}
+.cinta-esqueleto span:nth-child(3)::after{animation-delay:.3s}
+@keyframes brillo-esqueleto{from{transform:translateX(-100%)}}
+html:not(.js) #cinta{display:none}
+.js .portal-cinta-banda:not(.cinta-esqueleto){animation:aparecer var(--dur-rise) var(--ease-salida)}
+@keyframes aparecer{from{opacity:0}}
 html:not(.js-anim) .portal-cinta-banda{overflow-x:auto}
 .portal-cinta-pista{display:flex;width:max-content;padding-inline:2rem}
 .portal-cinta-fila{display:flex;align-items:center;list-style:none;margin:0;padding:0}

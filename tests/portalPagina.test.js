@@ -586,7 +586,9 @@ test('una frase de la cinta no apunta a una sección oculta: sin su sección, es
 
 test('sin fechas la cinta no se muestra: no devuelve nada y la sección queda oculta', () => {
   assert.equal(htmlCinta([]).toString(), '');
-  assert.match(pagina, /<section class="portal-cinta" id="cinta" aria-label="Próximas fechas" hidden>/);
+  // Nace con un esqueleto del mismo alto (aria-busy, sin hidden) para no empujar la página al aparecer;
+  // pintarCinta lo reemplaza y recién ahí decide si la sección se oculta. Ver tests/cargaSuavePortal.test.js.
+  assert.match(pagina, /<section class="portal-cinta" id="cinta" aria-label="Próximas fechas" aria-busy="true">/);
   const desde = portal.indexOf('async function mostrarProximo()');
   const cuerpo = portal.slice(desde, portal.indexOf('\n  }\n', desde));
   assert.match(cuerpo, /pintarCinta\(proximos\)/, 'la cinta se decide acá, con las fechas ya a la vista');

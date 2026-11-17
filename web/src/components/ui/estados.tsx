@@ -23,7 +23,8 @@ export function Vacio({ icono: Icono, titulo, children, accion }: VacioProps) {
 }
 
 /**
- * Esqueleto de carga: formas quietas, sin animación (DESIGN.md: nada en loop).
+ * Esqueleto de carga: formas del alto de una tarjeta con un brillo corto y finito (clase `esqueleto`,
+ * estilos.css: 4 pasadas y queda quieto; DESIGN.md: nada en loop).
  * El «Cargando…» es sólo para lectores de pantalla.
  */
 export function Cargando({ filas = 3, className }: { filas?: number; className?: string }) {
@@ -31,7 +32,7 @@ export function Cargando({ filas = 3, className }: { filas?: number; className?:
     <div role="status" className={cn('flex flex-col gap-2', className)}>
       <span className="sr-only">Cargando…</span>
       {Array.from({ length: filas }, (_, i) => (
-        <div key={i} aria-hidden className="h-14 rounded-tarjeta bg-sup-2" />
+        <div key={i} aria-hidden className="esqueleto h-14 rounded-tarjeta bg-sup-2" />
       ))}
     </div>
   );

@@ -5,7 +5,7 @@ import { Pagina } from './components/ui/pagina';
 import { Marco } from './laboratorio';
 import { useSesion } from './datos/contexto';
 import { irALaDeSiempre } from './clasica';
-import { BarraDeCategorias } from './pantallas/BarraDeCategorias';
+import { BarraDeCategorias, ReservaDeCategorias } from './pantallas/BarraDeCategorias';
 import { Asistencia } from './pantallas/Asistencia';
 import { AsistenciaHistorial } from './pantallas/AsistenciaHistorial';
 import { Datos } from './pantallas/Datos';
@@ -65,7 +65,7 @@ function Entrada() {
  */
 export function RequiereSesion() {
   return (
-    <PuertaDeSesion>
+    <PuertaDeSesion conBarra>
       <ProveedorPlantelActivo>
         <BarraDeCategorias />
         <Outlet />
@@ -86,7 +86,12 @@ export function RequiereSoloSesion() {
   );
 }
 
-function PuertaDeSesion({ children }: { children: ReactNode }) {
+/**
+ * `conBarra`: la pantalla lleva arriba los chips de categoría (BarraDeCategorias). Mientras se revisa la
+ * sesión se reserva su lugar, así la carga de la sesión y la de la categoría se ven como una sola y no
+ * hay un salto entre las dos.
+ */
+function PuertaDeSesion({ children, conBarra = false }: { children: ReactNode; conBarra?: boolean }) {
   const { estado, error, reintentar } = useSesion();
   const lugar = useLocation();
   const faltaClaveNueva = useRecuperacionPendiente();
@@ -96,14 +101,17 @@ function PuertaDeSesion({ children }: { children: ReactNode }) {
   if (estado === 'sin-sesion' && irALaDeSiempre({ volver: true })) return null;
   if (estado === 'sin-sesion') return <Navigate to="/entrar" replace state={{ desde: lugar.pathname }} />;
   return (
-    <Pagina>
-      <Consulta
-        consulta={{ isPending: estado === 'cargando', isError: estado === 'error', error, data: undefined, refetch: reintentar }}
-        errorGenerico="No pudimos revisar tu sesión"
-      >
-        {() => null}
-      </Consulta>
-    </Pagina>
+    <>
+      {conBarra && estado === 'cargando' && <ReservaDeCategorias />}
+      <Pagina>
+        <Consulta
+          consulta={{ isPending: estado === 'cargando', isError: estado === 'error', error, data: undefined, refetch: reintentar }}
+          errorGenerico="No pudimos revisar tu sesión"
+        >
+          {() => null}
+        </Consulta>
+      </Pagina>
+    </>
   );
 }
 

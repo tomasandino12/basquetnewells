@@ -88,6 +88,10 @@
 <link rel="preload" as="image" href="/public/img/fotos/formativas-bandeja.webp" media="(min-width:48rem)" fetchpriority="high">
 <link rel="preload" href="/public/fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/public/fonts/barlow-condensed-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+<!-- Los otros dos pesos que se ven en la primera pantalla (marca, título, botones y "Semillero"): sin precarga
+     llegaban recién cuando el CSS los pedía y el hero se reacomodaba (ver tokens.css, tipografías de respaldo). -->
+<link rel="preload" href="/public/fonts/barlow-condensed-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/public/fonts/inter-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/public/css/tokens.css">
 <link rel="stylesheet" href="/public/css/base.css">
 <link rel="stylesheet" href="/public/css/layout.css">
@@ -192,9 +196,10 @@
     <!-- La cinta (src/ui/portal.js, htmlCinta): las próximas fechas, que
          salen de los mismos eventos del calendario, o, sin fechas, frases que invitan a
          venir (PORTAL.cintaSinFechas). Se decide cuando termina de cargar el calendario;
-         sin JS, oculta. -->
-    <section class="portal-cinta" id="cinta" aria-label="Próximas fechas" hidden>
-      <div id="portal-cinta"></div>
+         sin JS, oculta. Mientras llega el calendario, una banda del mismo alto con un brillo suave: la cinta
+         nace en su lugar y no empuja la página al aparecer. htmlCinta la reemplaza; sin JS no se ve. -->
+    <section class="portal-cinta" id="cinta" aria-label="Próximas fechas" aria-busy="true">
+      <div id="portal-cinta"><div class="portal-cinta-banda cinta-esqueleto" aria-hidden="true"><span></span><span></span><span></span></div></div>
     </section>
 
     <div class="portal-cuerpo">
