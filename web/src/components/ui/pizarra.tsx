@@ -7,7 +7,7 @@ import type { AccionDePizarra, DatosDePizarra, FichaDePizarra } from '../../dato
 import { cn } from '../../lib/cn';
 
 type Punto = { x: number; y: number };
-interface Estado {
+export interface Estado {
   posiciones: Map<string, Punto>;
   /** Cada pelota ya resuelta a un punto (suelta en el aro, o donde está su dueño). */
   pelotas: Punto[];
@@ -71,7 +71,7 @@ function MitadDeCancha() {
   );
 }
 
-function Cancha({ cancha }: { cancha: 'media' | 'entera' }) {
+export function Cancha({ cancha }: { cancha: 'media' | 'entera' }) {
   const alto = altoDe(cancha);
   const { circuloCentral } = formasDeUnExtremo();
   return (
@@ -96,7 +96,7 @@ function Cancha({ cancha }: { cancha: 'media' | 'entera' }) {
   );
 }
 
-function Ficha({ ficha, p, alto, nosotrosDefiende }: { ficha: FichaDePizarra; p: Punto; alto: number; nosotrosDefiende: boolean }) {
+export function Ficha({ ficha, p, alto, nosotrosDefiende }: { ficha: FichaDePizarra; p: Punto; alto: number; nosotrosDefiende: boolean }) {
   const x = p.x * W;
   const y = p.y * alto;
   const base = { x: ficha.x * W, y: ficha.y * alto };
@@ -150,7 +150,7 @@ function Ficha({ ficha, p, alto, nosotrosDefiende }: { ficha: FichaDePizarra; p:
 }
 
 /** El trazo de una acción del paso, con su flecha (corte) o su T (cortina). */
-function Trazo({ a, inicio, cancha, alto, idFlecha }: { a: AccionDePizarra; inicio: Estado; cancha: 'media' | 'entera'; alto: number; idFlecha: string }) {
+export function Trazo({ a, inicio, cancha, alto, idFlecha, indice }: { a: AccionDePizarra; inicio: Estado; cancha: 'media' | 'entera'; alto: number; idFlecha: string; indice?: number }) {
   if (a.tipo === 'ajuste') return null;
   const aro = (AROS as Record<string, Punto>)[cancha] ?? AROS.media;
   const desde = a.tipo === 'rebote' ? aro : inicio.posiciones.get(a.ficha);
@@ -172,7 +172,9 @@ function Trazo({ a, inicio, cancha, alto, idFlecha }: { a: AccionDePizarra; inic
     cortina = <line x1={x + px} y1={y + py} x2={x - px} y2={y - py} stroke={estilo.color} strokeWidth={3} />;
   }
   return (
-    <g data-trazo={a.tipo}>
+    <g data-trazo={a.tipo} data-accion-indice={indice}>
+      {/* En el editor, un trazo ancho e invisible: se toca con el dedo sin apuntar a una línea de 2 px. */}
+      {indice !== undefined && <path d={d} fill="none" stroke="transparent" strokeWidth={14} />}
       <path
         d={d}
         fill="none"
@@ -195,7 +197,7 @@ function pelotasDe(datos: DatosDePizarra, duenos: (string | null)[], posiciones:
     .filter((p): p is Punto => p !== null);
 }
 
-function estadoQuieto(datos: DatosDePizarra, k: number): Estado {
+export function estadoQuieto(datos: DatosDePizarra, k: number): Estado {
   const inicio = estadoAlInicioDelPaso(datos, k) as { posiciones: Map<string, Punto>; pelota?: string | null; pelotas?: (string | null)[] };
   const duenos = inicio.pelotas ?? [inicio.pelota ?? null];
   const seTiro = datos.pasos.slice(0, k).some((p) => p.acciones.some((a) => a.tipo === 'tiro'));
@@ -247,7 +249,7 @@ interface Props {
 
 /**
  * La pizarra táctica, sólo para ver: la cancha, las fichas, los trazos del paso y la animación.
- * Editarla queda en la app de siempre (necesita compu o tablet). Todo el color sale de los tokens.
+ * Editarla es otra pantalla (EditorDeJugada: necesita compu o tablet). Todo el color sale de los tokens.
  */
 export function Pizarra({ datos, nosotrosDefiende = false, etiqueta, className }: Props) {
   const idFlecha = `pz-${useId().replace(/:/g, '')}`;
@@ -372,5 +374,64 @@ export function Pizarra({ datos, nosotrosDefiende = false, etiqueta, className }
       </svg>
       {nota && <p className="text-sm text-gris">{nota}</p>}
     </div>
+  );
+}
+
+/**
+ * La pizarra de la portada: la misma cancha y el mismo motor que el visor, sin controles. Reposa en el primer
+ * paso (con su trazo a la vista, para que no sea una cancha vacía) y, cada vez que `corre` cambia, recorre los
+ * pasos una vez. Con movimiento reducido queda en el primer paso.
+ */
+export function PizarraDeLaPortada({ datos, corre }: { datos: DatosDePizarra; corre: number }) {
+  const idFlecha = `pz-${useId().replace(/:/g, '')}`;
+  const [cuadro, setCuadro] = useState<{ k: number; t: number } | null>(null);
+  const raf = useRef(0);
+
+  useEffect(() => {
+    cancelAnimationFrame(raf.current);
+    setCuadro(null);
+    if (corre === 0 || reducirMovimiento()) return;
+    const total = datos.pasos.length;
+    const inicio = performance.now();
+    const marcar = (ahora: number) => {
+      const avance = (ahora - inicio) / DURACION_PASO_MS;
+      if (avance >= total) {
+        setCuadro({ k: total - 1, t: 1 });
+        return;
+      }
+      setCuadro({ k: Math.floor(avance), t: avance % 1 });
+      raf.current = requestAnimationFrame(marcar);
+    };
+    raf.current = requestAnimationFrame(marcar);
+    return () => cancelAnimationFrame(raf.current);
+  }, [corre, datos]);
+
+  const alto = altoDe(datos.cancha);
+  const k = cuadro ? cuadro.k : 0;
+  const estado = cuadro ? estadoAnimado(datos, cuadro.k, cuadro.t) : estadoQuieto(datos, 0);
+  const inicioDelPaso = estadoQuieto(datos, k);
+  return (
+    <svg
+      aria-hidden
+      viewBox={`${-MARGEN} ${-MARGEN} ${W + MARGEN * 2} ${alto + MARGEN * 2}`}
+      preserveAspectRatio="xMidYMid meet"
+      className="mx-auto block h-auto w-full max-w-sm border border-linea bg-sup"
+    >
+      <defs>
+        <marker id={idFlecha} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--tinta)" />
+        </marker>
+      </defs>
+      <Cancha cancha={datos.cancha} />
+      {(datos.pasos[k]?.acciones ?? []).map((a, i) => (
+        <Trazo key={i} a={a} inicio={inicioDelPaso} cancha={datos.cancha} alto={alto} idFlecha={idFlecha} />
+      ))}
+      {datos.fichas.map((f) => (
+        <Ficha key={f.id} ficha={f} p={estado.posiciones.get(f.id) ?? f} alto={alto} nosotrosDefiende={false} />
+      ))}
+      {estado.pelotas.map((p, i) => (
+        <circle key={i} cx={(p.x + 0.026) * W} cy={(p.y + 0.026) * alto} r={5} fill="var(--ambar)" stroke="var(--tinta)" strokeWidth={1.5} />
+      ))}
+    </svg>
   );
 }

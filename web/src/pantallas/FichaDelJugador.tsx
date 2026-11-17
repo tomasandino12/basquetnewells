@@ -17,7 +17,9 @@ import type { EstadoAsistencia, Lesion, MotivoFalta } from '../datos/repositorio
 import { cn } from '../lib/cn';
 import { ESTADO_DE_BOTON, type FilaPlantel } from '../plantel/filas';
 import { TiraDeAsistencia } from './TiraDeAsistencia';
-import { APP_DE_SIEMPRE } from '../clasica';
+import { EditarNacimiento } from './EditarNacimiento';
+import { UltimasMediciones } from './FichaTemporadas';
+import { PestanaHistoria, PestanaPartidos } from './FichaPartidosHistoria';
 
 const SALIDA: [number, number, number, number] = [0.16, 1, 0.3, 1];
 const BOTONES = [
@@ -75,7 +77,7 @@ function Fisico({ f }: { f: FilaPlantel }) {
           <Dato etiqueta="Edad" valor={f.edad === null ? '—' : `${f.edad} años`} />
         </dl>
       </section>
-      <PendienteEnLaApp titulo="Mediciones, salto, sprint, Yo-Yo y cargas" />
+      <UltimasMediciones jugadorId={f.id} />
     </div>
   );
 }
@@ -100,16 +102,6 @@ function Tiro({ f }: { f: FilaPlantel }) {
         </div>
       </dl>
     </div>
-  );
-}
-
-/** Lo que todavía se hace en la app anterior: se dice y se enlaza, para que nada quede sin salida. */
-function PendienteEnLaApp({ titulo }: { titulo: string }) {
-  return (
-    <p className="rounded-tarjeta border border-linea p-3 text-sm text-gris">
-      {titulo}: todavía se ven en la{' '}
-      <a href={APP_DE_SIEMPRE} className="font-semibold text-tinta underline underline-offset-2">app anterior</a>.
-    </p>
   );
 }
 
@@ -255,7 +247,10 @@ export function FichaDelJugador({ fila: f, clubId, plantelId, hoy, alSacar }: Pr
             <p className="mt-1.5 flex flex-wrap gap-x-3 font-mono text-xs text-sobre-negro/75">
               <span className="inline-flex items-center gap-1"><Ruler aria-hidden className="size-3.5" />{cifra(f.alturaCm, 'cm')}</span>
               <span className="inline-flex items-center gap-1"><Weight aria-hidden className="size-3.5" />{cifra(f.pesoKg, 'kg')}</span>
-              <span>{f.edad === null ? 'Sin fecha de nacimiento' : `${f.edad} años`}</span>
+              <span className="inline-flex items-center gap-1.5">
+                {f.edad === null ? 'Sin fecha de nacimiento' : `${f.edad} años`}
+                <EditarNacimiento clubId={clubId} jugadorId={f.id} nombre={nombre} nacimiento={f.nacimiento ?? null} />
+              </span>
             </p>
           </div>
         </div>
@@ -332,8 +327,8 @@ export function FichaDelJugador({ fila: f, clubId, plantelId, hoy, alSacar }: Pr
           </ListaPestanas>
           <PanelPestana value="fisico"><Fisico f={f} /></PanelPestana>
           <PanelPestana value="tiro"><Tiro f={f} /></PanelPestana>
-          <PanelPestana value="partidos"><PendienteEnLaApp titulo="Partido a partido y misiones" /></PanelPestana>
-          <PanelPestana value="historia"><PendienteEnLaApp titulo="Temporadas y recursos enviados" /></PanelPestana>
+          <PanelPestana value="partidos"><PestanaPartidos clubId={clubId} plantelId={plantelId} jugadorId={f.id} /></PanelPestana>
+          <PanelPestana value="historia"><PestanaHistoria clubId={clubId} jugadorId={f.id} /></PanelPestana>
         </Pestanas>
 
         <FamiliaDelJugador clubId={clubId} jugadorId={f.id} nombre={nombre} />
@@ -356,10 +351,6 @@ export function FichaDelJugador({ fila: f, clubId, plantelId, hoy, alSacar }: Pr
           ) : (
             <Boton variante="contorno" tamano="chico" onClick={() => setConfirmando(true)}>Sacar del plantel</Boton>
           )}
-          <p className="mt-3 text-xs text-gris">
-            Editar la fecha de nacimiento: en la{' '}
-            <a href={APP_DE_SIEMPRE} className="underline underline-offset-2">app anterior</a>.
-          </p>
         </footer>
         </div>
       </div>

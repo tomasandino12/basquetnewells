@@ -6,7 +6,7 @@ import { LIMITE } from '@datos/limites.js';
 import { Aviso } from '../components/ui/aviso';
 import { Boton } from '../components/ui/button';
 import { Consulta } from '../components/ui/consulta';
-import { Vacio } from '../components/ui/estados';
+import { Cargando, Vacio } from '../components/ui/estados';
 import { useDatosDeMisiones, useEstadisticasDeMisiones, useEvaluarMisiones } from '../datos/consultasJugador';
 import { mensajeDeGuardado } from '../datos/errores';
 import type { JugadorDelPlantel, MisionDePrevia, PartidoDelPlantel, PreviaCompleta, PreviaDelPlantel } from '../datos/repositorio';
@@ -187,7 +187,7 @@ function Formulario({ previa, previas, partidos, jugadores, plantelId }: Formula
         )}
       </div>
 
-      {partidoId && estadisticas.isPending && <p role="status" className="mt-3 text-sm text-gris">Cargando los números del partido…</p>}
+      {partidoId && estadisticas.isPending && <Cargando filas={1} className="mt-3" />}
 
       {sinMisiones ? (
         <Vacio icono={Target} titulo="Esta previa no tiene misiones">Cuando se carguen las misiones del partido, las evaluás acá.</Vacio>

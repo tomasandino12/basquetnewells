@@ -65,14 +65,14 @@ describe('Hoy: estados sin datos', () => {
     abrir(repo({ obtenerSesionesDeMedicion: async () => [], obtenerMedicionesTiroDelPlantel: async () => [] }));
     expect(await screen.findByText('Todavía no hay nada cargado en Sub 13')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Cargar el plantel' }).getAttribute('href')).toBe('/plantel');
-    expect(screen.getByRole('link', { name: 'Cargar un partido' }).getAttribute('href')).toBe('/app/clasica?desde=nueva');
-    expect(screen.getByRole('link', { name: 'Hacer la primera medición' }).getAttribute('href')).toBe('/app/clasica?desde=nueva');
+    expect(screen.getByRole('link', { name: 'Cargar un partido' }).getAttribute('href')).toBe('/datos/cargar-partido');
+    expect(screen.getByRole('link', { name: 'Hacer la primera medición' }).getAttribute('href')).toBe('/medir');
   });
 
   it('una batería sin ninguna medición lo cuenta y deja hacer una', async () => {
     abrir(repo({ obtenerMedicionesTiroDelPlantel: async () => [] }));
     expect(await screen.findByText(/Hubo una batería el 06\/10 en Sub 13, pero quedó sin ninguna medición/)).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Hacer una medición' }).getAttribute('href')).toBe('/app/clasica?desde=nueva');
+    expect(screen.getByRole('link', { name: 'Hacer una medición' }).getAttribute('href')).toBe('/medir');
   });
 });
 
@@ -167,7 +167,7 @@ describe('Hoy: comparación con la batería anterior', () => {
     const total = within(await esperar());
     expect(total.getByRole('img', { name: /Evolución del tiro de campo/ })).toBeTruthy();
     expect(total.getByText(/2 baterías · primera 60% \(90\/150\) · última 5\d% \(/)).toBeTruthy();
-    expect(total.getByRole('link', { name: 'Ver la evolución completa en Datos' }).getAttribute('href')).toBe('/app/clasica?desde=nueva');
+    expect(total.getByRole('link', { name: 'Ver la evolución completa en Datos' }).getAttribute('href')).toBe('/datos');
   });
 
   it('con una sola batería la curva es un punto', async () => {

@@ -128,7 +128,7 @@ describe('Mi perfil: la cuenta', () => {
 
   it('sin sesión manda a entrar', async () => {
     abrir(repo({ obtenerSesionActual: async () => null }));
-    expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 1, name: /Lo que se trabaja en inferiores/ })).toBeTruthy();
   });
 });
 
@@ -240,26 +240,10 @@ describe('Mi perfil: los interruptores del teléfono', () => {
     vi.restoreAllMocks();
   });
 
-  it('el entrenador ve la versión nueva prendida; apagarla la guarda para este teléfono', async () => {
-    const u = userEvent.setup();
+  it('ya no hay interruptor de «versión nueva»: la app anterior no existe más', async () => {
     abrir();
-    const version = await screen.findByRole('switch', { name: 'Versión nueva de la app' });
-    expect(version.getAttribute('aria-checked')).toBe('true');
-    await u.click(version);
-    expect(localStorage.getItem('semillero.nueva')).toBe('no');
-    expect(version.getAttribute('aria-checked')).toBe('false');
-    expect(await screen.findByText(/la próxima vez que abras la app se abre la de siempre/)).toBeTruthy();
-  });
-
-  it('si el teléfono no deja guardar, el interruptor queda como estaba', async () => {
-    const u = userEvent.setup();
-    abrir();
-    const version = await screen.findByRole('switch', { name: 'Versión nueva de la app' });
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('modo privado'); });
-    await u.click(version);
-    expect(await screen.findByRole('alert')).toBeTruthy();
-    expect(version.getAttribute('aria-checked')).toBe('true');
-    vi.restoreAllMocks();
+    expect(await screen.findByRole('switch', { name: 'Tema oscuro' })).toBeTruthy();
+    expect(screen.queryByRole('switch', { name: 'Versión nueva de la app' })).toBeNull();
   });
 });
 

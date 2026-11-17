@@ -39,7 +39,7 @@ export function FisicoEscalones() {
     <ConPlantel
       plantelId={plantelId}
       volver={{ a: `/fisico/plan/${planId}/sesion/${sesionId}`, texto: 'Sesión' }}
-      soloCuerpoTecnico="La coordinación ve el plan de fuerza en la app anterior."
+      soloCuerpoTecnico="El plan de fuerza lo ve y lo carga el cuerpo técnico de cada categoría."
     >
       {(p) => <Ejercicio {...p} planId={planId!} sesionId={sesionId!} lineaId={lineaId!} />}
     </ConPlantel>

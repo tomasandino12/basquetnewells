@@ -1,5 +1,6 @@
 import { Check, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { Cargando } from '../components/ui/estados';
 import { Link } from 'react-router';
 import { textoDeMision } from '@datos/misiones.js';
 import { claseBoton } from '../components/ui/button';
@@ -73,7 +74,7 @@ function DeLaPrevia({ clubId, plantelId, previa }: { clubId: string; plantelId: 
   if (!datos) {
     return (
       <Panel titulo="Misiones del partido">
-        <p role="status" className="text-sm text-gris">Cargando las misiones…</p>
+        <Cargando filas={2} />
       </Panel>
     );
   }

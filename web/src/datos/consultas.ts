@@ -203,6 +203,12 @@ export function useDarAlta(hasta: string) {
   return useEscritura<string>((repo, lesionId) => repo.darAlta(lesionId, hasta));
 }
 
+export function useActualizarNacimiento(clubId: string) {
+  return useEscritura<{ jugadorId: string; fechaNacimiento: string | null }>((repo, v) =>
+    repo.actualizarFechaNacimiento(clubId, v.jugadorId, v.fechaNacimiento),
+  );
+}
+
 export function useSacarDelPlantel(clubId: string, plantelId: string) {
   return useEscritura<string>((repo, jugadorId) => repo.sacarDelPlantel(clubId, jugadorId, plantelId));
 }

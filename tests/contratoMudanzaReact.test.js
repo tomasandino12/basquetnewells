@@ -91,10 +91,12 @@ test('/app y /app/clasica no se guardan en el navegador', () => {
   for (const r of ['/app', '/app/clasica', '/nueva/index.html']) assert.ok(sinCache.includes(r), r);
 });
 
-test('la vuelta del login llega a /app y la nueva se la pasa a la de siempre', () => {
+test('la vuelta del login llega a /app y la resuelve la app nueva: ya no se reenvía a la de siempre', () => {
   assert.match(leer('src/data/repos/auth.js'), /pathname\.startsWith\('\/app'\) \? '\/app'/, 'redirect permitido en Supabase: /app');
-  assert.match(leer('web/src/clasica.ts'), /destinoDeAuth\(search, hash\)/);
-  assert.match(leer('web/src/main.tsx'), /if \(!reenviarSiCorresponde\(\)\)/, 'antes de dibujar nada');
+  const main = leer('web/src/main.tsx');
+  assert.doesNotMatch(main, /reenviarSiCorresponde/, 'ningún reenvío a la de siempre');
+  assert.match(main, /registrarServiceWorker\(\)/, 'la app React hace instalable la PWA');
+  assert.match(main, /iniciarReporteDeErrores\(\)/, 'los errores que nadie atrapó se avisan y se registran');
 });
 
 test('el package.json de la raíz no cambió de forma: sin React y con versiones exactas', () => {

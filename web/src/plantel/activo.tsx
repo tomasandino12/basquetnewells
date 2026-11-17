@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { CLAVE_PLANTEL } from '@datos/interruptorNueva.js';
-import { irALaDeSiempre } from '../clasica';
 import { useMisClubes, useMisPlantelesAsignados, useMisRoles, usePlanteles } from '../datos/consultas';
 import type { PlantelDelClub } from '../datos/repositorio';
 import { plantelesVisibles } from './visibles';
@@ -71,12 +70,6 @@ export function ProveedorPlantelActivo({ children }: { children: ReactNode }) {
     () => (planteles.data && roles.data && asignados.data ? plantelesVisibles(planteles.data, roles.data, asignados.data) : undefined),
     [planteles.data, roles.data, asignados.data],
   );
-
-  // Sin club (jugador o familia) o sin ser del cuerpo técnico (sólo coordina): eso sigue en la de siempre.
-  const deLaDeSiempre = clubes.data?.length === 0 || (roles.data && !roles.data.esEntrenador);
-  useEffect(() => {
-    if (deLaDeSiempre) irALaDeSiempre({ volver: true });
-  }, [deLaDeSiempre]);
 
   const valor = useMemo<PlantelActivo | null>(() => {
     if (!club || !visibles || visibles.length === 0) return null;

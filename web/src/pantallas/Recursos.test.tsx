@@ -33,7 +33,7 @@ const PIZARRA: DatosDePizarra = {
 };
 
 const EJERCICIOS = [
-  ej('Pase de pecho', { tema: 'pase', descripcion: 'Dos filas enfrentadas', material: '2 pelotas', jugadores: 8, tieneNotas: true, cantidadVariaciones: 2 }),
+  ej('Pase de pecho', { tema: 'pase', descripcion: 'Dos filas enfrentadas', material: '2 pelotas', jugadores: '8', tieneNotas: true, cantidadVariaciones: 2 }),
   ej('Cierre de línea de pase', { tema: 'defensa' }),
   ej('Sentadilla con salto', { tema: 'fisico', enlace: 'https://ejemplo.test/video' }),
 ];
@@ -131,10 +131,11 @@ describe('Recursos: ejercicios', () => {
     expect(within(lista()).getByRole('button', { name: /Sin video/ }).querySelector('img')).toBeNull();
   });
 
-  it('la biblioteca vacía explica qué es y dónde se carga', async () => {
+  it('la biblioteca vacía explica qué es y ofrece cargar el primero acá, sin mandar a la app de siempre', async () => {
     abrir(repo({ obtenerEjercicios: async () => [] }));
     expect(await screen.findByText('La biblioteca está vacía')).toBeTruthy();
-    expect(screen.getAllByRole('link', { name: 'la app de siempre' }).length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: /Cargar un ejercicio/ })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'la app de siempre' })).toBeNull();
   });
 
   it('si no se pueden cargar, lo dice con una salida para reintentar', async () => {
@@ -211,7 +212,7 @@ describe('Recursos: jugadas', () => {
   });
 
   it('duplica: la copia lleva el mismo tipo y contenido, y avisa', async () => {
-    const crearJugada = vi.fn(async () => ({}));
+    const crearJugada = vi.fn(async (_p: unknown) => 'ju-copia');
     const u = userEvent.setup();
     abrir(repo({ crearJugada }));
     await within(await screen.findByRole('region', { name: 'Lista' })).findByRole('button', { name: /Pase de pecho/ });
@@ -225,6 +226,59 @@ describe('Recursos: jugadas', () => {
     expect(await screen.findByText('Jugada duplicada')).toBeTruthy();
   });
 
+  it('nada de las jugadas manda a la app de siempre', async () => {
+    await irAJugadas();
+    expect(within(lista()).queryByText(/Las nuevas se arman en la app de siempre/)).toBeNull();
+    const enlaces = screen.getAllByRole('link').map((a) => a.getAttribute('href') ?? '');
+    expect(enlaces.filter((h) => h.includes('clasica'))).toHaveLength(0);
+    expect(screen.queryByRole('link', { name: /Editar en la app de siempre/ })).toBeNull();
+  });
+
+  it('crea una jugada: pide nombre, tipo y formación, y abre el editor con la nueva', async () => {
+    const crearJugada = vi.fn(async (_p: unknown) => 'ju-nueva');
+    const u = await (async () => {
+      const usuario = userEvent.setup();
+      abrir(repo({ crearJugada, obtenerJugada: async (_c, id) => ({ ...JUGADAS[0], id }) }));
+      await within(await screen.findByRole('region', { name: 'Lista' })).findByRole('button', { name: /Pase de pecho/ });
+      await usuario.click(screen.getByRole('tab', { name: 'Jugadas' }));
+      await within(lista()).findByRole('button', { name: /Zona 2-3/ });
+      return usuario;
+    })();
+    await u.click(screen.getByRole('button', { name: 'Nueva jugada' }));
+    await u.click(screen.getByRole('button', { name: 'Crear jugada' }));
+    expect(await screen.findByText('Poné un nombre y elegí tipo y formación.')).toBeTruthy();
+    expect(crearJugada).not.toHaveBeenCalled();
+    await u.type(screen.getByRole('textbox', { name: 'Nombre' }), 'Mi salida');
+    await u.click(screen.getByRole('button', { name: 'Ataque' }));
+    await u.click(screen.getByRole('button', { name: '5 abiertos' }));
+    await u.click(screen.getByRole('button', { name: 'Crear jugada' }));
+    await waitFor(() => expect(crearJugada).toHaveBeenCalledTimes(1));
+    const pedido = crearJugada.mock.calls[0][0] as { clubId: string; nombre: string; tipo: string; datos: DatosDePizarra };
+    expect(pedido).toMatchObject({ clubId: 'c-1', nombre: 'Mi salida', tipo: 'ataque' });
+    expect(pedido.datos.fichas).toHaveLength(5);
+    expect(await screen.findByRole('button', { name: 'Guardar' })).toBeTruthy(); // ya está en el editor
+  });
+
+  it('borra una jugada propia sólo después de confirmar', async () => {
+    const borrarJugada = vi.fn(async (_c: string, _id: string) => {});
+    const u = userEvent.setup();
+    abrir(repo({ borrarJugada }));
+    await within(await screen.findByRole('region', { name: 'Lista' })).findByRole('button', { name: /Pase de pecho/ });
+    await u.click(screen.getByRole('tab', { name: 'Jugadas' }));
+    await within(lista()).findByRole('button', { name: /Salida de lateral 1/ });
+    await u.click(screen.getByRole('button', { name: 'Borrar jugada' }));
+    expect(borrarJugada).not.toHaveBeenCalled();
+    await u.click(await screen.findByRole('button', { name: 'Borrar de todos modos' }));
+    await waitFor(() => expect(borrarJugada).toHaveBeenCalledWith('c-1', 'ju-1'));
+  });
+
+  it('una jugada de otro profe no ofrece borrar ni editar', async () => {
+    const u = await irAJugadas();
+    await u.click(within(lista()).getByRole('button', { name: /Zona 2-3/ }));
+    expect(screen.queryByRole('button', { name: 'Borrar jugada' })).toBeNull();
+    expect(screen.queryByRole('link', { name: /Editar jugada/ })).toBeNull();
+  });
+
   it('imprime la jugada', async () => {
     const imprimir = vi.fn();
     vi.stubGlobal('print', imprimir);
@@ -234,9 +288,9 @@ describe('Recursos: jugadas', () => {
     vi.unstubAllGlobals();
   });
 
-  it('en una pantalla chica no ofrece editar y lo explica; en una grande lleva al editor de siempre', async () => {
+  it('en una pantalla chica no ofrece editar y lo explica; en una grande lleva al editor de jugadas', async () => {
     const u = await irAJugadas();
-    expect(screen.getByRole('link', { name: /Editar en la app de siempre/ })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Editar jugada/ }).getAttribute('href')).toBe('/recursos/jugadas/ju-1/editar');
     cleanup();
     vi.stubGlobal('innerWidth', 390);
     vi.stubGlobal('innerHeight', 800);
@@ -244,7 +298,7 @@ describe('Recursos: jugadas', () => {
     await within(await screen.findByRole('region', { name: 'Lista' })).findByRole('button', { name: /Pase de pecho/ });
     await u.click(screen.getByRole('tab', { name: 'Jugadas' }));
     await within(lista()).findByRole('button', { name: /Zona 2-3/ });
-    expect(screen.queryByRole('link', { name: /Editar en la app de siempre/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /Editar jugada/ })).toBeNull();
     expect(screen.getByText(/es para compu o tablet/)).toBeTruthy();
     vi.unstubAllGlobals();
   });

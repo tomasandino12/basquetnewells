@@ -23,8 +23,8 @@ describe('menú de la app', () => {
     // La vista del jugador tiene su propio marco: sus destinos se controlan en la prueba de abajo.
     const directas = caminos(rutas).filter(
       (c) =>
-        // Las metas cuelgan de Hoy y el inventario en lectura, de Físico. Armar misiones cuelga de Plantel y de Hoy; Mi perfil se abre desde la cabecera (iniciales del nombre).
-        !['*', '/', '/entrar', '/nueva-clave', '/asistencia', '/asistencia/historial', '/plantel/asistencia', '/plantel/asistencia/historial', '/datos/cargar-partido', '/misiones/armar', '/perfil', '/metas', '/fisico/inventario'].includes(c) &&
+        // Las metas cuelgan de Hoy y el inventario en lectura y cargar el plan, de Físico. Armar misiones cuelga de Plantel y de Hoy; Mi perfil se abre desde la cabecera (iniciales del nombre).
+        !['*', '/', '/entrar', '/nueva-clave', '/asistencia', '/asistencia/historial', '/plantel/asistencia', '/plantel/asistencia/historial', '/datos/cargar-partido', '/misiones/armar', '/perfil', '/metas', '/fisico/inventario', '/fisico/cargar-plan', '/familia'].includes(c) &&
         !c.includes(':') &&
         !c.startsWith('/jugador') &&
         // Los cuatro tests se abren desde Medir.
@@ -65,10 +65,11 @@ describe('menú de la app', () => {
     expect(within(ejemplos).getByRole('link', { name: /Piezas/ }).getAttribute('aria-current')).toBe('page');
   });
 
-  it('también está en Entrar, así se llega a las pantallas de ejemplo sin cuenta', async () => {
+  it('en la portada de Entrar no hay menú de la app ni pantallas de ejemplo: la ve limpia quien llega sin cuenta', async () => {
     renderConDatos(rutas, { repo: repositorioInventado({ obtenerSesionActual: async () => null }) });
-    expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeTruthy();
-    expect(screen.getAllByRole('navigation', { name: 'Menú de la app' }).length).toBeGreaterThan(0);
+    expect(await screen.findByRole('heading', { level: 1, name: /Lo que se trabaja en inferiores/ })).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: 'Menú de la app' })).toBeNull();
+    expect(screen.queryByRole('navigation', { name: 'Pantallas de ejemplo' })).toBeNull();
   });
 
   it('el botón de tema cambia toda la app y lo recuerda', async () => {
