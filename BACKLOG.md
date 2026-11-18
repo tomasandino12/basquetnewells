@@ -108,10 +108,6 @@
 - **Qué:** con el coordinador, dejar una prueba de sprint, una de salto y una de Yo-Yo; sacar el resto de Medir.
 - **Menores:** las mediciones ya cargadas de las pruebas que se sacan no se borran sin preguntarle a Tomás.
 
-### B-22 · Terminar de mudar Medir a React — código
-- **Qué:** los cuatro tests (tiro, salto, sprint, Yo-Yo) todavía abren la versión clásica.
-- **Menores:** mismos datos que hoy (mediciones, en Supabase, profes de la categoría y el propio chico).
-
 ### B-23 · Salto con un iPhone real — prueba
 - **Qué:** confirmar que un video elegido desde Safari conserva los cuadros por segundo. El video se analiza en el celular y no se sube.
 
@@ -137,3 +133,4 @@
 ## Terminado
 
 - **B-00 · PRD.md** — escrito y aprobado el 17/11/2026 (`8e68061`).
+- **B-22 · Mudar Medir a React** — ya estaba hecho: todas las pantallas están en React (Tomás, 17/11). Lo que quede es detalle visual.
