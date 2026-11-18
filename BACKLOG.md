@@ -9,19 +9,6 @@
 
 ## Por hacer
 
-### B-01 · Que lleguen los mails de Semillero — config
-- **Qué:** probar con una cuenta nueva que llegan el mail de confirmar la cuenta y el de recuperar la clave. Si no llegan o tardan, conectar un servidor de mail propio (SMTP) en Supabase.
-- **Listo cuando:** dos cuentas creadas seguidas reciben su mail en menos de 5 minutos, y el remitente dice algo reconocible (no "Supabase").
-
-### B-02 · Backup al día y con lugar fijo — config
-- **Qué:** `npm run backup` y guardar la copia fuera del repo (Drive de la Comisión o la compu de Tomás, no un worktree). Anotar cada cuánto se hace.
-- **Menores:** la copia tiene **toda** la base (nombres, fechas, mediciones, emergencias, asistencia). Se guarda en una carpeta privada; la ve sólo Tomás.
-- **Listo cuando:** hay un backup de esta semana en su carpeta y está escrito en `docs/guias/BACKUP.md` dónde va y cada cuánto.
-
-### B-03 · Repasar la seguridad del panel de Supabase — config
-- **Qué:** tildar uno por uno los puntos de "Lo que tiene que hacer una persona en el dashboard" de la lista privada de lanzamiento.
-- **Listo cuando:** todos los puntos de esa sección están tildados o tienen escrita la razón de por qué no.
-
 ### B-04 · Probar el alta de jugador con Google — prueba
 - **Qué:** un chico de prueba crea su cuenta con Google, pide acceso, el profe lo aprueba con el código y el chico ve sólo lo suyo.
 - **Menores:** cuenta de prueba, sin datos reales. En la base queda la solicitud (cuenta, plantel, estado) y el vínculo con la ficha; lo ven el profe de esa categoría y el propio chico.
@@ -128,7 +115,18 @@
 
 ## En curso
 
-*(nada)*
+### B-01 · Que lleguen los mails de Semillero — config
+- **Qué:** probar con una cuenta nueva que llegan el mail de confirmar la cuenta y el de recuperar la clave. Si no llegan o tardan, conectar un servidor de mail propio (SMTP) en Supabase.
+- **Listo cuando:** dos cuentas creadas seguidas reciben su mail en menos de 5 minutos, y el remitente dice algo reconocible (no "Supabase").
+
+### B-02 · Backup al día y con lugar fijo — config
+- **Qué:** `npm run backup` y guardar la copia fuera del repo (Drive de la Comisión o la compu de Tomás, no un worktree). Anotar cada cuánto se hace.
+- **Menores:** la copia tiene **toda** la base (nombres, fechas, mediciones, emergencias, asistencia). Se guarda en una carpeta privada; la ve sólo Tomás.
+- **Listo cuando:** hay un backup de esta semana en su carpeta y está escrito en `docs/guias/BACKUP.md` dónde va y cada cuánto.
+
+### B-03 · Repasar la seguridad del panel de Supabase — config
+- **Qué:** tildar uno por uno los puntos de "Lo que tiene que hacer una persona en el dashboard" de la lista privada de lanzamiento.
+- **Listo cuando:** todos los puntos de esa sección están tildados o tienen escrita la razón de por qué no.
 
 ## Terminado
 
