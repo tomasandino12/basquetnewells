@@ -4,7 +4,7 @@ import type { AccionDePizarra, DatosDePizarra } from '../../datos/repositorio';
 import { fichaEnPunto, puntoDesdeToque, R_FICHA } from '../../recursos/geometriaEditor';
 import { ops } from '../../recursos/operaciones';
 import { puntoDeControl } from '../../recursos/puntoDeControl';
-import { Cancha, estadoQuieto, Ficha, Trazo } from './pizarra';
+import { Cancha, estadoQuieto, Ficha, PuntasDeFlecha, Trazo } from './pizarra';
 
 export type Herramienta = 'seleccionar' | 'pelota' | 'corte' | 'dribbling' | 'pase' | 'cortina' | 'tiro' | 'handoff';
 export type Seleccion = { tipo: 'ficha'; id: string } | { tipo: 'accion'; indice: number } | null;
@@ -171,11 +171,7 @@ export function PizarraEditable(p: Props) {
       onPointerUp={alSoltar}
       onPointerCancel={alSoltar}
     >
-      <defs>
-        <marker id={idFlecha} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M0,0 L10,5 L0,10 z" fill="var(--tinta)" />
-        </marker>
-      </defs>
+      <PuntasDeFlecha id={idFlecha} />
       <Cancha cancha={datos.cancha} />
       {acciones.map((a, i) => (
         <g key={i} opacity={seleccion?.tipo === 'accion' && seleccion.indice !== i ? 0.55 : 1}>

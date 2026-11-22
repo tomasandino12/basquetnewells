@@ -38,6 +38,13 @@
   --club-texto: #A80519;      /* profundo: texto y bordes rojos chicos */
   --club-osc: #A80519;        /* botón rojo apretado */
   --club-cl: #F8E1DC;         /* fondo suave de una opción elegida */
+  /* Trazos de la pizarra: un color por tipo de acción (los de la app vieja, ≥4,5:1 sobre el hueso). */
+  --trazo-corte: #1E7D46;
+  --trazo-dribbling: #7D6100;
+  --trazo-pase: #1B57A8;
+  --trazo-cortina: #6B3FA0;
+  --trazo-tiro: var(--club-texto);
+  --trazo-handoff: #B8306F;
   --cereza: #6D0317;
   --negro: #161213;           /* el negro del club: menú y pieza fuerte de la pantalla */
   --sobre-negro: #F5F0E6;
@@ -95,6 +102,11 @@
   --borde-control: #85787A;
   --club-texto: #EE7C80;
   --club-cl: #3F1418;
+  --trazo-corte: #3FCB7E;
+  --trazo-dribbling: #E0B400;
+  --trazo-pase: #5B9CF0;
+  --trazo-cortina: #B085E0;
+  --trazo-handoff: #F075AE;
   --negro: #0A0809;
   --sube: #7BCB98;
   --sube-fondo: #1C2B21;

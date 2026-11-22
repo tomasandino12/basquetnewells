@@ -9,7 +9,7 @@ import { Chip, Etiqueta } from '../components/ui/chip';
 import { Consulta } from '../components/ui/consulta';
 import { Pagina } from '../components/ui/pagina';
 import { PistaDeUnaVez } from '../guia/GuiaDePrimerUso';
-import { Pizarra } from '../components/ui/pizarra';
+import { MuestraDeTrazo, Pizarra } from '../components/ui/pizarra';
 import { PizarraEditable, type Herramienta, type Seleccion } from '../components/ui/pizarra-editable';
 import { Hoja } from '../components/ui/sheet';
 import { useGuardarJugada, useJugada } from '../datos/consultasRecursos';
@@ -244,7 +244,10 @@ function Editor({ clubId, jugada }: { clubId: string; jugada: JugadaDelClub }) {
           </Herr>
           {TRAZOS.map((t) => (
             <Herr key={t.clave} activa={herramienta === t.clave} disabled={pasos === 0} onClick={() => elegirHerramienta(t.clave)}>
-              {t.nombre}
+              <span className="flex items-center gap-2">
+                <MuestraDeTrazo tipo={t.clave} />
+                {t.nombre}
+              </span>
             </Herr>
           ))}
           <Titulito>Fichas</Titulito>

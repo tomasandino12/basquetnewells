@@ -18,16 +18,46 @@ const LARGO_T = 9;
 const ACCIONES_DE_PUNTA = ['corte', 'rotacion'];
 
 /** Los colores salen de los tokens de la app: así la pizarra cambia de tono con el tema (nunca negra sobre claro). */
-const TRAZO: Record<string, { color: string; punteado?: string; ancho?: number }> = {
-  corte: { color: 'var(--tinta)' },
-  dribbling: { color: 'var(--tinta)' },
-  pase: { color: 'var(--club-texto)', punteado: '5 4' },
-  cortina: { color: 'var(--tinta)', ancho: 3 },
-  tiro: { color: 'var(--baja)', punteado: '2 3' },
-  handoff: { color: 'var(--club-texto)', punteado: '5 4' },
-  rebote: { color: 'var(--baja)', punteado: '1 4' },
+/**
+ * Cada tipo de acción con su color y su trazo, como en la pizarra de la app vieja: el profe
+ * distingue un corte de un pase de un vistazo. Los colores son tokens (--trazo-*, estilos.css),
+ * con su versión clara en el tema oscuro.
+ */
+export const TRAZO: Record<string, { color: string; punteado?: string; ancho?: number }> = {
+  corte: { color: 'var(--trazo-corte)' },
+  dribbling: { color: 'var(--trazo-dribbling)' },
+  pase: { color: 'var(--trazo-pase)', punteado: '5 4' },
+  cortina: { color: 'var(--trazo-cortina)', ancho: 2.5 },
+  tiro: { color: 'var(--trazo-tiro)', punteado: '2 3' },
+  handoff: { color: 'var(--trazo-handoff)', punteado: '5 4' },
+  rebote: { color: 'var(--trazo-tiro)', punteado: '1 4' },
   rotacion: { color: 'var(--gris)', punteado: '6 4' },
 };
+
+/** Una punta de flecha por tipo (id `${id}-${tipo}`), pintada con el color de su trazo. */
+export function PuntasDeFlecha({ id }: { id: string }) {
+  return (
+    <defs>
+      {Object.entries(TRAZO).map(([tipo, { color }]) => (
+        <marker key={tipo} id={`${id}-${tipo}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill={color} />
+        </marker>
+      ))}
+    </defs>
+  );
+}
+
+/** La muestra de un trazo para la barra del editor: el mismo color y punteado que en la cancha. */
+export function MuestraDeTrazo({ tipo }: { tipo: string }) {
+  const e = TRAZO[tipo] ?? TRAZO.corte;
+  return (
+    <svg aria-hidden viewBox="0 0 28 10" className="h-2.5 w-7 shrink-0 overflow-visible">
+      <line x1="1" x2="27" y1="5" y2="5" stroke={e.color} strokeWidth={e.ancho ?? 2} strokeDasharray={e.punteado} strokeLinecap={tipo === 'rebote' ? 'round' : undefined} />
+      {tipo === 'cortina' && <line x1="27" x2="27" y1="0" y2="10" stroke={e.color} strokeWidth={2.5} />}
+      {ACCIONES_DE_PUNTA.includes(tipo) && <path d="M23 1.5L28 5L23 8.5Z" fill={e.color} />}
+    </svg>
+  );
+}
 
 /** Un `d` de trazoSvg (coordenadas 0–1) llevado a píxeles de la cancha. */
 function escalar(d: string, alto: number): string {
@@ -182,7 +212,7 @@ export function Trazo({ a, inicio, cancha, alto, idFlecha, indice }: { a: Accion
         strokeWidth={estilo.ancho ?? 2}
         strokeDasharray={estilo.punteado}
         strokeLinecap={a.tipo === 'rebote' ? 'round' : undefined}
-        markerEnd={ACCIONES_DE_PUNTA.includes(a.tipo) ? `url(#${idFlecha})` : undefined}
+        markerEnd={ACCIONES_DE_PUNTA.includes(a.tipo) ? `url(#${idFlecha}-${a.tipo})` : undefined}
       />
       {cortina}
     </g>
@@ -356,11 +386,7 @@ export function Pizarra({ datos, nosotrosDefiende = false, etiqueta, className }
         style={{ aspectRatio: `${W + MARGEN * 2} / ${alto + MARGEN * 2}`, width: `min(100%, calc(70svh * ${proporcion}))` }}
         className="mx-auto block h-auto border border-linea bg-sup"
       >
-        <defs>
-          <marker id={idFlecha} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M0,0 L10,5 L0,10 z" fill="var(--tinta)" />
-          </marker>
-        </defs>
+        <PuntasDeFlecha id={idFlecha} />
         <Cancha cancha={datos.cancha} />
         {acciones.map((a, i) => (
           <Trazo key={i} a={a} inicio={inicioDelPaso} cancha={datos.cancha} alto={alto} idFlecha={idFlecha} />
@@ -417,11 +443,7 @@ export function PizarraDeLaPortada({ datos, corre }: { datos: DatosDePizarra; co
       preserveAspectRatio="xMidYMid meet"
       className="mx-auto block h-auto w-full max-w-sm border border-linea bg-sup"
     >
-      <defs>
-        <marker id={idFlecha} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M0,0 L10,5 L0,10 z" fill="var(--tinta)" />
-        </marker>
-      </defs>
+      <PuntasDeFlecha id={idFlecha} />
       <Cancha cancha={datos.cancha} />
       {(datos.pasos[k]?.acciones ?? []).map((a, i) => (
         <Trazo key={i} a={a} inicio={inicioDelPaso} cancha={datos.cancha} alto={alto} idFlecha={idFlecha} />
