@@ -2,7 +2,7 @@ import { CalendarCheck, Check, TrendingUp } from 'lucide-react';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Panel } from '../components/ui/card';
 import { cn } from '../lib/cn';
-import { ALZA_MINIMA, DIAS_DE_LA_SEMANA, asistenciaSeguida, sesionesEnAlza } from './logica';
+import { ALZA_MINIMA, DIAS_DE_LA_SEMANA, asistenciaSeguida, mejorRacha, sesionesEnAlza } from './logica';
 import { Opciones, useDuracion } from './piezas';
 
 // Datos INVENTADOS: el laboratorio nunca lee datos de un jugador real.
@@ -163,11 +163,19 @@ function RachaDeTiro({ valores }: { valores: number[] }) {
   );
 }
 
+/**
+ * Asistencia en positivo: cada entrenamiento al que vino suma en lima (no sólo los de la racha) y una falta es un
+ * hueco, no una marca gris. Con la racha cortada se le dice cuánto le falta para su mejor racha, no lo que perdió.
+ */
 function AsistenciaContinuada({ presencias }: { presencias: (boolean | null)[] }) {
   const racha = asistenciaSeguida(presencias);
+  const mejor = mejorRacha(presencias);
+  const vino = presencias.filter((p) => p === true).length;
+  const tomadas = presencias.filter((p) => p != null).length;
   // Para pintar la tira: los últimos `racha` presentes (saltando los días sin tomar) son la racha.
   let quedan = racha;
   const enRacha = [...presencias].reverse().map((p) => (p === true && quedan-- > 0)).reverse();
+  const faltan = mejor - racha;
   return (
     <div className="flex min-h-40 flex-col justify-between gap-3 rounded-tarjeta border border-sobre-negro/15 bg-negro p-4 text-sobre-negro">
       {racha >= ASISTENCIA_MINIMA ? (
@@ -176,25 +184,35 @@ function AsistenciaContinuada({ presencias }: { presencias: (boolean | null)[] }
             <CalendarCheck aria-hidden className="size-4" strokeWidth={2.4} /> Asistencia continuada
           </p>
           <p className="font-titulo text-3xl leading-none font-bold uppercase">{racha} entrenamientos seguidos</p>
+          <p className="text-sm text-sobre-negro/70">{racha >= mejor ? 'Es tu mejor racha. Seguí así.' : `Tu mejor fue de ${mejor}: vas por buen camino.`}</p>
         </div>
       ) : (
         <div key="no" className="lab-aparece flex flex-col gap-2">
-          <p className="font-titulo text-sm font-semibold tracking-[.16em] text-sobre-negro/60 uppercase">Asistencia</p>
+          <p className="flex items-center gap-2 font-titulo text-sm font-semibold tracking-[.16em] text-lima uppercase">
+            <CalendarCheck aria-hidden className="size-4" strokeWidth={2.4} /> Tu asistencia
+          </p>
+          <p className="font-titulo text-3xl leading-none font-bold uppercase">
+            Viniste a {vino} de {tomadas}
+          </p>
           <p className="text-sm text-sobre-negro/70">
-            <span className="cifra font-mono text-2xl font-semibold text-sobre-negro">{racha}</span> {racha === 1 ? 'entrenamiento seguido' : 'entrenamientos seguidos'}. Desde {ASISTENCIA_MINIMA} se reconoce.
+            {racha === 0
+              ? 'El próximo entrenamiento arranca una racha nueva.'
+              : faltan > 0
+                ? `Llevás ${racha} seguidos: ${faltan === 1 ? 'uno más' : `${faltan} más`} y igualás tu mejor racha (${mejor}).`
+                : `Llevás ${racha} seguidos: es tu mejor racha.`}
           </p>
         </div>
       )}
-      <ol aria-label="Últimos entrenamientos" className="flex gap-1">
+      <ol aria-label="Últimos entrenamientos" className="flex items-center gap-1">
         {presencias.map((p, i) => (
           <li
             key={i}
             className={cn(
               'h-3 flex-1 rounded-[2px]',
-              p == null ? 'border border-dashed border-sobre-negro/30' : p ? (enRacha[i] ? 'bg-lima' : 'bg-sobre-negro/45') : 'border border-sobre-negro/45',
+              p == null ? 'border border-dashed border-sobre-negro/25' : p ? (enRacha[i] ? 'bg-lima' : 'bg-lima/55') : 'border border-lima/35',
             )}
           >
-            <span className="sr-only">{p == null ? 'sin tomar' : p ? 'presente' : 'ausente'}</span>
+            <span className="sr-only">{p == null ? 'sin tomar' : p ? 'vino' : 'faltó'}</span>
           </li>
         ))}
       </ol>

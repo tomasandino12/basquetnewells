@@ -50,6 +50,18 @@ export function asistenciaSeguida(presencias: (boolean | null)[]): number {
   return racha;
 }
 
+/** La racha más larga de presencias en la lista (con la misma regla: un día sin tomar no corta). */
+export function mejorRacha(presencias: (boolean | null)[]): number {
+  let mejor = 0;
+  let actual = 0;
+  for (const p of presencias) {
+    if (p == null) continue;
+    actual = p ? actual + 1 : 0;
+    mejor = Math.max(mejor, actual);
+  }
+  return mejor;
+}
+
 /** Filas con algo escrito, sin contar el encabezado. Sólo se cuentan: el contenido no se mira. */
 export function filasConDatos(filas: unknown[][]): number {
   const llenas = filas.filter((f) => f.some((c) => c != null && String(c).trim() !== ''));

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { asistenciaSeguida, filasConDatos, indiceDelDia, sesionesEnAlza, siguienteFrase } from './logica';
+import { asistenciaSeguida, filasConDatos, indiceDelDia, mejorRacha, sesionesEnAlza, siguienteFrase } from './logica';
 
 describe('lógica del laboratorio de interacciones', () => {
   it('las frases de carga dan la vuelta y una lista vacía no tiene frase', () => {
@@ -25,6 +25,12 @@ describe('lógica del laboratorio de interacciones', () => {
     expect(asistenciaSeguida([true, false, true, true, null, true])).toBe(3);
     expect(asistenciaSeguida([true, true, false])).toBe(0);
     expect(asistenciaSeguida([null, null])).toBe(0);
+  });
+
+  it('la mejor racha es la más larga de la lista, aunque ya se haya cortado', () => {
+    expect(mejorRacha([true, true, null, true, false, true])).toBe(3);
+    expect(mejorRacha([false, false])).toBe(0);
+    expect(mejorRacha([])).toBe(0);
   });
 
   it('cuenta las filas con datos sin el encabezado ni las vacías', () => {
