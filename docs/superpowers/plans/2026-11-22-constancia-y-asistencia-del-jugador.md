@@ -12,10 +12,11 @@ Spec: `docs/superpowers/specs/2026-11-22-constancia-y-asistencia-del-jugador-des
 | 2 | Lógica pura de la semana y las vistas | hecha |
 | 3 | Migración: tabla, funciones, borrado, verificación | hecha (0068; sin aplicar: la aplica la task 8) |
 | 4 | Repos y consultas de `web/` | hecha |
-| 5 | Pantalla Inicio del jugador | hecha (ojo: `mis_recursos()` no devuelve `tipo` ni `frecuencia_semanal`; ver nota en el commit) |
+| 5 | Pantalla Inicio del jugador | hecha (`tipo` y `frecuencia_semanal` llegan con 0069) |
 | 6 | Conteo de prácticas en la pantalla del profe | hecha |
 | 7 | Privacidad, `VERSION_LEGAL` y PRD | hecha |
-| 8 | Backup, `db push` y verificación SQL (Tomás) | pendiente |
+| 7b | Migración 0069: `mis_recursos` con tipo y frecuencia; `mi_asistencia` sin días antes del alta | hecha (sin aplicar: va con 0068 en la task 8) |
+| 8 | Backup, `db push` (0068 y 0069) y verificación SQL (Tomás) | pendiente |
 
 ## Task 1 — Refactor: las rachas salen del laboratorio
 
@@ -98,5 +99,5 @@ Spec: `docs/superpowers/specs/2026-11-22-constancia-y-asistencia-del-jugador-des
 
 1. `npm run backup` (`docs/guias/BACKUP.md`). Vale uno de hoy sin pushes en el medio.
 2. `npx supabase db push`, con confirmación de Tomás.
-3. Correr `tests/verificarConstancia.sql` en el SQL Editor y anotar el resultado.
-4. Actualizar la memoria de migraciones (próxima: 0069) y marcar B-31 como Terminado si la prueba con un jugador de prueba sale bien.
+3. Correr `tests/verificarConstancia.sql` y `tests/verificar0069.sql` en el SQL Editor y anotar el resultado.
+4. Actualizar la memoria de migraciones (próxima: 0070) y marcar B-31 como Terminado si la prueba con un jugador de prueba sale bien.
