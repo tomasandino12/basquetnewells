@@ -1,5 +1,5 @@
-import type { ChangeEvent, ReactNode } from 'react';
-import { useId } from 'react';
+import type { ReactNode } from 'react';
+import { ZonaDeArchivo } from '../../interacciones/ZonaDeArchivo';
 import { cn } from '../../lib/cn';
 
 /** «Cómo se hace»: los pasos para bajar la planilla de Google y subirla acá. */
@@ -12,22 +12,9 @@ export function PasosDeImportacion({ children }: { children: ReactNode }) {
   );
 }
 
-/** El selector de archivo con su etiqueta visible; sólo .xlsx. */
+/** El selector de archivo: una zona para soltar o elegir el .xlsx, con la planilla que encesta mientras se lee. */
 export function CampoDeArchivo({ etiqueta, alElegir, disabled }: { etiqueta: string; alElegir: (archivo: File | undefined) => void; disabled?: boolean }) {
-  const id = useId();
-  return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-sm font-semibold">{etiqueta}</label>
-      <input
-        id={id}
-        type="file"
-        accept=".xlsx"
-        disabled={disabled}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => alElegir(e.target.files?.[0])}
-        className="w-full rounded-campo border border-borde-control bg-sup p-2 text-sm file:mr-3 file:min-h-9 file:rounded-btn file:border-0 file:bg-negro file:px-3 file:font-semibold file:text-sobre-negro"
-      />
-    </div>
-  );
+  return <ZonaDeArchivo etiqueta={etiqueta} alElegir={alElegir} disabled={disabled} />;
 }
 
 /** Una fila con casilla: el chico, lo que se va a hacer con él y sus notas. La casilla mide 24 px y toda la fila se toca. */

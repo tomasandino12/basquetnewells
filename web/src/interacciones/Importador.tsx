@@ -4,7 +4,8 @@ import { Boton } from '../components/ui/button';
 import { Panel } from '../components/ui/card';
 import { cn } from '../lib/cn';
 import { filasConDatos } from './logica';
-import { caminoDeRed, useDuracion } from './piezas';
+import { useDuracion } from './piezas';
+import { DibujoDeAro, ENCESTA_MS } from './ZonaDeArchivo';
 
 type Estado =
   | { tipo: 'reposo' }
@@ -13,8 +14,6 @@ type Estado =
   | { tipo: 'listo'; filas: number; hojas: number; ms: number }
   | { tipo: 'error'; texto: string };
 
-/** Lo que dura el documento en encestar: el resumen nunca aparece antes, aunque leer sea instantáneo. */
-const ENCESTA_MS = 700;
 
 /**
  * Lee la planilla EN EL DISPOSITIVO y sólo cuenta filas: no se muestra ni se guarda ninguna celda
@@ -31,36 +30,6 @@ async function contarFilas(archivo: File) {
 }
 
 const esXlsx = (a: File) => a.name.toLowerCase().endsWith('.xlsx');
-
-function Dibujo() {
-  return (
-    <svg aria-hidden viewBox="0 0 240 120" className="ix-imp-dibujo h-auto w-full max-w-80 shrink-0 overflow-visible">
-      {/* El aro va sobre un tablero negro: así la red lima se lee también en el tema claro. */}
-      <rect x="128" y="4" width="108" height="112" rx="10" fill="var(--negro)" />
-      <rect x="214" y="14" width="3" height="42" rx="1" fill="var(--sobre-negro)" opacity=".7" />
-      <path d="M198 46L214 38" stroke="var(--sobre-negro)" strokeWidth="2.2" opacity=".7" />
-      <line x1="4" x2="120" y1="112" y2="112" stroke="var(--linea)" strokeWidth="1.5" />
-      {/* Atrás va la mitad de arriba del aro; el documento pasa entre las dos mitades y por dentro de la red. */}
-      <path d="M154 46A22 5 0 0 1 198 46" fill="none" stroke="var(--club)" strokeWidth="2.6" />
-      <g className="doc">
-        <g className="doc-x">
-          <g className="doc-y">
-            <g className="doc-giro">
-              <path d="M23 70h16l6 6v24H23Z" fill="var(--sup)" stroke="var(--tinta)" strokeWidth="1.6" strokeLinejoin="round" />
-              <path d="M39 70v6h6" fill="none" stroke="var(--tinta)" strokeWidth="1.6" strokeLinejoin="round" />
-              <path d="M27 83h14M27 88h14M27 93h14M34 80v16" stroke="var(--sube)" strokeWidth="1.3" />
-            </g>
-          </g>
-        </g>
-      </g>
-      <g className="red-imp">
-        <path d={caminoDeRed(176, 46, 42, 24, 30, 4, 3)} fill="none" stroke="var(--sobre-negro)" strokeWidth="1.2" opacity=".55" />
-        <path className="red-lima" d={caminoDeRed(176, 46, 42, 24, 30, 4, 3)} fill="none" stroke="var(--lima)" strokeWidth="1.6" strokeLinecap="round" />
-      </g>
-      <path d="M154 46A22 5 0 0 0 198 46" fill="none" stroke="var(--club)" strokeWidth="2.6" />
-    </svg>
-  );
-}
 
 export function SeccionImportador() {
   const [estado, setEstado] = useState<Estado>({ tipo: 'reposo' });
@@ -137,7 +106,7 @@ export function SeccionImportador() {
             e.target.value = '';
           }}
         />
-        <Dibujo />
+        <DibujoDeAro />
         <div key={estado.tipo} className="ix-aparece min-h-12 min-w-0 text-center" aria-live="polite">
           {estado.tipo === 'reposo' && (
             <>
