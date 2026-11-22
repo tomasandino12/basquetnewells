@@ -17,6 +17,8 @@ const leer = (ruta) => readFileSync(ruta, 'utf8').replace(/\r\n/g, '\n');
 const sql0029 = leer('supabase/migrations/0029_cuenta_jugador.sql');
 const sql0030 = leer('supabase/migrations/0030_lectura_jugador.sql');
 const sql0068 = leer('supabase/migrations/0068_constancia_jugador.sql');
+// 0069 recrea mis_recursos y reemplaza mi_asistencia: sus cuerpos valen desde ahí.
+const sql0069 = leer('supabase/migrations/0069_constancia_ajustes.sql');
 
 /** Sin los comentarios de línea: un `grant` dentro de un comentario no otorga nada. */
 const sinComentarios = (sql) => sql.replace(/--.*$/gm, '');
@@ -28,10 +30,14 @@ function funcionesOtorgadas(sql) {
     .map((m) => m[1]);
 }
 
-/** El cuerpo de `create function nombre(`, hasta el `$fn$;` que lo cierra. */
+/**
+ * El cuerpo de la ÚLTIMA definición de `nombre` (`create function` o `create or
+ * replace function`), hasta el `$fn$;` que la cierra: la que queda en la base.
+ */
 function cuerpoDe(sql, nombre) {
-  const desde = sql.indexOf(`create function ${nombre}(`);
-  assert.ok(desde >= 0, `no encontré "create function ${nombre}(": ¿cambió la migración?`);
+  const definiciones = [...sql.matchAll(new RegExp(`create (or replace )?function ${nombre}\\(`, 'g'))];
+  assert.ok(definiciones.length > 0, `no encontré "create function ${nombre}(": ¿cambió la migración?`);
+  const desde = definiciones[definiciones.length - 1].index;
   const hasta = sql.indexOf('\n$fn$;', desde);
   assert.ok(hasta > desde, `no encontré el cierre de ${nombre}`);
   return sql.slice(desde, hasta);
@@ -39,8 +45,8 @@ function cuerpoDe(sql, nombre) {
 
 const ordenados = (xs) => [...xs].sort();
 
-/** Dónde buscar cada función de lectura: viven en 0030 y en 0068. */
-const sqlDeLectura = `${sql0030}\n${sql0068}`;
+/** Dónde buscar cada función de lectura: viven en 0030, 0068 y 0069 (en ese orden). */
+const sqlDeLectura = `${sql0030}\n${sql0068}\n${sql0069}`;
 
 const todasLasOtorgadas = () => [
   ...funcionesOtorgadas(sql0029),
@@ -50,6 +56,13 @@ const todasLasOtorgadas = () => [
 
 test('los grant execute de 0029, 0030 y 0068 son exactamente los declarados', () => {
   assert.deepEqual(ordenados(todasLasOtorgadas()), ordenados(FUNCIONES_OTORGADAS));
+});
+
+test('0069 sólo vuelve a otorgar lo que recrea, y ya estaba declarado', () => {
+  const otorgadas = funcionesOtorgadas(sql0069);
+  assert.deepEqual(otorgadas, ['mis_recursos']);
+  assert.ok(LECTURA_DEL_JUGADOR.includes('mis_recursos'));
+  assert.match(sinComentarios(sql0069), /drop function mis_recursos\(\);/);
 });
 
 test('ninguna función se otorga dos veces', () => {

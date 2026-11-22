@@ -113,7 +113,7 @@ export async function obtenerMisRecursos() {
     descripcion: f.descripcion,
     enlace: f.enlace,
     fecha: f.fecha,
-    // mis_recursos() todavía no los devuelve: sin ellos, el check de Inicio ofrece todos los recursos.
+    // Desde 0069. Null es «el profe no lo cargó»: el check de Inicio lo ofrece igual.
     tipo: f.tipo ?? null,
     frecuenciaSemanal: f.frecuencia_semanal ?? null,
   }));
