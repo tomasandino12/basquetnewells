@@ -33,6 +33,16 @@ export function useResumenDeRecursos(plantelId: string | undefined) {
   });
 }
 
+/** Cuántos practicaron cada recurso: un agregado, así que si falla las tarjetas salen igual. Con null, aviso. */
+export function usePracticasDelPlantel(plantelId: string | undefined) {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['recursos', 'practicas', plantelId],
+    enabled: plantelId !== undefined,
+    queryFn: async () => (await cargar()).practicasDelPlantel(plantelId!).catch(() => null),
+  });
+}
+
 export function useJugadasDelClub(clubId: string | undefined) {
   const cargar = useCargarRepositorio();
   return useQuery({

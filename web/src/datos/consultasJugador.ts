@@ -75,6 +75,41 @@ export function useAnotarApertura() {
   };
 }
 
+/** Sus marcas de práctica. Con staleTime 0 para que «hoy» no quede viejo si deja la pestaña abierta. */
+export function useMisPracticas() {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['jugador', 'practicas'],
+    staleTime: 0,
+    queryFn: async () => (await cargar()).misPracticas(),
+  });
+}
+
+/**
+ * Marca o desmarca la práctica de hoy. La base devuelve las marcas ya al día: se guardan directo (sin
+ * esperar otra consulta) y además se invalida, por si la hora cambió de día en el medio.
+ */
+export function useMarcarPractica() {
+  const cargar = useCargarRepositorio();
+  const consultas = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ recursoId, hecho }: { recursoId: string; hecho: boolean }) => (await cargar()).marcarPractica(recursoId, hecho),
+    onSuccess: (marcas) => {
+      if (marcas) consultas.setQueryData(['jugador', 'practicas'], marcas);
+    },
+    onSettled: () => consultas.invalidateQueries({ queryKey: ['jugador', 'practicas'] }),
+  });
+}
+
+/** Su asistencia, un día por fecha. */
+export function useMiAsistencia() {
+  const cargar = useCargarRepositorio();
+  return useQuery({
+    queryKey: ['jugador', 'asistencia'],
+    queryFn: async () => (await cargar()).miAsistencia(),
+  });
+}
+
 // Misiones del partido (las evalúa el profe).
 
 export function useDatosDeMisiones(clubId: string | undefined, plantelId: string | undefined, previaId: string) {

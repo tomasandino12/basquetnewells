@@ -11,7 +11,7 @@ Spec: `docs/superpowers/specs/2026-11-22-constancia-y-asistencia-del-jugador-des
 | 1 | Refactor: rachas a `src/data/constancia.js` | hecha |
 | 2 | Lógica pura de la semana y las vistas | hecha |
 | 3 | Migración: tabla, funciones, borrado, verificación | hecha (0068; sin aplicar: la aplica la task 8) |
-| 4 | Repos y consultas de `web/` | pendiente |
+| 4 | Repos y consultas de `web/` | hecha |
 | 5 | Pantalla Inicio del jugador | pendiente |
 | 6 | Conteo de prácticas en la pantalla del profe | pendiente |
 | 7 | Privacidad, `VERSION_LEGAL` y PRD | pendiente |

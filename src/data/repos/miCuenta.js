@@ -66,6 +66,43 @@ export async function registrarAperturaDeRecurso(recursoId) {
   }
 }
 
+// Las marcas de práctica: { fecha, recursoId }. recursoId es null si el recurso
+// se borró (la marca queda, para que el día no se pierda).
+const practicaDesdeFila = (f) => ({ fecha: f.fecha, recursoId: f.recursoId ?? null });
+
+/**
+ * Sus marcas de práctica de las últimas 12 semanas (0068). Null si quien llama
+ * no tiene cuenta de jugador vigente: se conserva, no se vuelve [].
+ */
+export async function misPracticas() {
+  const { data, error } = await obtenerCliente().rpc('mis_practicas');
+  if (error) throw error;
+  return data ? data.map(practicaDesdeFila) : null;
+}
+
+/**
+ * Marca (o, con `hecho` false, desmarca) que hoy practicó ese recurso. La fecha
+ * la pone el servidor: nunca se manda. Devuelve las marcas ya actualizadas, o
+ * null si no es un jugador con cuenta. Un recurso que no se le envió no anota
+ * nada y tampoco da error (la base no deja averiguar qué recursos existen).
+ */
+export async function marcarPractica(recursoId, hecho) {
+  const { data, error } = await obtenerCliente().rpc('marcar_practica', { p_recurso_id: recursoId, p_hecho: hecho });
+  if (error) throw error;
+  return data ? data.map(practicaDesdeFila) : null;
+}
+
+/**
+ * Su asistencia de los últimos 12 meses, un día por fecha: `vino` es true,
+ * false o null. Null es «no se tomó» o «pausa por lesión»: no suma ni corta la
+ * racha, y no se vuelve false. Sin motivo ni lesión (0068).
+ */
+export async function miAsistencia() {
+  const { data, error } = await obtenerCliente().rpc('mi_asistencia');
+  if (error) throw error;
+  return data ? data.map((d) => ({ fecha: d.fecha, vino: d.vino ?? null })) : null;
+}
+
 export async function obtenerMisRecursos() {
   const supabase = obtenerCliente();
   const { data, error } = await supabase.rpc('mis_recursos');

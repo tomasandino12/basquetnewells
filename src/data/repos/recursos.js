@@ -67,6 +67,28 @@ export async function guardarRecurso(payload) {
 }
 
 /**
+ * Cuántos chicos del plantel practicaron cada recurso (esta semana y alguna
+ * vez), sin ningún id de jugador (0068). Con menos de 3 cuentas la base manda
+ * los conteos en null, y ese null se conserva: no es 0. Null si quien llama no
+ * es entrenador del plantel.
+ */
+export async function practicasDelPlantel(plantelId) {
+  const supabase = obtenerCliente();
+  const { data, error } = await supabase.rpc('practicas_del_plantel', { p_plantel_id: plantelId });
+  if (error) throw error;
+  if (!data) return null;
+  return {
+    conCuenta: data.conCuenta,
+    marcaronEstaSemana: data.marcaronEstaSemana ?? null,
+    recursos: (data.recursos ?? []).map((r) => ({
+      recursoId: r.recursoId,
+      estaSemana: r.estaSemana ?? null,
+      algunaVez: r.algunaVez ?? null,
+    })),
+  };
+}
+
+/**
  * Conteos de aperturas del plantel, sin nombres: la base los arma con
  * resumen_recursos() y no devuelve ningún id de jugador. Los conteos de
  * aperturas vienen en null cuando hay muy pocas cuentas para que no delaten a

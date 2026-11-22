@@ -415,6 +415,25 @@ export interface ResumenDeRecursos {
   }[];
 }
 
+/** Una marca de «hoy practiqué esto». `recursoId` es null si el recurso se borró después. */
+export interface PracticaMarcada {
+  fecha: string;
+  recursoId: string | null;
+}
+
+/** Un día de asistencia del jugador. `vino: null` es «no se tomó» o «pausa por lesión»: no suma ni corta la racha. */
+export interface DiaDeAsistenciaPropia {
+  fecha: string;
+  vino: boolean | null;
+}
+
+/** Cuántos chicos del plantel practicaron, sin nombres; los conteos vienen null con menos de 3 cuentas (no es 0). */
+export interface PracticasDelPlantel {
+  conCuenta: number;
+  marcaronEstaSemana: number | null;
+  recursos: { recursoId: string; estaSemana: number | null; algunaVez: number | null }[];
+}
+
 export interface JugadaDelJugador {
   id: string;
   nombre: string;
@@ -564,9 +583,17 @@ export interface Repositorio extends RepositorioCoord {
   obtenerMiProgreso(): Promise<MiProgreso>;
   misJugadas(): Promise<JugadaDelJugador[]>;
   obtenerMisRecursos(): Promise<RecursoDelJugador[]>;
+  /** Sus marcas de práctica de las últimas 12 semanas. Null si no es un jugador con cuenta. */
+  misPracticas(): Promise<PracticaMarcada[] | null>;
+  /** Marca o desmarca (`hecho` false) la práctica de HOY; la fecha la pone el servidor. Devuelve las marcas ya al día. */
+  marcarPractica(recursoId: string, hecho: boolean): Promise<PracticaMarcada[] | null>;
+  /** Su asistencia de los últimos 12 meses, un día por fecha. Null si no es un jugador con cuenta. */
+  miAsistencia(): Promise<DiaDeAsistenciaPropia[] | null>;
   obtenerRecursos(clubId: string): Promise<RecursoDelClub[]>;
   /** Null si quien llama no es entrenador del plantel. */
   obtenerResumenRecursos(plantelId: string): Promise<ResumenDeRecursos | null>;
+  /** Cuántos practicaron cada recurso, sin nombres. Null si quien llama no es entrenador del plantel. */
+  practicasDelPlantel(plantelId: string): Promise<PracticasDelPlantel | null>;
   guardarRecurso(payload: PayloadDeRecurso): Promise<unknown>;
   /** Se lleva los envíos y las aperturas. Lanza 'NO_ES_TUYO' si es de otro profe. */
   borrarRecurso(clubId: string, recursoId: string): Promise<void>;
