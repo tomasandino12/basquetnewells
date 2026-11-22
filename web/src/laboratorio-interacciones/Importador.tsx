@@ -14,7 +14,7 @@ type Estado =
   | { tipo: 'error'; texto: string };
 
 /** Lo que dura el documento en encestar: el resumen nunca aparece antes, aunque leer sea instantáneo. */
-const ENCESTA_MS = 520;
+const ENCESTA_MS = 700;
 
 /**
  * Lee la planilla EN EL DISPOSITIVO y sólo cuenta filas: no se muestra ni se guarda ninguna celda
@@ -34,20 +34,30 @@ const esXlsx = (a: File) => a.name.toLowerCase().endsWith('.xlsx');
 
 function Dibujo() {
   return (
-    <svg aria-hidden viewBox="0 0 120 80" className="lab-imp-dibujo h-20 w-30 shrink-0 overflow-visible">
+    <svg aria-hidden viewBox="0 0 240 120" className="lab-imp-dibujo h-auto w-full max-w-80 shrink-0 overflow-visible">
       {/* El aro va sobre un tablero negro: así la red lima se lee también en el tema claro. */}
-      <rect x="72" y="4" width="44" height="72" rx="6" fill="var(--negro)" />
-      <path d="M81 28A13 3 0 0 1 107 28" fill="none" stroke="var(--club)" strokeWidth="2.2" />
+      <rect x="128" y="4" width="108" height="112" rx="10" fill="var(--negro)" />
+      <rect x="214" y="14" width="3" height="42" rx="1" fill="var(--sobre-negro)" opacity=".7" />
+      <path d="M198 46L214 38" stroke="var(--sobre-negro)" strokeWidth="2.2" opacity=".7" />
+      <line x1="4" x2="120" y1="112" y2="112" stroke="var(--linea)" strokeWidth="1.5" />
+      {/* Atrás va la mitad de arriba del aro; el documento pasa entre las dos mitades y por dentro de la red. */}
+      <path d="M154 46A22 5 0 0 1 198 46" fill="none" stroke="var(--club)" strokeWidth="2.6" />
       <g className="doc">
-        <path d="M16 30h16l6 6v26H16Z" fill="var(--sup)" stroke="var(--tinta)" strokeWidth="1.6" strokeLinejoin="round" />
-        <path d="M32 30v6h6" fill="none" stroke="var(--tinta)" strokeWidth="1.6" strokeLinejoin="round" />
-        <path d="M20 44h14M20 49h14M20 54h14M27 41v16" stroke="var(--sube)" strokeWidth="1.3" />
+        <g className="doc-x">
+          <g className="doc-y">
+            <g className="doc-giro">
+              <path d="M23 70h16l6 6v24H23Z" fill="var(--sup)" stroke="var(--tinta)" strokeWidth="1.6" strokeLinejoin="round" />
+              <path d="M39 70v6h6" fill="none" stroke="var(--tinta)" strokeWidth="1.6" strokeLinejoin="round" />
+              <path d="M27 83h14M27 88h14M27 93h14M34 80v16" stroke="var(--sube)" strokeWidth="1.3" />
+            </g>
+          </g>
+        </g>
       </g>
       <g className="red-imp">
-        <path d={caminoDeRed(94, 28, 26, 16, 22, 3, 3)} fill="none" stroke="var(--sobre-negro)" strokeWidth="1.1" opacity=".5" />
-        <path className="red-lima" d={caminoDeRed(94, 28, 26, 16, 22, 3, 3)} fill="none" stroke="var(--lima)" strokeWidth="1.4" strokeLinecap="round" />
+        <path d={caminoDeRed(176, 46, 42, 24, 30, 4, 3)} fill="none" stroke="var(--sobre-negro)" strokeWidth="1.2" opacity=".55" />
+        <path className="red-lima" d={caminoDeRed(176, 46, 42, 24, 30, 4, 3)} fill="none" stroke="var(--lima)" strokeWidth="1.6" strokeLinecap="round" />
       </g>
-      <path d="M81 28A13 3 0 0 0 107 28" fill="none" stroke="var(--club)" strokeWidth="2.2" />
+      <path d="M154 46A22 5 0 0 0 198 46" fill="none" stroke="var(--club)" strokeWidth="2.6" />
     </svg>
   );
 }
@@ -110,7 +120,7 @@ export function SeccionImportador() {
         }}
         onDrop={alSoltar}
         className={cn(
-          'lab-imp flex min-h-36 cursor-pointer flex-col items-center gap-4 rounded-tarjeta border-[1.5px] border-dashed p-4 outline-offset-2 sm:flex-row sm:gap-6',
+          'lab-imp flex min-h-36 cursor-pointer flex-col items-center gap-3 rounded-tarjeta border-[1.5px] border-dashed p-4 outline-offset-2',
           'transition-[border-color,background-color] duration-[var(--dur-2)] focus-within:outline-2 focus-within:outline-tinta',
           estado.tipo === 'encima' ? 'border-tinta bg-sup-2' : estado.tipo === 'error' ? 'border-club-texto' : 'border-borde-control',
         )}
@@ -128,7 +138,7 @@ export function SeccionImportador() {
           }}
         />
         <Dibujo />
-        <div key={estado.tipo} className="lab-aparece min-w-0 flex-1 text-center sm:text-left" aria-live="polite">
+        <div key={estado.tipo} className="lab-aparece min-h-12 min-w-0 text-center" aria-live="polite">
           {estado.tipo === 'reposo' && (
             <>
               <p className="font-semibold">Soltá la planilla acá</p>

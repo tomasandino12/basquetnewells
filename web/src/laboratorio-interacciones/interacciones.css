@@ -9,6 +9,9 @@
   /* Terracota sobria: el quemado del club bajado con caramelo, sin llegar al naranja de cancha. */
   --pelota-clasica: color-mix(in oklab, var(--quemado) 62%, var(--caramelo));
   --pelota-costura: color-mix(in oklab, var(--cuero) 70%, var(--negro));
+  /* El fueguito de la mano caliente: el quemado del club afuera y un centro claro, sin amarillo de juego. */
+  --fuego-afuera: var(--quemado);
+  --fuego-centro: color-mix(in oklab, var(--caramelo) 45%, var(--sobre-negro));
 }
 .lab[data-lento='si'] { --lab-lento: 4; }
 
@@ -35,7 +38,7 @@
 }
 
 /* ---------- 1B. Tiro limpio: parábola (x lineal, y con dos curvas), giro de la pelota y swish ---------- */
-.lab-tiro .tiro-giro, .lab-tiro .red, .lab-imp .doc, .lab-imp .red-imp { transform-box: fill-box; }
+.lab-tiro .tiro-giro, .lab-tiro .red { transform-box: fill-box; }
 .lab-tiro .tiro-giro { transform-origin: center; }
 .lab-tiro .red { transform-origin: 50% 0; }
 .lab-tiro.corre .tiro-x { animation: lab-tiro-x calc(700ms * var(--lab-lento)) var(--vueltas, 1); }
@@ -72,33 +75,50 @@
 .lab-aparece { animation: lab-aparece calc(240ms * var(--lab-lento)) var(--ease-salida); }
 @keyframes lab-aparece { from { opacity: 0; transform: translateY(4px); } }
 
-/* ---------- 2. Importador: el documento encesta en el aro y la red se sacude en lima ---------- */
-.lab-imp .doc { transform-origin: center; transition: transform calc(200ms * var(--lab-lento)) var(--ease-salida); }
-.lab-imp[data-estado='encima'] .doc { transform: translateY(-6px) rotate(-6deg); }
-.lab-imp[data-estado='procesando'] .doc { animation: lab-doc-encesta calc(520ms * var(--lab-lento)) both; }
+/* ---------- 2. Importador: el documento sale en parábola lateral, pasa por el aro y la red se sacude en lima ---------- */
+/* Misma receta que el tiro del cargador: x lineal, y con dos curvas (sube frenando, cae acelerando), giro aparte. */
+.lab-imp .doc-giro, .lab-imp .red-imp { transform-box: fill-box; }
+.lab-imp .doc { transition: transform calc(200ms * var(--lab-lento)) var(--ease-salida); }
+.lab-imp[data-estado='encima'] .doc { transform: translateY(-6px); }
+.lab-imp .doc-giro { transform-origin: center; }
+.lab-imp[data-estado='procesando'] .doc-x { animation: lab-doc-x calc(700ms * var(--lab-lento)) both; }
+.lab-imp[data-estado='procesando'] .doc-y { animation: lab-doc-y calc(700ms * var(--lab-lento)) both; }
+.lab-imp[data-estado='procesando'] .doc-giro { animation: lab-doc-giro calc(700ms * var(--lab-lento)) both; }
 /* Ya encestó: el documento no vuelve (estado final pintado, no sólo el último cuadro). */
 .lab-imp[data-estado='listo'] .doc { opacity: 0; }
 .lab-imp[data-estado='error'] .doc { animation: lab-no calc(320ms * var(--lab-lento)) var(--ease-salida); }
-@keyframes lab-doc-encesta {
-  0%   { transform: none; animation-timing-function: cubic-bezier(.25, .6, .45, 1); }
-  45%  { transform: translate(38px, -30px) rotate(14deg) scale(.72); animation-timing-function: cubic-bezier(.55, 0, .75, .45); }
-  78%  { transform: translate(68px, -14px) rotate(24deg) scale(.5); opacity: 1; animation-timing-function: cubic-bezier(.4, 0, 1, 1); }
-  100% { transform: translate(68px, 4px) rotate(24deg) scale(.42); opacity: 0; }
+/* Del centro del documento (34, 85) al centro del aro (176, 46): 142 a la derecha; cruza el aro al 74 %. */
+@keyframes lab-doc-x {
+  0%   { transform: translateX(0); animation-timing-function: linear; }
+  74%  { transform: translateX(142px); }
+  100% { transform: translateX(142px); }
+}
+@keyframes lab-doc-y {
+  0%   { transform: translateY(0); animation-timing-function: cubic-bezier(.25, .6, .45, 1); }
+  42%  { transform: translateY(-76px); animation-timing-function: cubic-bezier(.55, 0, .75, .45); }
+  74%  { transform: translateY(-39px); animation-timing-function: cubic-bezier(.4, 0, 1, 1); }
+  100% { transform: translateY(4px); }
+}
+/* Una vuelta entera en el aire: entra al aro derecho y ya achicado para pasar por la boca. */
+@keyframes lab-doc-giro {
+  0%   { transform: rotate(0) scale(1); opacity: 1; }
+  30%  { transform: rotate(150deg) scale(.78); }
+  74%  { transform: rotate(360deg) scale(.7); opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: rotate(370deg) scale(.66); opacity: 0; }
 }
 @keyframes lab-no {
   25% { transform: translateX(-4px); }
   50% { transform: translateX(4px); }
   75% { transform: translateX(-2px); }
 }
+/* La red se sacude cuando el documento la cruza (mismo swish que el cargador) y se enciende lima ahí mismo. */
 .lab-imp .red-imp { transform-origin: 50% 0; }
-.lab-imp .red-lima { opacity: 0; transition: opacity calc(160ms * var(--lab-lento)) ease-out; }
+.lab-imp[data-estado='procesando'] .red-imp { animation: lab-swish calc(700ms * var(--lab-lento)); }
+.lab-imp .red-lima { opacity: 0; }
+.lab-imp[data-estado='procesando'] .red-lima { animation: lab-enciende calc(700ms * var(--lab-lento)) both; }
 .lab-imp[data-estado='listo'] .red-lima { opacity: 1; }
-.lab-imp[data-estado='listo'] .red-imp { animation: lab-swish-corto calc(320ms * var(--lab-lento)); }
-@keyframes lab-swish-corto {
-  30% { transform: scale(.84, 1.22); animation-timing-function: cubic-bezier(.3, 0, .3, 1); }
-  65% { transform: scale(1.05, .94); }
-  85% { transform: scale(.98, 1.03); }
-}
+@keyframes lab-enciende { 0%, 72% { opacity: 0; } 82%, 100% { opacity: 1; } }
 
 /* ---------- 3. Enviar recurso: el avión toma impulso, despega con estela de tiza y queda la tilde ---------- */
 .lab-enviar { position: relative; isolation: isolate; }
@@ -107,17 +127,20 @@
   opacity: 0; transition: opacity calc(280ms * var(--lab-lento)) var(--ease-salida);
 }
 .lab-enviar[data-estado='enviado'] .capa-lima { opacity: 1; }
-.lab-enviar .avion { transition: transform calc(200ms * var(--lab-lento)) var(--ease-salida); }
+.lab-enviar .avion { transition: transform calc(200ms * var(--lab-lento)) var(--ease-salida), opacity calc(200ms * var(--lab-lento)) ease-out; }
+/* Impulso: el avión se echa para atrás sobre su propio eje (apunta arriba a la derecha), sin girar. */
 @media (hover: hover) {
-  .lab-enviar[data-estado='reposo']:hover .avion { transform: translate(2px, -2px) rotate(-14deg); }
+  .lab-enviar[data-estado='reposo']:hover .avion { transform: translate(-3px, 3px); }
 }
-.lab-enviar[data-estado='reposo']:focus-visible .avion { transform: translate(2px, -2px) rotate(-14deg); }
+.lab-enviar[data-estado='reposo']:focus-visible .avion { transform: translate(-3px, 3px); }
+/* Sale disparado hacia donde apunta y se va por el borde del botón (lo recorta overflow): no se desvanece en el aire. */
 .lab-enviar[data-estado='enviando'] .avion { animation: lab-despega calc(560ms * var(--lab-lento)) both; }
-.lab-enviar[data-estado='enviado'] .avion { opacity: 0; }
+.lab-enviar[data-estado='enviado'] .avion { opacity: 0; transition: none; }
 @keyframes lab-despega {
-  0%   { transform: translate(2px, -2px) rotate(-14deg); animation-timing-function: cubic-bezier(.3, .7, .4, 1); }
-  18%  { transform: translate(-4px, 2px) rotate(-22deg); animation-timing-function: cubic-bezier(.5, 0, .9, .5); }
-  100% { transform: translate(170px, -26px) rotate(-6deg) scale(.8); opacity: 0; }
+  0%   { transform: translate(-3px, 3px); animation-timing-function: cubic-bezier(.3, .7, .4, 1); }
+  22%  { transform: translate(-5px, 5px); animation-timing-function: cubic-bezier(.55, 0, .85, .35); }
+  70%  { transform: translate(44px, -44px); }
+  100% { transform: translate(44px, -44px); }
 }
 .lab-enviar .estela i { position: absolute; left: 0; top: 0; width: 3px; height: 3px; margin: -1.5px; border-radius: 50%; background: var(--sobre-negro); opacity: 0; }
 .lab-enviar[data-estado='enviando'] .estela i { animation: lab-estela calc(420ms * var(--lab-lento)) ease-out backwards; }
@@ -155,8 +178,16 @@
 .lab-destapa { transform-box: fill-box; transform-origin: 0 50%; animation: lab-destapa calc(620ms * var(--lab-lento)) var(--ease-salida); }
 @keyframes lab-destapa { from { transform: scaleX(0); } }
 
+/* Mano caliente: el fueguito se prende desde la base y flamea tres veces; el centro va a destiempo. */
+.lab-fuego .llama, .lab-fuego .nucleo { transform-box: fill-box; transform-origin: 50% 100%; }
+.lab-fuego .llama { animation: lab-prende calc(360ms * var(--lab-lento)) var(--ease-salida), lab-flamea calc(560ms * var(--lab-lento)) ease-in-out calc(360ms * var(--lab-lento)) 3; }
+.lab-fuego .nucleo { animation: lab-prende calc(420ms * var(--lab-lento)) var(--ease-salida), lab-flamea-centro calc(480ms * var(--lab-lento)) ease-in-out calc(420ms * var(--lab-lento)) 3; }
+@keyframes lab-prende { from { transform: scale(.3, .1); opacity: 0; } 60% { opacity: 1; } }
+@keyframes lab-flamea { 30% { transform: scale(.94, 1.07) skewX(-3deg); } 70% { transform: scale(1.04, .95) skewX(2deg); } }
+@keyframes lab-flamea-centro { 40% { transform: scale(1.08, .9); } 75% { transform: scale(.94, 1.08) skewX(3deg); } }
+
 /* Movimiento reducido: el reset global ya acorta todo; acá se apagan las que, cortadas, dejarían
    algo a mitad de camino (la pelota del tiro desaparecería). Cada pieza queda en su estado pintado. */
 @media (prefers-reduced-motion: reduce) {
-  .lab-pique *, .lab-tiro *, .lab-imp .doc, .lab-imp .red-imp, .lab-enviar *, .lab-check::after, .lab-rayas i { animation: none !important; }
+  .lab-pique *, .lab-tiro *, .lab-imp *, .lab-enviar *, .lab-check::after, .lab-rayas i, .lab-fuego * { animation: none !important; }
 }

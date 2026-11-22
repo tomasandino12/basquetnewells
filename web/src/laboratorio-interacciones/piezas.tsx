@@ -1,5 +1,5 @@
 import { useReducedMotion } from 'motion/react';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useId } from 'react';
 
 /**
  * Cámara lenta del laboratorio: multiplica cada duración (en CSS vía `--lab-lento`, en JS con
@@ -29,28 +29,33 @@ const FRANJA = 'M9 8C17 16 17 32 9 40A22 22 0 0 0 39 40C31 32 31 16 39 8A22 22 0
 
 /** La pelota en sus tres estilos. Es decorado: siempre `aria-hidden`, el estado lo dice el texto. */
 export function Pelota({ estilo, x = 0, y = 0, tamano = 48 }: { estilo: EstiloDePelota; x?: number; y?: number; tamano?: number }) {
+  // Las costuras se recortan al círculo: con la punta redondeada del trazo asomaban por el borde.
+  const recorte = `pelota-${useId().replace(/:/g, '')}`;
   return (
     <svg aria-hidden x={x} y={y} width={tamano} height={tamano} viewBox="0 0 48 48" className="overflow-visible">
+      <clipPath id={recorte}>
+        <circle cx="24" cy="24" r={estilo === 'trazo' ? 20.5 : 22} />
+      </clipPath>
       {estilo === 'clasica' && (
         <>
           <circle cx="24" cy="24" r="22" fill="var(--pelota-clasica)" />
           {/* Una sombra de volumen, apenas: sin brillo plástico. */}
           <path d="M24 46A22 22 0 0 0 46 24A22 22 0 0 1 10 40Z" fill="var(--negro)" opacity=".12" />
-          <path d={COSTURAS} fill="none" stroke="var(--pelota-costura)" strokeWidth="2" strokeLinecap="round" />
+          <path d={COSTURAS} clipPath={`url(#${recorte})`} fill="none" stroke="var(--pelota-costura)" strokeWidth="2" strokeLinecap="round" />
         </>
       )}
       {estilo === 'gajos' && (
         <>
           <circle cx="24" cy="24" r="22" fill="var(--negro)" />
           <path d={FRANJA} fill="var(--club)" />
-          <path d={COSTURAS} fill="none" stroke="var(--sobre-negro)" strokeWidth="1.6" strokeLinecap="round" opacity=".9" />
+          <path d={COSTURAS} clipPath={`url(#${recorte})`} fill="none" stroke="var(--sobre-negro)" strokeWidth="1.6" strokeLinecap="round" opacity=".9" />
           <circle cx="24" cy="24" r="22" fill="none" stroke="var(--negro)" strokeWidth="1" />
         </>
       )}
       {estilo === 'trazo' && (
         <>
           <circle cx="24" cy="24" r="21.5" fill="none" stroke="var(--club)" strokeWidth="2.5" />
-          <path d={COSTURAS} fill="none" stroke="var(--tinta)" strokeWidth="1.5" strokeLinecap="round" />
+          <path d={COSTURAS} clipPath={`url(#${recorte})`} fill="none" stroke="var(--tinta)" strokeWidth="1.5" strokeLinecap="round" />
           <path d="M11 14A16 16 0 0 1 18 8.5" fill="none" stroke="var(--lima)" strokeWidth="2.5" strokeLinecap="round" />
         </>
       )}
