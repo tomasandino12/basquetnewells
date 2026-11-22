@@ -1,5 +1,6 @@
 import { ExternalLink, FileText, Play, Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { recursosPracticables } from '@datos/constancia.js';
 import { esEnlaceWeb } from '@datos/enlaces.js';
 import {
   alcanceDeRecurso, claseDeEnlace, contarPorTipo, estadoDeEnvio, etiquetaDeTipo, filtrarPorTipo, SIN_TIPO, TIPOS_RECURSO,
@@ -14,8 +15,8 @@ import { Vacio } from '../components/ui/estados';
 import { Hoja } from '../components/ui/sheet';
 import { useSesion } from '../datos/contexto';
 import { useJugadoresDeAsistencia } from '../datos/consultas';
-import { useRecursosDelClub, useResumenDeRecursos } from '../datos/consultasRecursos';
-import type { JugadorDelPlantel, RecursoDelClub, ResumenDeRecursos } from '../datos/repositorio';
+import { usePracticasDelPlantel, useRecursosDelClub, useResumenDeRecursos } from '../datos/consultasRecursos';
+import type { JugadorDelPlantel, PracticasDelPlantel, RecursoDelClub, ResumenDeRecursos } from '../datos/repositorio';
 import { cn } from '../lib/cn';
 import { BorrarRecurso, HojaDeEnvio } from './RecursosOfrecer';
 
@@ -48,6 +49,7 @@ function textoDeEnvio(envio: Envio, categoria: string): string {
 export function Videos({ clubId, plantelId, categoria }: { clubId: string; plantelId: string; categoria: string }) {
   const recursos = useRecursosDelClub(clubId);
   const resumen = useResumenDeRecursos(plantelId);
+  const practicas = usePracticasDelPlantel(plantelId);
   const chicos = useJugadoresDeAsistencia(clubId, plantelId);
   const [tipo, setTipo] = useState('todos');
   const [ofreciendo, setOfreciendo] = useState(false);
@@ -75,6 +77,8 @@ export function Videos({ clubId, plantelId, categoria }: { clubId: string; plant
           <Tarjetas
             recursos={recursos.data ?? []}
             resumen={resumen.data ?? null}
+            // `undefined` es «todavía cargando» (no se muestra nada); `null`, que no se pudo leer.
+            practicas={practicas.data}
             jugadores={chicos.data ?? []}
             clubId={clubId}
             categoria={categoria}
@@ -88,9 +92,10 @@ export function Videos({ clubId, plantelId, categoria }: { clubId: string; plant
   );
 }
 
-function Tarjetas({ recursos, resumen, jugadores, clubId, categoria, alAvisar, tipo, setTipo }: {
+function Tarjetas({ recursos, resumen, practicas, jugadores, clubId, categoria, alAvisar, tipo, setTipo }: {
   recursos: RecursoDelClub[];
   resumen: ResumenDeRecursos | null;
+  practicas: PracticasDelPlantel | null | undefined;
   jugadores: JugadorDelPlantel[];
   clubId: string;
   categoria: string;
@@ -106,6 +111,9 @@ function Tarjetas({ recursos, resumen, jugadores, clubId, categoria, alAvisar, t
   const filas = new Map((resumen?.recursos ?? []).map((f) => [f.recursoId, f]));
   // Con resumen, un recurso sin fila es uno que no se envió a este plantel.
   const filaDe = (id: string) => (resumen ? (filas.get(id) ?? { enviados: 0, conCuenta: 0, abrieron: null }) : null);
+  const practicadas = new Map((practicas?.recursos ?? []).map((f) => [f.recursoId, f]));
+  // Los de lectura de juego se miran, no se practican: ahí «0 practicaron» sería mentira.
+  const sePractican = new Set((recursosPracticables(recursos) as RecursoDelClub[]).map((r) => r.id));
 
   if (recursos.length === 0) {
     return (
@@ -134,6 +142,8 @@ function Tarjetas({ recursos, resumen, jugadores, clubId, categoria, alAvisar, t
               <TarjetaDeRecurso
                 recurso={r}
                 alcance={alcanceDeRecurso(fila) as Alcance}
+                practicas={sePractican.has(r.id) ? practicas : undefined}
+                practicada={practicadas.get(r.id)}
                 envio={estadoDeEnvio(r.envios, jugadores) as Envio}
                 clubId={clubId}
                 jugadores={jugadores}
@@ -149,9 +159,11 @@ function Tarjetas({ recursos, resumen, jugadores, clubId, categoria, alAvisar, t
   );
 }
 
-function TarjetaDeRecurso({ recurso: r, alcance, envio, clubId, jugadores, categoria, alAvisar }: {
+function TarjetaDeRecurso({ recurso: r, alcance, practicas, practicada, envio, clubId, jugadores, categoria, alAvisar }: {
   recurso: RecursoDelClub;
   alcance: Alcance;
+  practicas: PracticasDelPlantel | null | undefined;
+  practicada: PracticasDelPlantel['recursos'][number] | undefined;
   envio: Envio;
   clubId: string;
   jugadores: JugadorDelPlantel[];
@@ -189,6 +201,7 @@ function TarjetaDeRecurso({ recurso: r, alcance, envio, clubId, jugadores, categ
           {envio.ultimaFecha && <Chip>Último envío {diaMes(envio.ultimaFecha)}</Chip>}
         </div>
         <Alcance alcance={alcance} />
+        <Practicaron practicas={practicas} fila={practicada} />
         <div className="mt-auto flex flex-wrap gap-2 pt-1">
           {esVideo && (
             <Boton onClick={() => setViendo(true)}>
@@ -312,6 +325,25 @@ function Alcance({ alcance }: { alcance: Alcance }) {
     );
   }
   return <p className="text-sm text-gris">{MOTIVO_SIN_ALCANCE[alcance.estado]}</p>;
+}
+
+/**
+ * Cuántos lo practicaron (el jugador lo marca a mano en su Inicio): sólo números, nunca quiénes. Sin fila es un recurso
+ * que no se envió a este plantel, y no se inventa un 0; con null (menos de 3 cuentas) se dice por qué falta el número.
+ */
+function Practicaron({ practicas, fila }: { practicas: PracticasDelPlantel | null | undefined; fila: PracticasDelPlantel['recursos'][number] | undefined }) {
+  if (practicas === undefined) return null;
+  if (practicas === null) return <p className="text-sm text-gris">No se pudo leer cuántos lo practicaron.</p>;
+  if (!fila) return null;
+  if (fila.estaSemana == null || fila.algunaVez == null) {
+    return <p className="text-sm text-gris">Hay pocos jugadores con cuenta para mostrar cuántos lo practicaron sin señalar a nadie.</p>;
+  }
+  return (
+    <p className="text-sm">
+      Practicaron esta semana <span className="cifra font-mono font-semibold">{fila.estaSemana}</span> · alguna vez{' '}
+      <span className="cifra font-mono font-semibold">{fila.algunaVez}</span> (de {practicas.conCuenta} con cuenta)
+    </p>
+  );
 }
 
 function Dato({ clave, valor }: { clave: string; valor: string }) {

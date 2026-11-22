@@ -98,6 +98,43 @@ describe('Recursos: videos para jugadores', () => {
     expect(screen.queryByRole('region', { name: 'Impacto' })).toBeNull();
   });
 
+  // Conteos de práctica (0068): un número por recurso, nunca quiénes; con menos de 3 cuentas la base manda null.
+  const practicas = (estaSemana: number | null, algunaVez: number | null) => async () => ({
+    conCuenta: 9,
+    marcaronEstaSemana: estaSemana,
+    recursos: [{ recursoId: 'Tiro en movimiento', estaSemana, algunaVez }],
+  });
+
+  it('Recursos: muestra cuántos practicaron', async () => {
+    await abrirVideos(repo({ practicasDelPlantel: practicas(4, 7) }));
+    const tarjeta = within((await screen.findByRole('heading', { name: 'Tiro en movimiento' })).closest('article')!);
+    expect((await tarjeta.findByText(/Practicaron/)).textContent).toBe('Practicaron esta semana 4 · alguna vez 7 (de 9 con cuenta)');
+    // El que no se envió a este plantel no tiene fila: no se inventa un 0.
+    const otra = within(screen.getByRole('heading', { name: 'Pauta de elongación' }).closest('article')!);
+    expect(otra.queryByText(/Practicaron/)).toBeNull();
+  });
+
+  it('Recursos: con menos de 3 cuentas no muestra el número', async () => {
+    await abrirVideos(repo({ practicasDelPlantel: practicas(null, null) }));
+    const tarjeta = within((await screen.findByRole('heading', { name: 'Tiro en movimiento' })).closest('article')!);
+    expect(await tarjeta.findByText('Hay pocos jugadores con cuenta para mostrar cuántos lo practicaron sin señalar a nadie.')).toBeTruthy();
+    expect(tarjeta.queryByText(/Practicaron/)).toBeNull();
+  });
+
+  it('Recursos: si no se pudo leer, las tarjetas salen igual y lo dicen', async () => {
+    await abrirVideos(repo({ practicasDelPlantel: async () => { throw new Error('boom'); } }));
+    const tarjeta = within((await screen.findByRole('heading', { name: 'Tiro en movimiento' })).closest('article')!);
+    expect(await tarjeta.findByText('No se pudo leer cuántos lo practicaron.')).toBeTruthy();
+    expect(tarjeta.getByText(/Lo vieron/)).toBeTruthy();
+  });
+
+  it('Recursos: ningún nombre de jugador en el conteo', async () => {
+    await abrirVideos(repo({ practicasDelPlantel: practicas(4, 7) }));
+    await screen.findByText(/Practicaron/);
+    const texto = document.body.textContent ?? '';
+    for (const nombre of ['Jugador Uno', 'Jugador Dos', 'Jugador Tres']) expect(texto).not.toContain(nombre);
+  });
+
   it('filtra por tipo', async () => {
     const u = await abrirVideos();
     await screen.findByRole('heading', { name: 'Tiro en movimiento' });
