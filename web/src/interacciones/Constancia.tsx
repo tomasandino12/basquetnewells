@@ -2,7 +2,8 @@ import { CalendarCheck, Check, TrendingUp } from 'lucide-react';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Panel } from '../components/ui/card';
 import { cn } from '../lib/cn';
-import { ALZA_MINIMA, DIAS_DE_LA_SEMANA, asistenciaSeguida, mejorRacha, sesionesEnAlza } from './logica';
+import { asistenciaSeguida, mejorRacha } from '@datos/constancia.js';
+import { ALZA_MINIMA, DIAS_DE_LA_SEMANA, sesionesEnAlza } from './logica';
 import { Fueguito } from './ManoCaliente';
 import { Opciones, useDuracion } from './piezas';
 

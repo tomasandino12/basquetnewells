@@ -35,33 +35,6 @@ export function sesionesEnAlza(porcentajes: (number | null)[]): number {
 /** A partir de cuántas mejoras seguidas se muestra el reconocimiento. */
 export const ALZA_MINIMA = 3;
 
-/**
- * Entrenamientos seguidos con presente, desde el último hacia atrás. `null` es un día sin tomar
- * asistencia: no suma ni corta (el profe no la tomó, el chico no tiene la culpa).
- */
-export function asistenciaSeguida(presencias: (boolean | null)[]): number {
-  let racha = 0;
-  for (let i = presencias.length - 1; i >= 0; i--) {
-    const p = presencias[i];
-    if (p == null) continue;
-    if (!p) break;
-    racha++;
-  }
-  return racha;
-}
-
-/** La racha más larga de presencias en la lista (con la misma regla: un día sin tomar no corta). */
-export function mejorRacha(presencias: (boolean | null)[]): number {
-  let mejor = 0;
-  let actual = 0;
-  for (const p of presencias) {
-    if (p == null) continue;
-    actual = p ? actual + 1 : 0;
-    mejor = Math.max(mejor, actual);
-  }
-  return mejor;
-}
-
 /** Filas con algo escrito, sin contar el encabezado. Sólo se cuentan: el contenido no se mira. */
 export function filasConDatos(filas: unknown[][]): number {
   const llenas = filas.filter((f) => f.some((c) => c != null && String(c).trim() !== ''));
