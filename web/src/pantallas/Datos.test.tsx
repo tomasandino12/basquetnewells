@@ -361,4 +361,15 @@ describe('Datos: asistencia', () => {
     expect(filas[1].textContent).toContain('avisó');
     expect(filas[1].textContent).toContain('0%');
   });
+
+  it('la tabla ancha se desplaza dentro de su caja: las grillas que la contienen tienen columnas que se encogen', async () => {
+    const dia = (fecha: string) => ({ id: fecha, fecha, hubo: true, filas: [{ jugadorId: 'j-1', estado: 'presente' as const }] });
+    abrir(repo({ obtenerEntrenamientos: async () => [dia('2026-10-01'), dia('2026-10-03')] }));
+    const tabla = await screen.findByRole('table', { name: 'Asistencia de cada chico en los últimos entrenamientos' });
+    expect(tabla.parentElement!.className).toContain('overflow-x-auto');
+    // jsdom no mide: se comprueba la causa. Una grilla sin columnas declaradas se estira con la tabla y corre la pantalla.
+    for (let el = tabla.parentElement; el; el = el.parentElement) {
+      if (el.classList.contains('grid')) expect(el.className).toMatch(/(^|\s)grid-cols-/);
+    }
+  });
 });

@@ -29,7 +29,9 @@ import { ConCategoria, MarcoDelPlantel } from './PlantelDelClub';
 
 const SECCION = 'mb-3 font-titulo text-3xl leading-none font-semibold uppercase';
 const NOTA = 'mb-3 text-sm text-gris';
-const GRILLA = 'grid gap-4 lg:grid-cols-2';
+// grid-cols-1 es minmax(0, 1fr): sin columnas declaradas la pista es «auto» y la estira lo más ancho de adentro
+// (la tabla de 12 entrenamientos), y en el celular la pantalla entera se corría para el costado.
+const GRILLA = 'grid grid-cols-1 gap-4 lg:grid-cols-2';
 const DESPLEGABLE = 'inline-flex min-h-11 cursor-pointer items-center text-sm font-semibold underline decoration-linea decoration-2 underline-offset-4';
 
 /**
