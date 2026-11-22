@@ -37,7 +37,8 @@ describe('menú de la app', () => {
   });
 
   it('cada pantalla de la vista del jugador está en su barra de abajo (y la barra no lleva rutas que no existen)', () => {
-    const delJugador = caminos(rutas).filter((c) => c.startsWith('/jugador') && c !== '/jugador' && !c.includes(':'));
+    // `/jugador/sesion` (sin id) ya no tiene pestaña: Inicio enlaza a la sesión con su id. Sigue por los enlaces guardados.
+    const delJugador = caminos(rutas).filter((c) => c.startsWith('/jugador') && c !== '/jugador' && c !== '/jugador/sesion' && !c.includes(':'));
     expect(DESTINOS_DEL_JUGADOR.map((d) => d.a).sort()).toEqual([...delJugador].sort());
     // La de misiones es del profe: no va en la barra del jugador.
     expect(DESTINOS_DEL_JUGADOR.some((d) => d.a.includes('misiones'))).toBe(false);

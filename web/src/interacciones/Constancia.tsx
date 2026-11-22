@@ -3,13 +3,24 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Panel } from '../components/ui/card';
 import { cn } from '../lib/cn';
 import { asistenciaSeguida, mejorRacha } from '@datos/constancia.js';
+import './interacciones.css';
 import { ALZA_MINIMA, DIAS_DE_LA_SEMANA, sesionesEnAlza } from './logica';
 import { Fueguito } from './ManoCaliente';
 import { Opciones, useDuracion } from './piezas';
 
+/** Un día de «Tu semana»: lo que devuelve `semanaDePracticas` de @datos/constancia.js. */
+export interface DiaDeLaSemana {
+  fecha: string;
+  hecho: boolean;
+  esHoy: boolean;
+  futuro: boolean;
+}
+
 // Datos INVENTADOS: el laboratorio nunca lee datos de un jugador real.
 const HOY = 4; // viernes: deja ver días pasados, hoy y días que todavía no llegaron
 const SEMANA_INICIAL = [true, true, false, true, false, false, false];
+const diasDelLaboratorio = (hechos: boolean[]): DiaDeLaSemana[] =>
+  hechos.map((hecho, i) => ({ fecha: `dia-${i}`, hecho, esHoy: i === HOY, futuro: i > HOY }));
 const TIROS = { alza: [33, 30, 34, 37, 41], cortada: [30, 34, 37, 35, 39] };
 const PRESENCIAS: Record<'seguida' | 'cortada', (boolean | null)[]> = {
   seguida: [true, false, true, true, true, true, null, true, true, true],
@@ -18,11 +29,26 @@ const PRESENCIAS: Record<'seguida' | 'cortada', (boolean | null)[]> = {
 /** Desde cuántos entrenamientos seguidos se reconoce la asistencia. */
 const ASISTENCIA_MINIMA = 6;
 
-function CheckDeRutina({ hecho, alCambiar }: { hecho: boolean; alCambiar: (v: boolean) => void }) {
+/**
+ * El check de «Hice mi rutina de hoy». `hecho` y `alCambiar` los maneja quien lo usa: acá no hay estado propio de
+ * la marca, así la pantalla real puede esperar a la base (o abrir una lista) antes de que cambie.
+ */
+export function CheckDeRutina({ hecho, alCambiar }: { hecho: boolean; alCambiar: (v: boolean) => void }) {
   const [pulso, setPulso] = useState(0);
   const dur = useDuracion();
   const reloj = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const anterior = useRef(hecho);
   useEffect(() => () => clearTimeout(reloj.current), []);
+  // La recompensa es sólo al pasar a marcado: desmarcar (se equivocó) no castiga ni festeja, y si la base
+  // tarda o falla, no festeja algo que no quedó guardado.
+  useEffect(() => {
+    if (hecho && !anterior.current) {
+      setPulso((n) => n + 1);
+      clearTimeout(reloj.current);
+      reloj.current = setTimeout(() => setPulso(0), dur(480));
+    }
+    anterior.current = hecho;
+  }, [hecho]);
 
   return (
     <button
@@ -31,15 +57,7 @@ function CheckDeRutina({ hecho, alCambiar }: { hecho: boolean; alCambiar: (v: bo
       aria-checked={hecho}
       aria-labelledby="ix-rutina-t"
       aria-describedby="ix-rutina-d"
-      onClick={() => {
-        alCambiar(!hecho);
-        // La recompensa es sólo al marcar: desmarcar (se equivocó) no castiga ni festeja.
-        if (!hecho) {
-          setPulso((n) => n + 1);
-          clearTimeout(reloj.current);
-          reloj.current = setTimeout(() => setPulso(0), dur(480));
-        }
-      }}
+      onClick={() => alCambiar(!hecho)}
       className="flex min-h-14 w-full items-center gap-4 rounded-campo text-left outline-offset-4 focus-visible:outline-2 focus-visible:outline-lima"
     >
       <span data-pulso={pulso ? 'si' : undefined} data-hecho={hecho ? 'si' : undefined} className="ix-check relative grid size-14 shrink-0 place-items-center rounded-full border-2 border-sobre-negro/40">
@@ -51,14 +69,15 @@ function CheckDeRutina({ hecho, alCambiar }: { hecho: boolean; alCambiar: (v: bo
       </span>
       <span className="min-w-0">
         <span id="ix-rutina-t" className="block text-lg font-semibold">Hice mi rutina de hoy</span>
-        <span id="ix-rutina-d" className="block text-sm text-sobre-negro/70">Registro personal para tu progreso · sólo lo ves vos</span>
+        <span id="ix-rutina-d" className="block text-sm text-sobre-negro/70">Registro personal para tu progreso · tu profe ve cuántos lo practicaron, nunca quién</span>
       </span>
     </button>
   );
 }
 
-function Semana({ hechos, nuevo }: { hechos: boolean[]; nuevo: number | null }) {
-  const total = hechos.filter(Boolean).length;
+/** Lunes a domingo: un bloque en lima por cada día con al menos una práctica. `nuevo` es el índice del que acaba de llenarse. */
+export function Semana({ dias, nuevo }: { dias: DiaDeLaSemana[]; nuevo: number | null }) {
+  const total = dias.filter((d) => d.hecho).length;
   return (
     <div>
       <div className="mb-2 flex items-baseline justify-between">
@@ -68,26 +87,23 @@ function Semana({ hechos, nuevo }: { hechos: boolean[]; nuevo: number | null }) 
         </p>
       </div>
       <ol className="grid grid-cols-7 gap-1.5" aria-label="Días de esta semana con rutina">
-        {DIAS_DE_LA_SEMANA.map((d, i) => {
-          const futuro = i > HOY;
-          return (
-            <li key={i} className="flex flex-col items-center gap-1">
-              <span
-                data-hecho={hechos[i] ? 'si' : undefined}
-                data-nuevo={nuevo === i ? 'si' : undefined}
-                className={cn(
-                  'ix-bloque relative h-11 w-full overflow-hidden rounded-[3px]',
-                  futuro ? 'border border-dashed border-sobre-negro/25' : 'bg-sobre-negro/10',
-                  i === HOY && 'outline-2 outline-offset-2 outline-sobre-negro/50',
-                )}
-              >
-                <span className="relleno absolute inset-0 bg-lima" />
-              </span>
-              <span className={cn('font-mono text-xs', i === HOY ? 'font-semibold text-sobre-negro' : 'text-sobre-negro/60')}>{d}</span>
-              <span className="sr-only">{futuro ? 'todavía no llegó' : hechos[i] ? 'con rutina' : 'sin rutina'}</span>
-            </li>
-          );
-        })}
+        {dias.map((dia, i) => (
+          <li key={dia.fecha} className="flex flex-col items-center gap-1">
+            <span
+              data-hecho={dia.hecho ? 'si' : undefined}
+              data-nuevo={nuevo === i ? 'si' : undefined}
+              className={cn(
+                'ix-bloque relative h-11 w-full overflow-hidden rounded-[3px]',
+                dia.futuro ? 'border border-dashed border-sobre-negro/25' : 'bg-sobre-negro/10',
+                dia.esHoy && 'outline-2 outline-offset-2 outline-sobre-negro/50',
+              )}
+            >
+              <span className="relleno absolute inset-0 bg-lima" />
+            </span>
+            <span className={cn('font-mono text-xs', dia.esHoy ? 'font-semibold text-sobre-negro' : 'text-sobre-negro/60')}>{DIAS_DE_LA_SEMANA[i]}</span>
+            <span className="sr-only">{dia.futuro ? 'todavía no llegó' : dia.hecho ? 'con rutina' : 'sin rutina'}</span>
+          </li>
+        ))}
       </ol>
     </div>
   );
@@ -155,7 +171,7 @@ function RachaDeTiro({ valores }: { valores: number[] }) {
  * Asistencia en positivo: cada entrenamiento al que vino suma en lima (no sólo los de la racha) y una falta es un
  * hueco, no una marca gris. Con la racha cortada se le dice cuánto le falta para su mejor racha, no lo que perdió.
  */
-function AsistenciaContinuada({ presencias }: { presencias: (boolean | null)[] }) {
+export function AsistenciaContinuada({ presencias }: { presencias: (boolean | null)[] }) {
   const racha = asistenciaSeguida(presencias);
   const mejor = mejorRacha(presencias);
   const vino = presencias.filter((p) => p === true).length;
@@ -179,16 +195,22 @@ function AsistenciaContinuada({ presencias }: { presencias: (boolean | null)[] }
           <p className="flex items-center gap-2 font-titulo text-sm font-semibold tracking-[.16em] text-lima uppercase">
             <CalendarCheck aria-hidden className="size-4" strokeWidth={2.4} /> Tu asistencia
           </p>
-          <p className="font-titulo text-3xl leading-none font-bold uppercase">
-            Viniste a {vino} de {tomadas}
-          </p>
-          <p className="text-sm text-sobre-negro/70">
-            {racha === 0
-              ? 'El próximo entrenamiento arranca una racha nueva.'
-              : faltan > 0
-                ? `Llevás ${racha} ${racha === 1 ? "seguido" : "seguidos"}: ${faltan === 1 ? 'uno más' : `${faltan} más`} y igualás tu mejor racha (${mejor}).`
-                : `Llevás ${racha} seguidos: es tu mejor racha.`}
-          </p>
+          {tomadas === 0 ? (
+            <p className="text-sm text-sobre-negro/70">Todavía no hay asistencia tomada. Cuando tu profe la tome, la ves acá.</p>
+          ) : (
+            <>
+              <p className="font-titulo text-3xl leading-none font-bold uppercase">
+                Viniste a {vino} de {tomadas}
+              </p>
+              <p className="text-sm text-sobre-negro/70">
+                {racha === 0
+                  ? 'El próximo entrenamiento arranca una racha nueva.'
+                  : faltan > 0
+                    ? `Llevás ${racha} ${racha === 1 ? "seguido" : "seguidos"}: ${faltan === 1 ? 'uno más' : `${faltan} más`} y igualás tu mejor racha (${mejor}).`
+                    : `Llevás ${racha} seguidos: es tu mejor racha.`}
+              </p>
+            </>
+          )}
         </div>
       )}
       <ol aria-label="Últimos entrenamientos" className="flex items-center gap-1">
@@ -204,6 +226,44 @@ function AsistenciaContinuada({ presencias }: { presencias: (boolean | null)[] }
           </li>
         ))}
       </ol>
+    </div>
+  );
+}
+
+/**
+ * La vista de un mes o de un año: una grilla con un cuadrado por entrenamiento (lima si vino, hueco si faltó,
+ * punteado si no se tomó) y el resumen del período. Misma tarjeta que la tira de los últimos entrenamientos.
+ */
+export function AsistenciaDelPeriodo({ presencias, vino, tomadas, mejor }: { presencias: (boolean | null)[]; vino: number; tomadas: number; mejor: number }) {
+  return (
+    <div className="ix-aparece flex min-h-40 flex-col justify-between gap-3 rounded-tarjeta border border-sobre-negro/15 bg-negro p-4 text-sobre-negro">
+      <div className="flex flex-col gap-2">
+        <p className="flex items-center gap-2 font-titulo text-sm font-semibold tracking-[.16em] text-lima uppercase">
+          <CalendarCheck aria-hidden className="size-4" strokeWidth={2.4} /> Tu asistencia
+        </p>
+        {presencias.length === 0 || tomadas === 0 ? (
+          <p className="text-sm text-sobre-negro/70">No hay asistencia tomada en este período.</p>
+        ) : (
+          <>
+            <p className="font-titulo text-3xl leading-none font-bold uppercase">
+              Viniste a {vino} de {tomadas}
+            </p>
+            {mejor > 0 && <p className="text-sm text-sobre-negro/70">Mejor racha del período: {mejor}</p>}
+          </>
+        )}
+      </div>
+      {presencias.length > 0 && (
+        <ol aria-label="Entrenamientos del período" className="flex flex-wrap items-center gap-1">
+          {presencias.map((p, i) => (
+            <li
+              key={i}
+              className={cn('size-4 rounded-[2px]', p == null ? 'border border-dashed border-sobre-negro/25' : p ? 'bg-lima' : 'border border-lima/35')}
+            >
+              <span className="sr-only">{p == null ? 'sin tomar' : p ? 'vino' : 'faltó'}</span>
+            </li>
+          ))}
+        </ol>
+      )}
     </div>
   );
 }
@@ -229,7 +289,7 @@ export function SeccionConstancia() {
               setHechos((h) => h.map((x, i) => (i === HOY ? v : x)));
             }}
           />
-          <Semana hechos={hechos} nuevo={nuevo} />
+          <Semana dias={diasDelLaboratorio(hechos)} nuevo={nuevo} />
         </div>
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1">

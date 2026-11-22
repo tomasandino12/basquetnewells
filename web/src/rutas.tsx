@@ -37,6 +37,7 @@ import { Cargando } from './components/ui/estados';
 import { useMiFicha } from './datos/consultasJugador';
 import { JugadorFisico } from './pantallas/jugador/JugadorFisico';
 import { EditorDeJugada } from './pantallas/EditorDeJugada';
+import { JugadorInicio } from './pantallas/jugador/JugadorInicio';
 import { JugadorJugadas } from './pantallas/jugador/JugadorJugadas';
 import { JugadorProgreso } from './pantallas/jugador/JugadorProgreso';
 import { JugadorRecursos } from './pantallas/jugador/JugadorRecursos';
@@ -62,7 +63,7 @@ import { RequiereCoordinacion } from './pantallas/coord/MarcoCoord';
 function Entrada() {
   const perfil = useDatosDelPerfil();
   if (!perfil.rolesListos) return <Pagina><Cargando titulo filas={3} /></Pagina>;
-  if (perfil.esJugador) return <Navigate to="/jugador/fisico" replace />;
+  if (perfil.esJugador) return <Navigate to="/jugador/inicio" replace />;
   // Una familia (sin club propio) tiene su portal: ve a sus hijos y nada más.
   if (perfil.esFamilia && !perfil.esEntrenador && !perfil.esCoordinador) return <Navigate to="/familia" replace />;
   // Quien sólo coordina no tiene categorías propias: arranca en el panorama del club.
@@ -211,7 +212,8 @@ export const rutas: RouteObject[] = [
   // El portal de familias, igual: su propio marco, sin menú. Una familia sólo ve a sus hijos.
   { element: <MarcoFamilia />, children: [{ path: '/familia', element: <FamiliaChicos /> }] },
   { element: <MarcoJugador />, children: [
-    { path: '/jugador', element: <Navigate to="/jugador/fisico" replace /> },
+    { path: '/jugador', element: <Navigate to="/jugador/inicio" replace /> },
+    { path: '/jugador/inicio', element: <JugadorInicio /> },
     { path: '/jugador/fisico', element: <JugadorFisico /> },
     { path: '/jugador/progreso', element: <JugadorProgreso /> },
     { path: '/jugador/jugadas', element: <JugadorJugadas /> },

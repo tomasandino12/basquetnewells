@@ -367,6 +367,9 @@ export interface RecursoDelJugador {
   descripcion: string | null;
   enlace: string | null;
   fecha: string;
+  /** Sólo para decidir si se puede practicar (los de `lectura` no) y cuántas veces por semana. Pueden faltar. */
+  tipo?: string | null;
+  frecuenciaSemanal?: number | null;
 }
 
 /** Un recurso que el profe ofrece a sus jugadores (video, PDF o link), con a quién se le mandó. */

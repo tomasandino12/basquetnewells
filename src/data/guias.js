@@ -54,17 +54,18 @@ export const GUIAS = {
     ],
   },
   jugar: {
-    version: 1,
+    // 2: Inicio reemplaza a la pestaña Sesión y suma el check de la rutina y la asistencia.
+    version: 2,
     pasos: [
       {
         pestana: 'p-jug-recursos',
-        titulo: 'Recursos y Jugadas',
-        texto: 'Lo que te manda tu profe para practicar, y las jugadas del equipo para mirarlas a pantalla completa.',
+        titulo: 'Inicio y Recursos',
+        texto: 'En Inicio tenés la sesión de hoy, el check «Hice mi rutina de hoy» y tu asistencia. En Recursos, lo que te manda tu profe para practicar: tu profe ve cuántos lo practicaron, nunca quién.',
       },
       {
         pestana: 'p-jug-progreso',
-        titulo: 'Físico y Mi progreso',
-        texto: 'Tu plan de físico con la sesión de hoy, y cómo vienen tus mediciones. Sólo vos ves lo tuyo.',
+        titulo: 'Físico, Progreso y Jugadas',
+        texto: 'Tu plan de físico, cómo vienen tus mediciones y las jugadas del equipo para mirarlas a pantalla completa. Sólo vos ves lo tuyo.',
       },
     ],
   },

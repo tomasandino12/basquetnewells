@@ -69,7 +69,7 @@ function Sesiones({ plan }: { plan: MiPlan }) {
   );
 }
 
-function FilaDeSesion({ sesion, hoy, conCategoria, destacada }: { sesion: SesionDelJugador; hoy: string; conCategoria: boolean; destacada?: boolean }) {
+export function FilaDeSesion({ sesion, hoy, conCategoria, destacada }: { sesion: SesionDelJugador; hoy: string; conCategoria: boolean; destacada?: boolean }) {
   return (
     <Link
       to={`/jugador/sesion/${sesion.id}`}

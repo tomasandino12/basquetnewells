@@ -13,7 +13,7 @@ import { sesionesDelJugador, type SesionDelJugador } from './JugadorFisico';
 /**
  * Una sesión del plan del jugador: los ejercicios por bloque, en el orden del archivo, con series, reps, pausa y
  * notas, su peso actual donde lo hay y el video si lo tiene. Ni escalones ni botones de + y −: eso lo maneja el
- * profe. Sin `:sesionId` es la de hoy o, si no hay, la próxima (el destino «Sesión» de la barra).
+ * profe. Sin `:sesionId` es la de hoy o, si no hay, la próxima (Inicio enlaza siempre a una con su id: la ruta sin id queda por si alguien la tiene guardada).
  */
 export function JugadorSesion() {
   const { sesionId } = useParams();

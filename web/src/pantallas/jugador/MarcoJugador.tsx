@@ -1,4 +1,4 @@
-import { CalendarCheck, Library, LineChart, PlaySquare, Users, Zap, type LucideIcon } from 'lucide-react';
+import { CalendarCheck, Home, Library, LineChart, PlaySquare, Users, type LucideIcon } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 import escudo from '../../../../public/escudo.png';
@@ -20,15 +20,15 @@ interface Destino {
 }
 
 /**
- * La barra de abajo del jugador: ícono y texto, la pestaña activa en lima. «Sesión» (la de hoy, o la
- * próxima) va al final de la lista, como un destino más: no es un botón flotante que tape contenido.
+ * La barra de abajo del jugador: ícono y texto, la pestaña activa en lima. Inicio va primero y trae la sesión
+ * de hoy (o la próxima) como un enlace: `/jugador/sesion/:id` sigue existiendo, pero ya no tiene pestaña.
  */
 export const DESTINOS_DEL_JUGADOR: Destino[] = [
+  { a: '/jugador/inicio', nombre: 'Inicio', icono: Home },
   { a: '/jugador/fisico', nombre: 'Físico', icono: CalendarCheck },
   { a: '/jugador/progreso', nombre: 'Progreso', icono: LineChart },
   { a: '/jugador/jugadas', nombre: 'Jugadas', icono: PlaySquare },
   { a: '/jugador/recursos', nombre: 'Recursos', icono: Library },
-  { a: '/jugador/sesion', nombre: 'Sesión', icono: Zap },
 ];
 
 function Pestana({ destino }: { destino: Destino }) {

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { claveDeEjercicio } from '@datos/escalones.js';
+import { claveDeEjercicio, fechaLocal } from '@datos/escalones.js';
 import { desmarcarSesionCerrada } from '../../datos/errores';
 import { renderConDatos, repositorioInventado } from '../../datos/renderDePrueba';
 import type { FichaDeJugador, MiPlan, MiProgreso, Repositorio } from '../../datos/repositorio';
@@ -52,10 +52,10 @@ const jugador = (piso: Partial<Repositorio> = {}) =>
 describe('vista del jugador', () => {
   it('quien tiene ficha de jugador entra a lo suyo, con la barra de abajo de cinco destinos', async () => {
     const { router } = renderConDatos(rutas, { repo: jugador() });
-    await waitFor(() => expect(router.state.location.pathname).toBe('/jugador/fisico'));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/jugador/inicio'));
     const barra = await screen.findByRole('navigation', { name: 'Menú del jugador' });
-    expect(within(barra).getAllByRole('link').map((a) => a.textContent)).toEqual(['Físico', 'Progreso', 'Jugadas', 'Recursos', 'Sesión']);
-    expect(within(barra).getByRole('link', { name: 'Físico' }).getAttribute('aria-current')).toBe('page');
+    expect(within(barra).getAllByRole('link').map((a) => a.textContent)).toEqual(['Inicio', 'Físico', 'Progreso', 'Jugadas', 'Recursos']);
+    expect(within(barra).getByRole('link', { name: 'Inicio' }).getAttribute('aria-current')).toBe('page');
   });
 
   it('una cuenta que no es de jugador no ve nada de esta vista y puede ir a Hoy', async () => {
@@ -183,6 +183,134 @@ describe('vista del jugador', () => {
     await u.click(await screen.findByRole('button', { name: /Salida de lateral/ }));
     expect(await screen.findByRole('button', { name: 'Cerrar la jugada' })).toBeTruthy();
     expect(screen.getByRole('img', { name: 'Jugada: Salida de lateral' })).toBeTruthy();
+  });
+});
+
+describe('Inicio del jugador', () => {
+  const hoy = fechaLocal() as string;
+  const tiro = { id: 'r-1', titulo: 'Tiro libre', descripcion: null, enlace: null, fecha: '2026-10-02' };
+  const manejo = { id: 'r-2', titulo: 'Manejo con dos pelotas', descripcion: null, enlace: null, fecha: '2026-10-02' };
+
+  it('Inicio: es la primera pestaña y /jugador abre ahí', async () => {
+    const { router } = renderConDatos(rutas, { repo: jugador(), ruta: '/jugador' });
+    await waitFor(() => expect(router.state.location.pathname).toBe('/jugador/inicio'));
+    const barra = await screen.findByRole('navigation', { name: 'Menú del jugador' });
+    expect(within(barra).getAllByRole('link')[0].textContent).toBe('Inicio');
+    // La sesión que la pestaña ya no tiene sigue a un toque, y su ruta sigue existiendo.
+    const enlace = await screen.findByRole('link', { name: /2 ejercicios · Fuerza, Core/ });
+    expect(enlace.getAttribute('href')).toBe('/jugador/sesion/s-1');
+    expect(screen.getByRole('heading', { name: 'Tu semana' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Tu asistencia' })).toBeTruthy();
+  });
+
+  it('Inicio: marcar elige el recurso y llama a marcarPractica', async () => {
+    // La base recuerda lo marcado: la consulta que sigue a la marca vuelve con él.
+    let guardadas: { fecha: string; recursoId: string }[] = [];
+    const marcar = vi.fn(async (recursoId: string) => (guardadas = [{ fecha: hoy, recursoId }]));
+    const u = userEvent.setup();
+    renderConDatos(rutas, { repo: jugador({ obtenerMisRecursos: async () => [tiro, manejo], misPracticas: async () => guardadas, marcarPractica: marcar }), ruta: '/jugador/inicio' });
+    const check = await screen.findByRole('checkbox', { name: /Hice mi rutina de hoy/ });
+    expect(check.getAttribute('aria-checked')).toBe('false');
+    expect(screen.queryByRole('group', { name: '¿Qué practicaste?' })).toBeNull();
+    await u.click(check);
+    const lista = await screen.findByRole('group', { name: '¿Qué practicaste?' });
+    expect(marcar).not.toHaveBeenCalled();
+    await u.click(within(lista).getByRole('button', { name: /Manejo con dos pelotas/ }));
+    await waitFor(() => expect(marcar).toHaveBeenCalledWith('r-2', true));
+    await waitFor(() => expect(screen.getByRole('checkbox', { name: /Hice mi rutina de hoy/ }).getAttribute('aria-checked')).toBe('true'));
+  });
+
+  it('Inicio: con un solo recurso marca directo', async () => {
+    const marcar = vi.fn(async (recursoId: string) => [{ fecha: hoy, recursoId }]);
+    const u = userEvent.setup();
+    renderConDatos(rutas, { repo: jugador({ obtenerMisRecursos: async () => [tiro], marcarPractica: marcar }), ruta: '/jugador/inicio' });
+    await u.click(await screen.findByRole('checkbox', { name: /Hice mi rutina de hoy/ }));
+    await waitFor(() => expect(marcar).toHaveBeenCalledWith('r-1', true));
+    expect(screen.queryByRole('group', { name: '¿Qué practicaste?' })).toBeNull();
+    // Se equivocó: hoy se puede desmarcar.
+    const desmarcar = vi.fn(async () => []);
+    cleanup();
+    renderConDatos(rutas, {
+      repo: jugador({ obtenerMisRecursos: async () => [tiro], misPracticas: async () => [{ fecha: hoy, recursoId: 'r-1' }], marcarPractica: desmarcar }),
+      ruta: '/jugador/inicio',
+    });
+    const hecho = await screen.findByRole('checkbox', { name: /Hice mi rutina de hoy/ });
+    await waitFor(() => expect(hecho.getAttribute('aria-checked')).toBe('true'));
+    await u.click(hecho);
+    await waitFor(() => expect(desmarcar).toHaveBeenCalledWith('r-1', false));
+  });
+
+  it('Inicio: sin recursos no muestra el check', async () => {
+    renderConDatos(rutas, { repo: jugador({ obtenerMisRecursos: async () => [] }), ruta: '/jugador/inicio' });
+    expect(await screen.findByText(/llega cuando tu profe te mande uno/)).toBeTruthy();
+    expect(screen.queryByRole('checkbox')).toBeNull();
+    cleanup();
+    // Los de lectura de juego se miran, no se practican: si son todos de ésos, tampoco hay check.
+    renderConDatos(rutas, { repo: jugador({ obtenerMisRecursos: async () => [{ ...tiro, tipo: 'lectura' }] }), ruta: '/jugador/inicio' });
+    expect(await screen.findByText(/llega cuando tu profe te mande uno/)).toBeTruthy();
+    expect(screen.queryByRole('checkbox')).toBeNull();
+  });
+
+  it('Inicio: el texto dice que el profe ve cuántos, nunca quién', async () => {
+    renderConDatos(rutas, { repo: jugador({ obtenerMisRecursos: async () => [tiro] }), ruta: '/jugador/inicio' });
+    expect(await screen.findByText('Registro personal para tu progreso · tu profe ve cuántos lo practicaron, nunca quién')).toBeTruthy();
+  });
+
+  it('Inicio: la lista dice «2 de 3 esta semana» si el recurso tiene frecuencia', async () => {
+    const u = userEvent.setup();
+    const marcas = [{ fecha: hoy, recursoId: 'r-1' }];
+    renderConDatos(rutas, {
+      repo: jugador({ obtenerMisRecursos: async () => [{ ...tiro, frecuenciaSemanal: 3 }, manejo], misPracticas: async () => marcas }),
+      ruta: '/jugador/inicio',
+    });
+    await u.click(await screen.findByRole('checkbox', { name: /Hice mi rutina de hoy/ }));
+    const lista = await screen.findByRole('group', { name: '¿Qué practicaste?' });
+    expect(within(lista).getByText('1 de 3 esta semana')).toBeTruthy();
+    // Sin frecuencia, no se inventa una meta.
+    expect(within(lista).queryAllByText(/de \d+ esta semana/)).toHaveLength(1);
+  });
+
+  describe('asistencia', () => {
+    // Se fija el día para que «mes» y «año» no dependan de cuándo corre el test.
+    const dia = (fecha: string, vino: boolean | null) => ({ fecha, vino });
+    const dias = [
+      dia('2026-02-02', true), dia('2026-02-09', false), dia('2026-03-02', true),
+      dia('2026-10-05', true), dia('2026-10-12', true), dia('2026-10-19', true), dia('2026-10-26', true),
+      dia('2026-11-02', true), dia('2026-11-04', false), dia('2026-11-09', true), dia('2026-11-11', true),
+      dia('2026-11-16', null), dia('2026-11-18', true), dia('2026-11-20', true),
+    ];
+
+    it('Inicio: asistencia cambia entre últimos 10, mes y año', async () => {
+      const u = userEvent.setup();
+      vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-11-22T15:00:00Z') });
+      try {
+        renderConDatos(rutas, { repo: jugador({ miAsistencia: async () => dias }), ruta: '/jugador/inicio' });
+        expect(await screen.findByText('Viniste a 8 de 9')).toBeTruthy();
+        const selector = screen.getByRole('group', { name: 'Período de la asistencia' });
+        expect(within(selector).getByRole('button', { name: 'Últimos 10' }).getAttribute('aria-pressed')).toBe('true');
+        await u.click(within(selector).getByRole('button', { name: 'Mes' }));
+        expect(await screen.findByText('Viniste a 5 de 6')).toBeTruthy();
+        await u.click(within(selector).getByRole('button', { name: 'Año' }));
+        expect(await screen.findByText('Viniste a 11 de 13')).toBeTruthy();
+        expect(screen.getByText(/Mejor racha del período: 6/)).toBeTruthy();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('Inicio: no muestra motivo ni lesión', async () => {
+      vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-11-22T15:00:00Z') });
+      try {
+        const { container } = renderConDatos(rutas, { repo: jugador({ miAsistencia: async () => dias }), ruta: '/jugador/inicio' });
+        await screen.findByText('Viniste a 8 de 9');
+        // Un día sin tomar y una falta se ven igual de sencillos: «sin tomar» y «faltó», sin por qué.
+        expect(screen.getAllByText('faltó').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('sin tomar').length).toBeGreaterThan(0);
+        expect(container.textContent).not.toMatch(/motivo|lesi[oó]n|lesionad|justific/i);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 });
 
