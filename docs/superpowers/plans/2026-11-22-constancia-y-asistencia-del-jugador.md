@@ -16,7 +16,7 @@ Spec: `docs/superpowers/specs/2026-11-22-constancia-y-asistencia-del-jugador-des
 | 6 | Conteo de prácticas en la pantalla del profe | hecha |
 | 7 | Privacidad, `VERSION_LEGAL` y PRD | hecha |
 | 7b | Migración 0069: `mis_recursos` con tipo y frecuencia; `mi_asistencia` sin días antes del alta | hecha (sin aplicar: va con 0068 en la task 8) |
-| 8 | Backup, `db push` (0068 y 0069) y verificación SQL (Tomás) | pendiente |
+| 8 | Backup, `db push` (0068 y 0069) y verificación SQL (Tomás) | hecha (22/11: backup, push y las dos verificaciones en OK; falta probar con un jugador de prueba) |
 
 ## Task 1 — Refactor: las rachas salen del laboratorio
 
