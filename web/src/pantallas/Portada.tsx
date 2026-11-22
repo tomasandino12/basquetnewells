@@ -8,6 +8,9 @@ import { PizarraDeLaPortada } from '../components/ui/pizarra';
 import { cn } from '../lib/cn';
 import type { DatosDePizarra } from '../datos/repositorio';
 
+const LETRAS_DEL_ANILLO = [..."BÁSQUET · NEWELL'S OLD BOYS · "];
+const CIRCUNFERENCIA_ANILLO = 2 * Math.PI * 78;
+
 /**
  * La portada que ve quien llega sin cuenta (la landing de siempre, en oscuro como el portal público):
  * qué es la app y dos puertas, crear cuenta o entrar. Las demos son dibujos con datos inventados.
@@ -30,15 +33,20 @@ export function Portada({ alCrear, alEntrar }: { alCrear: () => void; alEntrar: 
     <div className="portada flex flex-col gap-10 pb-10 lg:pb-16">
       {/* La primera pantalla es una sola composición: ocupa todo el alto y el resto de la portada empieza recién al bajar. */}
       <section className="relative flex min-h-svh flex-col items-center justify-center gap-6 py-10 text-center" aria-label="Qué es Inferiores">
-        {/* El nombre del club está escrito como texto: el anillo es decorativo. textLength = circunferencia, así llena el círculo justo.
+        {/* El nombre del club está escrito como texto: el anillo es decorativo. Cada letra va en su casillero de la circunferencia
+            (490 / letras): con textLength el último punto quedaba pegado a «BÁSQUET», porque la costura no lleva espacio extra.
             El tamaño sigue al alto de la ventana: en una pantalla baja el escudo se achica en vez de empujar el texto fuera. */}
         <div className="relative size-[min(13rem,30svh)] shrink-0 md:size-[min(18rem,36svh)]">
           <svg ref={anillo} viewBox="0 0 200 200" aria-hidden focusable="false" className="anillo absolute inset-0 size-full">
             <defs>
               <path id="circulo-anillo" d="M100,22 a78,78 0 1,1 0,156 a78,78 0 1,1 0,-156" />
             </defs>
-            <text fontSize="15" className="fill-current font-titulo font-semibold opacity-70" letterSpacing="0.6">
-              <textPath href="#circulo-anillo" textLength="490" lengthAdjust="spacing">BÁSQUET · NEWELL&apos;S OLD BOYS · </textPath>
+            <text fontSize="15" textAnchor="middle" className="fill-current font-titulo font-semibold opacity-70">
+              {LETRAS_DEL_ANILLO.map((letra, i) => (
+                <textPath key={i} href="#circulo-anillo" startOffset={((i + 0.5) * CIRCUNFERENCIA_ANILLO) / LETRAS_DEL_ANILLO.length}>
+                  {letra}
+                </textPath>
+              ))}
             </text>
           </svg>
           <img src={escudo} alt="" width={96} height={96} className="absolute inset-[26%] size-[48%] object-contain" />
