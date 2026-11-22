@@ -1,0 +1,193 @@
+/* Microinteracciones del club (prefijo ix-): la pelota que pica, el tiro limpio, la planilla que encesta,
+   el avión de enviar y los reconocimientos del jugador. Se prueban en /laboratorio/interacciones y las usan
+   las pantallas. Reglas (DESIGN.md): sólo se anima transform y opacity; nada en loop infinito (los
+   cargadores dan una cantidad fija de vueltas, --vueltas); y con movimiento reducido cada pieza queda
+   quieta en su estado final, que se pinta sin animación (data-estado), nunca invisible.
+   --lento multiplica todas las duraciones: sólo lo cambia la cámara lenta del laboratorio. */
+
+:root {
+  /* Terracota sobria: el quemado del club bajado con caramelo, sin llegar al naranja de cancha. */
+  --pelota-clasica: color-mix(in oklab, var(--quemado) 62%, var(--caramelo));
+  --pelota-costura: color-mix(in oklab, var(--cuero) 70%, var(--negro));
+  /* El fueguito de la mano caliente: el quemado del club afuera y un centro claro, sin amarillo de juego. */
+  --fuego-afuera: var(--quemado);
+  --fuego-centro: color-mix(in oklab, var(--caramelo) 45%, var(--sobre-negro));
+}
+.lab[data-lento='si'] { --lento: 4; }
+
+/* ---------- 1A. Pique: caída con gravedad, squash al tocar, stretch al salir, sombra que respira ---------- */
+.ix-pique { position: relative; width: 48px; height: 108px; }
+.ix-pique .bote { position: absolute; left: 0; bottom: 10px; width: 48px; height: 48px; transform-origin: 50% 100%; }
+.ix-pique .sombra { position: absolute; left: 6px; bottom: 4px; width: 36px; height: 8px; border-radius: 50%; background: var(--tinta); opacity: .26; }
+.ix-pique.corre .bote { animation: ix-bote calc(640ms * var(--lento, 1)) var(--vueltas, 1); }
+.ix-pique.corre .sombra { animation: ix-sombra calc(640ms * var(--lento, 1)) var(--vueltas, 1); }
+/* Cada tramo con su curva: sube frenando (ease-out), cae acelerando (ease-in); el squash es corto. */
+@keyframes ix-bote {
+  0%   { transform: translateY(0) scale(1, 1); animation-timing-function: cubic-bezier(.3, .7, .4, 1); }
+  8%   { transform: translateY(-8px) scale(.94, 1.07); animation-timing-function: cubic-bezier(.3, .7, .4, 1); }
+  46%  { transform: translateY(-48px) scale(1, 1); animation-timing-function: cubic-bezier(.6, 0, .8, .4); }
+  88%  { transform: translateY(-5px) scale(.95, 1.06); animation-timing-function: linear; }
+  92%  { transform: translateY(0) scale(1.14, .84); animation-timing-function: cubic-bezier(.3, 0, .3, 1); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+@keyframes ix-sombra {
+  0%   { transform: scale(1); opacity: .26; animation-timing-function: cubic-bezier(.3, .7, .4, 1); }
+  46%  { transform: scale(.45); opacity: .08; animation-timing-function: cubic-bezier(.6, 0, .8, .4); }
+  92%  { transform: scale(1.12); opacity: .32; }
+  100% { transform: scale(1); opacity: .26; }
+}
+
+/* ---------- 1B. Tiro limpio: parábola (x lineal, y con dos curvas), giro de la pelota y swish ---------- */
+.ix-tiro .tiro-giro, .ix-tiro .red { transform-box: fill-box; }
+.ix-tiro .tiro-giro { transform-origin: center; }
+.ix-tiro .red { transform-origin: 50% 0; }
+.ix-tiro.corre .tiro-x { animation: ix-tiro-x calc(700ms * var(--lento, 1)) var(--vueltas, 1); }
+.ix-tiro.corre .tiro-y { animation: ix-tiro-y calc(700ms * var(--lento, 1)) var(--vueltas, 1); }
+.ix-tiro.corre .tiro-giro { animation: ix-tiro-giro calc(700ms * var(--lento, 1)) var(--vueltas, 1); }
+/* La red tiene el mismo período que el tiro y se mueve sólo en el último 30 %: quedan sincronizados en cada vuelta. */
+.ix-tiro.corre .red { animation: ix-swish calc(700ms * var(--lento, 1)) var(--vueltas, 1); }
+@keyframes ix-tiro-x {
+  0%   { transform: translateX(0); animation-timing-function: linear; }
+  72%  { transform: translateX(94px); }
+  100% { transform: translateX(94px); }
+}
+@keyframes ix-tiro-y {
+  0%   { transform: translateY(0); animation-timing-function: cubic-bezier(.25, .6, .45, 1); }
+  43%  { transform: translateY(-82px); animation-timing-function: cubic-bezier(.55, 0, .75, .45); }
+  72%  { transform: translateY(-52px); animation-timing-function: cubic-bezier(.4, 0, 1, 1); }
+  100% { transform: translateY(-2px); }
+}
+@keyframes ix-tiro-giro {
+  0%   { transform: rotate(0); opacity: 1; }
+  72%  { transform: rotate(-260deg); opacity: 1; }
+  86%  { opacity: 1; }
+  100% { transform: rotate(-300deg); opacity: 0; }
+}
+@keyframes ix-swish {
+  0%, 71% { transform: none; }
+  79%  { transform: scale(.86, 1.2); animation-timing-function: cubic-bezier(.3, 0, .3, 1); }
+  89%  { transform: scale(1.05, .94); }
+  95%  { transform: scale(.98, 1.03); }
+  100% { transform: none; }
+}
+
+/* Rotador de frases: cada una entra con un fundido corto; la anterior ya se fue. */
+.ix-aparece { animation: ix-aparece calc(240ms * var(--lento, 1)) var(--ease-salida); }
+@keyframes ix-aparece { from { opacity: 0; transform: translateY(4px); } }
+
+/* ---------- 2. Importador: el documento sale en parábola lateral, pasa por el aro y la red se sacude en lima ---------- */
+/* Misma receta que el tiro del cargador: x lineal, y con dos curvas (sube frenando, cae acelerando), giro aparte. */
+.ix-imp .doc-giro, .ix-imp .red-imp { transform-box: fill-box; }
+.ix-imp .doc { transition: transform calc(200ms * var(--lento, 1)) var(--ease-salida); }
+.ix-imp[data-estado='encima'] .doc { transform: translateY(-6px); }
+.ix-imp .doc-giro { transform-origin: center; }
+.ix-imp[data-estado='procesando'] .doc-x { animation: ix-doc-x calc(700ms * var(--lento, 1)) both; }
+.ix-imp[data-estado='procesando'] .doc-y { animation: ix-doc-y calc(700ms * var(--lento, 1)) both; }
+.ix-imp[data-estado='procesando'] .doc-giro { animation: ix-doc-giro calc(700ms * var(--lento, 1)) both; }
+/* Ya encestó: el documento no vuelve (estado final pintado, no sólo el último cuadro). */
+.ix-imp[data-estado='listo'] .doc { opacity: 0; }
+.ix-imp[data-estado='error'] .doc { animation: ix-no calc(320ms * var(--lento, 1)) var(--ease-salida); }
+/* Del centro del documento (34, 85) al centro del aro (176, 46): 142 a la derecha; cruza el aro al 74 %. */
+@keyframes ix-doc-x {
+  0%   { transform: translateX(0); animation-timing-function: linear; }
+  74%  { transform: translateX(142px); }
+  100% { transform: translateX(142px); }
+}
+@keyframes ix-doc-y {
+  0%   { transform: translateY(0); animation-timing-function: cubic-bezier(.25, .6, .45, 1); }
+  42%  { transform: translateY(-76px); animation-timing-function: cubic-bezier(.55, 0, .75, .45); }
+  74%  { transform: translateY(-39px); animation-timing-function: cubic-bezier(.4, 0, 1, 1); }
+  100% { transform: translateY(4px); }
+}
+/* Una vuelta entera en el aire: entra al aro derecho y ya achicado para pasar por la boca. */
+@keyframes ix-doc-giro {
+  0%   { transform: rotate(0) scale(1); opacity: 1; }
+  30%  { transform: rotate(150deg) scale(.78); }
+  74%  { transform: rotate(360deg) scale(.7); opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: rotate(370deg) scale(.66); opacity: 0; }
+}
+@keyframes ix-no {
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+}
+/* La red se sacude cuando el documento la cruza (mismo swish que el cargador) y se enciende lima ahí mismo. */
+.ix-imp .red-imp { transform-origin: 50% 0; }
+.ix-imp[data-estado='procesando'] .red-imp { animation: ix-swish calc(700ms * var(--lento, 1)); }
+.ix-imp .red-lima { opacity: 0; }
+.ix-imp[data-estado='procesando'] .red-lima { animation: ix-enciende calc(700ms * var(--lento, 1)) both; }
+.ix-imp[data-estado='listo'] .red-lima { opacity: 1; }
+@keyframes ix-enciende { 0%, 72% { opacity: 0; } 82%, 100% { opacity: 1; } }
+
+/* ---------- 3. Enviar recurso: el avión toma impulso, despega con estela de tiza y queda la tilde ---------- */
+.ix-enviar { position: relative; isolation: isolate; }
+.ix-enviar .capa-lima {
+  position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--lima);
+  opacity: 0; transition: opacity calc(280ms * var(--lento, 1)) var(--ease-salida);
+}
+.ix-enviar[data-estado='enviado'] .capa-lima { opacity: 1; }
+.ix-enviar .avion { transition: transform calc(200ms * var(--lento, 1)) var(--ease-salida), opacity calc(200ms * var(--lento, 1)) ease-out; }
+/* Impulso: el avión se echa para atrás sobre su propio eje (apunta arriba a la derecha), sin girar. */
+@media (hover: hover) {
+  .ix-enviar[data-estado='reposo']:hover .avion { transform: translate(-3px, 3px); }
+}
+.ix-enviar[data-estado='reposo']:focus-visible .avion { transform: translate(-3px, 3px); }
+/* Sale disparado hacia donde apunta y se va por el borde del botón (lo recorta overflow): no se desvanece en el aire. */
+.ix-enviar[data-estado='enviando'] .avion { animation: ix-despega calc(560ms * var(--lento, 1)) both; }
+.ix-enviar[data-estado='enviado'] .avion { opacity: 0; transition: none; }
+@keyframes ix-despega {
+  0%   { transform: translate(-3px, 3px); animation-timing-function: cubic-bezier(.3, .7, .4, 1); }
+  22%  { transform: translate(-5px, 5px); animation-timing-function: cubic-bezier(.55, 0, .85, .35); }
+  70%  { transform: translate(44px, -44px); }
+  100% { transform: translate(44px, -44px); }
+}
+.ix-enviar .estela i { position: absolute; left: 0; top: 0; width: 3px; height: 3px; margin: -1.5px; border-radius: 50%; background: var(--sobre-negro); opacity: 0; }
+.ix-enviar[data-estado='enviando'] .estela i { animation: ix-estela calc(420ms * var(--lento, 1)) ease-out backwards; }
+@keyframes ix-estela { 0% { opacity: 0; } 25% { opacity: .8; } 100% { opacity: 0; } }
+.ix-enviar .tilde { opacity: 0; transform: scale(.5) rotate(-20deg); transition: transform calc(280ms * var(--lento, 1)) cubic-bezier(.34, 1.56, .64, 1), opacity calc(160ms * var(--lento, 1)) ease-out; }
+.ix-enviar[data-estado='enviado'] .tilde { opacity: 1; transform: none; transition-delay: calc(80ms * var(--lento, 1)); }
+/* El texto que sale se va rápido y el que entra espera: nunca se leen dos encimados. */
+.ix-enviar .texto { opacity: 0; transition: opacity calc(100ms * var(--lento, 1)) ease-out; }
+.ix-enviar[data-estado='reposo'] .texto[data-t='reposo'],
+.ix-enviar[data-estado='enviando'] .texto[data-t='enviando'],
+.ix-enviar[data-estado='enviado'] .texto[data-t='enviado'] {
+  opacity: 1; transition: opacity calc(200ms * var(--lento, 1)) var(--ease-salida) calc(100ms * var(--lento, 1));
+}
+
+/* ---------- 4. Constancia del jugador: pulso lima, «red limpia» y el bloque del día que se llena ---------- */
+.ix-check { position: relative; }
+.ix-check::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--lima); opacity: 0; pointer-events: none; }
+.ix-check[data-pulso='si']::after { animation: ix-pulso calc(460ms * var(--lento, 1)) var(--ease-salida); }
+@keyframes ix-pulso { from { transform: scale(.85); opacity: .9; } to { transform: scale(1.7); } }
+.ix-check .tilde-check { transform: scale(.4); opacity: 0; transition: transform calc(260ms * var(--lento, 1)) cubic-bezier(.34, 1.56, .64, 1), opacity calc(120ms * var(--lento, 1)) ease-out; }
+.ix-check[data-hecho='si'] .tilde-check { transform: none; opacity: 1; }
+.ix-check .relleno-check { transform: scale(.2); opacity: 0; transition: transform calc(240ms * var(--lento, 1)) var(--ease-salida), opacity calc(120ms * var(--lento, 1)) ease-out; }
+.ix-check[data-hecho='si'] .relleno-check { transform: none; opacity: 1; }
+/* Las tres rayitas del swish: salen del centro y se apagan (el «sonido» de la red, visto). */
+.ix-rayas i { position: absolute; left: 50%; top: 50%; width: 2px; height: 9px; margin: -4.5px -1px; border-radius: 1px; background: var(--lima); opacity: 0; }
+.ix-check[data-pulso='si'] .ix-rayas i { animation: ix-raya calc(420ms * var(--lento, 1)) var(--ease-salida); }
+@keyframes ix-raya { from { opacity: 1; transform: rotate(var(--giro)) translateY(-20px) scaleY(.4); } to { transform: rotate(var(--giro)) translateY(-38px) scaleY(1); } }
+.ix-bloque .relleno { transform: scaleY(0); transform-origin: 50% 100%; transition: transform calc(360ms * var(--lento, 1)) var(--ease-salida); }
+.ix-bloque[data-hecho='si'] .relleno { transform: none; }
+.ix-bloque[data-nuevo='si'] .relleno { transition-delay: calc(120ms * var(--lento, 1)); }
+
+/* Reconocimientos: entran una vez, sin brillo ni confeti. */
+.ix-reconoce { animation: ix-reconoce calc(380ms * var(--lento, 1)) var(--ease-salida); }
+@keyframes ix-reconoce { from { opacity: 0; transform: translateY(6px) scale(.98); } }
+.ix-destapa { transform-box: fill-box; transform-origin: 0 50%; animation: ix-destapa calc(620ms * var(--lento, 1)) var(--ease-salida); }
+@keyframes ix-destapa { from { transform: scaleX(0); } }
+
+/* Mano caliente: el fueguito se prende desde la base y flamea tres veces; el centro va a destiempo. */
+.ix-fuego .llama, .ix-fuego .nucleo { transform-box: fill-box; transform-origin: 50% 100%; }
+.ix-fuego .llama { animation: ix-prende calc(360ms * var(--lento, 1)) var(--ease-salida), ix-flamea calc(560ms * var(--lento, 1)) ease-in-out calc(360ms * var(--lento, 1)) 3; }
+.ix-fuego .nucleo { animation: ix-prende calc(420ms * var(--lento, 1)) var(--ease-salida), ix-flamea-centro calc(480ms * var(--lento, 1)) ease-in-out calc(420ms * var(--lento, 1)) 3; }
+@keyframes ix-prende { from { transform: scale(.3, .1); opacity: 0; } 60% { opacity: 1; } }
+@keyframes ix-flamea { 30% { transform: scale(.94, 1.07) skewX(-3deg); } 70% { transform: scale(1.04, .95) skewX(2deg); } }
+@keyframes ix-flamea-centro { 40% { transform: scale(1.08, .9); } 75% { transform: scale(.94, 1.08) skewX(3deg); } }
+
+/* Movimiento reducido: el reset global ya acorta todo; acá se apagan las que, cortadas, dejarían
+   algo a mitad de camino (la pelota del tiro desaparecería). Cada pieza queda en su estado pintado. */
+@media (prefers-reduced-motion: reduce) {
+  .ix-pique *, .ix-tiro *, .ix-imp *, .ix-enviar *, .ix-check::after, .ix-rayas i, .ix-fuego * { animation: none !important; }
+}

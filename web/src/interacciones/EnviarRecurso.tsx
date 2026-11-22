@@ -30,7 +30,7 @@ export function BotonEnviarRecurso({ textoListo }: { textoListo: string }) {
         data-estado={estado}
         aria-disabled={estado !== 'reposo' || undefined}
         onClick={enviar}
-        className="lab-enviar inline-grid overflow-hidden min-h-11 min-w-[17.5rem] items-center rounded-btn border border-borde-control bg-negro px-5 font-titulo text-lg font-semibold tracking-[.14em] text-sobre-negro uppercase outline-offset-2 transition-transform duration-[var(--dur-1)] select-none focus-visible:outline-2 focus-visible:outline-tinta active:scale-[.97] aria-disabled:cursor-default"
+        className="ix-enviar inline-grid overflow-hidden min-h-11 min-w-[17.5rem] items-center rounded-btn border border-borde-control bg-negro px-5 font-titulo text-lg font-semibold tracking-[.14em] text-sobre-negro uppercase outline-offset-2 transition-transform duration-[var(--dur-1)] select-none focus-visible:outline-2 focus-visible:outline-tinta active:scale-[.97] aria-disabled:cursor-default"
       >
         <span className="capa-lima" aria-hidden />
         <span className="flex items-center justify-center gap-2.5">
@@ -45,7 +45,7 @@ export function BotonEnviarRecurso({ textoListo }: { textoListo: string }) {
               {ESTELA.map((p, k) => (
                 <i
                   key={k}
-                  style={{ transform: `translate(${p.x}px, ${p.y}px)`, animationDelay: `calc(${p.retraso}ms * var(--lab-lento))` }}
+                  style={{ transform: `translate(${p.x}px, ${p.y}px)`, animationDelay: `calc(${p.retraso}ms * var(--ix-lento))` }}
                 />
               ))}
             </span>
@@ -55,7 +55,7 @@ export function BotonEnviarRecurso({ textoListo }: { textoListo: string }) {
       </button>
       <p className="sr-only" aria-live="polite">{estado === 'enviado' ? `Recurso enviado: ${textoListo}` : ''}</p>
       {estado === 'enviado' && (
-        <Boton tamano="chico" variante="contorno" className="lab-aparece" onClick={() => setEstado('reposo')}>Mandar otro</Boton>
+        <Boton tamano="chico" variante="contorno" className="ix-aparece" onClick={() => setEstado('reposo')}>Mandar otro</Boton>
       )}
     </div>
   );

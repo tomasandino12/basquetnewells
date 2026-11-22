@@ -21,7 +21,7 @@ const ARO: Record<EstiloDePelota, { aro: string; red: string }> = {
 
 export function Pique({ estilo, vueltas, corre }: { estilo: EstiloDePelota; vueltas: number; corre: boolean }) {
   return (
-    <div aria-hidden className={cn('lab-pique', corre && 'corre')} style={conVueltas(vueltas)}>
+    <div aria-hidden className={cn('ix-pique', corre && 'corre')} style={conVueltas(vueltas)}>
       <span className="sombra" />
       <span className="bote">
         <Pelota estilo={estilo} />
@@ -33,7 +33,7 @@ export function Pique({ estilo, vueltas, corre }: { estilo: EstiloDePelota; vuel
 export function TiroLimpio({ estilo, vueltas, corre }: { estilo: EstiloDePelota; vueltas: number; corre: boolean }) {
   const { aro, red } = ARO[estilo];
   return (
-    <svg aria-hidden viewBox="0 0 160 112" width="160" height="112" className={cn('lab-tiro overflow-visible', corre && 'corre')} style={conVueltas(vueltas)}>
+    <svg aria-hidden viewBox="0 0 160 112" width="160" height="112" className={cn('ix-tiro overflow-visible', corre && 'corre')} style={conVueltas(vueltas)}>
       <line x1="8" x2="152" y1="107" y2="107" stroke="var(--linea)" strokeWidth="1.5" />
       <rect x="142" y="12" width="3" height="40" rx="1" fill="var(--tinta)" opacity=".75" />
       <path d="M136 46L142 41" stroke="var(--tinta)" strokeWidth="2" opacity=".75" />
@@ -65,7 +65,7 @@ export function RotadorDeFrases({ activo }: { activo: boolean }) {
   return (
     <p className="min-h-6 text-sm text-gris" aria-live="off">
       {activo ? (
-        <span key={i} className="lab-aparece inline-block">
+        <span key={i} className="ix-aparece inline-block">
           {FRASES_DE_CARGA[i]}
         </span>
       ) : (

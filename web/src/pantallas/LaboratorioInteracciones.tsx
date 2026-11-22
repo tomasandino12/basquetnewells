@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Interruptor } from '../components/ui/interruptor';
 import { Pagina } from '../components/ui/pagina';
-import { SeccionCargadores } from '../laboratorio-interacciones/Cargadores';
-import { SeccionConstancia } from '../laboratorio-interacciones/Constancia';
-import { SeccionEnviarRecurso } from '../laboratorio-interacciones/EnviarRecurso';
-import { SeccionImportador } from '../laboratorio-interacciones/Importador';
-import { ContextoLento } from '../laboratorio-interacciones/piezas';
-import '../laboratorio-interacciones/interacciones.css';
+import { SeccionCargadores } from '../interacciones/Cargadores';
+import { SeccionConstancia } from '../interacciones/Constancia';
+import { SeccionEnviarRecurso } from '../interacciones/EnviarRecurso';
+import { SeccionImportador } from '../interacciones/Importador';
+import { ContextoLento } from '../interacciones/piezas';
+import '../interacciones/interacciones.css';
 
 /**
  * Laboratorio de microinteracciones: se prueban acá antes de tocar una pantalla de verdad. Datos

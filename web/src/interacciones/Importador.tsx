@@ -34,7 +34,7 @@ const esXlsx = (a: File) => a.name.toLowerCase().endsWith('.xlsx');
 
 function Dibujo() {
   return (
-    <svg aria-hidden viewBox="0 0 240 120" className="lab-imp-dibujo h-auto w-full max-w-80 shrink-0 overflow-visible">
+    <svg aria-hidden viewBox="0 0 240 120" className="ix-imp-dibujo h-auto w-full max-w-80 shrink-0 overflow-visible">
       {/* El aro va sobre un tablero negro: así la red lima se lee también en el tema claro. */}
       <rect x="128" y="4" width="108" height="112" rx="10" fill="var(--negro)" />
       <rect x="214" y="14" width="3" height="42" rx="1" fill="var(--sobre-negro)" opacity=".7" />
@@ -120,7 +120,7 @@ export function SeccionImportador() {
         }}
         onDrop={alSoltar}
         className={cn(
-          'lab-imp flex min-h-36 cursor-pointer flex-col items-center gap-3 rounded-tarjeta border-[1.5px] border-dashed p-4 outline-offset-2',
+          'ix-imp flex min-h-36 cursor-pointer flex-col items-center gap-3 rounded-tarjeta border-[1.5px] border-dashed p-4 outline-offset-2',
           'transition-[border-color,background-color] duration-[var(--dur-2)] focus-within:outline-2 focus-within:outline-tinta',
           estado.tipo === 'encima' ? 'border-tinta bg-sup-2' : estado.tipo === 'error' ? 'border-club-texto' : 'border-borde-control',
         )}
@@ -138,7 +138,7 @@ export function SeccionImportador() {
           }}
         />
         <Dibujo />
-        <div key={estado.tipo} className="lab-aparece min-h-12 min-w-0 text-center" aria-live="polite">
+        <div key={estado.tipo} className="ix-aparece min-h-12 min-w-0 text-center" aria-live="polite">
           {estado.tipo === 'reposo' && (
             <>
               <p className="font-semibold">Soltá la planilla acá</p>

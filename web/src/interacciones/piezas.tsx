@@ -2,7 +2,7 @@ import { useReducedMotion } from 'motion/react';
 import { createContext, useContext, useId } from 'react';
 
 /**
- * Cámara lenta del laboratorio: multiplica cada duración (en CSS vía `--lab-lento`, en JS con
+ * Cámara lenta del laboratorio: multiplica cada duración (en CSS vía `--ix-lento`, en JS con
  * `useDuracion`). Sirve para mirar la física cuadro a cuadro; en producción no existe.
  */
 export const ContextoLento = createContext(1);

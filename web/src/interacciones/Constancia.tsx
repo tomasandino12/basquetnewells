@@ -27,8 +27,8 @@ function CheckDeRutina({ hecho, alCambiar }: { hecho: boolean; alCambiar: (v: bo
       type="button"
       role="checkbox"
       aria-checked={hecho}
-      aria-labelledby="lab-rutina-t"
-      aria-describedby="lab-rutina-d"
+      aria-labelledby="ix-rutina-t"
+      aria-describedby="ix-rutina-d"
       onClick={() => {
         alCambiar(!hecho);
         // La recompensa es sólo al marcar: desmarcar (se equivocó) no castiga ni festeja.
@@ -40,16 +40,16 @@ function CheckDeRutina({ hecho, alCambiar }: { hecho: boolean; alCambiar: (v: bo
       }}
       className="flex min-h-14 w-full items-center gap-4 rounded-campo text-left outline-offset-4 focus-visible:outline-2 focus-visible:outline-lima"
     >
-      <span data-pulso={pulso ? 'si' : undefined} data-hecho={hecho ? 'si' : undefined} className="lab-check relative grid size-14 shrink-0 place-items-center rounded-full border-2 border-sobre-negro/40">
+      <span data-pulso={pulso ? 'si' : undefined} data-hecho={hecho ? 'si' : undefined} className="ix-check relative grid size-14 shrink-0 place-items-center rounded-full border-2 border-sobre-negro/40">
         <span className="relleno-check absolute inset-0 rounded-full bg-lima" />
         <Check aria-hidden className="tilde-check relative size-7 text-sobre-lima" strokeWidth={3} />
-        <span aria-hidden className="lab-rayas">
+        <span aria-hidden className="ix-rayas">
           {[-50, 0, 50].map((g) => <i key={g} style={{ '--giro': `${g}deg` } as CSSProperties} />)}
         </span>
       </span>
       <span className="min-w-0">
-        <span id="lab-rutina-t" className="block text-lg font-semibold">Hice mi rutina de hoy</span>
-        <span id="lab-rutina-d" className="block text-sm text-sobre-negro/70">Registro personal para tu progreso · sólo lo ves vos</span>
+        <span id="ix-rutina-t" className="block text-lg font-semibold">Hice mi rutina de hoy</span>
+        <span id="ix-rutina-d" className="block text-sm text-sobre-negro/70">Registro personal para tu progreso · sólo lo ves vos</span>
       </span>
     </button>
   );
@@ -74,7 +74,7 @@ function Semana({ hechos, nuevo }: { hechos: boolean[]; nuevo: number | null }) 
                 data-hecho={hechos[i] ? 'si' : undefined}
                 data-nuevo={nuevo === i ? 'si' : undefined}
                 className={cn(
-                  'lab-bloque relative h-11 w-full overflow-hidden rounded-[3px]',
+                  'ix-bloque relative h-11 w-full overflow-hidden rounded-[3px]',
                   futuro ? 'border border-dashed border-sobre-negro/25' : 'bg-sobre-negro/10',
                   i === HOY && 'outline-2 outline-offset-2 outline-sobre-negro/50',
                 )}
@@ -100,11 +100,11 @@ function Sparkline({ valores }: { valores: number[] }) {
   return (
     <svg aria-hidden viewBox="0 0 120 36" className="h-9 w-30">
       <defs>
-        <clipPath id="lab-destapa">
-          <rect className="lab-destapa" x="0" y="0" width="120" height="36" />
+        <clipPath id="ix-destapa">
+          <rect className="ix-destapa" x="0" y="0" width="120" height="36" />
         </clipPath>
       </defs>
-      <g clipPath="url(#lab-destapa)">
+      <g clipPath="url(#ix-destapa)">
         <path d={d} fill="none" stroke="var(--sobre-negro)" strokeOpacity=".55" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
         {valores.map((v, i) => (
           <circle key={i} cx={x(i)} cy={y(v)} r={i === valores.length - 1 ? 3.5 : 2} fill={i === valores.length - 1 ? 'var(--lima)' : 'var(--sobre-negro)'} />
@@ -121,7 +121,7 @@ function Sparkline({ valores }: { valores: number[] }) {
 function Fueguito({ racha }: { racha: number }) {
   const grande = racha >= 5;
   return (
-    <svg aria-hidden viewBox="0 0 32 40" className={cn('lab-fuego shrink-0 overflow-visible', grande ? 'h-14 w-11' : 'h-11 w-9')}>
+    <svg aria-hidden viewBox="0 0 32 40" className={cn('ix-fuego shrink-0 overflow-visible', grande ? 'h-14 w-11' : 'h-11 w-9')}>
       <path className="llama" d="M16 1C18 9 27 13 27 25A11 11 0 0 1 5 25C5 18 9 14.5 10.5 8.5C12.5 12.5 13.5 14.5 15 15.5C15 10.5 14.5 5.5 16 1Z" fill="var(--fuego-afuera)" />
       <path className="nucleo" d="M16 17C18.5 21 21.5 23.5 21.5 28.5A5.5 5.5 0 0 1 10.5 28.5C10.5 25.5 12.5 23.5 13.8 20.8C14.8 22.6 15.6 22.8 16 17Z" fill="var(--fuego-centro)" />
     </svg>
@@ -135,7 +135,7 @@ function RachaDeTiro({ valores }: { valores: number[] }) {
   return (
     <div className="flex min-h-40 flex-col justify-between gap-3 rounded-tarjeta border border-sobre-negro/15 bg-negro p-4 text-sobre-negro">
       {racha >= ALZA_MINIMA ? (
-        <div key="si" className="lab-reconoce flex flex-col gap-3">
+        <div key="si" className="ix-reconoce flex flex-col gap-3">
           <p className="flex items-center gap-2 font-titulo text-sm font-semibold tracking-[.16em] text-lima uppercase">
             <TrendingUp aria-hidden className="size-4" strokeWidth={2.4} /> Mano caliente
           </p>
@@ -152,7 +152,7 @@ function RachaDeTiro({ valores }: { valores: number[] }) {
           </div>
         </div>
       ) : (
-        <div key="no" className="lab-aparece flex flex-col gap-2">
+        <div key="no" className="ix-aparece flex flex-col gap-2">
           <p className="font-titulo text-sm font-semibold tracking-[.16em] text-sobre-negro/60 uppercase">Tu tiro</p>
           <p className="text-sm text-sobre-negro/70">
             <span className="cifra font-mono text-2xl font-semibold text-sobre-negro">{ultimo} %</span> en la última sesión. Con {ALZA_MINIMA} mejoras seguidas aparece la racha.
@@ -179,7 +179,7 @@ function AsistenciaContinuada({ presencias }: { presencias: (boolean | null)[] }
   return (
     <div className="flex min-h-40 flex-col justify-between gap-3 rounded-tarjeta border border-sobre-negro/15 bg-negro p-4 text-sobre-negro">
       {racha >= ASISTENCIA_MINIMA ? (
-        <div key="si" className="lab-reconoce flex flex-col gap-3">
+        <div key="si" className="ix-reconoce flex flex-col gap-3">
           <p className="flex items-center gap-2 font-titulo text-sm font-semibold tracking-[.16em] text-lima uppercase">
             <CalendarCheck aria-hidden className="size-4" strokeWidth={2.4} /> Asistencia continuada
           </p>
@@ -187,7 +187,7 @@ function AsistenciaContinuada({ presencias }: { presencias: (boolean | null)[] }
           <p className="text-sm text-sobre-negro/70">{racha >= mejor ? 'Es tu mejor racha. Seguí así.' : `Tu mejor fue de ${mejor}: vas por buen camino.`}</p>
         </div>
       ) : (
-        <div key="no" className="lab-aparece flex flex-col gap-2">
+        <div key="no" className="ix-aparece flex flex-col gap-2">
           <p className="flex items-center gap-2 font-titulo text-sm font-semibold tracking-[.16em] text-lima uppercase">
             <CalendarCheck aria-hidden className="size-4" strokeWidth={2.4} /> Tu asistencia
           </p>
