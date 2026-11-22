@@ -1,61 +1,81 @@
 # Constancia y asistencia en la vista del jugador — diseño
 
-22/11. Llevar a `web/src/pantallas/jugador/` dos piezas del laboratorio (`web/src/interacciones/Constancia.tsx`, aprobadas por Tomás) que hoy usan datos inventados: el check **«Hice mi rutina de hoy»** con la constancia semanal, y la tarjeta de **asistencia continuada**. La mano caliente del tiro ya está en uso y no se toca.
+22/11, con las decisiones de Tomás del mismo día. Llevar a la vista del jugador dos piezas del laboratorio (`web/src/interacciones/Constancia.tsx`): el registro **«Hice mi rutina de hoy»** con la constancia semanal y la tarjeta de **asistencia continuada**. El fin es la adhesión: que los chicos sean más constantes. Es parte del producto, se arma ahora (no espera al MVP).
 
-**Datos de menores.** Lo que ya rige y no cambia: la cuenta de jugador no tiene `select` sobre ninguna tabla; lee lo suyo sólo por funciones `security definer` que arrancan con `mi_jugador()` (0030), y `src/data/accesoJugador.js` declara cada una (`tests/contratoAccesoJugador.test.js`). No existe cuenta profe y jugador a la vez (0032 cierra la de jugador). **Las familias no tienen cuenta (PRD, 17/11)**: no se les abre nada nuevo, y B-09/B-10 cierran lo de 0057.
+**Lo que ya rige y no cambia.** La cuenta de jugador no tiene `select` sobre ninguna tabla: lee y escribe lo suyo por funciones `security definer` que arrancan con `mi_jugador()` (0030; `registrar_apertura` de 0034 es el antecedente de escritura). El profe ve conteos de recursos, nunca quién, y nada con menos de 3 cuentas en el plantel (`resumen_recursos`, 0034). No hay cuenta profe y jugador a la vez (0032). **Las familias no tienen cuenta (PRD, 17/11).** Una cuenta de familia no tiene `cuenta_jugador`, así que todas las funciones nuevas le devuelven null y no se le abre nada.
 
-## 1. «Hice mi rutina de hoy» — dato nuevo
+## 1. Práctica con un recurso: «Hice mi rutina de hoy»
 
-**Qué dato, dónde y quién lo ve.** Un día marcado por el propio jugador: «hice mi rutina». Nada más: ni cuánto, ni qué, ni texto libre. Vive en Supabase. **Lo ve sólo él** (como dice la UI). Ni el profe, ni el coordinador, ni una familia, ni siquiera en agregado.
+**Qué dato, dónde y quién lo ve.** «Este día practiqué este recurso» (un video de tiro, de manejo…). Lo marca el propio jugador. No guarda cuánto ni cómo, ni texto libre. Vive en Supabase. **El jugador** ve lo suyo. **El profe** ve **cuántos** del plantel lo practicaron, nunca quiénes. **Coordinación y familias** no ven nada.
 
-**Tabla `rutina_jugador`** (migración nueva, la próxima según `npx supabase migration list --remote`; hoy la última local es 0067). Columnas: `jugador_id`, `club_id`, `fecha date`, `marcado_en timestamptz` sellado. PK `(jugador_id, fecha)`: una marca por día, reintentar no duplica. Desmarcar **borra la fila** (equivocarse no deja rastro). Patrón de `0026_material.sql` con una diferencia a propósito: `revoke all` **sin ningún `grant` ni policy**. RLS activada y sin policies = nadie la lee ni la escribe directo, tampoco el profe. Todo pasa por dos funciones:
+Esto cambia la decisión de septiembre («sin botón *lo hice*: invita a mentir»). Ahora Tomás lo quiere como motivación. La apertura del recurso (0034) sigue igual, aparte.
 
-- `marcar_mi_rutina(p_hecho boolean)`: `security definer`, arranca con `mi_jugador()` y, si es null, error `SIN_CUENTA`. La **fecha la pone el servidor** (hoy en `America/Argentina/Buenos_Aires`, como `mi_plan`): el cliente no manda fecha, así que no hay forma de marcar mañana ni de rellenar el mes. `true` inserta (`on conflict do nothing`) y `false` borra. Devuelve lo mismo que `mi_rutina()`.
-- `mi_rutina()`: las fechas marcadas de las últimas 8 semanas. La semana (lunes a domingo), «hoy» y los días que todavía no llegaron los arma lógica pura del lado del cliente.
+**Tabla `practica_jugador`** (migración nueva, la próxima según `npx supabase migration list --remote`; hoy la última local es 0067). Columnas: `id`, `jugador_id`, `club_id`, `fecha date`, `tipo` ∈ `recurso | fisico`, `recurso_id` y `marcado_en` (sellado).
+- **Tipo `fisico`:** queda listo en la base **sin pantalla ni función**, hasta que se defina el físico de antes del entrenamiento. Lleva `recurso_id` null y es una por día.
+- **Tipo `recurso`:** una marca por recurso y día (índice único parcial).
+- **Si se borra el recurso:** FK con `on delete set null (recurso_id)`, así el día practicado no se le borra de la constancia.
+- **Permisos:** patrón de `0026_material.sql`, pero como `apertura_recurso`: `revoke all`, RLS activada, **ningún grant ni policy**. Nadie la toca directo.
 
-Es **la primera escritura** que hace una cuenta de jugador. Por eso `accesoJugador.js` suma una lista nueva (`ESCRITURA_DEL_JUGADOR`) y el test de contrato se extiende a la migración nueva: hoy lee sólo 0029 y 0030, así que un grant en 0068 no lo vería. El test también tiene que exigir que las dos funciones pasen por `mi_jugador()`.
+**Funciones** (todas `security definer`; las del jugador arrancan con `mi_jugador()`):
+- **`marcar_practica(p_recurso_id, p_hecho)`:** **la fecha la pone el servidor** (hoy en Argentina): se marca sólo el día en que se practica, y no hay mañana ni relleno. Sólo deja marcar recursos que se le enviaron a él (`envio_recurso`, como `registrar_apertura`). `false` borra la marca de hoy. Devuelve lo mismo que `mis_practicas()`.
+- **`mis_practicas()`:** sus marcas de las últimas 12 semanas: fecha y recurso.
+- **`practicas_del_plantel(p_plantel_id)`:** para el entrenador del plantel (`puede_ver_plantel`). Por recurso, cuántos lo practicaron esta semana y alguna vez; aparte, cuántos marcaron algo esta semana. **Ningún id de jugador**, y null con menos de 3 cuentas (misma regla que `resumen_recursos`).
 
-**Profe y coordinador:** no ven nada. No hay función para ellos, y la tabla no tiene policy. Si algún día se quiere que el profe vea algo, eso es otro spec: sólo agregado del plantel, cambiando antes el texto de la UI, y **nunca con lo que se marcó bajo «sólo lo ves vos»**.
-**Familia:** una cuenta de familia no tiene `cuenta_jugador`, así que `mi_jugador()` le da null: `mi_rutina()` le devuelve null y `marcar_mi_rutina` le da error. `mis_chicos()` no se toca.
-**Quién más puede verlo:** quien administra la base y los backups, o sea el encargado del tratamiento. La política de privacidad tiene que contarlo (ver §4).
+**Borrado (Tomás: «si no es jugador del club, no nos sirve»).** Las marcas se borran cuando el chico se queda sin ninguna pertenencia vigente, con el mismo disparador y la misma regla que la emergencia (`borrar_emergencia_sin_plantel`, 0059). También se borran cuando se cierra su cuenta de jugador, porque ya nadie las ve.
 
-**Pantalla:** **Físico** (`JugadorFisico.tsx`). Una tarjeta «Tu semana» arriba de «Hoy / Próxima sesión», con `CheckDeRutina` y `Semana`, que se mudan del laboratorio. La rutina es del plan físico, y Físico es la pestaña donde el jugador ya va a mirarlo.
+**Pantalla.** El check va en **Inicio** (§3), con el texto «Registro personal para tu progreso · tu profe ve cuántos lo practicaron, nunca quién».
+- **Al tocarlo:** se abre la lista de los recursos que le mandaron, sin los de tipo `lectura`, y elige cuál o cuáles practicó. Si tiene uno solo, se marca directo.
+- **Sin recursos:** el check no aparece, y se le explica que llega cuando el profe le mande uno.
+- **Constancia semanal:** los bloques en lima son los días con al menos una práctica. Si el recurso tiene `frecuencia_semanal` (0033), se muestra «2 de 3 veces esta semana».
+- **Lado del profe:** el conteo aparece en su pantalla de recursos, junto a «abrieron».
 
-## 2. Asistencia continuada — datos que ya existen
+## 2. Asistencia continuada (datos que ya existen)
 
-**No hace falta tabla nueva.** `entrenamiento` y `asistencia` (0064/0066) ya tienen todo. Lo que falta es un camino de lectura: el jugador no lee esas tablas (sus policies son `puede_ver_plantel`).
+**No hace falta tabla nueva:** `entrenamiento` y `asistencia` (0064/0066) ya lo tienen. Falta un camino de lectura, porque el jugador no lee esas tablas.
 
-**Función `mi_asistencia()`** (`security definer`, arranca con `mi_jugador()`, una entrada en `LECTURA_DEL_JUGADOR`). Por cada entrenamiento con `hubo = true` de los planteles donde tiene pertenencia, en el período a decidir (pregunta 8), devuelve **sólo** `fecha`, `plantelId`, `categoria` y `vino`: `true` si está presente, `false` si es una falta, `null` si no se lo tomó. Los días sin práctica (`hubo = false`) no se devuelven. **No devuelve** el motivo (0066 puede decir «enfermo»), ni si avisó, ni la lesión, ni quién marcó, ni nada de otro chico, ni cuántos vinieron. Va en una función aparte y no en `mi_progreso()` para no volver a copiar las ~150 líneas de esa función (ya se copió entera cinco veces) por un solo dato.
+**`mi_asistencia()`** (`security definer`, `mi_jugador()`). Devuelve **un día por fecha de los últimos 12 meses**, con `fecha` y `vino` (`true`, `false` o `null`), **ya juntando todas sus categorías** (Tomás: «una sola racha, si fue a cualquiera de las dos»). La regla de cada día, en orden:
+1. **Presente en alguno** → `true`. Un lesionado que vino cuenta.
+2. **Lesionado ese día** (`lesion`) → `null`. La racha queda en pausa: no suma ni corta.
+3. **Ausente o justificada en alguno** → `false`. La justificada cuenta como falta: avisar está bien, pero no fue.
+4. **Nada de lo anterior** → `null` (no se lo tomó).
 
-Las reglas de racha ya están en `asistenciaSeguida` y `mejorRacha` (`web/src/interacciones/logica.ts`). Un `null` no suma ni corta. Se mudan tal cual a `src/data/constancia.js` con su `tests/constancia.test.js`, y `web/` las importa por `@datos/…`. Ese movimiento es un refactor y va en su propio commit. La regla de la lesión (pregunta 6) se resuelve **en la función**: el día de falta estando lesionado sale como `null`, sin decir por qué.
+Sólo entran los días con `hubo = true` de planteles donde tenía pertenencia ese día. **No devuelve** el motivo, si avisó, la lesión, quién marcó ni nada de otro chico (Tomás: «sólo el número y algo superficial»). Va aparte de `mi_progreso()` para no copiar sus ~150 líneas una sexta vez.
 
-**Profe:** nada cambia. Ya ve la asistencia de su plantel en su pantalla y no ve rachas. El texto de la tarjeta **no** dice «sólo lo ves vos», porque la asistencia la toma el profe.
-**Coordinador:** nada cambia (sigue con `asistencia_del_club`, sólo el %).
-**Familia:** igual que en §1, null.
+La racha usa las reglas que ya existen, `asistenciaSeguida` y `mejorRacha`. Se mudan tal cual de `web/src/interacciones/logica.ts` a `src/data/constancia.js`, con su test, y va en su propio commit porque es un refactor.
 
-**Pantalla:** **Progreso** (`JugadorProgreso.tsx`). Una sección «Tu asistencia» arriba de todo, con `AsistenciaContinuada`, que se muda del laboratorio. Queda junto a la mano caliente: las dos son «vos contra vos».
+**Vistas.** Lo primero que ve son **los últimos 10 entrenamientos**: la tira y la tarjeta del laboratorio. Un selector cambia a **mes** o **año**: una grilla de días en lima y huecos, con «viniste a X de Y» y la mejor racha del período.
 
-## 3. Lo que hay que verificar
+**Profe y coordinador:** nada cambia. El profe ya ve la asistencia de su plantel, y coordinación sólo el %. La tarjeta no dice «sólo lo ves vos», porque la toma el profe.
 
-- `tests/verificarConstancia.sql` (modelo `verificarCuentasFamilia.sql`). El jugador A no lee ni marca nada del jugador B. Un profe, un coordinador y una cuenta de familia reciben null o `SIN_CUENTA` en las tres funciones. Nadie hace `select` sobre `rutina_jugador`. `mi_asistencia()` no trae motivos ni días de otro plantel.
-- Contrato `accesoJugador` extendido a la migración nueva. Tests de `src/data/constancia.js`. Pruebas de las dos tarjetas en `Jugador.test.tsx`.
-- Antes del `db push`: `npm run backup`.
+## 3. Pantalla Inicio (reemplaza la pestaña Sesión)
 
-## 4. Fuera de este spec
+La barra sigue con 5 pestañas: **Inicio**, Físico, Progreso, Jugadas, Recursos. `/jugador` abre en `/jugador/inicio`. Inicio tiene, en este orden:
+1. La sesión de físico de hoy o la próxima, como un enlace a `/jugador/sesion/:id`. La ruta sigue existiendo, aunque ya no tenga pestaña.
+2. «Tu semana»: el check y la constancia.
+3. «Tu asistencia».
 
-- Política de privacidad y `VERSION_LEGAL`: hay que sumar «registro personal de rutina» y «el jugador ve su propia asistencia». Va con B-14 o en una tarea aparte (pregunta 11).
-- Corregir el PRD, cuya tabla de datos dice que asistencia y lesiones las ven sólo los profes, y el spec de 0064, que dice que los jugadores no ven nada.
+Hay que actualizar la guía de primer uso del jugador (`GuiaDePrimerUso`, modo `jugar`). La mano caliente queda en Progreso.
 
-## 5. Preguntas para Tomás (antes de implementar)
+## 4. Privacidad, documentos y verificación
 
-1. **Rutina libre o atada al plan:** ¿se puede marcar cualquier día, como en el laboratorio, o sólo los días que tienen sesión del plan físico? *Recomiendo: cualquier día.*
-2. **Días pasados:** ¿puede marcar ayer si se olvidó, o sólo hoy? *Recomiendo: sólo hoy (y desmarcar hoy).*
-3. **El profe y la rutina:** ¿confirmás que el profe no ve nada, ni siquiera cuántos del plantel la marcan? *Recomiendo: nada, como promete la UI.*
-4. **Al irse:** cuando se cierra la cuenta del jugador o deja el club, ¿se borran sus marcas de rutina? *Recomiendo: sí, no le sirven a nadie más.*
-5. **Falta con aviso:** ¿una justificada corta la racha o cuenta como día sin tomar? *En el % es falta (como la planilla).*
-6. **Lesionado:** ¿un día en que faltó estando lesionado corta la racha? *Recomiendo: no, cuenta como día sin tomar.*
-7. **Dos categorías:** ¿una sola racha por día (vino a alguna) o una por categoría?
-8. **Período:** ¿la temporada vigente, o los últimos N entrenamientos? (la tira del laboratorio muestra 10)
-9. **Qué ve de cada falta:** ¿sólo vino / faltó / sin tomar, sin motivo ni lesión? *Recomiendo: sí, sólo eso.*
-10. **Ubicación:** rutina en Físico y asistencia en Progreso, ¿te parece bien?
-11. **Backlog y privacidad:** ¿entran al BACKLOG.md (antes o después de la línea del MVP), y el texto legal va con B-14 o aparte?
+- **Aviso de privacidad** (`src/data/legal.js`): sumar que el jugador registra sus prácticas, que el profe ve sólo cuántos y que el jugador ve su propia asistencia. Subir `VERSION_LEGAL` para que vuelvan a aceptar. Va en esta misma tarea.
+- **PRD:** su tabla de datos dice que asistencia y lesiones las ven sólo los profes. Sumar «y el jugador, la suya» y una fila para la práctica. El spec de 0064 («los jugadores no ven nada») queda superado.
+- **`tests/verificarConstancia.sql`** (modelo `verificarCuentasFamilia.sql`). El jugador A no lee ni marca nada de B, ni recursos que no le mandaron. Profe, coordinador y familia reciben null en `mis_practicas`/`mi_asistencia`. `practicas_del_plantel` no trae ids y da null con menos de 3 cuentas. Al cerrar la última pertenencia, las marcas desaparecen.
+- **Contratos:** `src/data/accesoJugador.js` suma `mis_practicas` y `mi_asistencia` a la lectura y `marcar_practica` a una lista nueva de escritura; su test lee también la migración nueva. Contrato de la lista `tipo` entre SQL y JS (modelo `contratoMaterial`).
+- **Base:** antes del `db push`, `npm run backup`.
+
+## 5. Decidido el 22/11
+
+| Tema | Decisión |
+|---|---|
+| Marcar días | Sólo hoy, el día que lo hace |
+| Qué se marca | La práctica de un recurso (rutina de básquet); el físico, después, desde Físico |
+| Profe | Cuántos practicaron, nunca quién; mínimo 3 cuentas |
+| Si deja el club | Se borran sus marcas |
+| Justificada | Es falta y corta la racha |
+| Lesionado sin venir | Pausa: no corta |
+| Dos categorías | Una sola racha; vino si fue a cualquiera |
+| Período | Últimos 10 primero; mes y año a elección |
+| Qué ve de cada falta | Vino, faltó o sin tomar; ni motivo ni lesión |
+| Dónde | Pestaña Inicio nueva en lugar de Sesión |
+| Cuándo | Ahora, con el aviso de privacidad incluido |

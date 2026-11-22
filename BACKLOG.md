@@ -128,6 +128,11 @@
 - **Qué:** tildar uno por uno los puntos de "Lo que tiene que hacer una persona en el dashboard" de la lista privada de lanzamiento.
 - **Listo cuando:** todos los puntos de esa sección están tildados o tienen escrita la razón de por qué no.
 
+### B-31 · Constancia y asistencia del jugador — código (migración)
+- **Qué:** pestaña Inicio del jugador (reemplaza Sesión) con «Hice mi rutina de hoy» (marca la práctica de un recurso, sólo hoy), la constancia semanal y su asistencia continuada (últimos 10, mes o año). El profe ve cuántos practicaron cada recurso. Spec: `docs/superpowers/specs/2026-11-22-constancia-y-asistencia-del-jugador-design.md`. Decidido por Tomás el 22/11: va ahora, no espera al MVP.
+- **Menores:** dato nuevo = día y recurso que el chico dice haber practicado, en Supabase; lo ve él, y el profe sólo cuántos (nunca quién, nada con menos de 3 cuentas). Se borra cuando deja el club o se cierra su cuenta. Asistencia: el chico ve la suya (vino / faltó / sin tomar), sin motivo ni lesión. Aviso de privacidad y `VERSION_LEGAL` en la misma tarea. Backup antes del `db push`.
+- **Listo cuando:** la verificación SQL pasa, un jugador de prueba marca una práctica y ve su semana y su asistencia, el profe ve el conteo, y los tests están en verde.
+
 ## Terminado
 
 - **B-00 · PRD.md** — escrito y aprobado el 17/11/2026 (`8e68061`).
