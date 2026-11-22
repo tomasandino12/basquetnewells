@@ -14,6 +14,7 @@ import { Vacio } from '../../components/ui/estados';
 import { useMiFicha, useMiProgreso } from '../../datos/consultasJugador';
 import type { MiPlan, MiProgreso } from '../../datos/repositorio';
 import { fechaCorta } from '../../fisico/plan';
+import { ManoCaliente, rachaDeTiro } from '../../interacciones/ManoCaliente';
 import { coma, Porcentaje, type Porc } from '../../jugador/porcentaje';
 
 type Punto = { fecha: string; valor: Porc };
@@ -151,6 +152,7 @@ function SerieDeTiro({ titulo, serie, vacio }: { titulo: string; serie: Serie; v
   const { fechas, a, b } = ejeComun(serie.practica, serie.partido) as { fechas: string[]; a: (Porc | null)[]; b: (Porc | null)[] };
   return (
     <Seccion titulo={titulo}>
+      <ManoCaliente racha={rachaDeTiro(serie.practica)} que={titulo.toLowerCase()} />
       <Grafico fechas={fechas} practica={a.map((v) => v?.pct ?? null)} partido={b.map((v) => v?.pct ?? null)} etiqueta={`${titulo}: porcentaje por fecha, práctica y partido`} />
       <ul className="flex flex-col gap-1">
         <ResumenDeFuente nombre="Práctica" serie={serie.practica} />

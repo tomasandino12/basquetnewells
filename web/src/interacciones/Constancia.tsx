@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Panel } from '../components/ui/card';
 import { cn } from '../lib/cn';
 import { ALZA_MINIMA, DIAS_DE_LA_SEMANA, asistenciaSeguida, mejorRacha, sesionesEnAlza } from './logica';
+import { Fueguito } from './ManoCaliente';
 import { Opciones, useDuracion } from './piezas';
 
 // Datos INVENTADOS: el laboratorio nunca lee datos de un jugador real.
@@ -110,20 +111,6 @@ function Sparkline({ valores }: { valores: number[] }) {
           <circle key={i} cx={x(i)} cy={y(v)} r={i === valores.length - 1 ? 3.5 : 2} fill={i === valores.length - 1 ? 'var(--lima)' : 'var(--sobre-negro)'} />
         ))}
       </g>
-    </svg>
-  );
-}
-
-/**
- * La «mano caliente»: un fueguito que se prende al aparecer la racha y flamea tres veces (no en loop).
- * Crece con la racha: 3 mejoras es el chico; desde 5, el grande.
- */
-function Fueguito({ racha }: { racha: number }) {
-  const grande = racha >= 5;
-  return (
-    <svg aria-hidden viewBox="0 0 32 40" className={cn('ix-fuego shrink-0 overflow-visible', grande ? 'h-14 w-11' : 'h-11 w-9')}>
-      <path className="llama" d="M16 1C18 9 27 13 27 25A11 11 0 0 1 5 25C5 18 9 14.5 10.5 8.5C12.5 12.5 13.5 14.5 15 15.5C15 10.5 14.5 5.5 16 1Z" fill="var(--fuego-afuera)" />
-      <path className="nucleo" d="M16 17C18.5 21 21.5 23.5 21.5 28.5A5.5 5.5 0 0 1 10.5 28.5C10.5 25.5 12.5 23.5 13.8 20.8C14.8 22.6 15.6 22.8 16 17Z" fill="var(--fuego-centro)" />
     </svg>
   );
 }
