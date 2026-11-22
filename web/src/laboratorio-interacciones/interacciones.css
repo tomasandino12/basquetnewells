@@ -1,0 +1,162 @@
+/* Laboratorio de microinteracciones (/laboratorio/interacciones). PROTOTIPO: nada de esto lo usa
+   una pantalla real. Si una variante queda, sus colores derivados pasan a estilos.css como tokens.
+   Reglas que se respetan (DESIGN.md): sólo se anima transform y opacity; nada en loop infinito
+   (los cargadores dan una cantidad fija de vueltas, --vueltas); y con movimiento reducido cada pieza
+   queda quieta en su estado final, que se pinta sin animación (data-estado), nunca invisible. */
+
+.lab {
+  --lab-lento: 1;
+  /* Terracota sobria: el quemado del club bajado con caramelo, sin llegar al naranja de cancha. */
+  --pelota-clasica: color-mix(in oklab, var(--quemado) 62%, var(--caramelo));
+  --pelota-costura: color-mix(in oklab, var(--cuero) 70%, var(--negro));
+}
+.lab[data-lento='si'] { --lab-lento: 4; }
+
+/* ---------- 1A. Pique: caída con gravedad, squash al tocar, stretch al salir, sombra que respira ---------- */
+.lab-pique { position: relative; width: 48px; height: 108px; }
+.lab-pique .bote { position: absolute; left: 0; bottom: 10px; width: 48px; height: 48px; transform-origin: 50% 100%; }
+.lab-pique .sombra { position: absolute; left: 6px; bottom: 4px; width: 36px; height: 8px; border-radius: 50%; background: var(--tinta); opacity: .26; }
+.lab-pique.corre .bote { animation: lab-bote calc(640ms * var(--lab-lento)) var(--vueltas, 1); }
+.lab-pique.corre .sombra { animation: lab-sombra calc(640ms * var(--lab-lento)) var(--vueltas, 1); }
+/* Cada tramo con su curva: sube frenando (ease-out), cae acelerando (ease-in); el squash es corto. */
+@keyframes lab-bote {
+  0%   { transform: translateY(0) scale(1, 1); animation-timing-function: cubic-bezier(.3, .7, .4, 1); }
+  8%   { transform: translateY(-8px) scale(.94, 1.07); animation-timing-function: cubic-bezier(.3, .7, .4, 1); }
+  46%  { transform: translateY(-48px) scale(1, 1); animation-timing-function: cubic-bezier(.6, 0, .8, .4); }
+  88%  { transform: translateY(-5px) scale(.95, 1.06); animation-timing-function: linear; }
+  92%  { transform: translateY(0) scale(1.14, .84); animation-timing-function: cubic-bezier(.3, 0, .3, 1); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+@keyframes lab-sombra {
+  0%   { transform: scale(1); opacity: .26; animation-timing-function: cubic-bezier(.3, .7, .4, 1); }
+  46%  { transform: scale(.45); opacity: .08; animation-timing-function: cubic-bezier(.6, 0, .8, .4); }
+  92%  { transform: scale(1.12); opacity: .32; }
+  100% { transform: scale(1); opacity: .26; }
+}
+
+/* ---------- 1B. Tiro limpio: parábola (x lineal, y con dos curvas), giro de la pelota y swish ---------- */
+.lab-tiro .tiro-giro, .lab-tiro .red, .lab-imp .doc, .lab-imp .red-imp { transform-box: fill-box; }
+.lab-tiro .tiro-giro { transform-origin: center; }
+.lab-tiro .red { transform-origin: 50% 0; }
+.lab-tiro.corre .tiro-x { animation: lab-tiro-x calc(700ms * var(--lab-lento)) var(--vueltas, 1); }
+.lab-tiro.corre .tiro-y { animation: lab-tiro-y calc(700ms * var(--lab-lento)) var(--vueltas, 1); }
+.lab-tiro.corre .tiro-giro { animation: lab-tiro-giro calc(700ms * var(--lab-lento)) var(--vueltas, 1); }
+/* La red tiene el mismo período que el tiro y se mueve sólo en el último 30 %: quedan sincronizados en cada vuelta. */
+.lab-tiro.corre .red { animation: lab-swish calc(700ms * var(--lab-lento)) var(--vueltas, 1); }
+@keyframes lab-tiro-x {
+  0%   { transform: translateX(0); animation-timing-function: linear; }
+  72%  { transform: translateX(94px); }
+  100% { transform: translateX(94px); }
+}
+@keyframes lab-tiro-y {
+  0%   { transform: translateY(0); animation-timing-function: cubic-bezier(.25, .6, .45, 1); }
+  43%  { transform: translateY(-82px); animation-timing-function: cubic-bezier(.55, 0, .75, .45); }
+  72%  { transform: translateY(-52px); animation-timing-function: cubic-bezier(.4, 0, 1, 1); }
+  100% { transform: translateY(-2px); }
+}
+@keyframes lab-tiro-giro {
+  0%   { transform: rotate(0); opacity: 1; }
+  72%  { transform: rotate(-260deg); opacity: 1; }
+  86%  { opacity: 1; }
+  100% { transform: rotate(-300deg); opacity: 0; }
+}
+@keyframes lab-swish {
+  0%, 71% { transform: none; }
+  79%  { transform: scale(.86, 1.2); animation-timing-function: cubic-bezier(.3, 0, .3, 1); }
+  89%  { transform: scale(1.05, .94); }
+  95%  { transform: scale(.98, 1.03); }
+  100% { transform: none; }
+}
+
+/* Rotador de frases: cada una entra con un fundido corto; la anterior ya se fue. */
+.lab-aparece { animation: lab-aparece calc(240ms * var(--lab-lento)) var(--ease-salida); }
+@keyframes lab-aparece { from { opacity: 0; transform: translateY(4px); } }
+
+/* ---------- 2. Importador: el documento encesta en el aro y la red se sacude en lima ---------- */
+.lab-imp .doc { transform-origin: center; transition: transform calc(200ms * var(--lab-lento)) var(--ease-salida); }
+.lab-imp[data-estado='encima'] .doc { transform: translateY(-6px) rotate(-6deg); }
+.lab-imp[data-estado='procesando'] .doc { animation: lab-doc-encesta calc(520ms * var(--lab-lento)) both; }
+/* Ya encestó: el documento no vuelve (estado final pintado, no sólo el último cuadro). */
+.lab-imp[data-estado='listo'] .doc { opacity: 0; }
+.lab-imp[data-estado='error'] .doc { animation: lab-no calc(320ms * var(--lab-lento)) var(--ease-salida); }
+@keyframes lab-doc-encesta {
+  0%   { transform: none; animation-timing-function: cubic-bezier(.25, .6, .45, 1); }
+  45%  { transform: translate(38px, -30px) rotate(14deg) scale(.72); animation-timing-function: cubic-bezier(.55, 0, .75, .45); }
+  78%  { transform: translate(68px, -14px) rotate(24deg) scale(.5); opacity: 1; animation-timing-function: cubic-bezier(.4, 0, 1, 1); }
+  100% { transform: translate(68px, 4px) rotate(24deg) scale(.42); opacity: 0; }
+}
+@keyframes lab-no {
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+}
+.lab-imp .red-imp { transform-origin: 50% 0; }
+.lab-imp .red-lima { opacity: 0; transition: opacity calc(160ms * var(--lab-lento)) ease-out; }
+.lab-imp[data-estado='listo'] .red-lima { opacity: 1; }
+.lab-imp[data-estado='listo'] .red-imp { animation: lab-swish-corto calc(320ms * var(--lab-lento)); }
+@keyframes lab-swish-corto {
+  30% { transform: scale(.84, 1.22); animation-timing-function: cubic-bezier(.3, 0, .3, 1); }
+  65% { transform: scale(1.05, .94); }
+  85% { transform: scale(.98, 1.03); }
+}
+
+/* ---------- 3. Enviar recurso: el avión toma impulso, despega con estela de tiza y queda la tilde ---------- */
+.lab-enviar { position: relative; isolation: isolate; }
+.lab-enviar .capa-lima {
+  position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--lima);
+  opacity: 0; transition: opacity calc(280ms * var(--lab-lento)) var(--ease-salida);
+}
+.lab-enviar[data-estado='enviado'] .capa-lima { opacity: 1; }
+.lab-enviar .avion { transition: transform calc(200ms * var(--lab-lento)) var(--ease-salida); }
+@media (hover: hover) {
+  .lab-enviar[data-estado='reposo']:hover .avion { transform: translate(2px, -2px) rotate(-14deg); }
+}
+.lab-enviar[data-estado='reposo']:focus-visible .avion { transform: translate(2px, -2px) rotate(-14deg); }
+.lab-enviar[data-estado='enviando'] .avion { animation: lab-despega calc(560ms * var(--lab-lento)) both; }
+.lab-enviar[data-estado='enviado'] .avion { opacity: 0; }
+@keyframes lab-despega {
+  0%   { transform: translate(2px, -2px) rotate(-14deg); animation-timing-function: cubic-bezier(.3, .7, .4, 1); }
+  18%  { transform: translate(-4px, 2px) rotate(-22deg); animation-timing-function: cubic-bezier(.5, 0, .9, .5); }
+  100% { transform: translate(170px, -26px) rotate(-6deg) scale(.8); opacity: 0; }
+}
+.lab-enviar .estela i { position: absolute; left: 0; top: 0; width: 3px; height: 3px; margin: -1.5px; border-radius: 50%; background: var(--sobre-negro); opacity: 0; }
+.lab-enviar[data-estado='enviando'] .estela i { animation: lab-estela calc(420ms * var(--lab-lento)) ease-out backwards; }
+@keyframes lab-estela { 0% { opacity: 0; } 25% { opacity: .8; } 100% { opacity: 0; } }
+.lab-enviar .tilde { opacity: 0; transform: scale(.5) rotate(-20deg); transition: transform calc(280ms * var(--lab-lento)) cubic-bezier(.34, 1.56, .64, 1), opacity calc(160ms * var(--lab-lento)) ease-out; }
+.lab-enviar[data-estado='enviado'] .tilde { opacity: 1; transform: none; transition-delay: calc(80ms * var(--lab-lento)); }
+/* El texto que sale se va rápido y el que entra espera: nunca se leen dos encimados. */
+.lab-enviar .texto { opacity: 0; transition: opacity calc(100ms * var(--lab-lento)) ease-out; }
+.lab-enviar[data-estado='reposo'] .texto[data-t='reposo'],
+.lab-enviar[data-estado='enviando'] .texto[data-t='enviando'],
+.lab-enviar[data-estado='enviado'] .texto[data-t='enviado'] {
+  opacity: 1; transition: opacity calc(200ms * var(--lab-lento)) var(--ease-salida) calc(100ms * var(--lab-lento));
+}
+
+/* ---------- 4. Constancia del jugador: pulso lima, «red limpia» y el bloque del día que se llena ---------- */
+.lab-check { position: relative; }
+.lab-check::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--lima); opacity: 0; pointer-events: none; }
+.lab-check[data-pulso='si']::after { animation: lab-pulso calc(460ms * var(--lab-lento)) var(--ease-salida); }
+@keyframes lab-pulso { from { transform: scale(.85); opacity: .9; } to { transform: scale(1.7); } }
+.lab-check .tilde-check { transform: scale(.4); opacity: 0; transition: transform calc(260ms * var(--lab-lento)) cubic-bezier(.34, 1.56, .64, 1), opacity calc(120ms * var(--lab-lento)) ease-out; }
+.lab-check[data-hecho='si'] .tilde-check { transform: none; opacity: 1; }
+.lab-check .relleno-check { transform: scale(.2); opacity: 0; transition: transform calc(240ms * var(--lab-lento)) var(--ease-salida), opacity calc(120ms * var(--lab-lento)) ease-out; }
+.lab-check[data-hecho='si'] .relleno-check { transform: none; opacity: 1; }
+/* Las tres rayitas del swish: salen del centro y se apagan (el «sonido» de la red, visto). */
+.lab-rayas i { position: absolute; left: 50%; top: 50%; width: 2px; height: 9px; margin: -4.5px -1px; border-radius: 1px; background: var(--lima); opacity: 0; }
+.lab-check[data-pulso='si'] .lab-rayas i { animation: lab-raya calc(420ms * var(--lab-lento)) var(--ease-salida); }
+@keyframes lab-raya { from { opacity: 1; transform: rotate(var(--giro)) translateY(-20px) scaleY(.4); } to { transform: rotate(var(--giro)) translateY(-38px) scaleY(1); } }
+.lab-bloque .relleno { transform: scaleY(0); transform-origin: 50% 100%; transition: transform calc(360ms * var(--lab-lento)) var(--ease-salida); }
+.lab-bloque[data-hecho='si'] .relleno { transform: none; }
+.lab-bloque[data-nuevo='si'] .relleno { transition-delay: calc(120ms * var(--lab-lento)); }
+
+/* Reconocimientos: entran una vez, sin brillo ni confeti. */
+.lab-reconoce { animation: lab-reconoce calc(380ms * var(--lab-lento)) var(--ease-salida); }
+@keyframes lab-reconoce { from { opacity: 0; transform: translateY(6px) scale(.98); } }
+.lab-destapa { transform-box: fill-box; transform-origin: 0 50%; animation: lab-destapa calc(620ms * var(--lab-lento)) var(--ease-salida); }
+@keyframes lab-destapa { from { transform: scaleX(0); } }
+
+/* Movimiento reducido: el reset global ya acorta todo; acá se apagan las que, cortadas, dejarían
+   algo a mitad de camino (la pelota del tiro desaparecería). Cada pieza queda en su estado pintado. */
+@media (prefers-reduced-motion: reduce) {
+  .lab-pique *, .lab-tiro *, .lab-imp .doc, .lab-imp .red-imp, .lab-enviar *, .lab-check::after, .lab-rayas i { animation: none !important; }
+}

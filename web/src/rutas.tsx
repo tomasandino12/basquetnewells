@@ -27,6 +27,7 @@ import { MedirSalto } from './pantallas/MedirSalto';
 import { MedirSprint } from './pantallas/MedirSprint';
 import { MedirYoyo } from './pantallas/MedirYoyo';
 import { Piezas } from './pantallas/Piezas';
+import { LaboratorioInteracciones } from './pantallas/LaboratorioInteracciones';
 import { Recursos } from './pantallas/Recursos';
 import { DatosEjemplo, HoyEjemplo, RecursosEjemplo } from './pantallas/HoyEjemplo';
 import { PlantelEjemplo } from './pantallas/PlantelEjemplo';
@@ -147,6 +148,7 @@ export const rutas: RouteObject[] = [
     { path: '/nueva-clave', element: <NuevaClave /> },
     // Pantallas con datos de ejemplo: las enlaza el menú, nunca la app de siempre.
     { path: '/piezas', element: <Piezas /> },
+    { path: '/laboratorio/interacciones', element: <LaboratorioInteracciones /> },
     { path: '/maqueta/plantel', element: <PlantelEjemplo /> },
     { path: '/maqueta/plantel/:jugador', element: <FichaEjemplo /> },
     { path: '/maqueta/hoy', element: <HoyEjemplo /> },

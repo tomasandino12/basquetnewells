@@ -39,6 +39,7 @@ export const ENLACES_DEL_MENU: Enlace[] = [
 /** Pantallas con datos inventados: fuera del menú, en una línea aparte que lo dice. */
 export const EJEMPLOS = [
   { a: '/piezas', nombre: 'Piezas' },
+  { a: '/laboratorio/interacciones', nombre: 'Microinteracciones' },
   { a: '/maqueta/plantel', nombre: 'Maqueta del plantel' },
   { a: '/maqueta/hoy', nombre: 'Maqueta de Hoy' },
   { a: '/maqueta/recursos', nombre: 'Maqueta de Recursos' },
