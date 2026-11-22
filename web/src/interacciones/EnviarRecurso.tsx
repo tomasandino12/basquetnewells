@@ -2,22 +2,72 @@ import { Check, PlayCircle, Send } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Boton } from '../components/ui/button';
 import { Panel } from '../components/ui/card';
+import { cn } from '../lib/cn';
 import { Opciones, useDuracion } from './piezas';
+import './interacciones.css';
 
-type Estado = 'reposo' | 'enviando' | 'enviado';
 const ENVIO_MS = 600;
 
 // La estela: puntos de tiza que quedan atrás del avión, en la diagonal por la que sale (como una flecha de pizarra).
 const ESTELA = Array.from({ length: 4 }, (_, k) => ({ x: 4 + k * 7, y: -(4 + k * 7), retraso: 170 + k * 45 }));
 
+export type EstadoDeEnvio = 'reposo' | 'enviando' | 'enviado';
+
+/**
+ * El botón de enviar con el avión: en reposo se echa para atrás (impulso), al enviar sale disparado con la
+ * estela de tiza y, confirmado, queda en lima con la tilde. Es controlado: el estado lo pone quien envía,
+ * y «enviado» llega sólo con la respuesta, nunca se adivina. Mientras no está en reposo no se puede tocar.
+ */
+export function BotonConAvion({ estado, textos, type = 'button', onClick, className }: {
+  estado: EstadoDeEnvio;
+  textos: Record<EstadoDeEnvio, string>;
+  type?: 'button' | 'submit';
+  onClick?: () => void;
+  className?: string;
+}) {
+  return (
+    <button
+      type={type}
+      data-estado={estado}
+      aria-disabled={estado !== 'reposo' || undefined}
+      onClick={(e) => {
+        if (estado !== 'reposo') return e.preventDefault();
+        onClick?.();
+      }}
+      className={cn(
+        'ix-enviar inline-grid min-h-11 items-center overflow-hidden rounded-btn border border-borde-control bg-negro px-5 font-titulo text-lg font-semibold tracking-[.14em] text-sobre-negro uppercase outline-offset-2 transition-transform duration-[var(--dur-1)] select-none focus-visible:outline-2 focus-visible:outline-tinta active:scale-[.97] aria-disabled:cursor-default',
+        className,
+      )}
+    >
+      <span className="capa-lima" aria-hidden />
+      <span className="flex items-center justify-center gap-2.5">
+        <span className="grid">
+          <span className="texto [grid-area:1/1]" data-t="reposo" aria-hidden={estado !== 'reposo'}>{textos.reposo}</span>
+          <span className="texto [grid-area:1/1]" data-t="enviando" aria-hidden={estado !== 'enviando'}>{textos.enviando}</span>
+          <span className="texto text-sobre-lima [grid-area:1/1]" data-t="enviado" aria-hidden={estado !== 'enviado'}>{textos.enviado}</span>
+        </span>
+        <span aria-hidden className="relative size-5 shrink-0">
+          <Send className="avion absolute inset-0 size-5" strokeWidth={2} />
+          <span className="estela absolute top-1/2 left-1/2">
+            {ESTELA.map((p, k) => (
+              <i key={k} style={{ transform: `translate(${p.x}px, ${p.y}px)`, animationDelay: `calc(${p.retraso}ms * var(--lento, 1))` }} />
+            ))}
+          </span>
+          <Check className="tilde absolute inset-0 size-5 text-sobre-lima" strokeWidth={3} />
+        </span>
+      </span>
+    </button>
+  );
+}
+
+/** El de la sección del laboratorio: simula el envío con un reloj. */
 export function BotonEnviarRecurso({ textoListo }: { textoListo: string }) {
-  const [estado, setEstado] = useState<Estado>('reposo');
+  const [estado, setEstado] = useState<EstadoDeEnvio>('reposo');
   const dur = useDuracion();
   const reloj = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(reloj.current), []);
 
   const enviar = () => {
-    if (estado !== 'reposo') return;
     setEstado('enviando');
     // Acá iría el pedido real; el estado confirmado espera a la respuesta, nunca la adivina.
     reloj.current = setTimeout(() => setEstado('enviado'), dur(ENVIO_MS));
@@ -25,34 +75,7 @@ export function BotonEnviarRecurso({ textoListo }: { textoListo: string }) {
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <button
-        type="button"
-        data-estado={estado}
-        aria-disabled={estado !== 'reposo' || undefined}
-        onClick={enviar}
-        className="ix-enviar inline-grid overflow-hidden min-h-11 min-w-[17.5rem] items-center rounded-btn border border-borde-control bg-negro px-5 font-titulo text-lg font-semibold tracking-[.14em] text-sobre-negro uppercase outline-offset-2 transition-transform duration-[var(--dur-1)] select-none focus-visible:outline-2 focus-visible:outline-tinta active:scale-[.97] aria-disabled:cursor-default"
-      >
-        <span className="capa-lima" aria-hidden />
-        <span className="flex items-center justify-center gap-2.5">
-          <span className="grid">
-            <span className="texto [grid-area:1/1]" data-t="reposo" aria-hidden={estado !== 'reposo'}>Enviar recurso</span>
-            <span className="texto [grid-area:1/1]" data-t="enviando" aria-hidden={estado !== 'enviando'}>Enviando…</span>
-            <span className="texto text-sobre-lima [grid-area:1/1]" data-t="enviado" aria-hidden={estado !== 'enviado'}>{textoListo}</span>
-          </span>
-          <span aria-hidden className="relative size-5 shrink-0">
-            <Send className="avion absolute inset-0 size-5" strokeWidth={2} />
-            <span className="estela absolute top-1/2 left-1/2">
-              {ESTELA.map((p, k) => (
-                <i
-                  key={k}
-                  style={{ transform: `translate(${p.x}px, ${p.y}px)`, animationDelay: `calc(${p.retraso}ms * var(--ix-lento))` }}
-                />
-              ))}
-            </span>
-            <Check className="tilde absolute inset-0 size-5 text-sobre-lima" strokeWidth={3} />
-          </span>
-        </span>
-      </button>
+      <BotonConAvion estado={estado} onClick={enviar} className="min-w-[17.5rem]" textos={{ reposo: 'Enviar recurso', enviando: 'Enviando…', enviado: textoListo }} />
       <p className="sr-only" aria-live="polite">{estado === 'enviado' ? `Recurso enviado: ${textoListo}` : ''}</p>
       {estado === 'enviado' && (
         <Boton tamano="chico" variante="contorno" className="ix-aparece" onClick={() => setEstado('reposo')}>Mandar otro</Boton>

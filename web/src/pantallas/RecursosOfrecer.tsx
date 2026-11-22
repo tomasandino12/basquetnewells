@@ -11,6 +11,8 @@ import { ChipBoton } from '../components/ui/chip';
 import { Hoja } from '../components/ui/sheet';
 import { Confirmar } from '../coord/piezas';
 import { useBorrarRecurso, useGuardarRecurso } from '../datos/consultasRecursos';
+import { BotonConAvion } from '../interacciones/EnviarRecurso';
+import { useDuracion } from '../interacciones/piezas';
 import { mensajeDeGuardado } from '../datos/errores';
 import type { JugadorDelPlantel, RecursoDelClub } from '../datos/repositorio';
 
@@ -20,6 +22,9 @@ import type { JugadorDelPlantel, RecursoDelClub } from '../datos/repositorio';
 const textoDeEnvios = (n: number) => `Enviado a ${n} jugador${n === 1 ? '' : 'es'}`;
 
 type Metadatos = { valor?: { tipo: string | null; frecuenciaSemanal: number | null; minutos: number | null }; error?: string };
+
+/** Lo que se ve el botón en «Enviado» antes de que se cierre la hoja. */
+const ENVIADO_VISIBLE_MS = 700;
 
 /**
  * La hoja de «Ofrecer un recurso» (sin `recurso`) o «Enviar a los que faltan» (con `recurso`: sólo se elige a
@@ -88,6 +93,8 @@ function FormularioDeEnvio({ clubId, categoria, jugadores, recurso, yaLoTienen, 
   const [minutos, setMinutos] = useState('');
   const [elegidos, setElegidos] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [enviado, setEnviado] = useState(false);
+  const dur = useDuracion();
   const idDescripcion = useId();
   const esNuevo = !recurso;
 
@@ -99,7 +106,7 @@ function FormularioDeEnvio({ clubId, categoria, jugadores, recurso, yaLoTienen, 
     });
 
   const enviar = async () => {
-    if (guardar.isPending) return;
+    if (guardar.isPending || enviado) return;
     const link = enlace.trim();
     const metadatos: Metadatos = esNuevo
       ? (validarMetadatos({ tipo: tipo ?? undefined, frecuenciaSemanal: frecuencia, minutos }) as Metadatos)
@@ -125,7 +132,9 @@ function FormularioDeEnvio({ clubId, categoria, jugadores, recurso, yaLoTienen, 
     } catch (e) {
       return setError(mensajeDeGuardado(e, 'No se pudo registrar el envío.'));
     }
-    alTerminar(textoDeEnvios(elegidos.size));
+    // El avión despega y el botón queda en «Enviado» un momento: recién ahí se cierra la hoja.
+    setEnviado(true);
+    setTimeout(() => alTerminar(textoDeEnvios(elegidos.size)), dur(ENVIADO_VISIBLE_MS));
   };
 
   return (
@@ -190,9 +199,12 @@ function FormularioDeEnvio({ clubId, categoria, jugadores, recurso, yaLoTienen, 
         </ul>
       </fieldset>
       {error && <Aviso tono="error" titulo={error} />}
-      <Boton type="submit" disabled={guardar.isPending}>
-        {guardar.isPending ? 'Registrando…' : 'Registrar el envío'}
-      </Boton>
+      <BotonConAvion
+        type="submit"
+        estado={enviado ? 'enviado' : guardar.isPending ? 'enviando' : 'reposo'}
+        textos={{ reposo: 'Registrar el envío', enviando: 'Registrando…', enviado: 'Enviado' }}
+        className="self-start"
+      />
     </form>
   );
 }
