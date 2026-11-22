@@ -32,40 +32,44 @@ export function Portada({ alCrear, alEntrar }: { alCrear: () => void; alEntrar: 
   return (
     <div className="portada flex flex-col gap-10 pb-10 lg:pb-16">
       {/* La primera pantalla es una sola composición: ocupa todo el alto y el resto de la portada empieza recién al bajar. */}
-      <section className="relative flex min-h-svh flex-col items-center justify-center gap-6 py-10 text-center" aria-label="Qué es Inferiores">
-        {/* El nombre del club está escrito como texto: el anillo es decorativo. Cada letra va en su casillero de la circunferencia
-            (490 / letras): con textLength el último punto quedaba pegado a «BÁSQUET», porque la costura no lleva espacio extra.
-            El tamaño sigue al alto de la ventana: en una pantalla baja el escudo se achica en vez de empujar el texto fuera. */}
-        <div className="relative size-[min(13rem,30svh)] shrink-0 md:size-[min(18rem,36svh)]">
-          <svg ref={anillo} viewBox="0 0 200 200" aria-hidden focusable="false" className="anillo absolute inset-0 size-full">
-            <defs>
-              <path id="circulo-anillo" d="M100,22 a78,78 0 1,1 0,156 a78,78 0 1,1 0,-156" />
-            </defs>
-            <text fontSize="15" textAnchor="middle" className="fill-current font-titulo font-semibold opacity-70">
-              {LETRAS_DEL_ANILLO.map((letra, i) => (
-                <textPath key={i} href="#circulo-anillo" startOffset={((i + 0.5) * CIRCUNFERENCIA_ANILLO) / LETRAS_DEL_ANILLO.length}>
-                  {letra}
-                </textPath>
-              ))}
-            </text>
-          </svg>
-          <img src={escudo} alt="" width={96} height={96} className="absolute inset-[26%] size-[48%] object-contain" />
-        </div>
-        <div className="max-w-3xl">
-          <p className="font-mono text-xs tracking-widest text-sobre-negro uppercase opacity-70">Inferiores · Newell&apos;s Old Boys</p>
-          <h1 className="mt-3 font-titulo text-5xl leading-none font-bold uppercase md:text-7xl">
-            Lo que se trabaja en inferiores, <span className="text-club">queda</span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg opacity-80 md:text-xl">
-            Partidos, mediciones y ejercicios de las formativas en un solo lugar, que sigue estando cuando cambia el cuerpo técnico.
-          </p>
-        </div>
-        <div className="flex flex-wrap justify-center gap-3">
-          <Boton variante="club" onClick={alCrear}>Crear cuenta</Boton>
-          <Boton variante="contorno" className="border-sobre-negro/40 text-sobre-negro" onClick={alEntrar}>Ya tengo cuenta</Boton>
+      <section className="flex min-h-svh flex-col items-center gap-6 pt-10 pb-2 text-center" aria-label="Qué es Inferiores">
+        {/* El contenido se centra en lo que queda libre y el aviso de «Qué hace» va debajo, en el flujo: cuando la pantalla es baja
+            y los botones bajan a dos renglones, el aviso se corre con ellos en vez de quedar encima (era absolute, abajo de todo). */}
+        <div className="flex w-full flex-1 flex-col items-center justify-center gap-6">
+          {/* El nombre del club está escrito como texto: el anillo es decorativo. Cada letra va en su casillero de la circunferencia
+              (490 / letras): con textLength el último punto quedaba pegado a «BÁSQUET», porque la costura no lleva espacio extra.
+              El tamaño sigue al alto de la ventana: en una pantalla baja el escudo se achica en vez de empujar el texto fuera. */}
+          <div className="relative size-[min(13rem,30svh)] shrink-0 md:size-[min(18rem,36svh)]">
+            <svg ref={anillo} viewBox="0 0 200 200" aria-hidden focusable="false" className="anillo absolute inset-0 size-full">
+              <defs>
+                <path id="circulo-anillo" d="M100,22 a78,78 0 1,1 0,156 a78,78 0 1,1 0,-156" />
+              </defs>
+              <text fontSize="15" textAnchor="middle" className="fill-current font-titulo font-semibold opacity-70">
+                {LETRAS_DEL_ANILLO.map((letra, i) => (
+                  <textPath key={i} href="#circulo-anillo" startOffset={((i + 0.5) * CIRCUNFERENCIA_ANILLO) / LETRAS_DEL_ANILLO.length}>
+                    {letra}
+                  </textPath>
+                ))}
+              </text>
+            </svg>
+            <img src={escudo} alt="" width={96} height={96} className="absolute inset-[26%] size-[48%] object-contain" />
+          </div>
+          <div className="max-w-3xl">
+            <p className="font-mono text-xs tracking-widest text-sobre-negro uppercase opacity-70">Inferiores · Newell&apos;s Old Boys</p>
+            <h1 className="mt-3 font-titulo text-5xl leading-none font-bold uppercase md:text-7xl">
+              Lo que se trabaja en inferiores, <span className="text-club">queda</span>
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-lg opacity-80 md:text-xl">
+              Partidos, mediciones y ejercicios de las formativas en un solo lugar, que sigue estando cuando cambia el cuerpo técnico.
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Boton variante="club" onClick={alCrear}>Crear cuenta</Boton>
+            <Boton variante="contorno" className="border-sobre-negro/40 text-sobre-negro" onClick={alEntrar}>Ya tengo cuenta</Boton>
+          </div>
         </div>
         {/* Avisa que hay más abajo, así lo que asoma no parece cortado. */}
-        <a href="#que-hace" className="absolute bottom-4 flex flex-col items-center gap-0.5 text-xs tracking-widest uppercase opacity-70 hover:opacity-100">
+        <a href="#que-hace" className="flex min-h-11 flex-col items-center justify-center gap-0.5 px-4 text-xs tracking-widest uppercase opacity-70 hover:opacity-100">
           Qué hace
           <ChevronDown aria-hidden className="size-5 motion-safe:animate-bounce" />
         </a>
