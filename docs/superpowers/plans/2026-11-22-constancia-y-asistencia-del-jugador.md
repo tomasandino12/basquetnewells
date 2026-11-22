@@ -14,7 +14,7 @@ Spec: `docs/superpowers/specs/2026-11-22-constancia-y-asistencia-del-jugador-des
 | 4 | Repos y consultas de `web/` | hecha |
 | 5 | Pantalla Inicio del jugador | hecha (ojo: `mis_recursos()` no devuelve `tipo` ni `frecuencia_semanal`; ver nota en el commit) |
 | 6 | Conteo de prácticas en la pantalla del profe | hecha |
-| 7 | Privacidad, `VERSION_LEGAL` y PRD | pendiente |
+| 7 | Privacidad, `VERSION_LEGAL` y PRD | hecha |
 | 8 | Backup, `db push` y verificación SQL (Tomás) | pendiente |
 
 ## Task 1 — Refactor: las rachas salen del laboratorio

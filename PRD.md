@@ -59,7 +59,8 @@ Escala prevista: unos 100–120 chicos y sus profes. **Hay datos de menores**: l
 | Nombre, fecha de nacimiento, categoría | Semillero (Supabase, São Paulo) | Profes de su categoría; el propio jugador; coordinación sólo en agregado. |
 | Mail del adulto responsable | Semillero | Profes de su categoría. |
 | Teléfonos, contacto de urgencia, alertas médicas, alergias, medicación, obra social | Semillero, **sólo si la familia tildó "Emergencias en Semillero"** | Profes de su categoría (ven, importan, corrigen) y coordinación (sólo lectura). No se guarda en el celular. Se borra si el chico deja el club. |
-| Asistencia y lesiones | Semillero | Profes de su categoría. Coordinación: sólo % general por categoría. |
+| Asistencia y lesiones | Semillero | Profes de su categoría. Coordinación: sólo % general por categoría. El jugador, la suya (vino / faltó / sin tomar), sin motivo ni lesión. |
+| Práctica de recursos: el día y el recurso que el jugador marca como practicado (sin cuánto ni cómo) | Semillero | El propio jugador. El profe, sólo cuántos del plantel practicaron cada recurso, nunca quiénes, y nada con menos de 3 cuentas. Coordinación y familias, nada. Se borra si el chico deja el club o se cierra su cuenta. |
 | Estadísticas de partidos, mediciones, plan físico, misiones | Semillero | Profes de su categoría y el propio jugador (lo suyo). |
 | Estado de papeles y pagos (✅ 📎 ❌) | Semillero | Sólo coordinación. |
 
