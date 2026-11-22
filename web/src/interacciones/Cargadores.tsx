@@ -4,6 +4,7 @@ import { Panel } from '../components/ui/card';
 import { cn } from '../lib/cn';
 import { FRASES_DE_CARGA, siguienteFrase } from './logica';
 import { ESTILOS_DE_PELOTA, Opciones, Pelota, caminoDeRed, useDuracion, type EstiloDePelota } from './piezas';
+import './interacciones.css';
 
 const PERIODO = { pique: 640, tiro: 700 } as const;
 type Mecanica = keyof typeof PERIODO;
@@ -49,6 +50,32 @@ export function TiroLimpio({ estilo, vueltas, corre }: { estilo: EstiloDePelota;
       <path className="red" d={caminoDeRed(118, 46, 36, 20, 26)} fill="none" stroke={red} strokeWidth="1.2" strokeLinecap="round" opacity=".8" />
       <path d="M100 46A18 4 0 0 0 136 46" fill="none" stroke={aro} strokeWidth="2.5" />
     </svg>
+  );
+}
+
+/**
+ * Lo que se suma a una carga que tarda: la pelota que pica (unas 6 s y queda quieta) y las frases, que
+ * pasan una vez y se quedan en la última. Es decorado: el lector de pantalla ya oyó «Cargando…».
+ */
+export function CargaLarga() {
+  const [i, setI] = useState(0);
+  const dur = useDuracion();
+  const cada = dur(1800);
+  useEffect(() => {
+    if (i >= FRASES_DE_CARGA.length - 1) return;
+    const t = setTimeout(() => setI(i + 1), cada);
+    return () => clearTimeout(t);
+  }, [i, cada]);
+  return (
+    <div aria-hidden className="ix-aparece flex items-end justify-center gap-3 py-2">
+      {/* La pelota a 60 %: el pique mide 48 × 108 y acá alcanza con un toque. */}
+      <div className="h-16 w-7 shrink-0">
+        <div className="origin-top-left scale-[.6]">
+          <Pique estilo="clasica" vueltas={Math.ceil(CARGA_LARGA_MS / PERIODO.pique)} corre />
+        </div>
+      </div>
+      <span key={i} className="ix-aparece pb-2 text-sm text-gris">{FRASES_DE_CARGA[i]}</span>
+    </div>
   );
 }
 
