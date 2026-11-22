@@ -1,12 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { FUNCIONES_OTORGADAS, LECTURA_DEL_JUGADOR } from '../src/data/accesoJugador.js';
+import { ESCRITURA_DEL_JUGADOR, FUNCIONES_OTORGADAS, LECTURA_DEL_JUGADOR } from '../src/data/accesoJugador.js';
 
 /**
  * La frontera de datos del jugador (spec 2026-09-20, sección 3): no lee ninguna
- * tabla de dominio, sólo ejecuta funciones. Este test lee las migraciones 0029
- * y 0030 y falla si alguien otorga algo que no está declarado en
+ * tabla de dominio, sólo ejecuta funciones. Este test lee las migraciones 0029,
+ * 0030 y 0068 (constancia: prácticas y asistencia propia) y falla si alguien otorga algo que no está declarado en
  * src/data/accesoJugador.js (o declara algo que nadie otorga), o si la lectura
  * del jugador deja de pasar por mi_jugador().
  *
@@ -16,6 +16,7 @@ import { FUNCIONES_OTORGADAS, LECTURA_DEL_JUGADOR } from '../src/data/accesoJuga
 const leer = (ruta) => readFileSync(ruta, 'utf8').replace(/\r\n/g, '\n');
 const sql0029 = leer('supabase/migrations/0029_cuenta_jugador.sql');
 const sql0030 = leer('supabase/migrations/0030_lectura_jugador.sql');
+const sql0068 = leer('supabase/migrations/0068_constancia_jugador.sql');
 
 /** Sin los comentarios de línea: un `grant` dentro de un comentario no otorga nada. */
 const sinComentarios = (sql) => sql.replace(/--.*$/gm, '');
@@ -38,14 +39,28 @@ function cuerpoDe(sql, nombre) {
 
 const ordenados = (xs) => [...xs].sort();
 
-test('los grant execute de 0029 y 0030 son exactamente los declarados', () => {
-  const otorgadas = [...funcionesOtorgadas(sql0029), ...funcionesOtorgadas(sql0030)];
-  assert.deepEqual(ordenados(otorgadas), ordenados(FUNCIONES_OTORGADAS));
+/** Dónde buscar cada función de lectura: viven en 0030 y en 0068. */
+const sqlDeLectura = `${sql0030}\n${sql0068}`;
+
+const todasLasOtorgadas = () => [
+  ...funcionesOtorgadas(sql0029),
+  ...funcionesOtorgadas(sql0030),
+  ...funcionesOtorgadas(sql0068),
+];
+
+test('los grant execute de 0029, 0030 y 0068 son exactamente los declarados', () => {
+  assert.deepEqual(ordenados(todasLasOtorgadas()), ordenados(FUNCIONES_OTORGADAS));
 });
 
 test('ninguna función se otorga dos veces', () => {
-  const otorgadas = [...funcionesOtorgadas(sql0029), ...funcionesOtorgadas(sql0030)];
+  const otorgadas = todasLasOtorgadas();
   assert.equal(new Set(otorgadas).size, otorgadas.length);
+});
+
+test('0068 no otorga ningún permiso sobre tablas ni crea policies', () => {
+  const sql = sinComentarios(sql0068);
+  assert.doesNotMatch(sql, /grant\s+(select|insert|update|delete|all|truncate)\b/i);
+  assert.doesNotMatch(sql, /create\s+policy/i);
 });
 
 test('0030 no otorga ningún permiso sobre tablas ni crea policies', () => {
@@ -60,9 +75,9 @@ test('mi_jugador() no se otorga a nadie', () => {
   assert.match(sinComentarios(sql0030), /revoke\s+execute\s+on\s+function\s+mi_jugador\(\)\s+from\s+public,\s*anon,\s*authenticated/i);
 });
 
-for (const nombre of LECTURA_DEL_JUGADOR) {
+for (const nombre of [...LECTURA_DEL_JUGADOR, ...ESCRITURA_DEL_JUGADOR]) {
   test(`${nombre}() corre como dueño, con search_path vacío, y arranca por mi_jugador()`, () => {
-    const cuerpo = cuerpoDe(sql0030, nombre);
+    const cuerpo = cuerpoDe(sqlDeLectura, nombre);
     assert.match(cuerpo, /security definer/);
     assert.match(cuerpo, /set search_path = ''/);
     assert.match(cuerpo, /v_jugador uuid := public\.mi_jugador\(\)/);
@@ -71,7 +86,7 @@ for (const nombre of LECTURA_DEL_JUGADOR) {
 }
 
 test('la lectura del jugador no toca las medidas corporales ni de otros chicos', () => {
-  const lectura = LECTURA_DEL_JUGADOR.map((n) => cuerpoDe(sql0030, n)).join('\n');
+  const lectura = LECTURA_DEL_JUGADOR.map((n) => cuerpoDe(sqlDeLectura, n)).join('\n');
   assert.doesNotMatch(lectura, /medicion_corporal/);
   // Todo lo que sale de una tabla con jugador_id se filtra por el propio.
   assert.doesNotMatch(lectura, /jugador_id\s*(<>|!=|in\s*\()/i);
