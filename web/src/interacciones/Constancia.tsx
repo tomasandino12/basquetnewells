@@ -185,7 +185,7 @@ function AsistenciaContinuada({ presencias }: { presencias: (boolean | null)[] }
             {racha === 0
               ? 'El próximo entrenamiento arranca una racha nueva.'
               : faltan > 0
-                ? `Llevás ${racha} seguidos: ${faltan === 1 ? 'uno más' : `${faltan} más`} y igualás tu mejor racha (${mejor}).`
+                ? `Llevás ${racha} ${racha === 1 ? "seguido" : "seguidos"}: ${faltan === 1 ? 'uno más' : `${faltan} más`} y igualás tu mejor racha (${mejor}).`
                 : `Llevás ${racha} seguidos: es tu mejor racha.`}
           </p>
         </div>
