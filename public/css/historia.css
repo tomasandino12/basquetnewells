@@ -213,6 +213,16 @@
 .sello-sedes li + li{margin-top:.125rem}
 
 .capa-texto{position:relative;padding:var(--sp-5);transform:translate3d(calc(var(--mx,0) * 6px),calc(var(--my,0) * 4px),0)}
+/* En el celular la tarjeta es angosta y alta: con la foto de fondo sólo se veía el techo, y el
+   parquet (lo que importa) quedaba debajo del texto. Ahí la foto va arriba, apaisada y fundida
+   hacia abajo, y el texto debajo. */
+@media (max-width:39.99rem){
+  .cubierto-capas{display:block;min-height:0}
+  .capa-foto{position:relative;inset:auto;display:block;width:100%;height:auto;aspect-ratio:4/3;object-position:38% 70%;
+    -webkit-mask-image:linear-gradient(to bottom,#000 62%,transparent);mask-image:linear-gradient(to bottom,#000 62%,transparent)}
+  .capa-vineta{display:none}
+  .capa-texto{margin-top:calc(var(--sp-6) * -1)}
+}
 /* El viñeteado que acompaña al texto: empieza unos renglones antes de su primera línea, así que se adapta al largo
    (en el celular el texto ocupa más foto que en escritorio). */
 .capa-texto::before{content:"";position:absolute;z-index:-1;inset:-4.5rem -.75rem -.75rem;
