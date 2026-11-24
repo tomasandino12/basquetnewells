@@ -214,6 +214,12 @@
   --paso-entrada:90ms;    /* portal: escalón entre elementos del hero */
   --retardo-entrada:150ms;/* portal: espera antes del primer elemento */
   --i:0;                  /* portal: lugar en la entrada escalonada; el HTML lo pisa con style="--i:2" */
+  /* portal: confeti. celebracion.js fija estos cinco en cada pieza; acá, los de respaldo. */
+  --cf-dx:0px;            /* cuánto se va de costado */
+  --cf-caida:200px;       /* dónde termina, hacia abajo, desde el origen */
+  --cf-giro:360deg;
+  --cf-tam:8px;
+  --cf-demora:0ms;
   --ease-salida:cubic-bezier(.16,1,.3,1);   /* frena al llegar: entra */
   --ease-entrada:cubic-bezier(.3,0,.8,.15); /* acelera al irse: sale */
 

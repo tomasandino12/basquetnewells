@@ -739,12 +739,13 @@ test('htmlRecaudacion: título leproso, los ejemplos con ícono, el botón dorad
   assert.match(abierta, /<p>Dejanos tu mail y te avisamos cuando haya un evento de recaudación\.<\/p>/);
   assert.doesNotMatch(abierta, /Nada más|pizza/i, 'sin el "Nada más" ni ejemplos tan específicos');
   assert.match(abierta, /<ul class="portal-rec-ej" aria-label="Por ejemplo">\s*<li><i><svg[\s\S]*?<\/i>Rifas<\/li><li><i><svg[\s\S]*?<\/i>Comidas<\/li>\s*<\/ul>/);
-  assert.match(abierta, /<a class="portal-rec-btn" href="https:\/\/forms\.gle\/Rec1" target="_blank" rel="noopener">Quiero que me avisen/);
+  assert.match(abierta, /<a class="portal-rec-btn" href="https:\/\/forms\.gle\/Rec1" target="_blank" rel="noopener" data-gracias="sumarte">Quiero que me avisen/);
+  assert.match(abierta, /<div class="portal-gracias" data-sello="sumarte" role="status"><\/div>/, 'el lugar del sello, vacío hasta que se vuelve del formulario');
   assert.doesNotMatch(abierta, /<img /, 'sin foto');
   for (const f of [null, MALO]) {
     const cerrada = htmlRecaudacion(f).toString();
     assert.match(cerrada, /<button type="button" class="portal-rec-btn" disabled aria-disabled="true">Se habilita cuando abra el formulario<\/button>/);
-    assert.doesNotMatch(cerrada, /<a |evil/);
+    assert.doesNotMatch(cerrada, /<a |evil|data-gracias|data-sello/, 'cerrada: ni enlace ni lugar para el sello');
   }
 });
 
@@ -756,7 +757,9 @@ test('htmlColaborar: las dos formas (empresa, dar una mano) y el botón; no prom
   assert.match(out, /Quiero dar una mano/);
   assert.match(out, /hacer el pollo/);
   // Botón con borde, no rojo: el rojo es del hero (como los de Sumate en v0).
-  assert.match(out, /<a class="btn sec" href="https:\/\/forms\.gle\/Col1" target="_blank" rel="noopener">Quiero colaborar/);
+  assert.match(out, /<a class="btn sec" href="https:\/\/forms\.gle\/Col1" target="_blank" rel="noopener" data-gracias="colaborar">Quiero colaborar/);
+  assert.match(out, /<div class="portal-gracias" data-sello="colaborar" role="status"><\/div>/);
+  assert.doesNotMatch(htmlColaborar(null).toString(), /data-gracias|data-sello/);
   assert.doesNotMatch(out, /te avisamos/i);
   assert.match(htmlColaborar(null).toString(), /<button type="button" class="btn" disabled aria-disabled="true">Se habilita cuando abra el formulario<\/button>/);
   // Sin foto: el afiche de sponsors se sacó de esta sección.

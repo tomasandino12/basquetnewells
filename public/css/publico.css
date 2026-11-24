@@ -407,6 +407,31 @@
 .portal-formas b{display:block;font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:var(--fs-200);line-height:1.1;color:var(--sobre-oscuro);margin-bottom:var(--sp-1)}
 .portal-colaborar .btn{text-decoration:none}
 
+/* El gracias al volver del formulario de Recaudación o Colaborar: el escudo del
+   club (tal cual, sin variantes) se estampa con el texto, y sale el confeti
+   (celebracion.js). Sin movimiento, base.css apaga las animaciones y queda el
+   sello quieto. Vacío no ocupa lugar. */
+.portal-gracias{display:flex;align-items:center;gap:var(--sp-3);margin-top:var(--sp-4)}
+.portal-gracias:empty{display:none}
+.portal-gracias img{width:4.5rem;height:4.5rem;object-fit:contain;transform:rotate(-8deg);animation:sello 520ms cubic-bezier(.2,1.4,.4,1) both}
+.portal-gracias b{font-family:var(--ff-titulo);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:var(--fs-200);line-height:1.1;color:var(--sobre-oscuro);animation:aparecer 520ms 180ms var(--ease-salida) both}
+/* Cae desde grande y torcido; la curva se pasa de 1 y vuelve: el golpe del sello. */
+@keyframes sello{from{transform:rotate(-24deg) scale(2.4);opacity:0}}
+/* Cada pieza son dos capas, porque un keyframe sólo tiene "from" (el estado
+   final es el normal y con movimiento reducido no se ve nada): la de afuera
+   la lleva de costado y la de adentro hace el arco (la curva con valor negativo
+   la manda primero hacia arriba), gira y se desvanece. */
+.confeti{position:fixed;width:0;height:0;z-index:60;pointer-events:none}
+.confeti i{position:absolute;left:0;top:0;transform:translateX(var(--cf-dx));animation:confeti-x 1.3s var(--cf-demora) cubic-bezier(.2,.7,.4,1) forwards}
+.confeti b{display:block;width:var(--cf-tam);height:calc(var(--cf-tam) * .55);opacity:0;transform:translateY(var(--cf-caida)) rotate(var(--cf-giro));animation:confeti-y 1.3s var(--cf-demora) cubic-bezier(.3,-1.5,.6,1) forwards,confeti-apaga 1.3s var(--cf-demora) ease-in forwards}
+.confeti .c0 b{background:var(--club)}
+.confeti .c1 b{background:color-mix(in srgb,var(--club) 55%,var(--negro))}
+.confeti .c2 b{background:var(--sobre-oscuro)}
+.confeti .c3 b{background:var(--negro);box-shadow:0 0 0 1px var(--gris)}
+@keyframes confeti-x{from{transform:translateX(0)}}
+@keyframes confeti-y{from{transform:translateY(0) rotate(0)}}
+@keyframes confeti-apaga{from{opacity:1}}
+
 /* La hoja de Ayuda (<dialog>): en el celular sube desde abajo y ocupa el
    ancho; en compu es un diálogo centrado (layout.css). El fondo de afuera es
    el propio <dialog>: tocarlo la cierra. */

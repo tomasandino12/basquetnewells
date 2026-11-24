@@ -15,6 +15,7 @@ import {
 } from '../data/agenda.js';
 import { destinoDeAuth } from '../data/entradaAuth.js';
 import { revelar } from './animaciones.js';
+import { iniciarGracias } from './celebracion.js';
 
 /*
  * Portal "Básquet Newell's": la página pública que se reparte a las familias
@@ -64,7 +65,10 @@ const ICONO_TIPO = {
   entrenamiento: html`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="7"/><path d="M12 9v4l2.5 2M9.5 3h5"/></svg>`,
 };
 
-const botonExterno = (url, texto, clase = 'btn') => html`<a class="${clase}" href="${url}" target="_blank" rel="noopener">${texto} <span aria-hidden="true">${ABRE}</span></a>`;
+// `gracias`: la clave del agradecimiento (ver celebracion.js); sólo los botones que abren un formulario.
+const botonExterno = (url, texto, clase = 'btn', gracias = null) => html`<a class="${clase}" href="${url}" target="_blank" rel="noopener"${gracias && html` data-gracias="${gracias}"`}>${texto} <span aria-hidden="true">${ABRE}</span></a>`;
+// Donde se estampa el escudo al volver del formulario; role=status para que se anuncie.
+const lugarDelSello = (clave) => html`<div class="portal-gracias" data-sello="${clave}" role="status"></div>`;
 
 /**
  * El botón de algo cuyo formulario todavía no está activo: se ve, pero no se
@@ -185,7 +189,8 @@ export function htmlRecaudacion(formulario) {
       </ul>
     </div>
     <div class="portal-rec-accion">
-      ${url ? botonExterno(url, 'Quiero que me avisen', 'portal-rec-btn') : botonCerrado('Se habilita cuando abra el formulario', 'portal-rec-btn')}
+      ${url ? botonExterno(url, 'Quiero que me avisen', 'portal-rec-btn', 'sumarte') : botonCerrado('Se habilita cuando abra el formulario', 'portal-rec-btn')}
+      ${url && lugarDelSello('sumarte')}
     </div>`;
 }
 
@@ -203,7 +208,8 @@ export function htmlColaborar(formulario) {
         <li><i>${ICONO.empresa}</i><span><b>Tengo una empresa o un comercio</b>Poné tu marca en la camiseta y acompañá a las formativas.</span></li>
         <li><i>${ICONO.mano}</i><span><b>Quiero dar una mano</b>En los eventos del club: hacer el pollo, armar, servir, ayudar a organizar.</span></li>
       </ul>
-      ${url ? botonExterno(url, 'Quiero colaborar', 'btn sec') : botonCerrado('Se habilita cuando abra el formulario')}
+      ${url ? botonExterno(url, 'Quiero colaborar', 'btn sec', 'colaborar') : botonCerrado('Se habilita cuando abra el formulario')}
+      ${url && lugarDelSello('colaborar')}
     </div>`;
 }
 
@@ -796,6 +802,8 @@ export async function iniciarPortal() {
   mostrar('sponsors', htmlLogos(PORTAL.sponsors), 'portal-logos');
   mostrar('portal-firma', htmlFirma(PORTAL.creador), 'portal-firma');
 
+  const gracias = iniciarGracias();
+
   // Hasta que responda la base, todo cerrado: nunca un botón a un formulario que quizá ya no está.
   const pintarFormularios = ({ inscripcion = null, comprobante = null, consultas = null, colaboradores = null, recaudacion = null } = {}, cargando = false) => {
     const abierto = (f) => Boolean(f && enlaceFormulario(f.enlace));
@@ -805,6 +813,7 @@ export async function iniciarPortal() {
     $('portal-pago-cuerpo').innerHTML = htmlPago({ alias: PORTAL.alias, comprobante });
     $('portal-recaudacion').innerHTML = htmlRecaudacion(recaudacion);
     $('portal-colaborar').innerHTML = htmlColaborar(colaboradores);
+    gracias.restaurar();
     $('portal-ayuda-lista').innerHTML = htmlAyuda({
       inscripcionAbierta: abierto(inscripcion), consultasAbierto: abierto(consultas),
       temporada: PORTAL.temporada, apertura, alias: PORTAL.alias, sede: PORTAL.sede, contacto: PORTAL.contacto,
