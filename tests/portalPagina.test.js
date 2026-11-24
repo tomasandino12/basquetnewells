@@ -733,10 +733,12 @@ test('el portal aparta los formularios con lugar propio: no aparecen dos veces',
 
 // ---- Recaudación: franja dorada con su propio formulario (destino recaudacion, 0063) ----
 
-test('htmlRecaudacion: grande "Enterate…", los ejemplos con ícono, el botón dorado, y sin formulario el botón apagado', () => {
+test('htmlRecaudacion: título leproso, los ejemplos con ícono, el botón dorado, y sin formulario el botón apagado', () => {
   const abierta = htmlRecaudacion(FORM('x', 'https://forms.gle/Rec1')).toString();
-  assert.match(abierta, /<h2 id="t-recaudacion">Enterate de los eventos de recaudación<\/h2>/);
-  assert.match(abierta, /<ul class="portal-rec-ej" aria-label="Por ejemplo">\s*<li><i><svg[\s\S]*?<\/i>Noches de pizza<\/li><li><i><svg[\s\S]*?<\/i>Rifas<\/li><li><i><svg[\s\S]*?<\/i>Comidas<\/li>/);
+  assert.match(abierta, /<h2 id="t-recaudacion">Sumate a la lista del básquet leproso<\/h2>/);
+  assert.match(abierta, /<p>Dejanos tu mail y te avisamos cuando haya un evento de recaudación\.<\/p>/);
+  assert.doesNotMatch(abierta, /Nada más|pizza/i, 'sin el "Nada más" ni ejemplos tan específicos');
+  assert.match(abierta, /<ul class="portal-rec-ej" aria-label="Por ejemplo">\s*<li><i><svg[\s\S]*?<\/i>Rifas<\/li><li><i><svg[\s\S]*?<\/i>Comidas<\/li>\s*<\/ul>/);
   assert.match(abierta, /<a class="portal-rec-btn" href="https:\/\/forms\.gle\/Rec1" target="_blank" rel="noopener">Quiero que me avisen/);
   assert.doesNotMatch(abierta, /<img /, 'sin foto');
   for (const f of [null, MALO]) {
@@ -757,8 +759,8 @@ test('htmlColaborar: las dos formas (empresa, dar una mano) y el botón; no prom
   assert.match(out, /<a class="btn sec" href="https:\/\/forms\.gle\/Col1" target="_blank" rel="noopener">Quiero colaborar/);
   assert.doesNotMatch(out, /te avisamos/i);
   assert.match(htmlColaborar(null).toString(), /<button type="button" class="btn" disabled aria-disabled="true">Se habilita cuando abra el formulario<\/button>/);
-  // El afiche de sponsors del club: su texto (con el teléfono) va en el alt.
-  assert.match(out, /<img class="portal-afiche" src="\/public\/img\/fotos\/sponsor-camisetas-640\.webp"[^>]*width="640" height="853" alt="Afiche del club: [^"]*Sumá tu empresa como sponsor: 341 370-9161" loading="lazy">/);
+  // Sin foto: el afiche de sponsors se sacó de esta sección.
+  assert.doesNotMatch(out, /<img /);
 });
 
 // ---- Preguntas frecuentes ----

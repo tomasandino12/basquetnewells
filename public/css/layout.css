@@ -439,8 +439,6 @@
   .publico .portal-heroe{padding-inline:var(--sp-6)}
   /* Recaudación: el texto a la izquierda y el botón a la derecha. */
   .publico .portal-rec-cuerpo{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);align-items:center;gap:var(--sp-8);padding:3.5rem var(--sp-6)}
-  /* Sumate: las formas y el botón a la izquierda, el afiche a la derecha. */
-  .publico .portal-colaborar-cuerpo{grid-template-columns:minmax(0,1fr) minmax(12rem,17rem);align-items:start}
   /* La categoría: el año a la izquierda y el resultado al lado, ocupando todo el ancho. */
   .publico .portal-buscador{grid-template-columns:minmax(0,22rem) 1fr;align-items:stretch;gap:var(--sp-4)}
   /* Lo que viene: la foto a la izquierda y los datos a la derecha. */

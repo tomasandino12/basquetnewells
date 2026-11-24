@@ -395,13 +395,11 @@
 .portal-rec-btn:active{transform:scale(.97)}
 .portal-rec-btn:disabled{background:transparent;color:var(--sobre-oscuro);border:1px dashed var(--dorado);font-size:var(--fs-145);letter-spacing:.04em;cursor:not-allowed;transform:none}
 
-/* "Sumate al básquet de Newell's": las dos formas de colaborar y un botón y,
-   al lado (abajo en el celular), el afiche de sponsors del club. Sin fotos de
+/* "Sumate al básquet de Newell's": las dos formas de colaborar y un botón. Sin fotos de
    fondo: el afiche ya es la imagen de la sección. */
 .portal-colaborar .portal-st{color:var(--dorado)}
 .portal-colaborar h2{font-size:clamp(2rem,1.6rem + 2vw,2.75rem);line-height:.95;margin-bottom:var(--sp-4)}
 .portal-colaborar-cuerpo{display:grid;gap:var(--sp-6)}
-.portal-afiche{display:block;justify-self:center;width:min(100%,18rem);height:auto;border:1px solid var(--pub-borde);border-radius:var(--r)}
 .portal-formas{list-style:none;margin:0 0 var(--sp-4);padding:0;display:grid;gap:var(--sp-3)}
 .portal-formas li{display:grid;grid-template-columns:2.75rem 1fr;gap:var(--sp-3);align-items:start;padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);color:var(--sobre-oscuro);font-size:var(--fs-145);line-height:1.45}
 .portal-formas i{display:grid;place-items:center;width:2.75rem;height:2.75rem;border-radius:50%;background:var(--pub-fondo);color:var(--primario)}

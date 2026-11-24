@@ -49,7 +49,6 @@ const ICONO = {
   billetera: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><path d="M4 7.5V17a2 2 0 0 0 2 2h13a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H6.5A2.5 2.5 0 0 1 4 7.5z"/><circle cx="16" cy="13.5" r="1"/></svg>`,
   mano: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V12M16 9.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L4.3 14a1.5 1.5 0 0 1 2.4-1.8L8 14"/></svg>`,
   tilde: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`,
-  pizza: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21L3.5 6.5a14 14 0 0 1 17 0z"/><path d="M5.6 10a10 10 0 0 1 12.8 0"/><circle cx="10" cy="12.5" r="1"/><circle cx="13.5" cy="15" r="1"/></svg>`,
   rifa: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8a2 2 0 0 0 0 4v0a2 2 0 0 0 0 4v2h18v-2a2 2 0 0 1 0-4 2 2 0 0 1 0-4V6H3z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>`,
   comida: html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 21V3c-2 1.5-3 4-3 7h3"/></svg>`,
 };
@@ -179,10 +178,10 @@ export function htmlRecaudacion(formulario) {
   const url = formulario ? enlaceFormulario(formulario.enlace) : null;
   return html`<div class="portal-rec-txt">
       <div class="portal-st">Recaudación</div>
-      <h2 id="t-recaudacion">Enterate de los eventos de recaudación</h2>
-      <p>Dejanos tu mail y te avisamos cuando haya uno. Nada más.</p>
+      <h2 id="t-recaudacion">Sumate a la lista del básquet leproso</h2>
+      <p>Dejanos tu mail y te avisamos cuando haya un evento de recaudación.</p>
       <ul class="portal-rec-ej" aria-label="Por ejemplo">
-        <li><i>${ICONO.pizza}</i>Noches de pizza</li><li><i>${ICONO.rifa}</i>Rifas</li><li><i>${ICONO.comida}</i>Comidas</li>
+        <li><i>${ICONO.rifa}</i>Rifas</li><li><i>${ICONO.comida}</i>Comidas</li>
       </ul>
     </div>
     <div class="portal-rec-accion">
@@ -194,20 +193,18 @@ export function htmlRecaudacion(formulario) {
  * "Sumate al básquet de Newell's": el formulario con destino colaboradores
  * (0061). Es para dos cosas: una empresa o comercio que quiere asociarse con
  * el básquet, o alguien que quiere dar una mano en los eventos. Lo que deja
- * queda en la planilla de Google de "Quiero colaborar", no en Semillero. Al
- * lado, el afiche que el club usa para buscar sponsors (el texto, en el alt).
+ * queda en la planilla de Google de "Quiero colaborar", no en Semillero. Sin
+ * foto: el afiche de sponsors que estaba al lado se sacó (quedaba mal espaciado).
  */
 export function htmlColaborar(formulario) {
   const url = formulario ? enlaceFormulario(formulario.enlace) : null;
-  const afiche = fotoDeCategoriaValida(FOTOS.sponsor);
   return html`<div class="portal-colaborar-txt">
       <ul class="portal-formas">
         <li><i>${ICONO.empresa}</i><span><b>Tengo una empresa o un comercio</b>Poné tu marca en la camiseta y acompañá a las formativas.</span></li>
         <li><i>${ICONO.mano}</i><span><b>Quiero dar una mano</b>En los eventos del club: hacer el pollo, armar, servir, ayudar a organizar.</span></li>
       </ul>
       ${url ? botonExterno(url, 'Quiero colaborar', 'btn sec') : botonCerrado('Se habilita cuando abra el formulario')}
-    </div>
-    ${afiche && html`<img class="portal-afiche" src="${afiche.src640}" srcset="${afiche.src640} 640w, ${afiche.src} 1080w" sizes="(min-width: 48rem) 22rem, 80vw" width="640" height="853" alt="${afiche.alt}" loading="lazy">`}`;
+    </div>`;
 }
 
 /** La franja de logos de sponsors. Sin ninguno válido no devuelve nada. */
