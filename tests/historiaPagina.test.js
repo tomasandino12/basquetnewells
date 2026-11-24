@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { titulos, datosPublicables, datosPendientes, epocas } from '../src/data/historia.js';
-import { htmlLinea, htmlEstrellas, htmlFicha, htmlArchivo } from '../src/ui/historia.js';
+import { titulos, datosPublicables, datosPendientes, epocas, momentos } from '../src/data/historia.js';
+import { htmlLinea, htmlEstrellas, htmlFicha, htmlCifras } from '../src/ui/historia.js';
 
 /**
  * La página pública /historia: lo que no cambia con los datos (la CSP no admite scripts en
@@ -33,20 +33,50 @@ test('la vitrina deja el punto de enganche para la copa 3D y la leyenda obligato
   assert.match(pagina, /Recreación inspirada en la copa actual de la Asociación Rosarina/);
 });
 
-test('la línea de tiempo muestra todas las épocas y nunca un dato pendiente', () => {
-  const salida = String(htmlLinea('doce-seguidos'));
-  for (const e of epocas()) assert.ok(salida.includes(`data-epoca="${e.id}"`), e.id);
+test('la línea histórica tiene un bloque por época (las solapadas van dentro) y nunca un dato pendiente', () => {
+  const salida = String(htmlLinea());
+  for (const e of epocas().filter((x) => !x.solapada)) assert.ok(salida.includes(`<section class="epoca" data-epoca="${e.id}"`), e.id);
   for (const p of datosPendientes()) assert.ok(!salida.includes(p.falta), p.id);
-  for (const h of datosPublicables().filter((d) => d.texto && d.epoca)) {
-    assert.ok(salida.includes(h.texto), h.id);
-  }
+  for (const h of datosPublicables().filter((d) => d.texto)) assert.ok(salida.includes(h.texto), h.id);
 });
 
-test('cada hito publicado lleva su fuente como link', () => {
-  for (const e of epocas()) {
-    const salida = String(htmlArchivo(e));
-    const links = (salida.match(/class="fuente"/g) ?? []).length;
-    assert.ok(links >= salida.split('<article').length - 1, e.id);
+test('cada título es una tarjeta con su estrella, y los momentos no llevan estrella ni número de título', () => {
+  const salida = String(htmlLinea());
+  assert.equal((salida.match(/<article class="t-card/g) ?? []).length, titulos().length);
+  assert.equal((salida.match(/class="t-estrella"/g) ?? []).length, titulos().length);
+  assert.equal((salida.match(/<article class="momento"/g) ?? []).length, momentos().length);
+  // Los 12 seguidos son una sola tira: el texto de la época se dice una vez, no en cada tarjeta.
+  const intro = datosPublicables().find((d) => d.id === 'doce-seguidos').texto;
+  assert.equal(salida.split(intro).length - 1, 1);
+  // 1983 lleva su aclaración como etiqueta de la tarjeta.
+  assert.match(salida, /class="t-torneo">Torneo regular</);
+});
+
+test('cada tarjeta con dato publicado lleva su fuente como link', () => {
+  const salida = String(htmlLinea());
+  const tarjetas = salida.split(/<article class="(?:t-card con-historia|momento)/).slice(1);
+  assert.ok(tarjetas.length >= 8);
+  for (const t of tarjetas) assert.match(t.split('</article>')[0], /class="fuente"/);
+});
+
+test('el panel de cifras sale de los datos', () => {
+  const salida = String(htmlCifras());
+  assert.match(salida, /Títulos de Primera<\/dt><dd>15</);
+  assert.match(salida, /<dd>12<small>1943–1954<\/small>/);
+  assert.match(salida, /Primer título<\/dt><dd>1943</);
+  assert.match(salida, /Último título<\/dt><dd>1983</);
+});
+
+test('el dorado queda sólo en las estrellas y en el filete de la vitrina', () => {
+  // Regla nueva de Tomás (24/11): el dorado es de las estrellas (un título ganado) y de algún filete de la vitrina.
+  const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const permitidos = /^(\.hist-vitrina|\.t-estrella|\.estrella|\.estrellas)/;
+  const conDorado = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].filter((m) => /--dorado|--pub-oro-fondo/.test(m[2]));
+  assert.ok(conDorado.length > 0);
+  for (const [, cabeza, cuerpo] of conDorado) {
+    // En un @media de una sola regla el selector está adentro.
+    const selectores = cabeza.trim().startsWith('@media') ? cuerpo.split('{')[0] : cabeza;
+    for (const sel of selectores.split(',').map((x) => x.trim())) assert.match(sel, permitidos, `dorado fuera de las estrellas: ${sel}`);
   }
 });
 

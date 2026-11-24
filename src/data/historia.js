@@ -90,6 +90,8 @@ const EPOCAS = [
   { id: 'el-cubierto', nombre: 'El Cubierto, sede del Mundial', desde: 1990, hasta: 1990, hitoPrincipal: 'cubierto-mundial-1990' },
 ];
 
+// `momento: true` marca los hitos que no son un título: la línea de tiempo los muestra
+// como tarjetas aparte, sin estrella (aunque caigan en un año de título, como 1950).
 // Un hito con `anio` es el dato propio de ese año; los que no lo tienen (los
 // principales de las épocas de varios años) valen para todos los años de su época.
 const HITOS = [
@@ -136,6 +138,7 @@ const HITOS = [
     id: 'del-vecchio-mundial-1950',
     anio: 1950,
     epoca: 'del-vecchio',
+    momento: true,
     texto: 'Hugo «Balazo» Del Vecchio, rosarino y jugador de Newell’s, integró el plantel argentino campeón del primer Mundial, en 1950: en el Luna Park, Argentina le ganó la final 64-50 a Estados Unidos.',
     fuente: OLYMPEDIA_DEL_VECCHIO,
     otrasFuentes: [FIBA_MUNDIAL_1950],
@@ -180,6 +183,7 @@ const HITOS = [
     id: 'cubierto-mundial-1990',
     anio: 1990,
     epoca: 'el-cubierto',
+    momento: true,
     // No se da fecha de inauguración: ninguna fuente la confirma.
     texto: 'El Estadio Cubierto Claudio Newell fue sede del Grupo B del Mundial de básquet de 1990.',
     fuente: WIKIPEDIA_CUBIERTO,
@@ -189,6 +193,7 @@ const HITOS = [
     id: 'arbb-cien-anios',
     anio: 1926,
     epoca: null,
+    momento: true,
     texto: 'La Asociación Rosarina de Básquet cumple 100 años el 12 de julio de 2026. Su primer campeón fue Provincial, en 1926.',
     fuente: LA_CAPITAL,
   },
@@ -240,4 +245,26 @@ export function microDato(anio) {
   if (propio) return propio;
   const epoca = epocaDeAnio(anio);
   return epoca ? publicables.find((h) => h.id === epoca.hitoPrincipal) ?? null : null;
+}
+
+/** Los hitos publicables que no son un título (Del Vecchio, el Cubierto, los 100 años de la Rosarina), en orden cronológico. */
+export const momentos = () => H.filter((h) => h.momento && !h.pendiente).sort((a, b) => a.anio - b.anio);
+
+/** El dato propio de un año de título (nunca el de su época, ni un momento); null si no tiene. */
+export const hitoDeTitulo = (anio) => H.find((h) => h.anio === anio && !h.momento && !h.pendiente) ?? null;
+
+/**
+ * Las cifras del encabezado, calculadas de los títulos: cuántos hay, la racha más larga de años
+ * consecutivos (con su primer y último año) y el primer y el último título.
+ */
+export function resumenDeTitulos() {
+  const anios = T.map((t) => t.anio);
+  let racha = { cantidad: 0, desde: null, hasta: null };
+  let inicio = 0;
+  anios.forEach((anio, i) => {
+    if (i > 0 && anio !== anios[i - 1] + 1) inicio = i;
+    const cantidad = i - inicio + 1;
+    if (cantidad > racha.cantidad) racha = { cantidad, desde: anios[inicio], hasta: anio };
+  });
+  return { total: anios.length, racha, primero: anios[0] ?? null, ultimo: anios.at(-1) ?? null };
 }

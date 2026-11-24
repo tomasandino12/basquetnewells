@@ -1,10 +1,12 @@
 /* =====================================================================
    NUESTRA HISTORIA — public/historia.html.
-   Lado público: negro, rojo del club, dorado de archivo, títulos en Barlow
-   Condensed. La idea es un museo de noche: una vitrina con luz cálida, una línea
-   de tiempo como cartelería y fichas de catálogo (etiquetas en mono) con la
-   fuente de cada dato. Sólo colores de tokens.css; sólo se animan transform y
-   opacity (DESIGN.md), y con prefers-reduced-motion base.css apaga todo.
+   Lado público: negro, rojo del club, títulos en Barlow Condensed. La idea es un
+   museo de noche: una vitrina con luz cálida, una línea histórica como cartelería
+   y fichas de catálogo (etiquetas en mono) con la fuente de cada dato.
+   COLOR: el dorado es sólo de las estrellas (un título ganado) y de algún filete
+   fino de la vitrina. Todo texto va en blanco, gris (--gris-osc) o rojo del club.
+   Sólo colores de tokens.css; sólo se animan transform y opacity (DESIGN.md), y
+   con prefers-reduced-motion base.css apaga todo.
    Reusa de publico.css la barra, el pie, .portal-st y los h2 de .portal-sec.
    Los puntos de corte van acá, en el archivo de la página, para que sea una sola
    pieza (los de layout.css son los de la app).
@@ -20,14 +22,26 @@
 
 /* ---- Encabezado ---- */
 .hist-heroe{position:relative;padding:var(--sp-8) var(--sp-4) var(--sp-8)}
-.hist-heroe::after{content:"";display:block;height:1px;margin-top:var(--sp-8);background:linear-gradient(90deg,var(--dorado-borde),transparent)}
+.hist-heroe::after{content:"";display:block;height:1px;margin-top:var(--sp-8);background:linear-gradient(90deg,var(--primario),transparent 70%)}
 .hist-eyebrow{display:flex;align-items:center;gap:var(--sp-3);margin:0;font-family:var(--ff-titulo);font-weight:600;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-115);color:var(--club-texto)}
 .hist-eyebrow span{width:2rem;height:2px;background:var(--primario)}
 .hist-heroe h1{display:flex;align-items:flex-end;gap:var(--sp-3);margin:var(--sp-4) 0 0;text-transform:none;letter-spacing:0}
 .hist-num{flex:none;white-space:nowrap;font-size:clamp(6.5rem,30vw,14rem);line-height:.76;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--primario)}
 .hist-tit{padding-bottom:.4rem;font-size:clamp(2rem,8.6vw,4.5rem);line-height:.9;font-weight:700;text-transform:uppercase;letter-spacing:.01em}
-.hist-tit em{font-style:normal;color:var(--dorado)}
+.hist-tit em{font-style:normal}
 .hist-bajada{max-width:36rem;margin:var(--sp-5) 0 0;color:var(--gris-osc);font-size:var(--fs-170);line-height:1.6}
+
+/* El panel de cifras: la ficha técnica del palmarés. El número fantasma de atrás es sólo adorno. */
+.hist-cifras{position:relative;overflow:hidden;margin-top:var(--sp-8);background:var(--pub-tarjeta);
+  border:1px solid var(--pub-borde);border-top:2px solid var(--primario);border-radius:var(--r-btn)}
+.cifras{position:relative;margin:0}
+.cifras > div{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-4);padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--pub-borde)}
+.cifras > div:last-child{border-bottom:0}
+.cifras dt{font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.16em;text-transform:uppercase;color:var(--gris-osc)}
+.cifras dd{display:grid;justify-items:end;margin:0;font-family:var(--ff-titulo);font-weight:700;font-size:2.5rem;line-height:.95;font-variant-numeric:tabular-nums;color:var(--sobre-oscuro)}
+.cifras dd small{font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.12em;line-height:1.4;color:var(--gris-osc)}
+.cifras-fantasma{position:absolute;right:-.5rem;bottom:-2.75rem;font-family:var(--ff-titulo);font-weight:700;font-size:11rem;line-height:.8;
+  color:transparent;-webkit-text-stroke:1px var(--pub-borde);pointer-events:none;user-select:none}
 
 /* Entra de a poco, una pieza tras otra. `backwards`: sin `to`, así que sin animación todo queda a la vista. */
 @keyframes hist-sube{from{opacity:0;transform:translateY(1rem)}}
@@ -35,11 +49,11 @@
 .hist-heroe > :nth-child(2){animation-delay:.1s}
 .hist-heroe > :nth-child(3){animation-delay:.22s}
 
-/* ---- Vitrina + línea de tiempo ---- */
+/* ---- Vitrina + línea histórica ---- */
 .hist-escena{display:grid;gap:var(--sp-8);padding:0 var(--sp-4)}
 
 .hist-vitrina{margin:0;position:relative;isolation:isolate;overflow:hidden;
-  border:1px solid var(--pub-borde);border-radius:var(--r);
+  border:1px solid var(--pub-borde);border-top-color:var(--dorado-borde);border-radius:var(--r);
   background:radial-gradient(ellipse 80% 60% at 50% 0,var(--dorado-suave),transparent 72%),var(--pub-tarjeta)}
 /* El reflejo del vidrio: una franja diagonal fija. */
 .hist-vitrina::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
@@ -49,40 +63,70 @@
 .hist-vitrina figcaption{position:relative;z-index:3;padding:var(--sp-3) var(--sp-4);border-top:1px solid var(--pub-borde);
   background:var(--pub-fondo);text-align:center;font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.04em;line-height:1.5;color:var(--gris-osc)}
 
-/* La línea de tiempo: un riel con un nodo por época; la elegida se abre en su tarjeta. */
-.linea{--riel:1.5rem;position:relative;margin:0;padding:0 0 0 var(--riel)}
-.linea::before{content:"";position:absolute;left:.5rem;top:1.25rem;bottom:1rem;width:1px;background:linear-gradient(var(--primario),var(--pub-borde) 14%)}
-.linea-item{--sangria:0rem;position:relative;margin-left:var(--sangria)}
-.linea-item::before{content:"";position:absolute;left:calc(-1.375rem - var(--sangria));top:1.1rem;width:.75rem;height:.75rem;border-radius:50%;
-  background:var(--pub-fondo);border:2px solid var(--gris-osc)}
-.linea-item.on::before{background:var(--primario);border-color:var(--primario);box-shadow:0 0 0 4px var(--dorado-suave)}
-/* Una época que cae dentro de otra (1948 y 1950 están dentro de los 12 seguidos) va sangrada. */
-.linea-item.solapada{--sangria:var(--sp-4)}
-.linea-item.solapada::before{width:.5rem;height:.5rem;top:1.25rem;margin-left:.125rem}
+/* La línea: un bloque por época, uno debajo del otro. */
+.hist-linea{min-width:0}
+.hist-linea > * + *{margin-top:clamp(3rem,9vw,4.5rem)}
 
-.linea-btn{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:var(--sp-3);align-items:center;
-  width:100%;min-height:var(--tap);padding:var(--sp-3) 0;text-align:left;color:var(--gris-osc)}
-.linea-anio{grid-column:1;font-family:var(--ff-titulo);font-weight:600;font-size:var(--fs-190);letter-spacing:.1em;line-height:1;color:var(--dorado)}
-.linea-nombre{grid-column:1;margin-top:.1875rem;font-family:var(--ff-titulo);font-weight:700;font-size:1.75rem;line-height:1;text-transform:uppercase;letter-spacing:.01em;color:var(--sobre-oscuro)}
-.solapada .linea-nombre{font-size:1.5rem}
-.linea-flecha{grid-column:2;grid-row:1 / 3;width:1.5rem;height:1.5rem;fill:none;stroke:var(--gris-osc);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform var(--dur-2) var(--ease-salida)}
-.linea-btn[aria-expanded="true"] .linea-flecha{transform:rotate(180deg);stroke:var(--sobre-oscuro)}
-@media (hover:hover){.linea-btn:hover .linea-nombre{color:var(--dorado)}}
+/* Cada época abre con una barra roja doble (un eco de la cartelería del club, más fina), un sobretítulo en mono y el título grande. */
+.epoca-cab{position:relative;padding-left:var(--sp-5)}
+.epoca-cab::before,.epoca-cab::after{content:"";position:absolute;top:.125rem;bottom:.125rem;background:var(--primario)}
+.epoca-cab::before{left:0;width:.375rem}
+.epoca-cab::after{left:.625rem;width:.125rem;opacity:.55}
+.epoca-sobre{margin:0 0 var(--sp-2);font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.16em;text-transform:uppercase;color:var(--gris-osc)}
+.epoca-tit{margin:0;font-family:var(--ff-titulo);font-weight:700;font-size:clamp(2.5rem,10.5vw,3.5rem);line-height:.92;letter-spacing:.005em;text-transform:uppercase;color:var(--sobre-oscuro)}
+.epoca.on .epoca-sobre{color:var(--club-texto)}
+.epoca-intro{max-width:34rem;margin:var(--sp-5) 0 0;padding-left:var(--sp-5)}
+.epoca-intro p{margin:0;font-size:var(--fs-170);line-height:1.6;color:var(--sobre-oscuro)}
 
-/* La tarjeta "Archivo histórico": una ficha de catálogo. */
-.archivo{margin:0 0 var(--sp-5);padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-left:3px solid var(--primario);
-  border-radius:var(--r-btn) var(--r) var(--r) var(--r-btn);animation:hist-sube var(--dur-3) var(--ease-salida) backwards}
-.archivo[hidden]{display:none}
-.archivo-cab{display:flex;justify-content:space-between;gap:var(--sp-3);padding-bottom:var(--sp-3);margin-bottom:var(--sp-3);border-bottom:1px dashed var(--pub-borde);
-  font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc)}
-.chips-titulo{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin:0 0 var(--sp-4)}
-.chip-titulo{display:inline-flex;align-items:baseline;gap:.25rem;padding:.125rem .625rem;border:1px solid var(--dorado-borde);border-radius:var(--r-btn);
-  font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-190);line-height:1.3;color:var(--dorado)}
-.chip-titulo small{margin-left:.25rem;font-family:var(--ff-cuerpo);font-weight:500;font-size:var(--fs-100);letter-spacing:.06em;text-transform:uppercase;color:var(--gris-osc)}
+/* La tira de títulos: una línea roja que une las tarjetas, de la primera a la última. */
+.racha{--riel:2.5rem;position:relative;margin:var(--sp-6) 0 0;padding:0 0 0 var(--riel);list-style:none}
+.racha::before{content:"";position:absolute;left:.8125rem;top:1.75rem;bottom:1.75rem;width:2px;background:var(--primario);transform-origin:top}
+.racha-item{position:relative}
+.racha-item + .racha-item{margin-top:var(--sp-3)}
+.racha-item::before{content:"";position:absolute;left:calc(var(--riel) * -1 + .5rem);top:1.375rem;width:.75rem;height:.75rem;border-radius:50%;
+  background:var(--pub-fondo);border:2px solid var(--primario)}
+/* Los dos extremos de la racha (el 1 y el último) son nodos llenos y más grandes. */
+.racha-item:first-child::before,.racha-item:last-child::before{left:calc(var(--riel) * -1 + .375rem);top:1.25rem;width:1rem;height:1rem;background:var(--primario)}
+.racha-item:has(.t-card.on)::before{background:var(--primario);box-shadow:0 0 0 4px var(--pub-borde)}
+/* Un momento cuelga de la línea con una ramita: no es un título, así que su nodo es chico y vacío. */
+.racha-item.es-momento::before{left:calc(var(--riel) * -1 + .625rem);top:1.75rem;width:.5rem;height:.5rem;background:var(--pub-fondo);border-color:var(--gris-osc)}
+.racha-item.es-momento::after{content:"";position:absolute;left:calc(var(--riel) * -1 + 1.125rem);top:calc(1.75rem + .25rem - .5px);width:calc(var(--riel) - 1.125rem);height:1px;background:var(--gris-osc)}
+.racha-item.es-momento + .racha-item,.racha-item + .racha-item.es-momento{margin-top:var(--sp-4)}
 
-.hito + .hito{margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--pub-borde)}
-.hito-anio{margin:0 0 .25rem;font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-220);line-height:1;letter-spacing:.04em;color:var(--dorado)}
-.hito-txt{margin:0;font-size:var(--fs-160);line-height:1.6}
+/* La tarjeta de un título. Compacta: año, estrella y categoría en una fila. */
+.t-card{position:relative;isolation:isolate;overflow:hidden;padding:var(--sp-3) var(--sp-4);background:var(--pub-tarjeta);
+  border:1px solid var(--pub-borde);border-radius:var(--r-btn) var(--r) var(--r) var(--r-btn)}
+.t-cab{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-1) var(--sp-3)}
+.t-anio{margin:0;font-family:var(--ff-titulo);font-weight:700;font-size:2rem;line-height:1;letter-spacing:.02em;color:var(--sobre-oscuro)}
+/* El año es el botón y su ::after se estira por toda la tarjeta: tocar cualquier parte la elige. Lo que tiene sus propios controles va por encima. */
+.t-sel{padding:0;background:none;font:inherit;letter-spacing:inherit;color:inherit;text-align:left;cursor:pointer}
+.t-sel::after{content:"";position:absolute;inset:0;border-radius:inherit}
+.t-sel:focus-visible{outline:none}
+.t-sel:focus-visible::after{outline:2px solid var(--sobre-oscuro);outline-offset:-4px}
+.t-estrella{flex:none;width:1.125rem;height:1.125rem;fill:var(--dorado)}
+.t-cat{font-weight:500;font-size:var(--fs-100);letter-spacing:.14em;text-transform:uppercase;color:var(--gris-osc)}
+.t-torneo{padding:.0625rem .5rem;border:1px solid var(--club-texto);border-radius:var(--r-btn);font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--club-texto)}
+/* El N.º de título como marca de agua, detrás. */
+.t-marca{position:absolute;z-index:-1;right:var(--sp-3);top:50%;transform:translateY(-50%);font-family:var(--ff-titulo);font-weight:700;font-size:3.5rem;line-height:.8;
+  letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--pub-borde);pointer-events:none;user-select:none}
+.t-card.en-epoca{border-color:var(--linea-osc)}
+.t-card.on{border-color:var(--primario);box-shadow:inset 0 0 0 1px var(--primario)}
+@media (hover:hover){.t-card:hover{border-color:var(--gris-osc)}.t-card.on:hover{border-color:var(--primario)}}
+
+/* Con historia propia, la tarjeta crece: año grande, texto, plantel y fuente. */
+.t-card.con-historia{padding:var(--sp-5);border-color:var(--linea-osc)}
+.t-card.con-historia .t-anio{font-size:clamp(3.25rem,15vw,4.5rem);line-height:.88}
+.t-card.con-historia .t-marca{top:var(--sp-3);right:var(--sp-4);transform:none;font-size:7rem}
+.t-card.con-historia.on{border-color:var(--primario)}
+.t-txt{margin:var(--sp-4) 0 0;font-size:var(--fs-160);line-height:1.6}
+
+.plantel,.hito-fuentes{position:relative;z-index:1}
+.plantel{margin-top:var(--sp-3)}
+.plantel summary{display:inline-flex;align-items:center;gap:.5rem;min-height:2.5rem;cursor:pointer;list-style:none;
+  font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.14em;text-transform:uppercase;color:var(--club-texto)}
+.plantel summary::-webkit-details-marker{display:none}
+.plantel summary::after{content:"";width:.5rem;height:.5rem;margin-top:-.25rem;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform var(--dur-2) var(--ease-salida)}
+.plantel[open] summary::after{margin-top:.25rem;transform:rotate(-135deg)}
 .hito-dato{margin:var(--sp-3) 0 0}
 .hito-dato dt{font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc)}
 .hito-dato dd{margin:.125rem 0 0;font-size:var(--fs-145);line-height:1.55}
@@ -90,7 +134,28 @@
 .fuente{display:inline-block;padding-block:.25rem;font-size:var(--fs-115);line-height:1.45;color:var(--gris-osc);text-decoration:underline;text-decoration-color:var(--pub-borde);text-underline-offset:.2em}
 @media (hover:hover){.fuente:hover{color:var(--sobre-oscuro);text-decoration-color:var(--gris-osc)}}
 
+/* La tarjeta "momento": un hito que no es un título. Ancha, borde rojo a la izquierda, un velo rojo que se apaga hacia la derecha y nada de estrella. */
+.momentos{display:grid;gap:var(--sp-4)}
+.momento{position:relative;isolation:isolate;padding:var(--sp-5) var(--sp-5) var(--sp-4) var(--sp-6);background:var(--pub-fondo);
+  border:1px solid var(--pub-borde);border-left:.3125rem solid var(--primario);border-radius:var(--r-btn) var(--r) var(--r) var(--r-btn)}
+.momento::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,var(--primario),transparent 65%);opacity:.1}
+.momento-rotulo{margin:0;font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.18em;text-transform:uppercase;color:var(--club-texto)}
+.momento-anio{margin:.125rem 0 0;font-family:var(--ff-titulo);font-weight:700;font-size:clamp(2.5rem,11vw,3.25rem);line-height:1;letter-spacing:.02em;color:var(--sobre-oscuro)}
+.momento .t-txt{margin-top:var(--sp-3)}
+.momento.on{border-color:var(--club-texto);border-left-color:var(--primario)}
+.momento.on::before{opacity:.18}
+@media (hover:hover){.momento:has(.t-sel):hover{border-color:var(--gris-osc);border-left-color:var(--primario)}}
+
 .hist-sinjs{margin:0;color:var(--gris-osc);font-size:var(--fs-145)}
+
+/* Aparición al entrar en pantalla (sólo si el script puso `anim`: con movimiento reducido o sin
+   IntersectionObserver todo está a la vista desde el principio). La línea de la tira se dibuja de arriba abajo. */
+.hist-linea.anim [data-rev]{transition:opacity var(--dur-rise) var(--ease-salida),transform var(--dur-rise) var(--ease-salida)}
+.hist-linea.anim [data-rev]:not(.visto){opacity:0;transform:translateY(1.25rem)}
+.hist-linea.anim .racha::before{transition:transform 1.6s var(--ease-salida)}
+.hist-linea.anim .racha:not(.visto)::before{transform:scaleY(0)}
+.hist-linea.anim .racha-item::before{transition:opacity var(--dur-rise) var(--ease-salida)}
+.hist-linea.anim .racha-item:not(:has(.visto))::before{opacity:0}
 
 /* ---- Las 15 estrellas ---- */
 .hist-sec{max-width:64rem;margin-inline:auto}
@@ -109,12 +174,12 @@
 .estrellas.anim.visto li{transition:opacity var(--dur-rise) var(--ease-salida),transform var(--dur-rise) var(--ease-salida);transition-delay:calc(var(--i) * 45ms)}
 
 .ficha{min-height:11rem;padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r)}
-.ficha.con-dato{border-color:var(--dorado-borde);animation:hist-sube var(--dur-3) var(--ease-salida) backwards}
+.ficha.con-dato{border-color:var(--linea-osc);animation:hist-sube var(--dur-3) var(--ease-salida) backwards}
 .ficha-vacia{margin:0;color:var(--gris-osc);font-size:var(--fs-145)}
 .ficha-cab{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-1) var(--sp-3)}
-.ficha-anio{font-family:var(--ff-titulo);font-weight:700;font-size:clamp(3rem,12vw,4.5rem);line-height:.9;color:var(--dorado)}
+.ficha-anio{font-family:var(--ff-titulo);font-weight:700;font-size:clamp(3rem,12vw,4.5rem);line-height:.9;color:var(--sobre-oscuro)}
 .ficha-num{font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc)}
-.ficha-torneo{padding:.125rem .5rem;border-radius:var(--r-btn);background:var(--dorado);color:var(--pub-fondo);font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-170);letter-spacing:.06em;text-transform:uppercase}
+.ficha-torneo{padding:.0625rem .5rem;border:1px solid var(--club-texto);border-radius:var(--r-btn);font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--club-texto)}
 .ficha-txt{margin:var(--sp-3) 0 0;font-size:var(--fs-160);line-height:1.6}
 .ficha-epoca{margin:var(--sp-2) 0 0;font-size:var(--fs-125);font-style:italic;color:var(--gris-osc)}
 .estrellas-nota{display:flex;flex-wrap:wrap;gap:0 var(--sp-3);margin:var(--sp-3) 0 0;font-size:var(--fs-125);color:var(--gris-osc)}
@@ -123,11 +188,6 @@
 .hist-foto{margin:0;max-width:30rem;padding:var(--sp-3);background:var(--pub-tarjeta);border:1px solid var(--pub-borde)}
 .hist-foto img{display:block;width:100%;height:auto;filter:brightness(.88) contrast(1.05)}
 .hist-foto figcaption{padding-top:var(--sp-3);font-family:var(--ff-titulo);font-weight:600;font-size:var(--fs-190);letter-spacing:.14em;text-transform:uppercase;color:var(--gris-osc)}
-
-/* ---- Contexto ---- */
-.hist-contexto{padding-bottom:0}
-.hist-contexto .portal-st{margin-bottom:var(--sp-2)}
-.contexto-txt{max-width:40rem;margin:0;color:var(--gris-osc);font-size:var(--fs-145);line-height:1.6}
 
 .hist-pie .pie-legal{padding-bottom:calc(var(--sp-6) + env(safe-area-inset-bottom))}
 
@@ -141,20 +201,20 @@
 @media (min-width:64rem){
   .hist-heroe{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,21rem);column-gap:3.5rem;align-items:end;padding-top:3.5rem}
   .hist-heroe .hist-eyebrow,.hist-heroe::after{grid-column:1 / -1}
-  .hist-heroe .hist-bajada{margin:0 0 .5rem}
+  .hist-heroe-txt{grid-column:1}
+  .hist-cifras{grid-column:2;margin:0 0 .5rem}
   .hist-escena{grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:var(--sp-8) 3.5rem;align-items:start}
-  /* La vitrina queda a la vista mientras se recorre la línea de tiempo. */
+  /* La vitrina queda a la vista mientras se recorre la línea. */
   .hist-vitrina{position:sticky;top:var(--sp-6)}
   .vitrina-escenario{max-height:min(34rem,calc(100svh - 9rem))}
-  .linea-nombre{font-size:2rem}
-  .solapada .linea-nombre{font-size:1.625rem}
+  .epoca-tit{font-size:3.5rem}
   .estrellas{grid-template-columns:repeat(15,minmax(0,1fr));gap:var(--sp-2)}
   .estrella{padding-inline:0}
   .estrella b{font-size:var(--fs-190)}
 }
 
-/* Con movimiento reducido base.css ya apaga animaciones y transiciones: acá sólo se asegura
-   que nada quede escondido esperando una animación. */
+/* Con movimiento reducido base.css ya apaga animaciones y transiciones, y el script no pone `anim` en la línea:
+   acá sólo se asegura que nada quede escondido esperando una animación. */
 @media (prefers-reduced-motion:reduce){
   .estrellas.anim:not(.visto) li{opacity:1;transform:none}
 }

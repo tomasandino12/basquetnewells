@@ -1,18 +1,26 @@
 import { html, crudo } from './html.js';
 import { $ } from './dom.js';
-import { titulos, epocas, datosPublicables, epocaDeAnio, microDato } from '../data/historia.js';
+import { titulos, epocas, datosPublicables, epocaDeAnio, microDato, momentos, hitoDeTitulo, resumenDeTitulos } from '../data/historia.js';
 
 /**
  * Página "Nuestra historia" (public/historia.html). Todo el texto que se ve sale
- * de src/data/historia.js y sólo de lo que devuelven `datosPublicables()` y
- * `microDato()`: acá no se escribe ningún dato, sólo se lo arma y se lo muestra.
+ * de src/data/historia.js y sólo de lo que devuelven `datosPublicables()`,
+ * `hitoDeTitulo()`, `momentos()` y `microDato()`: acá no se escribe ningún dato,
+ * sólo se lo arma y se lo muestra.
+ *
+ * La línea histórica: un bloque por época (barra roja, sobretítulo y título) con
+ * las tarjetas de sus títulos en una tira unida por una línea. Los años sin dato
+ * propio son tarjetas compactas; los hitos que no son un título (Del Vecchio, el
+ * Cubierto, los 100 años de la Rosarina) van como tarjetas "momento", sin estrella.
  *
  * Contrato con la vitrina (la copa 3D de la tarea 3, hoy un SVG):
  *  - 'historia:seleccion' se emite sobre #vitrina (y sube por el DOM) cada vez que
- *    cambia lo elegido. detail = { epocaId, anio, anios }: `anios` son los años de
- *    título a marcar en la copa (una época → los suyos; un año → ése; nada → []).
+ *    cambia lo elegido: al tocar una tarjeta o una estrella, o al llegar con el
+ *    scroll a otra época. detail = { epocaId, anio, anios }: `anios` son los años
+ *    de título a marcar en la copa (una época → los suyos; un año → ése; nada → []).
  *  - 'historia:elegir' se escucha sobre #vitrina. detail = { anio } o { epocaId }:
- *    es como la copa pide elegir cuando se toca una placa.
+ *    es como la copa pide elegir cuando se toca una placa. La línea se desplaza
+ *    hasta esa tarjeta.
  *  - `seleccionar()` hace lo mismo desde código.
  * Los eventos van por el DOM, y no por imports, para que la vitrina se cargue
  * recién cuando se acerca al viewport y pueda no estar nunca (sin WebGL).
@@ -24,18 +32,13 @@ const movimientoReducido = () => typeof matchMedia === 'function' && matchMedia(
 
 const fechaCorta = (iso) => iso.split('-').reverse().join('/');
 
-/** "1943–1954", o "1983" si la época es de un solo año. */
-export const rangoDeEpoca = (e) => (e.desde === e.hasta ? `${e.desde}` : `${e.desde}–${e.hasta}`);
+/** "1943 – 1954", o "1983" si la época es de un solo año. */
+export const rangoDeEpoca = (e) => (e.desde === e.hasta ? `${e.desde}` : `${e.desde} – ${e.hasta}`);
 
 /** Los años de título que caen en una época (los de "1950" son los de ese año, aunque esté dentro de los 12 seguidos). */
 export const aniosDeEpoca = (e) => titulos().filter((t) => t.anio >= e.desde && t.anio <= e.hasta).map((t) => t.anio);
 
-/** Los hitos publicables de una época: primero el principal, después los de cada año en orden. */
-export function hitosDeEpoca(e) {
-  return datosPublicables()
-    .filter((d) => d.texto && d.epoca === e.id)
-    .sort((a, b) => (b.id === e.hitoPrincipal) - (a.id === e.hitoPrincipal) || (a.anio ?? 0) - (b.anio ?? 0));
-}
+const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
 
 // ---------------------------------------------------------------------------
 // Armadores de HTML (puros: devuelven fragmentos, no tocan el DOM)
@@ -46,40 +49,89 @@ export const htmlFuente = (f) => html`<a class="fuente" href="${f.url}" target="
 
 const htmlFuentes = (h) => [h.fuente, ...(h.otrasFuentes ?? [])].map((f) => html`<li>${htmlFuente(f)}</li>`);
 
-const htmlEstrellaChip = (t) => html`<li class="chip-titulo"><span aria-hidden="true">★</span> ${t.anio}${t.torneo ? html` <small>${t.torneo}</small>` : ''}</li>`;
+// La estrella es lo único dorado de la línea: un título ganado.
+const ICONO_ESTRELLA = crudo('<svg class="t-estrella" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z"/></svg>');
 
-function htmlHito(h, e) {
-  const conAnio = h.anio && e.desde !== e.hasta;
-  return html`<article class="hito">
-    ${conAnio ? html`<p class="hito-anio">${h.anio}</p>` : ''}
-    <p class="hito-txt">${h.texto}</p>
+/** "Ver plantel": técnico y jugadores, plegados para que la tarjeta no se vuelva un listado. */
+const htmlPlantel = (h) => (h.tecnico || h.plantel ? html`<details class="plantel">
+    <summary>Ver plantel</summary>
     ${h.tecnico ? html`<dl class="hito-dato"><dt>Técnico</dt><dd>${h.tecnico}</dd></dl>` : ''}
     ${h.plantel ? html`<dl class="hito-dato"><dt>Plantel</dt><dd>${h.plantel.join(' · ')}</dd></dl>` : ''}
+  </details>` : '');
+
+/** La tarjeta de un título. Con dato propio es grande (texto, plantel, fuente); sin él, una fila compacta. */
+export function htmlTarjetaTitulo(t) {
+  const h = hitoDeTitulo(t.anio);
+  const categoria = t.torneo ? html`<span class="t-torneo">${t.torneo}</span>` : html`<span class="t-cat">Primera División</span>`;
+  return html`<li class="racha-item"><article class="t-card${h ? ' con-historia' : ''}" data-anio="${t.anio}" data-rev>
+    <span class="t-marca" aria-hidden="true">${String(t.numero).padStart(2, '0')}</span>
+    <header class="t-cab">
+      <h3 class="t-anio"><button type="button" class="t-sel" data-anio="${t.anio}" aria-pressed="false" aria-label="Título ${t.numero}, ${t.anio}${t.torneo ? `, ${t.torneo}` : ''}">${t.anio}</button></h3>
+      ${ICONO_ESTRELLA}
+      ${categoria}
+    </header>
+    ${h ? html`<p class="t-txt">${h.texto}</p>${htmlPlantel(h)}<ul class="hito-fuentes">${htmlFuentes(h)}</ul>` : ''}
+  </article></li>`;
+}
+
+/** La tarjeta "momento": un hito que no es un título. Ancha, con borde rojo a la izquierda y sin estrella. */
+export function htmlMomento(h) {
+  return html`<article class="momento" data-momento="${h.id}" data-epoca="${h.epoca ?? ''}" data-rev>
+    <p class="momento-rotulo">${h.epoca == null ? 'Contexto' : 'Momento'}</p>
+    <h3 class="momento-anio">${h.epoca == null ? html`${h.anio}` : html`<button type="button" class="t-sel" data-epoca="${h.epoca}" aria-pressed="false">${h.anio}</button>`}</h3>
+    <p class="t-txt">${h.texto}</p>
     <ul class="hito-fuentes">${htmlFuentes(h)}</ul>
   </article>`;
 }
 
-/** La tarjeta "Archivo histórico" de una época. */
-export function htmlArchivo(e) {
-  const anios = titulos().filter((t) => aniosDeEpoca(e).includes(t.anio));
-  return html`<div class="archivo-cab"><span>Archivo histórico</span><span>${rangoDeEpoca(e)}</span></div>
-    ${anios.length ? html`<ul class="chips-titulo" aria-label="Títulos de esta época">${anios.map(htmlEstrellaChip)}</ul>` : ''}
-    ${hitosDeEpoca(e).map((h) => htmlHito(h, e))}`;
+/** Un momento pertenece a la época que lo contiene: la suya, o la que abarca a su época solapada (Del Vecchio, 1950, cae en los 12 seguidos). */
+function momentosDeEpoca(e) {
+  const todas = epocas();
+  return momentos().filter((m) => {
+    if (m.epoca === e.id) return true;
+    const propia = todas.find((x) => x.id === m.epoca);
+    return !!propia?.solapada && !e.solapada && propia.desde >= e.desde && propia.hasta <= e.hasta;
+  });
 }
 
-/** La línea de tiempo: una época por nodo; la elegida muestra su tarjeta. */
-export function htmlLinea(abiertaId) {
-  return html`<ol class="linea">${epocas().map((e) => {
-    const abierta = e.id === abiertaId;
-    return html`<li class="linea-item${e.solapada ? ' solapada' : ''}${abierta ? ' on' : ''}" data-epoca="${e.id}">
-      <h3><button type="button" class="linea-btn" id="btn-${e.id}" data-epoca="${e.id}" aria-expanded="${String(abierta)}" aria-controls="archivo-${e.id}">
-        <span class="linea-anio">${rangoDeEpoca(e)}</span>
-        <span class="linea-nombre">${e.nombre}</span>
-        <svg class="linea-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-      </button></h3>
-      <div class="archivo" id="archivo-${e.id}" role="region" aria-labelledby="btn-${e.id}"${abierta ? '' : crudo(' hidden')}>${htmlArchivo(e)}</div>
-    </li>`;
-  })}</ol>`;
+/** Un bloque de la línea: barra roja, sobretítulo, título, intro de la época y la tira de tarjetas. */
+export function htmlEpoca(e) {
+  const ts = titulos().filter((t) => t.epoca === e.id);
+  const ms = momentosDeEpoca(e);
+  const intro = datosPublicables().find((d) => d.texto && d.epoca === e.id && d.anio == null);
+  // En la tira, cada momento va justo después del título de su año (o al final, si es posterior).
+  const items = [...ts.map((t) => ({ t, anio: t.anio, orden: 0 })), ...ms.map((m) => ({ m, anio: m.anio, orden: 1 }))]
+    .sort((a, b) => a.anio - b.anio || a.orden - b.orden);
+  const sobre = `${rangoDeEpoca(e)}${ts.length ? ` · ${plural(ts.length, 'título', 'títulos')}` : ''}`;
+  return html`<section class="epoca" data-epoca="${e.id}" aria-labelledby="ep-${e.id}">
+    <header class="epoca-cab" data-rev>
+      <p class="epoca-sobre">${sobre}</p>
+      <h2 class="epoca-tit" id="ep-${e.id}">${e.nombre}</h2>
+    </header>
+    ${intro ? html`<div class="epoca-intro" data-rev><p>${intro.texto}</p><ul class="hito-fuentes">${htmlFuentes(intro)}</ul></div>` : ''}
+    ${ts.length
+    ? html`<ol class="racha" data-linea>${items.map((i) => (i.t ? htmlTarjetaTitulo(i.t) : html`<li class="racha-item es-momento">${htmlMomento(i.m)}</li>`))}</ol>`
+    : html`<div class="momentos">${ms.map(htmlMomento)}</div>`}
+  </section>`;
+}
+
+/** La línea histórica entera: primero el contexto de la Asociación (1926) y después una época tras otra. */
+export function htmlLinea() {
+  const contexto = momentos().filter((m) => m.epoca == null);
+  return html`${contexto.length ? html`<div class="momentos prologo">${contexto.map(htmlMomento)}</div>` : ''}
+    ${epocas().filter((e) => !e.solapada).map(htmlEpoca)}`;
+}
+
+/** El panel de cifras del encabezado: todo sale de `resumenDeTitulos()`. */
+export function htmlCifras() {
+  const r = resumenDeTitulos();
+  return html`<span class="cifras-fantasma" aria-hidden="true">${r.total}</span>
+    <dl class="cifras">
+      <div><dt>Títulos de Primera</dt><dd>${r.total}</dd></div>
+      <div><dt>Seguidos</dt><dd>${r.racha.cantidad}<small>${r.racha.desde}–${r.racha.hasta}</small></dd></div>
+      <div><dt>Primer título</dt><dd>${r.primero}</dd></div>
+      <div><dt>Último título</dt><dd>${r.ultimo}</dd></div>
+    </dl>`;
 }
 
 /** La grilla de las 15 estrellas, con una nota para los años que llevan aclaración (1983). */
@@ -113,13 +165,6 @@ export function htmlFicha(anio) {
       <ul class="hito-fuentes">${htmlFuentes(dato)}</ul>` : html`<p class="ficha-epoca">Todavía no hay un dato verificado de este año.</p>`}`;
 }
 
-/** Hitos publicables que no son de ninguna época (el contexto de la Asociación). */
-export function htmlContexto() {
-  const sueltos = datosPublicables().filter((d) => d.texto && d.epoca == null);
-  if (!sueltos.length) return null;
-  return html`<p class="portal-st">Contexto</p>${sueltos.map((h) => html`<p class="contexto-txt">${h.texto}</p><ul class="hito-fuentes">${htmlFuentes(h)}</ul>`)}`;
-}
-
 // ---------------------------------------------------------------------------
 // Página
 // ---------------------------------------------------------------------------
@@ -148,14 +193,22 @@ function pintarFicha() {
 }
 
 function pintarSeleccion() {
-  document.querySelectorAll('.linea-item').forEach((li) => {
-    const abierta = li.dataset.epoca === estado.epocaId;
-    li.classList.toggle('on', abierta);
-    li.querySelector('.linea-btn').setAttribute('aria-expanded', String(abierta));
-    li.querySelector('.archivo').hidden = !abierta;
-  });
   const epoca = epocas().find((e) => e.id === estado.epocaId);
   const deLaEpoca = epoca ? aniosDeEpoca(epoca) : [];
+  document.querySelectorAll('.epoca').forEach((el) => el.classList.toggle('on', el.dataset.epoca === estado.epocaId));
+  document.querySelectorAll('.t-card').forEach((c) => {
+    const anio = Number(c.dataset.anio);
+    c.classList.toggle('on', anio === estado.anio);
+    c.classList.toggle('en-epoca', estado.anio == null && deLaEpoca.includes(anio));
+  });
+  document.querySelectorAll('.momento').forEach((m) => {
+    const elegido = m.dataset.epoca !== '' && m.dataset.epoca === estado.epocaId && estado.anio == null;
+    m.classList.toggle('on', elegido);
+  });
+  document.querySelectorAll('.t-sel').forEach((b) => {
+    const activo = b.dataset.anio ? Number(b.dataset.anio) === estado.anio : estado.anio == null && b.dataset.epoca === estado.epocaId;
+    b.setAttribute('aria-pressed', String(activo));
+  });
   document.querySelectorAll('.estrella').forEach((b) => {
     const anio = Number(b.dataset.anio);
     b.setAttribute('aria-pressed', String(anio === estado.anio));
@@ -166,7 +219,7 @@ function pintarSeleccion() {
 
 /**
  * Elige una época ({ epocaId }), un año ({ anio }) o nada ({ epocaId: null }), actualiza
- * la página y avisa a la vitrina con 'historia:seleccion'. Un año abre también su época.
+ * la página y avisa a la vitrina con 'historia:seleccion'. Un año elige también su época.
  */
 export function seleccionar({ epocaId = null, anio = null } = {}) {
   if (anio != null && !titulos().some((t) => t.anio === anio)) return;
@@ -178,6 +231,40 @@ export function seleccionar({ epocaId = null, anio = null } = {}) {
   const epoca = epocas().find((e) => e.id === estado.epocaId);
   const anios = anio != null ? [anio] : epoca ? aniosDeEpoca(epoca) : [];
   $('vitrina').dispatchEvent(new CustomEvent('historia:seleccion', { bubbles: true, detail: { epocaId: estado.epocaId, anio: estado.anio, anios } }));
+}
+
+// Con movimiento permitido, cada pieza de la línea aparece al entrar en pantalla (y la línea de la
+// tira se dibuja de arriba abajo). La clase `anim` la pone el script: si algo falla, todo se ve igual.
+function revelarLinea() {
+  const linea = $('hist-linea');
+  if (movimientoReducido() || typeof IntersectionObserver !== 'function') return;
+  linea.classList.add('anim');
+  const obs = new IntersectionObserver((entradas) => {
+    // Las que entran juntas (varias tarjetas compactas) lo hacen escalonadas.
+    entradas.filter((e) => e.isIntersecting).forEach((e, i) => {
+      e.target.style.transitionDelay = `${i * 70}ms`;
+      e.target.classList.add('visto');
+      obs.unobserve(e.target);
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.1 });
+  linea.querySelectorAll('[data-rev], [data-linea]').forEach((el) => obs.observe(el));
+}
+
+// Cuando el scroll llega a otra época, la vitrina la sigue. Una franja fina a mitad de pantalla decide cuál es.
+function seguirEpoca() {
+  if (typeof IntersectionObserver !== 'function') return;
+  const obs = new IntersectionObserver((entradas) => {
+    for (const en of entradas) {
+      if (!en.isIntersecting) continue;
+      const id = en.target.dataset.epoca;
+      const e = epocas().find((x) => x.id === id);
+      const actual = epocas().find((x) => x.id === estado.epocaId);
+      // Lo elegido ya está en este bloque (un año suyo, o una época solapada como Del Vecchio): no se pisa.
+      if (id === estado.epocaId || (actual?.solapada && e && actual.desde >= e.desde && actual.hasta <= e.hasta)) continue;
+      seleccionar({ epocaId: id });
+    }
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  document.querySelectorAll('.epoca').forEach((el) => obs.observe(el));
 }
 
 // Con movimiento permitido, las estrellas entran de a una cuando la grilla llega a la
@@ -193,36 +280,40 @@ function revelarEstrellas() {
   }, { threshold: 0.25 }).observe(grilla);
 }
 
+/** Lleva la línea hasta lo elegido (cuando la copa pide un año o una época). */
+function llevarALinea() {
+  const sel = estado.anio != null ? `.t-card[data-anio="${estado.anio}"]` : `.epoca[data-epoca="${estado.epocaId}"], .momento[data-epoca="${estado.epocaId}"]`;
+  document.querySelector(sel)?.scrollIntoView({ block: 'center', behavior: movimientoReducido() ? 'auto' : 'smooth' });
+}
+
 export function iniciarHistoria() {
   animarContador($('hist-contador'), titulos().length);
+  $('hist-cifras').innerHTML = htmlCifras();
 
-  $('hist-linea').innerHTML = htmlLinea(EPOCA_INICIAL);
+  $('hist-linea').innerHTML = htmlLinea();
   $('hist-estrellas').innerHTML = htmlEstrellas();
-  const contexto = htmlContexto();
-  if (contexto) {
-    $('hist-contexto').innerHTML = contexto;
-    $('hist-contexto').hidden = false;
-  }
   estado.epocaId = EPOCA_INICIAL;
   pintarSeleccion();
+  revelarLinea();
   revelarEstrellas();
+  seguirEpoca();
 
   $('hist-linea').addEventListener('click', (ev) => {
-    const btn = ev.target.closest('.linea-btn');
+    const btn = ev.target.closest('.t-sel');
     if (!btn) return;
-    // Tocar la época abierta la cierra.
-    seleccionar({ epocaId: btn.dataset.epoca === estado.epocaId && estado.anio == null ? null : btn.dataset.epoca });
+    if (btn.dataset.anio) {
+      const anio = Number(btn.dataset.anio);
+      // Tocar de nuevo el año elegido lo suelta y deja marcada su época.
+      seleccionar(anio === estado.anio ? { epocaId: epocaDeAnio(anio)?.id } : { anio });
+    } else {
+      seleccionar({ epocaId: btn.dataset.epoca === estado.epocaId && estado.anio == null ? null : btn.dataset.epoca });
+    }
   });
 
   const grilla = $('estrellas');
   grilla.addEventListener('click', (ev) => {
     const b = ev.target.closest('.estrella');
-    if (!b) return;
-    // Elegir un año abre su época en la línea de tiempo, que queda arriba: si cambia de alto,
-    // el contenido se corre debajo del dedo (Safari no compensa). Se deja la estrella donde estaba.
-    const antes = b.getBoundingClientRect().top;
-    seleccionar({ anio: Number(b.dataset.anio) });
-    window.scrollBy(0, b.getBoundingClientRect().top - antes);
+    if (b) seleccionar({ anio: Number(b.dataset.anio) });
   });
   // Con mouse, pasar por encima muestra el dato sin cambiar lo elegido.
   grilla.addEventListener('pointerover', (ev) => {
@@ -237,7 +328,10 @@ export function iniciarHistoria() {
     pintarFicha();
   });
 
-  $('vitrina').addEventListener('historia:elegir', (ev) => seleccionar(ev.detail ?? {}));
+  $('vitrina').addEventListener('historia:elegir', (ev) => {
+    seleccionar(ev.detail ?? {});
+    llevarALinea();
+  });
 }
 
 // En los tests (node) el módulo sólo se importa por los armadores de HTML.

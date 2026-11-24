@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { titulos, epocas, datosPublicables, datosPendientes, epocaDeAnio, microDato } from '../src/data/historia.js';
+import { titulos, epocas, datosPublicables, datosPendientes, epocaDeAnio, microDato, momentos, hitoDeTitulo, resumenDeTitulos } from '../src/data/historia.js';
 
 const AÑOS_EXACTOS = [
   1943, 1944, 1945, 1946, 1947, 1948, 1949, 1950, 1951, 1952, 1953, 1954,
@@ -84,4 +84,17 @@ test('microDato cae al de la época', () => {
   assert.equal(microDato(1990).id, 'cubierto-mundial-1990');
   // Fuera de toda época y sin dato propio, no hay nada que mostrar.
   assert.equal(microDato(1960), null);
+});
+
+test('las cifras del encabezado salen de los títulos', () => {
+  assert.deepEqual(resumenDeTitulos(), { total: 15, racha: { cantidad: 12, desde: 1943, hasta: 1954 }, primero: 1943, ultimo: 1983 });
+});
+
+test('los momentos no son títulos y el dato propio de un año nunca es un momento', () => {
+  assert.deepEqual(momentos().map((m) => m.anio), [1926, 1950, 1990]);
+  assert.ok(momentos().every((m) => m.fuente?.url));
+  // 1950 es año de título, pero lo que se cuenta de él es el momento de Del Vecchio: la tarjeta del título no lo repite.
+  assert.equal(hitoDeTitulo(1950), null);
+  assert.equal(hitoDeTitulo(1948).tecnico, 'Héctor Carrozo');
+  assert.equal(hitoDeTitulo(1944), null);
 });
