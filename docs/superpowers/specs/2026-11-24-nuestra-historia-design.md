@@ -16,7 +16,9 @@ Cada dato que se muestra lleva su fuente en `src/data/historia.js` (campo `fuent
 - Hugo "Balazo" Del Vecchio, nacido en Rosario y jugador de Newell's, integró el plantel argentino campeón del primer Mundial (1950, Luna Park, final 64-50 contra Estados Unidos). Fuentes: Olympedia (atleta 5986) y FIBA.
 - El Estadio Cubierto Claudio Newell fue sede del Grupo B del Mundial 1990. Fuente: Wikipedia (Estadio Cubierto Newell's Old Boys / 1990 FIBA World Championship). La fecha de inauguración no está confirmada: no se muestra.
 
-**Pendiente de fuente (no se publica):** las copas "José Guido" y "Nicolás Galdiz", el 32 de 33 de 1943, el 30-0 de 1948 y su técnico, el 21-0 y el 99,7 de promedio de 1977, el 96-70 y la fecha 26/12/1978, la final de 1983 contra Náutico y los nombres de los planteles.
+**Agregado el 24/11, con fuente en las notas del Centenario de la ARBB (rosariobasquetbol.com.ar):** la Copa José Guido y el 32 de 33 de 1943 (con su plantel); las Copas Nicolás Galdiz de 1946, 1947 y 1948; el 30-0 de 1948 con Héctor Carrozo como técnico; el duodécimo título de 1954; el 21-0 y el promedio de 99,70 de 1977; el 96-70 con Buffarini y la final del 26/12/1978; y 1983 como "torneo regular" (La Capital lo llama Clausura): 2-1 a Central en semifinales y 2-0 a Náutico en la final, con el plantel de Pablo D'Angelo. Hay una época nueva, "1948, el invicto".
+
+**Pendiente de fuente (no se publica):** la fecha de inauguración del Cubierto, el resultado del clásico de 1943 y los planteles del resto de los años.
 
 ## Página
 `/historia` (rewrite a `public/historia.html`). Mobile first, a 375 px y en escritorio.

@@ -46,6 +46,21 @@ const WIKIPEDIA_CUBIERTO = {
   url: 'https://en.wikipedia.org/wiki/Estadio_Cubierto_Newell%27s_Old_Boys',
 };
 
+// Archivo del Centenario de la Asociación Rosarina: una nota por temporada.
+const arbb = (titulo, fecha, slug) => ({
+  medio: 'Asociación Rosarina de Básquet · 100 años',
+  titulo,
+  fecha,
+  url: `https://rosariobasquetbol.com.ar/${slug}/`,
+});
+const ARBB_1943 = arbb('1943 – Comienza la hegemonía de Newell’s', '2025-08-18', '1943-comienza-la-hegemonia-de-newells');
+const ARBB_1947 = arbb('1947 – Hegemonía leprosa', '2025-09-03', '1947-hegemonia-leprosa');
+const ARBB_1948 = arbb('1948 – Newells séxtuple campeón', '2025-09-04', '1948-newells-sextuple-campeon');
+const ARBB_1954 = arbb('1954 – Récord de participantes en el certamen de Cuarta División: 82 equipos', '2025-09-22', '1954-record-de-participantes-en-el-certamen-de-cuarta-division-82-equipos');
+const ARBB_1977 = arbb('1977 – Rosario campeón en el certamen provincial de cadetes infantiles', '2026-02-22', '1977-rosario-campeon-en-el-certamen-provincial-de-cadetes-infantiles');
+const ARBB_1978 = arbb('1978 – Unión total de la dirigencia del básquet', '2026-03-25', '1978-union-total-de-la-dirigencia-del-basquet');
+const ARBB_1983 = arbb('1983 – Newell’s campeón tras cinco años y Constitución por primera vez', '2026-06-15', '1983-newells-volvio-a-salir-campeon-luego-de-cinco-anos');
+
 const ANIOS_TITULOS = [
   1943, 1944, 1945, 1946, 1947, 1948, 1949, 1950, 1951, 1952, 1953, 1954,
   1977, 1978, 1983,
@@ -58,8 +73,9 @@ const TITULOS = ANIOS_TITULOS.map((anio, i) => ({
   anio,
   numero: i + 1,
   epoca: epocaDelTitulo(anio),
-  // Ese año hubo por primera vez dos campeones: Newell's ganó el Clausura.
-  ...(anio === 1983 ? { torneo: 'Clausura' } : {}),
+  // Ese año hubo por primera vez dos campeones. La Asociación lo llama "torneo
+  // regular" (La Capital, "Clausura"); el otro, el Apertura, fue de Sportivo Constitución.
+  ...(anio === 1983 ? { torneo: 'Torneo regular' } : {}),
   fuente: LA_CAPITAL,
 }));
 
@@ -67,9 +83,10 @@ const TITULOS = ANIOS_TITULOS.map((anio, i) => ({
 // seguidos). Sirve para marcarla en la línea de tiempo, pero no para ubicar un año.
 const EPOCAS = [
   { id: 'doce-seguidos', nombre: 'Los 12 seguidos', desde: 1943, hasta: 1954, hitoPrincipal: 'doce-seguidos' },
+  { id: 'invicto-1948', nombre: '1948, el invicto', desde: 1948, hasta: 1948, solapada: true, hitoPrincipal: 'campania-1948' },
   { id: 'del-vecchio', nombre: 'Del Vecchio campeón del mundo', desde: 1950, hasta: 1950, solapada: true, hitoPrincipal: 'del-vecchio-mundial-1950' },
   { id: 'la-vuelta', nombre: 'La vuelta', desde: 1977, hasta: 1978, hitoPrincipal: 'la-vuelta' },
-  { id: 'la-15', nombre: 'La 15ª', desde: 1983, hasta: 1983, hitoPrincipal: 'clausura-1983' },
+  { id: 'la-15', nombre: 'La 15ª', desde: 1983, hasta: 1983, hitoPrincipal: 'campeon-1983' },
   { id: 'el-cubierto', nombre: 'El Cubierto, sede del Mundial', desde: 1990, hasta: 1990, hitoPrincipal: 'cubierto-mundial-1990' },
 ];
 
@@ -83,6 +100,39 @@ const HITOS = [
     fuente: LA_CAPITAL,
   },
   {
+    id: 'copa-jose-guido-1943',
+    anio: 1943,
+    epoca: 'doce-seguidos',
+    texto: 'Recién vuelto a la Rosarina, Newell’s ganó por primera vez la Copa José Guido, la reservada a los campeones de Primera. Entre el torneo de Ascenso y el Campeonato Rosarino jugó 33 partidos y ganó 32.',
+    // Grafía de la fuente (en la de 1948 aparece "Battilana").
+    plantel: ['Ítalo Scolara', 'Daniel Batillana', 'Juan Lanzini', 'Pedro Fernández', 'Juan Batillana', 'Jesús Hernández', 'Joaquín Pérez'],
+    fuente: ARBB_1943,
+  },
+  {
+    // La nota de 1947 dice que la ganó "al igual que el año anterior".
+    id: 'galdiz-1946',
+    anio: 1946,
+    epoca: 'doce-seguidos',
+    texto: 'Además del título, la Copa Nicolás Galdiz: el premio al club con mejor rendimiento en todas las categorías y competencias oficiales de la Rosarina.',
+    fuente: ARBB_1947,
+  },
+  {
+    id: 'galdiz-1947',
+    anio: 1947,
+    epoca: 'doce-seguidos',
+    texto: 'Otra vez la Copa Nicolás Galdiz al mejor club de todas las categorías, y Rosario Central segundo en Primera.',
+    fuente: ARBB_1947,
+  },
+  {
+    id: 'campania-1948',
+    anio: 1948,
+    epoca: 'invicto-1948',
+    texto: 'Campeón invicto por primera vez: ganó los 30 partidos que jugó. Se consagró el 8 de febrero de 1949 ante Velocidad y Resistencia (34-24), igualó el récord de seis títulos seguidos de Huracán y sumó la tercera Copa Nicolás Galdiz.',
+    tecnico: 'Héctor Carrozo',
+    plantel: ['Ítalo Scolara (capitán)', 'Daniel Battilana', 'Juan Battilana', 'Juan Lanzini', 'Arturo Alegrechy', 'Hugo Del Vecchio', 'Raúl Pettit'],
+    fuente: ARBB_1948,
+  },
+  {
     id: 'del-vecchio-mundial-1950',
     anio: 1950,
     epoca: 'del-vecchio',
@@ -91,17 +141,40 @@ const HITOS = [
     otrasFuentes: [FIBA_MUNDIAL_1950],
   },
   {
+    id: 'record-1954',
+    anio: 1954,
+    epoca: 'doce-seguidos',
+    texto: 'Duodécimo título consecutivo, algo único en la ciudad, en el país y, según la Asociación, también en el mundo. Hasta el presidente de la Nación felicitó por carta a los campeones.',
+    fuente: ARBB_1954,
+  },
+  {
     id: 'la-vuelta',
     epoca: 'la-vuelta',
     texto: 'En 1977 y 1978 Newell’s volvió a ser campeón: el regreso a los primeros planos.',
     fuente: LA_CAPITAL,
   },
   {
-    id: 'clausura-1983',
+    id: 'maquina-1977',
+    anio: 1977,
+    epoca: 'la-vuelta',
+    texto: 'Una de las mejores campañas de la historia del básquet rosarino: ganó los 21 partidos que jugó, pasó los 100 puntos en diez y promedió 99,70 por partido.',
+    fuente: ARBB_1977,
+  },
+  {
+    id: 'bicampeon-1978',
+    anio: 1978,
+    epoca: 'la-vuelta',
+    texto: 'En la rueda final le ganó 96-70 a Central, con 29 puntos de Guillermo Buffarini. El 26 de diciembre de 1978 venció otra vez al clásico, 70-63, y repitió el título de 1977.',
+    fuente: ARBB_1978,
+  },
+  {
+    id: 'campeon-1983',
     anio: 1983,
     epoca: 'la-15',
-    texto: 'En 1983 Newell’s ganó el Clausura. Fue el primer año con dos campeones: el Apertura lo ganó Sportivo Constitución.',
-    fuente: LA_CAPITAL,
+    texto: 'Campeón del torneo regular tras cinco años: en semifinales le ganó la serie 2-1 a Central, que venía de ganar todo entre 1979 y 1982, y en la final a Náutico, 53-52 y 67-66. Fue el primer año con dos campeones: el Apertura lo ganó Sportivo Constitución.',
+    tecnico: 'Pablo D’Angelo',
+    plantel: ['César Pastorino', 'Edgardo Lalima', 'Roberto Miraglio', 'Osvaldo Barreiro', 'Fernando Belli', 'Carlos Gorosito', 'Fernando Angelone', 'Marcelo Ottolini', 'Raúl Spaggiari', 'Gabriel Lalima', 'Marcelo Estévez', 'Gustavo Lalima'],
+    fuente: ARBB_1983,
   },
   {
     id: 'cubierto-mundial-1990',
@@ -124,15 +197,10 @@ const HITOS = [
 // Sin texto a propósito: lo que no tiene fuente no se escribe. `falta` es una nota
 // para quien cargue el dato, nunca para la pantalla.
 const PENDIENTES = [
-  { id: 'copa-jose-guido', pendiente: true, falta: 'Confirmar con fuente que existe y qué es la copa «José Guido».' },
-  { id: 'copa-nicolas-galdiz', pendiente: true, falta: 'Confirmar con fuente que existe y qué es la copa «Nicolás Galdiz».' },
-  { id: 'racha-1943', anio: 1943, pendiente: true, falta: 'Confirmar la marca de partidos ganados de 1943 (se oyó «32 de 33»).' },
-  { id: 'campania-1948', anio: 1948, pendiente: true, falta: 'Confirmar el 30-0 de la campaña de 1948 y quién fue el técnico.' },
-  { id: 'campania-1977', anio: 1977, pendiente: true, falta: 'Confirmar el 21-0 y el promedio de 99,7 puntos de 1977.' },
-  { id: 'final-1978', anio: 1978, pendiente: true, falta: 'Confirmar el resultado (96-70) y la fecha (26/12/1978) de la final de 1978.' },
-  { id: 'final-1983', anio: 1983, pendiente: true, falta: 'Confirmar contra quién fue la final de 1983 (se oyó Náutico).' },
-  { id: 'planteles', pendiente: true, falta: 'Confirmar con fuente los nombres de los planteles campeones.' },
-];
+  { id: 'inauguracion-cubierto', pendiente: true, falta: 'Confirmar la fecha de inauguración del Estadio Cubierto Claudio Newell (una copia de Wikipedia dice 1982).' },
+  { id: 'clasico-1943', anio: 1943, pendiente: true, falta: 'La única derrota de 1943 fue con Central el 16/10; la fuente dice «ajustada» pero da 64 a 34: confirmar el resultado.' },
+  { id: 'planteles-otros-anios', pendiente: true, falta: 'Planteles de 1944–1947, 1949–1954, 1977 y 1978.' },
+]
 
 const congelar = (lista) => Object.freeze(lista.map((d) => Object.freeze(d)));
 const T = congelar(TITULOS);

@@ -11,8 +11,8 @@ test('quince títulos con los años exactos', () => {
   const ts = titulos();
   assert.equal(ts.length, 15);
   assert.deepEqual(ts.map((t) => t.anio), AÑOS_EXACTOS);
-  // El de 1983 es del Clausura: ese año hubo dos campeones y no se puede mostrar sin aclararlo.
-  assert.equal(ts.find((t) => t.anio === 1983).torneo, 'Clausura');
+  // 1983 tuvo dos campeones: el de Newell's es el torneo regular y no se puede mostrar sin aclararlo.
+  assert.equal(ts.find((t) => t.anio === 1983).torneo, 'Torneo regular');
   assert.equal(ts.filter((t) => t.torneo).length, 1);
   assert.deepEqual(ts.map((t) => t.numero), AÑOS_EXACTOS.map((_, i) => i + 1));
 });
@@ -47,7 +47,7 @@ test('los pendientes no se publican', () => {
   }
   // Un pendiente no lleva texto inventado: sólo dice qué falta confirmar.
   const pendientes = datosPendientes();
-  assert.ok(pendientes.length >= 5);
+  assert.ok(pendientes.length >= 1);
   for (const p of pendientes) {
     assert.equal(p.pendiente, true);
     assert.ok(p.falta, `${p.id} no dice qué falta confirmar`);
@@ -68,18 +68,19 @@ test('epocaDeAnio ubica cada título', () => {
   assert.equal(epocaDeAnio(1990).id, 'el-cubierto');
   assert.equal(epocaDeAnio(1960), null);
   // Las épocas siguen el orden de la línea de tiempo.
-  assert.deepEqual(epocas().map((e) => e.id), ['doce-seguidos', 'del-vecchio', 'la-vuelta', 'la-15', 'el-cubierto']);
+  assert.deepEqual(epocas().map((e) => e.id), ['doce-seguidos', 'invicto-1948', 'del-vecchio', 'la-vuelta', 'la-15', 'el-cubierto']);
 });
 
 test('microDato cae al de la época', () => {
   // Año sin dato propio: devuelve el principal de su época.
-  const m1946 = microDato(1946);
-  assert.equal(m1946.id, 'doce-seguidos');
-  assert.equal(m1946.epoca, 'doce-seguidos');
-  assert.equal(microDato(1978).id, 'la-vuelta');
+  const m1945 = microDato(1945);
+  assert.equal(m1945.id, 'doce-seguidos');
+  assert.equal(m1945.epoca, 'doce-seguidos');
   // Año con dato propio: gana el propio.
   assert.equal(microDato(1950).id, 'del-vecchio-mundial-1950');
-  assert.equal(microDato(1983).id, 'clausura-1983');
+  assert.equal(microDato(1983).id, 'campeon-1983');
+  assert.equal(microDato(1948).id, 'campania-1948');
+  assert.equal(microDato(1977).id, 'maquina-1977');
   assert.equal(microDato(1990).id, 'cubierto-mundial-1990');
   // Fuera de toda época y sin dato propio, no hay nada que mostrar.
   assert.equal(microDato(1960), null);
