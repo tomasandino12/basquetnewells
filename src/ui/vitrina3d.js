@@ -22,9 +22,7 @@ import { placasDeCopa } from '../data/historia.js';
  * registran con `registrarPieza` y se alternan con `mostrarPieza`: no se crean dos contextos WebGL.
  */
 
-// Los colores de los metales y la madera. El dorado es el del club (#C5A059).
-const ORO = 0xc5a059;
-const PLATA = 0xd9dce2;
+// Los colores del club y de las placas. Los metales y la madera se definen en crearCopa.
 const ROJO_CLUB = 0xe30613;
 
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
@@ -62,20 +60,20 @@ function azar(semilla) {
   };
 }
 
-/** Caoba oscura con veta vertical. Sirve de color y de relieve. */
+/** Caoba rojiza lustrada, con veta vertical. Sirve de color y de relieve. */
 function texturaMadera() {
   const [c, g] = lienzo(512, 256);
   const lin = g.createLinearGradient(0, 0, 512, 0);
-  lin.addColorStop(0, '#2b1409');
-  lin.addColorStop(0.5, '#4a2614');
-  lin.addColorStop(1, '#2b1409');
+  lin.addColorStop(0, '#3a1307');
+  lin.addColorStop(0.5, '#5e2610');
+  lin.addColorStop(1, '#3a1307');
   g.fillStyle = lin;
   g.fillRect(0, 0, 512, 256);
   const r = azar(7);
   for (let i = 0; i < 340; i++) {
     const x = r() * 512;
     const claro = r() > 0.55;
-    g.strokeStyle = claro ? `rgba(150,92,52,${0.05 + r() * 0.12})` : `rgba(10,4,2,${0.08 + r() * 0.2})`;
+    g.strokeStyle = claro ? `rgba(214,128,72,${0.05 + r() * 0.12})` : `rgba(44,14,5,${0.08 + r() * 0.2})`;
     g.lineWidth = 0.6 + r() * 2.2;
     g.beginPath();
     g.moveTo(x, 0);
@@ -137,53 +135,47 @@ function texturasPlaca(anio, numero) {
   return { color, relieve };
 }
 
-/** La silueta del escudo, en coordenadas de 0 a 1 (v hacia arriba): hombros rectos y punta redondeada. */
-function contornoEscudo(pasos = 56) {
+/**
+ * La silueta del escudo heráldico de la insignia, en coordenadas de 0 a 1 (v hacia arriba): borde
+ * superior recto con las esquinas apenas recortadas, lados rectos y una punta redondeada abajo.
+ */
+function contornoEscudo(pasos = 48) {
   const mitad = 0.46;
-  const derecha = [[0.5 - mitad, 0.955]];
-  // Borde superior con una leve comba.
-  for (let i = 0; i <= 12; i++) {
-    const x = -1 + (i / 12) * 2;
-    derecha.push([0.5 + x * mitad, 0.995 - 0.04 * x * x]);
-  }
-  const pts = [...derecha.slice(1)];
-  // Lado derecho recto hasta el hombro y después la curva hasta la punta.
-  pts.push([0.5 + mitad, 0.5]);
+  const der = [[0.5 + mitad - 0.07, 0.995], [0.5 + mitad, 0.94], [0.5 + mitad, 0.5]];
   for (let k = 1; k <= pasos; k++) {
     const s = k / pasos;
-    pts.push([0.5 + mitad * (1 - s ** 1.85) ** 0.72, 0.5 * (1 - s)]);
+    der.push([0.5 + mitad * (1 - s ** 1.85) ** 0.72, 0.5 * (1 - s)]);
   }
   // Lado izquierdo: el espejo, de la punta hacia arriba.
-  const izq = pts.slice(14).reverse().map(([x, v]) => [1 - x, v]);
-  return [...pts, ...izq.slice(1)];
+  const izq = der.slice(0, -1).reverse().map(([x, v]) => [1 - x, v]);
+  return [...der, ...izq];
 }
 
-/** Achica un polígono hacia su centro: sirve para el esmalte, que va dentro del borde dorado. */
+/** Achica un polígono hacia su centro: sirve para el filete y el relieve interior. */
 const achicar = (pts, f, cx = 0.5, cv = 0.52) => pts.map(([x, v]) => [cx + (x - cx) * f, cv + (v - cv) * f]);
 
 /**
  * Las cuatro texturas del escudo (la silueta como alfa, el color, el relieve y la mezcla
- * rugosidad/metal). El escudo es una pieza del metal, no una calcomanía: el relieve de la "R" y del
- * borde sale del mapa de relieve y el borde dorado además es un tubo real (ver `crearCopa`).
+ * rugosidad/metal). Medido sobre la foto de la copa real: TODO el escudo es azul rey, con un filete
+ * fino plateado en el contorno y una "R" roja de palo, ancha y bold, con un contorno blanco fino.
+ * El relieve de la R y del filete sale del mapa de relieve y el filete además es un tubo real
+ * (ver `crearCopa`).
  */
 function texturasEscudo() {
   const W = 512;
   const H = 640;
   const contorno = contornoEscudo();
-  const esmalte = achicar(contorno, 0.8);
+  const interior = achicar(contorno, 0.93);
   const trazar = (g, pts) => {
     g.beginPath();
     pts.forEach(([x, v], i) => (i ? g.lineTo(x * W, (1 - v) * H) : g.moveTo(x * W, (1 - v) * H)));
     g.closePath();
   };
-  // La "R" del escudo real es una serif gruesa (de remates marcados), no una condensada sans: por eso
-  // Georgia / Times en negrita, con las alternativas de cada sistema. Se dibuja un poco más alta
-  // que ancha, apoyada un pelo por debajo del centro como en la insignia.
   const R = (g, estilo) => {
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    g.font = `900 ${H * 0.66}px Georgia, "Times New Roman", "Noto Serif", "DejaVu Serif", serif`;
-    estilo(g, W / 2, H * 0.55);
+    g.font = `900 ${H * 0.7}px "Arial Black", "Helvetica Neue", Arial, sans-serif`;
+    estilo(g, W / 2, H * 0.51);
   };
 
   const [alfa, a] = lienzo(W, H);
@@ -194,46 +186,36 @@ function texturasEscudo() {
   a.fill();
 
   const [color, c] = lienzo(W, H);
-  // Borde azul esmaltado (la insignia real no lleva marco dorado).
-  const azul = c.createLinearGradient(0, 0, W, H);
-  azul.addColorStop(0, '#2f63c4');
-  azul.addColorStop(0.5, '#1d429a');
-  azul.addColorStop(1, '#122b69');
+  // Azul rey, apenas más claro arriba (esmalte que toma la luz del cuarto).
+  const azul = c.createLinearGradient(0, 0, 0, H);
+  azul.addColorStop(0, '#2850b0');
+  azul.addColorStop(1, '#173488');
   c.fillStyle = azul;
   trazar(c, contorno);
   c.fill();
-  // Interior claro, apenas azulado para que no sea un blanco plano.
-  const claro = c.createLinearGradient(0, 0, 0, H);
-  claro.addColorStop(0, '#f6f8fc');
-  claro.addColorStop(1, '#cfd9ea');
-  c.fillStyle = claro;
-  trazar(c, esmalte);
-  c.fill();
-  // Un filete azul fino adentro del claro: así el borde se lee como esmalte con marco.
-  c.strokeStyle = 'rgba(29,66,154,.55)';
-  c.lineWidth = 3;
-  trazar(c, achicar(esmalte, 0.93));
-  c.stroke();
-  // Reflejo de esmalte: una franja clara en diagonal.
+  // Filete fino plateado en el contorno (la mitad de afuera queda recortada por el escudo).
   c.save();
   trazar(c, contorno);
   c.clip();
+  c.lineJoin = 'round';
+  c.lineWidth = 14;
+  c.strokeStyle = '#dde3f0';
+  trazar(c, contorno);
+  c.stroke();
+  // Reflejo de esmalte: una franja clara en diagonal.
   const brillo = c.createLinearGradient(0, 0, W, H * 0.7);
-  brillo.addColorStop(0, 'rgba(255,255,255,.2)');
+  brillo.addColorStop(0, 'rgba(255,255,255,.16)');
   brillo.addColorStop(0.45, 'rgba(255,255,255,0)');
   c.fillStyle = brillo;
   c.fillRect(0, 0, W, H);
   c.restore();
-  // La R: contorno azul oscuro afuera, blanco adentro y relleno rojo.
+  // La R: roja, de palo, con un contorno blanco fino.
   R(c, (g, x, y) => {
     g.lineJoin = 'round';
-    g.lineWidth = 30;
-    g.strokeStyle = '#14286a';
-    g.strokeText('R', x, y);
-    g.lineWidth = 15;
+    g.lineWidth = 12;
     g.strokeStyle = '#ffffff';
     g.strokeText('R', x, y);
-    g.fillStyle = '#d3101f';
+    g.fillStyle = '#e0262b';
     g.fillText('R', x, y);
   });
 
@@ -241,41 +223,34 @@ function texturasEscudo() {
   b.fillStyle = '#000';
   b.fillRect(0, 0, W, H);
   b.shadowColor = '#fff';
-  b.shadowBlur = 14;
-  b.fillStyle = '#e0e0e0'; // el borde azul queda alto
+  b.shadowBlur = 12;
+  b.fillStyle = '#e4e4e4'; // el filete queda alto
   trazar(b, contorno);
   b.fill();
   b.shadowBlur = 0;
-  b.fillStyle = '#5a5a5a'; // el interior, hundido
-  trazar(b, esmalte);
+  b.fillStyle = '#686868'; // el campo azul, apenas hundido
+  trazar(b, interior);
   b.fill();
   R(b, (g, x, y) => {
     g.shadowColor = '#fff';
-    g.shadowBlur = 10;
+    g.shadowBlur = 8;
     g.lineJoin = 'round';
-    g.lineWidth = 30;
-    g.strokeStyle = '#bdbdbd'; // el contorno de la R, a media altura
+    g.lineWidth = 12;
+    g.strokeStyle = '#fff';
     g.strokeText('R', x, y);
     g.shadowBlur = 0;
-    g.fillStyle = '#fff'; // y el cuerpo de la R, lo más alto
+    g.fillStyle = '#fff'; // la R, lo más alto
     g.fillText('R', x, y);
   });
 
-  // Canal G = rugosidad, canal B = metal (lo que lee Three.js). Borde: esmalte azul, brillante y
-  // poco metálico; interior y R: esmalte liso, casi sin metal.
+  // Canal G = rugosidad, canal B = metal (lo que lee Three.js). Esmalte: brillante y casi sin metal;
+  // el filete, de metal pulido.
   const [mezcla, m] = lienzo(W, H);
-  m.fillStyle = 'rgb(0,90,70)';
+  m.fillStyle = 'rgb(0,70,190)';
   m.fillRect(0, 0, W, H);
   m.fillStyle = 'rgb(0,60,25)';
-  trazar(m, esmalte);
+  trazar(m, interior);
   m.fill();
-  R(m, (g, x, y) => {
-    g.fillStyle = 'rgb(0,60,25)';
-    g.strokeStyle = 'rgb(0,60,25)';
-    g.lineWidth = 30;
-    g.strokeText('R', x, y);
-    g.fillText('R', x, y);
-  });
 
   return { alfa, color, relieve, mezcla, contorno };
 }
@@ -312,39 +287,51 @@ function aTextura(canvas, { color = false, aniso = 4, repetir = null } = {}) {
  * Arma la copa, de pie sobre y = 0 y mirando hacia +z. Devuelve el grupo, las placas (para el
  * raycaster) y las medidas que usa el encuadre de la cámara.
  *
+ * Las proporciones están medidas sobre la foto de la copa real (docs/privado/historia-referencias/
+ * copa-arbb-recorte-tomas.png) en unidades del radio del borde, R: y = 0 en el borde y negativo hacia
+ * abajo. `P([r, y])` las pasa a unidades del modelo (R = 1,4), de modo que cada número de abajo se
+ * puede comparar a ojo con la foto.
+ *
  * Cuenco: torno (LatheGeometry) con la pared exterior, el labio y la pared interior en una sola
  * pieza; así el borde se ve macizo y no una cáscara de papel.
  */
 function crearCopa({ aniso }) {
   const grupo = new THREE.Group();
   grupo.name = 'copa';
-  const plata = new THREE.MeshStandardMaterial({ color: PLATA, metalness: 0.9, roughness: 0.16 });
-  const oro = new THREE.MeshStandardMaterial({ color: ORO, metalness: 1, roughness: 0.28 });
+  const R = 1.4;
+  const ALTURA_R = 4.18; // de la base de madera al borde, en R
+  const X = (r) => r * R;
+  const Y = (y) => (ALTURA_R + y) * R;
+  const P = ([r, y]) => new THREE.Vector2(X(r), Y(y));
+  // Cromo espejo: el cuenco y el pie de la copa real reflejan todo el cuarto.
+  const plata = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0.07 });
   const mapaMadera = aTextura(texturaMadera(), { color: true, aniso, repetir: [3, 1] });
-  const madera = new THREE.MeshStandardMaterial({ map: mapaMadera, bumpMap: mapaMadera, bumpScale: 0.6, color: 0xffffff, metalness: 0.05, roughness: 0.6 });
+  // Caoba rojiza lustrada: barniz (clearcoat) sobre la veta.
+  const madera = new THREE.MeshPhysicalMaterial({
+    map: mapaMadera, bumpMap: mapaMadera, bumpScale: 0.45, color: 0xffffff, metalness: 0.05, roughness: 0.4,
+    clearcoat: 0.5, clearcoatRoughness: 0.22,
+  });
   const sombras = (m) => { m.castShadow = true; m.receiveShadow = true; return m; };
-
-  // --- Base de caoba: plinto, banda de las placas y tapa, con chaflanes para que atrape luz. ---
-  const tramo = (rArriba, rAbajo, y0, y1) => {
-    const m = sombras(new THREE.Mesh(new THREE.CylinderGeometry(rArriba, rAbajo, y1 - y0, 96, 1), madera));
-    m.position.y = (y0 + y1) / 2;
+  const torno = (puntos, material, segmentos = 96) => {
+    const m = sombras(new THREE.Mesh(new THREE.LatheGeometry(puntos, segmentos), material));
     grupo.add(m);
     return m;
   };
-  tramo(1.84, 1.88, 0, 0.2);
-  tramo(1.74, 1.84, 0.2, 0.27);
-  tramo(1.3, 1.3, 0.27, 0.68);
-  tramo(1.18, 1.3, 0.68, 0.74);
-  tramo(1.0, 1.18, 0.74, 0.8);
-  // Filete de plata en el escalón de arriba.
-  const filete = sombras(new THREE.Mesh(new THREE.TorusGeometry(1.02, 0.025, 12, 96), plata));
-  filete.rotation.x = Math.PI / 2;
-  filete.position.y = 0.8;
-  grupo.add(filete);
 
-  // --- Las 15 placas, una por título. ---
+  // --- Base de madera en dos cuerpos, casi tan alta como el cuenco: arriba un tambor (donde van las
+  // placas) y abajo un plato mucho más ancho, con el canto moldurado (ogee). ---
+  torno([
+    [0.915, -3.43], [0.905, -3.2], [0.92, -3.05], [0.97, -2.985], [0.985, -2.95], [0.95, -2.94], [0.88, -3.0], [0, -3.0],
+  ].map(P), madera);
+  torno([
+    [0, -4.18], [1.3, -4.18], [1.38, -4.15], [1.42, -4.06], [1.41, -3.9], [1.36, -3.8], [1.39, -3.7], [1.43, -3.6],
+    [1.42, -3.5], [1.36, -3.455], [1.15, -3.435], [0.9, -3.42],
+  ].map(P), madera, 128);
+
+  // --- Las 15 placas, una por título, chicas, sobre el tambor. ---
   const placas = [];
-  const RADIO_BANDA = 1.3;
+  const RADIO_TAMBOR = X(0.915);
+  const Y_PLACAS = Y(-3.2);
   for (const p of placasDeCopa()) {
     const { color, relieve } = texturasPlaca(p.anio, p.numero);
     const mat = new THREE.MeshStandardMaterial({
@@ -357,101 +344,73 @@ function crearCopa({ aniso }) {
       emissive: new THREE.Color(ROJO_CLUB),
       emissiveIntensity: 0,
     });
-    const placa = sombras(new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.24, 0.03), mat));
+    const placa = sombras(new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.19, 0.03), mat));
+    const radio = RADIO_TAMBOR + 0.012;
     // El ángulo sale de una función pura (src/data/historia.js): 0 es el frente, positivo a la derecha.
-    placa.position.set(Math.sin(p.angulo) * (RADIO_BANDA + 0.012), 0.475, Math.cos(p.angulo) * (RADIO_BANDA + 0.012));
+    placa.position.set(Math.sin(p.angulo) * radio, Y_PLACAS, Math.cos(p.angulo) * radio);
     placa.rotation.y = p.angulo;
-    placa.userData = { anio: p.anio, angulo: p.angulo, brillo: 0, objetivo: 0 };
+    placa.userData = { anio: p.anio, angulo: p.angulo, brillo: 0, objetivo: 0, radio };
     grupo.add(placa);
     placas.push(placa);
   }
 
-  // --- Tallo con anillos: se tornea una curva suave que pasa por cada nudo. ---
-  const curvaTallo = new THREE.SplineCurve([
-    [0.92, 0.8], [0.9, 0.9], [0.62, 1.02], [0.34, 1.12], [0.3, 1.25], [0.5, 1.32], [0.52, 1.4], [0.3, 1.47],
-    [0.27, 1.6], [0.42, 1.67], [0.44, 1.74], [0.27, 1.82], [0.3, 1.95],
-  ].map(([x, y]) => new THREE.Vector2(x, y)));
-  grupo.add(sombras(new THREE.Mesh(new THREE.LatheGeometry(curvaTallo.getPoints(140), 72), plata)));
-  const collar = sombras(new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.04, 14, 64), oro));
-  collar.rotation.x = Math.PI / 2;
-  collar.position.y = 1.97;
-  grupo.add(collar);
+  // --- Pie en campana ancha, nudo gordo tipo balaustre (urna), cuello y anillo de unión. Una sola
+  // curva suave pasa por cada medida. ---
+  const pie = new THREE.SplineCurve([
+    [0.5, -1.92], [0.4, -1.96], [0.34, -2.0], [0.43, -2.07], [0.48, -2.16], [0.43, -2.3], [0.27, -2.45], [0.3, -2.54],
+    [0.4, -2.62], [0.66, -2.68], [0.8, -2.78], [0.86, -2.92], [0.855, -3.01], [0.83, -3.04],
+  ].map(P));
+  torno([...pie.getPoints(140), P([0.5, -3.04]), P([0, -3.04])], plata, 96);
+  const anillo = sombras(new THREE.Mesh(new THREE.CylinderGeometry(X(0.51), X(0.5), Y(-1.8) - Y(-1.92), 64, 1), plata));
+  anillo.position.y = (Y(-1.8) + Y(-1.92)) / 2;
+  grupo.add(anillo);
 
-  // --- Cuenco: alto y casi cilíndrico, que se abre apenas hacia el borde (como la copa real). ---
-  const exterior = new THREE.SplineCurve([
-    [0.3, 1.95], [0.62, 2.02], [0.98, 2.22], [1.25, 2.55], [1.4, 3.0], [1.48, 3.6], [1.55, 4.2], [1.6, 4.6], [1.64, 4.9],
-  ].map(([x, y]) => new THREE.Vector2(x, y)));
-  const interior = new THREE.SplineCurve([
-    [1.56, 4.88], [1.5, 4.5], [1.44, 3.9], [1.34, 3.3], [1.15, 2.75], [0.8, 2.45], [0.4, 2.33], [0, 2.3],
-  ].map(([x, y]) => new THREE.Vector2(x, y)));
-  const BORDE_Y = 4.9; // la altura del labio: las asas suben por encima de ésta
-  const perfil = [
-    ...exterior.getPoints(56),
-    new THREE.Vector2(1.67, BORDE_Y + 0.02), new THREE.Vector2(1.64, BORDE_Y + 0.05), new THREE.Vector2(1.59, BORDE_Y + 0.04),
-    ...interior.getPoints(36),
-  ];
-  grupo.add(sombras(new THREE.Mesh(new THREE.LatheGeometry(perfil, 128), plata)));
-  const labio = sombras(new THREE.Mesh(new THREE.TorusGeometry(1.645, 0.042, 14, 128), oro));
-  labio.rotation.x = Math.PI / 2;
-  labio.position.y = BORDE_Y + 0.03;
-  grupo.add(labio);
+  // --- Cuenco cromado, casi recto, con el labio fino. ---
+  const exterior = new THREE.SplineCurve([[0.62, -1.75], [0.8, -1.55], [0.9, -1.25], [0.96, -0.65], [1.0, 0]].map(P));
+  const interior = new THREE.SplineCurve([[0.965, -0.02], [0.94, -0.65], [0.86, -1.25], [0.74, -1.5], [0.5, -1.62], [0, -1.65]].map(P));
+  torno([
+    P([0, -1.78]), P([0.4, -1.78]),
+    ...exterior.getPoints(48),
+    P([1.008, 0.01]), P([0.99, 0.025]), P([0.972, 0.01]),
+    ...interior.getPoints(30),
+  ], plata, 128);
 
-  // --- Asas doradas: cintas planas con forma de oreja. Nacen en la parte baja del cuenco, salen
-  // hacia afuera, suben por encima del borde y terminan en una voluta que se enrula hacia afuera.
-  // Cada una es el contorno de una cinta de ancho variable (más fina en la punta) extruido con
-  // un bisel que atrapa la luz; la izquierda es la derecha espejada. ---
-  const lineaAsa = [
-    [1.15, 2.6], [1.6, 2.5], [2.05, 2.68], [2.4, 3.1], [2.55, 3.7], [2.5, 4.3], [2.36, 4.8],
-    [2.3, 5.05], [2.44, 5.25], [2.66, 5.24], [2.74, 5.06], [2.63, 4.95], [2.52, 5.03],
+  // --- Asas: chapa dorada plana (latón pulido), con la forma medida sobre la foto. Están en el plano
+  // radial, así que de frente se ve su contorno: un brazo superior que sale del borde, una esquina
+  // redondeada y un brazo inferior que baja en diagonal hacia el cuenco. El hueco es una lágrima
+  // alargada. Los dos extremos entran en la pared del cuenco: nada queda suelto. La izquierda es
+  // la derecha espejada. ---
+  const trazo = (pts) => new THREE.CatmullRomCurve3(pts.map(([r, y]) => new THREE.Vector3(X(r), Y(y), 0)), false, 'centripetal')
+    .getPoints(60).map((v) => [v.x, v.y]);
+  const contornoAsa = [
+    ...trazo([[0.97, 0.07], [1.0, 0.08], [1.16, 0.15], [1.22, 0.11], [1.65, 0.21], [1.89, 0.02], [1.93, -0.16], [1.77, -0.65], [1.52, -1.07], [1.22, -1.44], [0.85, -1.68]]),
+    ...[[0.72, -1.6]].map(([r, y]) => [X(r), Y(y)]),
+    ...trazo([[0.74, -1.56], [0.79, -1.56], [1.28, -1.26], [1.59, -0.77], [1.71, -0.28], [1.59, -0.1], [1.04, -0.1], [0.97, -0.1]]),
   ];
-  // Ancho de la cinta según el avance u (0 = pegada al cuenco, 1 = punta de la voluta).
-  const anchoAsa = (u) => {
-    const pie = u < 0.14 ? 0.7 + 0.3 * (u / 0.14) : 1;
-    const punta = u > 0.72 ? 1 - 0.7 * ((u - 0.72) / 0.28) ** 1.3 : 1;
-    // Más ancha en la panza, como la cinta de la copa real.
-    const panza = 1 + 0.25 * Math.sin(Math.PI * Math.min(1, u / 0.75));
-    return 0.27 * pie * punta * panza; // + 2 × el bisel (0,05) al extruir
-  };
-  const curvaAsa = new THREE.CatmullRomCurve3(lineaAsa.map(([x, y]) => new THREE.Vector3(x, y, 0)), false, 'centripetal');
-  const lados = [[], []];
-  const PASOS_ASA = 96;
-  for (let i = 0; i <= PASOS_ASA; i++) {
-    const u = i / PASOS_ASA;
-    const p = curvaAsa.getPointAt(u);
-    const t = curvaAsa.getTangentAt(u);
-    const m = anchoAsa(u) / 2;
-    lados[0].push([p.x - t.y * m, p.y + t.x * m]);
-    lados[1].push([p.x + t.y * m, p.y - t.x * m]);
-  }
-  const contornoAsa = [...lados[0], ...lados[1].reverse()];
-  const PROFUNDIDAD_ASA = 0.05;
-  // Dorado más pulido y claro que el del resto: la cinta es plana y necesita brillar en los biseles.
-  const oroAsa = new THREE.MeshStandardMaterial({ color: 0xe6bf68, metalness: 1, roughness: 0.17 });
+  const ESPESOR_ASA = 0.07 * R;
+  const BISEL_ASA = 0.019;
+  const oroAsa = new THREE.MeshStandardMaterial({ color: 0xcfae4c, metalness: 1, roughness: 0.24 });
   for (const lado of [1, -1]) {
     const forma = new THREE.Shape(contornoAsa.map(([x, y]) => new THREE.Vector2(x * lado, y)));
     const geo = new THREE.ExtrudeGeometry(forma, {
-      depth: PROFUNDIDAD_ASA, steps: 1, curveSegments: 1,
-      bevelEnabled: true, bevelThickness: 0.075, bevelSize: 0.05, bevelOffset: 0, bevelSegments: 5,
+      depth: ESPESOR_ASA - 2 * BISEL_ASA, steps: 1, curveSegments: 1,
+      bevelEnabled: true, bevelThickness: BISEL_ASA, bevelSize: 0.012, bevelOffset: 0, bevelSegments: 2,
     });
-    geo.translate(0, 0, -PROFUNDIDAD_ASA / 2);
+    geo.translate(0, 0, -(ESPESOR_ASA - 2 * BISEL_ASA) / 2);
     grupo.add(sombras(new THREE.Mesh(geo, oroAsa)));
-    // La unión con el cuenco: una pastilla dorada aplanada que tapa el encuentro de la cinta.
-    const union = sombras(new THREE.Mesh(new THREE.SphereGeometry(0.2, 24, 16), oro));
-    union.scale.set(0.4, 1.1, 0.85);
-    union.position.set(1.3 * lado, 2.62, 0);
-    grupo.add(union);
   }
 
   // --- El escudo de la R, integrado al cuenco. Es un parche del mismo torno (LatheGeometry con
   // un ángulo corto) un pelo por fuera de la pared: así sigue la curva del cuenco y no flota en
-  // los bordes. La silueta sale del mapa alfa; el relieve, del bumpMap; el borde azul es
+  // los bordes. La silueta sale del mapa alfa; el relieve, del bumpMap; el filete plateado es
   // además un tubo de verdad que sube del metal. ---
   const E = texturasEscudo();
   const largo = exterior.getLength();
-  const ALTO_ESCUDO = 1.5;
-  const ANCHO_ESCUDO = 1.2;
+  const ALTO_ESCUDO = 0.83 * R;
+  const ANCHO_ESCUDO = 0.65 * R;
+  const BASE_ESCUDO = Y(-0.5) - ALTO_ESCUDO / 2;
   let u0 = 0;
-  while (exterior.getPointAt(u0).y < 3.02 && u0 < 1) u0 += 0.002;
+  while (exterior.getPointAt(u0).y < BASE_ESCUDO && u0 < 1) u0 += 0.002;
   const du = ALTO_ESCUDO / largo;
   const sobre = 0.014; // cuánto sobresale del metal
   const enParche = (u) => {
@@ -469,7 +428,7 @@ function crearCopa({ aniso }) {
       alphaMap: aTextura(E.alfa, { aniso }),
       alphaTest: 0.5,
       bumpMap: aTextura(E.relieve, { aniso }),
-      bumpScale: 2.6,
+      bumpScale: 2,
       roughnessMap: aTextura(E.mezcla, { aniso }),
       metalnessMap: aTextura(E.mezcla, { aniso }),
       roughness: 1,
@@ -481,17 +440,16 @@ function crearCopa({ aniso }) {
   parche.name = 'escudo';
   parche.receiveShadow = true;
   grupo.add(parche);
-  // Borde: el contorno del escudo llevado a 3D sobre el mismo parche.
+  // Filete: el contorno del escudo llevado a 3D sobre el mismo parche.
   const aLaPared = ([u, v]) => {
     const q = enParche(u0 + v * du);
     const fi = (u - 0.5) * giro;
     return new THREE.Vector3(Math.sin(fi) * (q.x + 0.006), q.y, Math.cos(fi) * (q.x + 0.006));
   };
   const borde = new THREE.CatmullRomCurve3(E.contorno.map(aLaPared), true, 'centripetal');
-  const esmalteBorde = new THREE.MeshStandardMaterial({ color: 0x1d429a, metalness: 0.3, roughness: 0.3 });
-  grupo.add(sombras(new THREE.Mesh(new THREE.TubeGeometry(borde, 220, 0.018, 8, true), esmalteBorde)));
+  grupo.add(sombras(new THREE.Mesh(new THREE.TubeGeometry(borde, 220, 0.012, 8, true), plata)));
 
-  return { grupo, placas, ancho: 6.1, alto: 5.8, centro: new THREE.Vector3(0, 2.75, 0), frente: 0 };
+  return { grupo, placas, ancho: 5.5, alto: 6.3, centro: new THREE.Vector3(0, 3.05, 0), frente: 0 };
 }
 
 // ---------------------------------------------------------------------------
@@ -560,7 +518,7 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
   }
   const entorno = pmrem.fromScene(sala, 0.04);
   scene.environment = entorno.texture;
-  scene.environmentIntensity = 0.55;
+  scene.environmentIntensity = 1.05;
 
   // Luz de vitrina: un foco cenital cálido que dibuja el cuenco y tira la sombra de contacto.
   const foco = new THREE.SpotLight(0xffddb0, 900, 0, 0.36, 0.9, 1.6);
@@ -723,7 +681,7 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
   };
   /** Acerca la cámara a una placa: se para frente a ella y mira su altura. */
   const acercarA = (placa) => {
-    const objetivo = new THREE.Vector3(0, 0.62, 0);
+    const objetivo = new THREE.Vector3(0, copa.placas[0].position.y, 0);
     volarA({ az: placa.userData.angulo + pivote.rotation.y, pol: POLAR_FRENTE, dist: home.dist * 0.58, target: objetivo });
   };
   /** Gira la cámara hacia el centro de un grupo de placas (una época), a distancia normal. */
@@ -830,8 +788,8 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
       // sobre plata clara daba rosa.
       p.material.color.setScalar(1 - 0.82 * d.brillo);
       p.material.emissiveIntensity = d.brillo * 0.55;
-      p.position.z = Math.cos(d.angulo) * (1.312 + d.brillo * 0.018);
-      p.position.x = Math.sin(d.angulo) * (1.312 + d.brillo * 0.018);
+      p.position.z = Math.cos(d.angulo) * (d.radio + d.brillo * 0.018);
+      p.position.x = Math.sin(d.angulo) * (d.radio + d.brillo * 0.018);
     }
     return pendiente;
   };
