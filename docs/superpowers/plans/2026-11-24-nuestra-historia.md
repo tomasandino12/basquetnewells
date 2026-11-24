@@ -7,8 +7,18 @@ Spec: `docs/superpowers/specs/2026-11-24-nuestra-historia-design.md`. Se trabaja
 |---|---|---|
 | 1. Datos puros | hecha | 3002f92 + 54c63a9 |
 | 2. Página sin 3D | hecha | `git log -1 -- public/historia.html` |
-| 3. Vitrina 3D | pendiente | |
-| 4. Enlace desde el portal | pendiente | |
+| 3. Vitrina 3D | reemplazada por la 6 y la 7 | |
+| Rediseño de la línea (fuera de plan) | hecha | a51898d + ecb62a9 |
+| 5. Hero, línea viva y el Cubierto | pendiente | |
+| 6. Copa 3D | pendiente | |
+| 7. Medalla 3D y selector | pendiente | |
+| 4. Enlace desde el portal (va última) | pendiente | |
+
+## Revisión 2: tasks 5–7 (spec, sección "Revisión 2")
+Van en orden y de a una, porque tocan los mismos archivos. Three.js ya tiene el OK de Tomás.
+- **Task 5: hero, línea viva y el Cubierto.** Archivos: `public/historia.html`, `src/ui/historia.js`, `public/css/historia.css` y `tests/historiaPagina.test.js`. Puntos 1, 2, 3 (la columna sticky sin caja, con el SVG de respaldo todavía) y 6 de la revisión. Acepta: un solo eje continuo sin cortes de punta a punta; el progreso rojo sigue al scroll; los nodos se encienden al alcanzarlos; el año no se repite en ningún bloque; las fuentes como badges; ni desborde ni errores a 375 y 1440 px; respeta `prefers-reduced-motion`. Tests: `un solo eje en la línea`, `ningún bloque repite el año`, `las fuentes no muestran la URL`, `el Cubierto no lleva año de inauguración`.
+- **Task 6: copa 3D.** Archivos: `public/vendor/` (Three.js y OrbitControls, con su licencia), el importmap, `src/ui/vitrina3d.js`, `src/ui/historia.js` y `vercel.json` (sólo si la CSP lo pide). Puntos 4 de la revisión y "Vitrina 3D" de la spec (15 placas, el contrato `historia:seleccion`/`historia:elegir`, la carga diferida, el respaldo sin WebGL y `touch-action: pan-y`). Acepta: la luz es real (sin trapecio), la copa levita, gira con el scroll y se arrastra, el escudo tiene relieve y en el celular el scroll no se traba. Capturas de frente y girada.
+- **Task 7: medalla 3D y selector.** Archivos: `src/ui/vitrina3d.js` (o un `src/ui/medalla3d.js` hermano), `src/ui/historia.js` y `public/css/historia.css`. Punto 5 de la revisión. Usa un solo renderer y alterna escenas, sin dos contextos WebGL. Acepta: el selector cambia de pieza, al llegar a las estrellas pasa sola a la medalla, el péndulo reacciona al mouse y se queda quieto con `prefers-reduced-motion`. Captura de la medalla al lado de la foto de referencia.
 
 ## Task 1: datos puros
 - **Archivos:** `src/data/historia.js` y `tests/historia.test.js`.
