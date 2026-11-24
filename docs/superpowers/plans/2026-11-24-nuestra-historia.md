@@ -5,7 +5,7 @@ Spec: `docs/superpowers/specs/2026-11-24-nuestra-historia-design.md`. Se trabaja
 ## Estado
 | Task | Estado | Commit |
 |---|---|---|
-| 1. Datos puros | pendiente | |
+| 1. Datos puros | hecha | `git log -1 -- src/data/historia.js` |
 | 2. Página sin 3D | pendiente | |
 | 3. Vitrina 3D | pendiente | |
 | 4. Enlace desde el portal | pendiente | |
