@@ -13,7 +13,7 @@ import { titulos, epocas, datosPublicables, epocaDeAnio, microDato, momentos, hi
  * propio son tarjetas compactas; los hitos que no son un título (Del Vecchio, el
  * Cubierto, los 100 años de la Rosarina) van como tarjetas "momento", sin estrella.
  *
- * Contrato con la vitrina (la copa 3D de la tarea 3, hoy un SVG):
+ * Contrato con la vitrina (la copa 3D de src/ui/vitrina3d.js; un SVG de respaldo si no hay WebGL):
  *  - 'historia:seleccion' se emite sobre #vitrina (y sube por el DOM) cada vez que
  *    cambia lo elegido: al tocar una tarjeta o una estrella, o al llegar con el
  *    scroll a otra época. detail = { epocaId, anio, anios }: `anios` son los años
@@ -284,6 +284,13 @@ function pintarSeleccion() {
   pintarFicha();
 }
 
+/** Los años de título que la copa tiene que marcar con lo elegido ahora (un año → ése; una época → los suyos; nada → []). */
+function aniosElegidos() {
+  if (estado.anio != null) return [estado.anio];
+  const epoca = epocas().find((e) => e.id === estado.epocaId);
+  return epoca ? aniosDeEpoca(epoca) : [];
+}
+
 /**
  * Elige una época ({ epocaId }), un año ({ anio }) o nada ({ epocaId: null }), actualiza
  * la página y avisa a la vitrina con 'historia:seleccion'. Un año elige también su época.
@@ -295,9 +302,45 @@ export function seleccionar({ epocaId = null, anio = null } = {}) {
   estado.epocaId = anio != null ? epocaDeAnio(anio)?.id ?? null : epocaId;
   estado.previa = null;
   pintarSeleccion();
-  const epoca = epocas().find((e) => e.id === estado.epocaId);
-  const anios = anio != null ? [anio] : epoca ? aniosDeEpoca(epoca) : [];
-  $('vitrina').dispatchEvent(new CustomEvent('historia:seleccion', { bubbles: true, detail: { epocaId: estado.epocaId, anio: estado.anio, anios } }));
+  $('vitrina').dispatchEvent(new CustomEvent('historia:seleccion', { bubbles: true, detail: { epocaId: estado.epocaId, anio: estado.anio, anios: aniosElegidos() } }));
+}
+
+/**
+ * La copa en 3D. Se monta recién cuando la vitrina se acerca a la pantalla (`import()` del módulo,
+ * que a su vez trae Three.js: ~190 KB comprimidos que no tienen por qué bajar quien no llega hasta
+ * acá). `data-estado` de #vitrina cuenta cómo va: 'estatica' (el SVG de respaldo), 'cargando' y
+ * '3d'. Si no hay WebGL, o algo falla al bajar o al armar la escena, vuelve a 'estatica' y
+ * la página sigue igual: es una mejora, no una dependencia.
+ */
+function montarVitrina() {
+  const vitrina = $('vitrina');
+  const escenario = $('vitrina-escenario');
+  const volverAEstatica = (motivo) => {
+    vitrina.dataset.estado = 'estatica';
+    if (motivo) console.warn('Vitrina 3D no disponible:', motivo);
+  };
+  if (typeof IntersectionObserver !== 'function') return;
+  let iniciada = false;
+  const iniciar = async () => {
+    if (iniciada) return;
+    iniciada = true;
+    vitrina.dataset.estado = 'cargando';
+    try {
+      const m = await import('./vitrina3d.js');
+      if (!m.hayWebGL()) return volverAEstatica();
+      await m.crearVitrina(escenario, { escena: $('hist-escena'), anios: aniosElegidos() });
+      vitrina.dataset.estado = '3d';
+    } catch (e) {
+      volverAEstatica(e);
+    }
+  };
+  new IntersectionObserver((entradas, obs) => {
+    if (!entradas.some((e) => e.isIntersecting)) return;
+    obs.disconnect();
+    iniciar();
+  }, { rootMargin: '600px 0px' }).observe(escenario);
+  // Si el contexto WebGL se pierde (GPU ocupada, pestaña en segundo plano mucho tiempo), se vuelve al SVG.
+  escenario.addEventListener('vitrina:perdida', () => volverAEstatica('se perdió el contexto WebGL'));
 }
 
 // La línea viva: el progreso rojo del eje llega hasta una altura fija de la pantalla (un poco más
@@ -430,6 +473,7 @@ export function iniciarHistoria() {
   iniciarTilt();
   revelarEstrellas();
   seguirEpoca();
+  montarVitrina();
 
   $('hist-linea').addEventListener('click', (ev) => {
     const btn = ev.target.closest('.t-sel');

@@ -290,3 +290,17 @@ export function resumenDeTitulos() {
   });
   return { total: anios.length, racha, primero: anios[0] ?? null, ultimo: anios.at(-1) ?? null };
 }
+
+/**
+ * Las placas de la copa: una por título, repartidas parejas alrededor de la base. `angulo` (radianes)
+ * es la posición de la placa vista desde arriba, con 0 mirando al frente y positivo hacia la derecha:
+ * la placa del medio de la lista queda justo de frente y el resto se abre hacia los costados, así
+ * los títulos seguidos (1943–1954) se leen como un friso y no hay placas apiladas ni que se pisen.
+ * Es pura y vive acá para que el test pueda comprobar que cada título tiene la suya; la copa 3D
+ * (src/ui/vitrina3d.js) sólo la dibuja.
+ */
+export function placasDeCopa() {
+  const n = T.length;
+  const paso = (Math.PI * 2) / n;
+  return T.map((t, i) => ({ anio: t.anio, numero: t.numero, angulo: (i - (n - 1) / 2) * paso }));
+}

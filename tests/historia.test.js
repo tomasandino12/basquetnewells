@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { titulos, epocas, datosPublicables, datosPendientes, epocaDeAnio, microDato, momentos, hitoDeTitulo, resumenDeTitulos } from '../src/data/historia.js';
+import { titulos, epocas, datosPublicables, datosPendientes, epocaDeAnio, microDato, momentos, hitoDeTitulo, resumenDeTitulos, placasDeCopa } from '../src/data/historia.js';
 
 const AÑOS_EXACTOS = [
   1943, 1944, 1945, 1946, 1947, 1948, 1949, 1950, 1951, 1952, 1953, 1954,
@@ -114,4 +114,19 @@ test('el Cubierto lleva sus dos sedes mundiales con fuente', () => {
   // Los medios se distinguen para que los badges no digan dos veces lo mismo.
   const medios = [c.fuente, ...c.otrasFuentes].map((f) => f.medio);
   assert.equal(new Set(medios).size, medios.length);
+});
+
+test('cada título tiene su placa', () => {
+  const placas = placasDeCopa();
+  const ts = titulos();
+  assert.equal(placas.length, ts.length);
+  assert.deepEqual(placas.map((p) => p.anio), ts.map((t) => t.anio));
+  assert.deepEqual(placas.map((p) => p.numero), ts.map((t) => t.numero));
+  // Ninguna se superpone: los ángulos son distintos y entran en una vuelta (-π, π).
+  const angulos = placas.map((p) => p.angulo);
+  assert.equal(new Set(angulos.map((a) => a.toFixed(6))).size, placas.length);
+  for (const a of angulos) assert.ok(a > -Math.PI && a < Math.PI);
+  // Simétricas respecto del frente: la del medio (1950) mira justo de frente.
+  assert.ok(Math.abs(placas[7].angulo) < 1e-9);
+  assert.ok(Math.abs(placas[0].angulo + placas[14].angulo) < 1e-9);
 });

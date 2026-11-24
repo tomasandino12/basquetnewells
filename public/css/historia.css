@@ -55,11 +55,29 @@
 
 /* La vitrina: sin caja ni borde ni foco 2D. En el celular va arriba y no es fija. */
 .hist-vitrina{position:relative;margin:0;padding-top:var(--sp-8)}
-.vitrina-escenario{position:relative;display:grid;place-items:end center;max-height:min(24rem,60svh);margin-inline:auto;aspect-ratio:320/380}
+.vitrina-escenario{position:relative;display:grid;place-items:end center;width:100%;height:min(30rem,68svh);margin-inline:auto}
 /* Un velo de luz muy tenue detrás de la copa (opacidad menor a .08: no es un haz dibujado). */
 .vitrina-escenario::before{content:"";position:absolute;inset:-10% 0 20%;pointer-events:none;
   background:radial-gradient(ellipse 50% 60% at 50% 30%,color-mix(in srgb,var(--sobre-oscuro) 6%,transparent),transparent 70%)}
-.vitrina-respaldo{position:relative;display:block;width:100%;height:100%}
+.vitrina-respaldo{position:relative;display:block;width:100%;height:100%;transition:opacity .6s var(--ease-salida),visibility 0s .6s}
+
+/* La copa 3D: el canvas ocupa todo el escenario y aparece en fundido sobre el SVG, que queda de respaldo.
+   touch-action:pan-y es la promesa del celular: el dedo vertical sobre la copa sigue siendo scroll de la página
+   (sólo el gesto horizontal la gira). */
+.vitrina-canvas{position:absolute;inset:0;-webkit-mask-image:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent),linear-gradient(to bottom,#000 80%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent),linear-gradient(to bottom,#000 80%,transparent);mask-composite:intersect;display:block;width:100%;height:100%;opacity:0;touch-action:pan-y;cursor:grab;outline:none;transition:opacity .6s var(--ease-salida)}
+.vitrina-canvas:active{cursor:grabbing}
+.hist-vitrina[data-estado="3d"] .vitrina-canvas{opacity:1}
+.hist-vitrina[data-estado="3d"] .vitrina-respaldo{opacity:0;visibility:hidden}
+.hist-vitrina:not([data-estado="3d"]) .vitrina-frente,.hist-vitrina:not([data-estado="3d"]) .vitrina-pista{display:none}
+
+/* "Ver de frente" arriba a la derecha y la pista de gestos abajo, los dos sobre el escenario. */
+.vitrina-frente{position:absolute;z-index:2;top:var(--sp-2);right:0;min-height:2.75rem;padding:0 var(--sp-4);background:transparent;border:1px solid var(--pub-borde);border-radius:var(--r-btn);
+  font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.14em;text-transform:uppercase;color:var(--gris-osc);cursor:pointer}
+.vitrina-frente:focus-visible{outline:2px solid var(--sobre-oscuro);outline-offset:3px}
+@media (hover:hover){.vitrina-frente:hover{border-color:var(--gris-osc);color:var(--sobre-oscuro)}}
+.vitrina-pista{position:absolute;z-index:2;left:0;right:0;bottom:var(--sp-1);margin:0;text-align:center;pointer-events:none;
+  font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc);transition:opacity .6s var(--ease-salida)}
+.vitrina-pista.oculta{opacity:0}
 .hist-vitrina figcaption{margin-top:var(--sp-4);text-align:center;font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.04em;line-height:1.5;color:var(--gris-osc)}
 
 /* La línea: un único eje vertical continuo. La base (2 px) va de punta a punta; encima, el progreso rojo
@@ -289,7 +307,7 @@
   .hist-escena{grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:0 3.5rem;align-items:start}
   /* La vitrina queda fija a la altura de la pantalla mientras se recorre la línea. */
   .hist-vitrina{position:sticky;top:0;height:100vh;height:100svh;display:grid;grid-template-rows:minmax(0,1fr) auto;align-items:center;justify-items:center;padding-block:var(--sp-8)}
-  .vitrina-escenario{height:min(68svh,36rem);max-height:none;max-width:100%}
+  .vitrina-escenario{height:100%;max-width:100%}
   .epoca-tit{font-size:3.5rem}
   .estrellas{grid-template-columns:repeat(15,minmax(0,1fr));gap:var(--sp-2)}
   .estrella{padding-inline:0}

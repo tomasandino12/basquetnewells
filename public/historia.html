@@ -59,8 +59,8 @@
     </section>
 
     <section class="hist-escena" id="hist-escena" aria-label="La vitrina y la línea histórica">
-      <!-- LA VITRINA. Hoy muestra una copa dibujada a mano (.vitrina-respaldo). La tarea 3 monta
-           acá la copa en 3D y deja este SVG como respaldo si el navegador no tiene WebGL.
+      <!-- LA VITRINA. Muestra una copa dibujada a mano (.vitrina-respaldo) hasta que src/ui/vitrina3d.js
+           monta la copa en 3D; si el navegador no tiene WebGL, o la carga falla, el SVG se queda.
            Puntos de enganche:
              - #vitrina-escenario: el contenedor donde va el canvas.
              - 'historia:seleccion' (se emite sobre #vitrina y sube por el DOM): cada vez que cambia
@@ -68,7 +68,7 @@
                de años de título a marcar en la copa (vacía si no hay nada elegido).
              - 'historia:elegir' (se emite sobre #vitrina): pide elegir un año o una época.
                detail = { anio } o { epocaId }; la página responde con 'historia:seleccion'.
-             - data-estado="estatica": la vitrina todavía no tiene 3D. La tarea 3 lo cambia. -->
+             - data-estado: "estatica" (SVG), "cargando" (se está bajando la 3D) o "3d" (montada). -->
       <figure class="hist-vitrina" id="vitrina" data-estado="estatica">
         <div class="vitrina-escenario" id="vitrina-escenario">
           <svg class="vitrina-respaldo" viewBox="0 0 320 380" role="img" aria-labelledby="copa-t copa-d">
