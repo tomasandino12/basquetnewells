@@ -77,8 +77,8 @@ export function htmlTarjetaTitulo(t) {
 /** La tarjeta "momento": un hito que no es un título. Ancha, con borde rojo a la izquierda y sin estrella. */
 export function htmlMomento(h) {
   return html`<article class="momento" data-momento="${h.id}" data-epoca="${h.epoca ?? ''}" data-rev>
-    <p class="momento-rotulo">${h.epoca == null ? 'Contexto' : 'Momento'}</p>
-    <h3 class="momento-anio">${h.epoca == null ? html`${h.anio}` : html`<button type="button" class="t-sel" data-epoca="${h.epoca}" aria-pressed="false">${h.anio}</button>`}</h3>
+    <p class="momento-rotulo">Momento</p>
+    <h3 class="momento-anio"><button type="button" class="t-sel" data-epoca="${h.epoca}" aria-pressed="false">${h.anio}</button></h3>
     <p class="t-txt">${h.texto}</p>
     <ul class="hito-fuentes">${htmlFuentes(h)}</ul>
   </article>`;
@@ -115,11 +115,12 @@ export function htmlEpoca(e) {
   </section>`;
 }
 
-/** La línea histórica entera: primero el contexto de la Asociación (1926) y después una época tras otra. */
+/**
+ * La línea histórica entera: una época tras otra. Los momentos sin época (los 100 años
+ * de la Asociación) no se muestran: Tomás prefirió que la línea arranque en 1943.
+ */
 export function htmlLinea() {
-  const contexto = momentos().filter((m) => m.epoca == null);
-  return html`${contexto.length ? html`<div class="momentos prologo">${contexto.map(htmlMomento)}</div>` : ''}
-    ${epocas().filter((e) => !e.solapada).map(htmlEpoca)}`;
+  return html`${epocas().filter((e) => !e.solapada).map(htmlEpoca)}`;
 }
 
 /** El panel de cifras del encabezado: todo sale de `resumenDeTitulos()`. */
@@ -130,7 +131,6 @@ export function htmlCifras() {
       <div><dt>Títulos de Primera</dt><dd>${r.total}</dd></div>
       <div><dt>Seguidos</dt><dd>${r.racha.cantidad}<small>${r.racha.desde}–${r.racha.hasta}</small></dd></div>
       <div><dt>Primer título</dt><dd>${r.primero}</dd></div>
-      <div><dt>Último título</dt><dd>${r.ultimo}</dd></div>
     </dl>`;
 }
 

@@ -37,14 +37,16 @@ test('la línea histórica tiene un bloque por época (las solapadas van dentro)
   const salida = String(htmlLinea());
   for (const e of epocas().filter((x) => !x.solapada)) assert.ok(salida.includes(`<section class="epoca" data-epoca="${e.id}"`), e.id);
   for (const p of datosPendientes()) assert.ok(!salida.includes(p.falta), p.id);
-  for (const h of datosPublicables().filter((d) => d.texto)) assert.ok(salida.includes(h.texto), h.id);
+  // Todo hito con época se ve; los sin época (los 100 años de la Asociación) quedan afuera a propósito.
+  for (const h of datosPublicables().filter((d) => d.texto && d.epoca)) assert.ok(salida.includes(h.texto), h.id);
+  assert.ok(!salida.includes('Contexto'));
 });
 
 test('cada título es una tarjeta con su estrella, y los momentos no llevan estrella ni número de título', () => {
   const salida = String(htmlLinea());
   assert.equal((salida.match(/<article class="t-card/g) ?? []).length, titulos().length);
   assert.equal((salida.match(/class="t-estrella"/g) ?? []).length, titulos().length);
-  assert.equal((salida.match(/<article class="momento"/g) ?? []).length, momentos().length);
+  assert.equal((salida.match(/<article class="momento"/g) ?? []).length, momentos().filter((m) => m.epoca).length);
   // Los 12 seguidos son una sola tira: el texto de la época se dice una vez, no en cada tarjeta.
   const intro = datosPublicables().find((d) => d.id === 'doce-seguidos').texto;
   assert.equal(salida.split(intro).length - 1, 1);
@@ -64,7 +66,8 @@ test('el panel de cifras sale de los datos', () => {
   assert.match(salida, /Títulos de Primera<\/dt><dd>15</);
   assert.match(salida, /<dd>12<small>1943–1954<\/small>/);
   assert.match(salida, /Primer título<\/dt><dd>1943</);
-  assert.match(salida, /Último título<\/dt><dd>1983</);
+  // Tomás pidió sacar el último título (24/11).
+  assert.doesNotMatch(salida, /Último título/);
 });
 
 test('el dorado queda sólo en las estrellas y en el filete de la vitrina', () => {
