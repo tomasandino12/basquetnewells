@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<!-- Se sirve con Cache-Control: no-store (vercel.json), igual que el portal: guardado,
+     el navegador lo revalida y el 304 no trae la CSP vigente. -->
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D0D10">
+<!-- Oscura de punta a punta: lo declaramos para que el modo oscuro automático de Samsung Internet y de Chromium no la recolore (ver portal.html). -->
+<meta name="color-scheme" content="dark">
+<title>Nuestra historia | Básquet de Newell&#39;s en Rosario</title>
+<meta name="description" content="Los 15 títulos de Primera del básquet de Newell's en la Asociación Rosarina, de 1943 a 1983, con su línea de tiempo y la fuente de cada dato.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://basquetnewells.com.ar/historia">
+<!-- Las metas de Open Graph y Twitter se suman al enlazar la página desde el portal. -->
+
+<link rel="preload" href="/public/fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/public/fonts/barlow-condensed-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/public/css/tokens.css">
+<link rel="stylesheet" href="/public/css/base.css">
+<link rel="stylesheet" href="/public/css/layout.css">
+<link rel="stylesheet" href="/public/css/componentes.css">
+<link rel="stylesheet" href="/public/css/publico.css">
+<link rel="stylesheet" href="/public/css/historia.css">
+</head>
+<body>
+
+<!-- =====================================================================
+     NUESTRA HISTORIA. Página pública y estática: sin sesión, sin Supabase y sin
+     datos de menores. Todo lo que cuenta (títulos, épocas, hitos y sus fuentes)
+     sale de src/data/historia.js y lo pinta src/ui/historia.js; acá está sólo lo
+     que no depende de esos datos. Sin scripts en línea: la CSP no los admite.
+     ===================================================================== -->
+<div class="publico portal-d historia-d" id="publico">
+  <header class="portal-barra hist-barra">
+    <img src="/public/escudo.png" alt="Escudo de Newell&#39;s Old Boys" width="36" height="36">
+    <div class="portal-marca"><div class="t">Newell&#39;s <span>Básquet</span></div><div class="s">Nuestra historia</div></div>
+    <nav class="portal-barra-acc" aria-label="Volver">
+      <a class="portal-barra-btn portal-sem-btn" href="/">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Portal
+      </a>
+    </nav>
+  </header>
+
+  <main class="historia">
+    <!-- Encabezado: el número es lo único que se anima (src/ui/historia.js lo cuenta de 0 a
+         la cantidad de títulos, salvo con movimiento reducido). El 15 escrito acá es el valor
+         sin JavaScript; un test lo compara con los datos. -->
+    <section class="hist-heroe" aria-labelledby="t-historia">
+      <p class="hist-eyebrow"><span aria-hidden="true"></span>Nuestra historia</p>
+      <h1 id="t-historia"><span class="hist-num" id="hist-contador">15</span><span class="hist-tit">veces campeón<br><em>rosarino</em></span></h1>
+      <p class="hist-bajada">Desde el Parque de la Independencia, el básquet de Newell&#39;s Old Boys guarda su archivo: los títulos de Primera de la Asociación Rosarina, año por año y con la fuente de cada dato.</p>
+    </section>
+
+    <section class="hist-escena" aria-label="La vitrina y la línea de tiempo">
+      <!-- LA VITRINA. Hoy muestra una copa dibujada a mano (.vitrina-respaldo). La tarea 3 monta
+           acá la copa en 3D y deja este SVG como respaldo si el navegador no tiene WebGL.
+           Puntos de enganche:
+             - #vitrina-escenario: el contenedor donde va el canvas.
+             - 'historia:seleccion' (se emite sobre #vitrina y sube por el DOM): cada vez que cambia
+               la época o el año elegidos. detail = { epocaId, anio, anios }, con `anios` la lista
+               de años de título a marcar en la copa (vacía si no hay nada elegido).
+             - 'historia:elegir' (se emite sobre #vitrina): pide elegir un año o una época.
+               detail = { anio } o { epocaId }; la página responde con 'historia:seleccion'.
+             - data-estado="estatica": la vitrina todavía no tiene 3D. La tarea 3 lo cambia. -->
+      <figure class="hist-vitrina" id="vitrina" data-estado="estatica">
+        <div class="vitrina-escenario" id="vitrina-escenario">
+          <svg class="vitrina-respaldo" viewBox="0 0 320 380" role="img" aria-labelledby="copa-t copa-d">
+            <title id="copa-t">La copa de Primera</title>
+            <desc id="copa-d">Una copa con el cuenco plateado y ancho, dos asas doradas altas, el escudo del club al frente y una base redonda escalonada de madera.</desc>
+            <defs>
+              <linearGradient id="v-plata" x1="0" x2="1">
+                <stop offset="0" stop-color="#6d7078"/><stop offset=".18" stop-color="#c9ccd2"/><stop offset=".38" stop-color="#f4f5f7"/>
+                <stop offset=".58" stop-color="#aeb2ba"/><stop offset=".82" stop-color="#8a8e97"/><stop offset="1" stop-color="#4f525a"/>
+              </linearGradient>
+              <linearGradient id="v-interior" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#101114"/><stop offset="1" stop-color="#3a3c44"/></linearGradient>
+              <linearGradient id="v-oro" x1="0" x2="1">
+                <stop offset="0" stop-color="#7a5a22"/><stop offset=".3" stop-color="#e6c26e"/><stop offset=".45" stop-color="#fbe7a6"/>
+                <stop offset=".65" stop-color="#c5a059"/><stop offset="1" stop-color="#6e4f1c"/>
+              </linearGradient>
+              <linearGradient id="v-madera" x1="0" x2="1">
+                <stop offset="0" stop-color="#1d1009"/><stop offset=".3" stop-color="#5a3920"/><stop offset=".48" stop-color="#7a4f2d"/>
+                <stop offset=".72" stop-color="#47291a"/><stop offset="1" stop-color="#170b05"/>
+              </linearGradient>
+              <radialGradient id="v-tapa" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="#7d5230"/><stop offset="1" stop-color="#3a2212"/></radialGradient>
+              <linearGradient id="v-cono" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffe9b0" stop-opacity=".2"/><stop offset="1" stop-color="#ffe9b0" stop-opacity="0"/></linearGradient>
+              <radialGradient id="v-sombra" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".7"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+            </defs>
+
+            <polygon points="135,0 185,0 305,350 15,350" fill="url(#v-cono)"/>
+            <ellipse cx="160" cy="350" rx="150" ry="20" fill="url(#v-sombra)"/>
+
+            <!-- Base de madera: tres escalones redondos. -->
+            <path d="M40 322v22a120 16 0 0 0 240 0v-22z" fill="url(#v-madera)"/>
+            <ellipse cx="160" cy="322" rx="120" ry="16" fill="url(#v-tapa)"/>
+            <path d="M68 304v18a92 12 0 0 0 184 0v-18z" fill="url(#v-madera)"/>
+            <ellipse cx="160" cy="304" rx="92" ry="12" fill="url(#v-tapa)"/>
+            <path d="M98 288v14a62 9 0 0 0 124 0v-14z" fill="url(#v-madera)"/>
+            <ellipse cx="160" cy="288" rx="62" ry="9" fill="url(#v-tapa)"/>
+            <ellipse cx="160" cy="288" rx="62" ry="9" fill="none" stroke="url(#v-plata)" stroke-width="1.5" opacity=".7"/>
+
+            <!-- Asas doradas, altas: salen de la cintura del cuenco y suben por encima del borde. -->
+            <g fill="none" stroke-linecap="round">
+              <path d="M70 154C20 154 12 68 42 56C66 48 78 74 68 124" stroke="#2d1f08" stroke-width="10"/>
+              <path d="M70 154C20 154 12 68 42 56C66 48 78 74 68 124" stroke="url(#v-oro)" stroke-width="7"/>
+              <path d="M66 148C26 148 20 74 44 62" stroke="#fbe7a6" stroke-width="1.6" opacity=".6"/>
+              <path d="M250 154C300 154 308 68 278 56C254 48 242 74 252 124" stroke="#2d1f08" stroke-width="10"/>
+              <path d="M250 154C300 154 308 68 278 56C254 48 242 74 252 124" stroke="url(#v-oro)" stroke-width="7"/>
+              <path d="M254 148C294 148 300 74 276 62" stroke="#fbe7a6" stroke-width="1.6" opacity=".6"/>
+            </g>
+
+            <!-- Tallo plateado con anillos. -->
+            <path d="M147 292L150 234H170L173 292z" fill="url(#v-plata)"/>
+            <ellipse cx="160" cy="288" rx="26" ry="6" fill="url(#v-plata)"/>
+            <ellipse cx="160" cy="268" rx="15" ry="4" fill="url(#v-plata)" stroke="#2a2b30" stroke-opacity=".35"/>
+            <ellipse cx="160" cy="252" rx="13" ry="3.5" fill="url(#v-plata)" stroke="#2a2b30" stroke-opacity=".35"/>
+            <ellipse cx="160" cy="237" rx="17" ry="4.5" fill="url(#v-plata)" stroke="#2a2b30" stroke-opacity=".35"/>
+
+            <!-- Cuenco plateado ancho. -->
+            <path d="M64 124C64 188 118 226 146 236L174 236C202 226 256 188 256 124z" fill="url(#v-plata)"/>
+            <path d="M86 142C92 182 118 208 140 220" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".5"/>
+            <ellipse cx="160" cy="124" rx="96" ry="11" fill="url(#v-interior)"/>
+            <ellipse cx="160" cy="124" rx="96" ry="11" fill="none" stroke="url(#v-plata)" stroke-width="3"/>
+
+            <!-- Escudo al frente. -->
+            <path d="M141 156h38v22c0 14-10 22-19 26-9-4-19-12-19-26z" fill="#1b3a7a" stroke="url(#v-oro)" stroke-width="2"/>
+            <text x="160" y="187" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-weight="700" font-size="28" fill="#d9122e">R</text>
+          </svg>
+        </div>
+        <figcaption>Recreación inspirada en la copa actual de la Asociación Rosarina</figcaption>
+      </figure>
+
+      <div class="hist-linea" id="hist-linea">
+        <noscript><p class="hist-sinjs">La línea de tiempo necesita JavaScript para mostrarse.</p></noscript>
+      </div>
+    </section>
+
+    <section class="portal-sec hist-sec hist-estrellas-sec" aria-labelledby="t-estrellas">
+      <p class="portal-st">Los títulos</p>
+      <h2 id="t-estrellas">Las 15 estrellas</h2>
+      <p class="intro">Tocá un año para ver qué se sabe de ese título.</p>
+      <div id="hist-estrellas"></div>
+    </section>
+
+    <section class="portal-sec hist-sec hist-foto-sec" aria-labelledby="t-archivo">
+      <p class="portal-st">Archivo</p>
+      <h2 id="t-archivo">Una foto de archivo</h2>
+      <figure class="hist-foto">
+        <img src="/public/img/historia/plantel-que-triunfo.png" width="642" height="632" loading="lazy"
+          alt="Fotografía de archivo en blanco y negro: un plantel de básquet de Newell's posa en el vestuario junto a dos hombres de traje.">
+        <figcaption>El plantel que triunfó</figcaption>
+      </figure>
+    </section>
+
+    <section class="portal-sec hist-sec hist-contexto" id="hist-contexto" aria-label="Contexto" hidden></section>
+  </main>
+
+  <footer class="portal-pie hist-pie">
+    <div class="portal-rasgado" aria-hidden="true"></div>
+    <div class="pie-legal">
+      <div class="pie-marca"><img src="/public/escudo.png" alt="Escudo de Newell&#39;s Old Boys" width="40" height="40"><div><b>Básquet Newell&#39;s</b><small>Nuestra historia</small></div></div>
+      <p class="pie-links"><a href="/">Volver al portal</a><a href="/public/legal/privacidad.html">Política de privacidad</a><a href="/public/legal/terminos.html">Términos y condiciones</a><a href="https://www.instagram.com/basquetnewells" target="_blank" rel="noopener">Seguinos en Instagram</a></p>
+    </div>
+  </footer>
+</div>
+
+<script type="module" src="/src/ui/historia.js"></script>
+</body>
+</html>

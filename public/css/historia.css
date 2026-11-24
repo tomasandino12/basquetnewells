@@ -1,0 +1,160 @@
+/* =====================================================================
+   NUESTRA HISTORIA — public/historia.html.
+   Lado público: negro, rojo del club, dorado de archivo, títulos en Barlow
+   Condensed. La idea es un museo de noche: una vitrina con luz cálida, una línea
+   de tiempo como cartelería y fichas de catálogo (etiquetas en mono) con la
+   fuente de cada dato. Sólo colores de tokens.css; sólo se animan transform y
+   opacity (DESIGN.md), y con prefers-reduced-motion base.css apaga todo.
+   Reusa de publico.css la barra, el pie, .portal-st y los h2 de .portal-sec.
+   Los puntos de corte van acá, en el archivo de la página, para que sea una sola
+   pieza (los de layout.css son los de la app).
+   ===================================================================== */
+
+:root:has(.historia-d){color-scheme:dark}
+.historia-d::before{height:32rem;background:radial-gradient(ellipse 85% 80% at 10% 0,var(--club),transparent);opacity:.3}
+
+.historia{width:100%;max-width:64rem;margin-inline:auto}
+
+/* La barra de la página es la del portal, pero acá no flota sobre una foto. */
+.hist-barra{position:relative;inset:auto}
+
+/* ---- Encabezado ---- */
+.hist-heroe{position:relative;padding:var(--sp-8) var(--sp-4) var(--sp-8)}
+.hist-heroe::after{content:"";display:block;height:1px;margin-top:var(--sp-8);background:linear-gradient(90deg,var(--dorado-borde),transparent)}
+.hist-eyebrow{display:flex;align-items:center;gap:var(--sp-3);margin:0;font-family:var(--ff-titulo);font-weight:600;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-115);color:var(--club-texto)}
+.hist-eyebrow span{width:2rem;height:2px;background:var(--primario)}
+.hist-heroe h1{display:flex;align-items:flex-end;gap:var(--sp-3);margin:var(--sp-4) 0 0;text-transform:none;letter-spacing:0}
+.hist-num{flex:none;white-space:nowrap;font-size:clamp(6.5rem,30vw,14rem);line-height:.76;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--primario)}
+.hist-tit{padding-bottom:.4rem;font-size:clamp(2rem,8.6vw,4.5rem);line-height:.9;font-weight:700;text-transform:uppercase;letter-spacing:.01em}
+.hist-tit em{font-style:normal;color:var(--dorado)}
+.hist-bajada{max-width:36rem;margin:var(--sp-5) 0 0;color:var(--gris-osc);font-size:var(--fs-170);line-height:1.6}
+
+/* Entra de a poco, una pieza tras otra. `backwards`: sin `to`, así que sin animación todo queda a la vista. */
+@keyframes hist-sube{from{opacity:0;transform:translateY(1rem)}}
+.hist-heroe > *{animation:hist-sube var(--dur-rise) var(--ease-salida) backwards}
+.hist-heroe > :nth-child(2){animation-delay:.1s}
+.hist-heroe > :nth-child(3){animation-delay:.22s}
+
+/* ---- Vitrina + línea de tiempo ---- */
+.hist-escena{display:grid;gap:var(--sp-8);padding:0 var(--sp-4)}
+
+.hist-vitrina{margin:0;position:relative;isolation:isolate;overflow:hidden;
+  border:1px solid var(--pub-borde);border-radius:var(--r);
+  background:radial-gradient(ellipse 80% 60% at 50% 0,var(--dorado-suave),transparent 72%),var(--pub-tarjeta)}
+/* El reflejo del vidrio: una franja diagonal fija. */
+.hist-vitrina::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(115deg,transparent 30%,var(--toque-osc) 42%,transparent 54%);opacity:.5}
+.vitrina-escenario{display:grid;place-items:end center;max-height:min(26rem,70svh);padding:var(--sp-5) var(--sp-5) 0;aspect-ratio:320/380}
+.vitrina-respaldo{display:block;width:100%;height:100%}
+.hist-vitrina figcaption{position:relative;z-index:3;padding:var(--sp-3) var(--sp-4);border-top:1px solid var(--pub-borde);
+  background:var(--pub-fondo);text-align:center;font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.04em;line-height:1.5;color:var(--gris-osc)}
+
+/* La línea de tiempo: un riel con un nodo por época; la elegida se abre en su tarjeta. */
+.linea{--riel:1.5rem;position:relative;margin:0;padding:0 0 0 var(--riel)}
+.linea::before{content:"";position:absolute;left:.5rem;top:1.25rem;bottom:1rem;width:1px;background:linear-gradient(var(--primario),var(--pub-borde) 14%)}
+.linea-item{--sangria:0rem;position:relative;margin-left:var(--sangria)}
+.linea-item::before{content:"";position:absolute;left:calc(-1.375rem - var(--sangria));top:1.1rem;width:.75rem;height:.75rem;border-radius:50%;
+  background:var(--pub-fondo);border:2px solid var(--gris-osc)}
+.linea-item.on::before{background:var(--primario);border-color:var(--primario);box-shadow:0 0 0 4px var(--dorado-suave)}
+/* Una época que cae dentro de otra (1948 y 1950 están dentro de los 12 seguidos) va sangrada. */
+.linea-item.solapada{--sangria:var(--sp-4)}
+.linea-item.solapada::before{width:.5rem;height:.5rem;top:1.25rem;margin-left:.125rem}
+
+.linea-btn{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:var(--sp-3);align-items:center;
+  width:100%;min-height:var(--tap);padding:var(--sp-3) 0;text-align:left;color:var(--gris-osc)}
+.linea-anio{grid-column:1;font-family:var(--ff-titulo);font-weight:600;font-size:var(--fs-190);letter-spacing:.1em;line-height:1;color:var(--dorado)}
+.linea-nombre{grid-column:1;margin-top:.1875rem;font-family:var(--ff-titulo);font-weight:700;font-size:1.75rem;line-height:1;text-transform:uppercase;letter-spacing:.01em;color:var(--sobre-oscuro)}
+.solapada .linea-nombre{font-size:1.5rem}
+.linea-flecha{grid-column:2;grid-row:1 / 3;width:1.5rem;height:1.5rem;fill:none;stroke:var(--gris-osc);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform var(--dur-2) var(--ease-salida)}
+.linea-btn[aria-expanded="true"] .linea-flecha{transform:rotate(180deg);stroke:var(--sobre-oscuro)}
+@media (hover:hover){.linea-btn:hover .linea-nombre{color:var(--dorado)}}
+
+/* La tarjeta "Archivo histórico": una ficha de catálogo. */
+.archivo{margin:0 0 var(--sp-5);padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-left:3px solid var(--primario);
+  border-radius:var(--r-btn) var(--r) var(--r) var(--r-btn);animation:hist-sube var(--dur-3) var(--ease-salida) backwards}
+.archivo[hidden]{display:none}
+.archivo-cab{display:flex;justify-content:space-between;gap:var(--sp-3);padding-bottom:var(--sp-3);margin-bottom:var(--sp-3);border-bottom:1px dashed var(--pub-borde);
+  font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc)}
+.chips-titulo{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin:0 0 var(--sp-4)}
+.chip-titulo{display:inline-flex;align-items:baseline;gap:.25rem;padding:.125rem .625rem;border:1px solid var(--dorado-borde);border-radius:var(--r-btn);
+  font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-190);line-height:1.3;color:var(--dorado)}
+.chip-titulo small{margin-left:.25rem;font-family:var(--ff-cuerpo);font-weight:500;font-size:var(--fs-100);letter-spacing:.06em;text-transform:uppercase;color:var(--gris-osc)}
+
+.hito + .hito{margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--pub-borde)}
+.hito-anio{margin:0 0 .25rem;font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-220);line-height:1;letter-spacing:.04em;color:var(--dorado)}
+.hito-txt{margin:0;font-size:var(--fs-160);line-height:1.6}
+.hito-dato{margin:var(--sp-3) 0 0}
+.hito-dato dt{font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc)}
+.hito-dato dd{margin:.125rem 0 0;font-size:var(--fs-145);line-height:1.55}
+.hito-fuentes{display:grid;gap:.125rem;margin:var(--sp-3) 0 0}
+.fuente{display:inline-block;padding-block:.25rem;font-size:var(--fs-115);line-height:1.45;color:var(--gris-osc);text-decoration:underline;text-decoration-color:var(--pub-borde);text-underline-offset:.2em}
+@media (hover:hover){.fuente:hover{color:var(--sobre-oscuro);text-decoration-color:var(--gris-osc)}}
+
+.hist-sinjs{margin:0;color:var(--gris-osc);font-size:var(--fs-145)}
+
+/* ---- Las 15 estrellas ---- */
+.hist-sec{max-width:64rem;margin-inline:auto}
+.estrellas{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--sp-2);margin:0 0 var(--sp-4)}
+.estrella{display:grid;justify-items:center;gap:.125rem;width:100%;min-height:var(--tap);padding:var(--sp-3) 0 var(--sp-2);
+  background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r);color:var(--gris-osc)}
+.estrella svg{width:1.5rem;height:1.5rem;fill:none;stroke:var(--dorado);stroke-width:1.5;stroke-linejoin:round}
+.estrella b{font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-220);line-height:1.1;color:var(--sobre-oscuro)}
+.estrella small{font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.04em}
+.estrella.en-epoca svg{fill:var(--dorado);fill-opacity:.3}
+.estrella[aria-pressed="true"]{background:var(--pub-oro-fondo);border-color:var(--dorado)}
+.estrella[aria-pressed="true"] svg{fill:var(--dorado);fill-opacity:1}
+@media (hover:hover){.estrella:hover{border-color:var(--dorado-borde);background:var(--pub-oro-fondo)}}
+/* Entran de a una al llegar a la pantalla (sólo si la clase la puso el script). */
+.estrellas.anim:not(.visto) li{opacity:0;transform:translateY(.75rem) scale(.92)}
+.estrellas.anim.visto li{transition:opacity var(--dur-rise) var(--ease-salida),transform var(--dur-rise) var(--ease-salida);transition-delay:calc(var(--i) * 45ms)}
+
+.ficha{min-height:11rem;padding:var(--sp-4);background:var(--pub-tarjeta);border:1px solid var(--pub-borde);border-radius:var(--r)}
+.ficha.con-dato{border-color:var(--dorado-borde);animation:hist-sube var(--dur-3) var(--ease-salida) backwards}
+.ficha-vacia{margin:0;color:var(--gris-osc);font-size:var(--fs-145)}
+.ficha-cab{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-1) var(--sp-3)}
+.ficha-anio{font-family:var(--ff-titulo);font-weight:700;font-size:clamp(3rem,12vw,4.5rem);line-height:.9;color:var(--dorado)}
+.ficha-num{font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc)}
+.ficha-torneo{padding:.125rem .5rem;border-radius:var(--r-btn);background:var(--dorado);color:var(--pub-fondo);font-family:var(--ff-titulo);font-weight:700;font-size:var(--fs-170);letter-spacing:.06em;text-transform:uppercase}
+.ficha-txt{margin:var(--sp-3) 0 0;font-size:var(--fs-160);line-height:1.6}
+.ficha-epoca{margin:var(--sp-2) 0 0;font-size:var(--fs-125);font-style:italic;color:var(--gris-osc)}
+.estrellas-nota{display:flex;flex-wrap:wrap;gap:0 var(--sp-3);margin:var(--sp-3) 0 0;font-size:var(--fs-125);color:var(--gris-osc)}
+
+/* ---- Foto de archivo ---- */
+.hist-foto{margin:0;max-width:30rem;padding:var(--sp-3);background:var(--pub-tarjeta);border:1px solid var(--pub-borde)}
+.hist-foto img{display:block;width:100%;height:auto;filter:brightness(.88) contrast(1.05)}
+.hist-foto figcaption{padding-top:var(--sp-3);font-family:var(--ff-titulo);font-weight:600;font-size:var(--fs-190);letter-spacing:.14em;text-transform:uppercase;color:var(--gris-osc)}
+
+/* ---- Contexto ---- */
+.hist-contexto{padding-bottom:0}
+.hist-contexto .portal-st{margin-bottom:var(--sp-2)}
+.contexto-txt{max-width:40rem;margin:0;color:var(--gris-osc);font-size:var(--fs-145);line-height:1.6}
+
+.hist-pie .pie-legal{padding-bottom:calc(var(--sp-6) + env(safe-area-inset-bottom))}
+
+/* ---- Pantallas más anchas ---- */
+@media (min-width:40rem){
+  .hist-heroe,.hist-escena{padding-inline:var(--sp-6)}
+  .estrellas{gap:var(--sp-3)}
+  .estrella{padding-block:var(--sp-4) var(--sp-3)}
+  .estrella svg{width:1.75rem;height:1.75rem}
+}
+@media (min-width:64rem){
+  .hist-heroe{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,21rem);column-gap:3.5rem;align-items:end;padding-top:3.5rem}
+  .hist-heroe .hist-eyebrow,.hist-heroe::after{grid-column:1 / -1}
+  .hist-heroe .hist-bajada{margin:0 0 .5rem}
+  .hist-escena{grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:var(--sp-8) 3.5rem;align-items:start}
+  /* La vitrina queda a la vista mientras se recorre la línea de tiempo. */
+  .hist-vitrina{position:sticky;top:var(--sp-6)}
+  .vitrina-escenario{max-height:min(34rem,calc(100svh - 9rem))}
+  .linea-nombre{font-size:2rem}
+  .solapada .linea-nombre{font-size:1.625rem}
+  .estrellas{grid-template-columns:repeat(15,minmax(0,1fr));gap:var(--sp-2)}
+  .estrella{padding-inline:0}
+  .estrella b{font-size:var(--fs-190)}
+}
+
+/* Con movimiento reducido base.css ya apaga animaciones y transiciones: acá sólo se asegura
+   que nada quede escondido esperando una animación. */
+@media (prefers-reduced-motion:reduce){
+  .estrellas.anim:not(.visto) li{opacity:1;transform:none}
+}
