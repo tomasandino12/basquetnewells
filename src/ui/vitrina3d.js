@@ -6,15 +6,16 @@ import { placasDeCopa } from '../data/historia.js';
 /**
  * La vitrina 3D de "Nuestra historia": una copa hecha a mano con Three.js, inspirada en la copa
  * challenger actual de la Asociación Rosarina (no hay fotos de las de época: no se inventan tres).
- * Todo es geometría procedural (torno para el cuenco y el tallo, tubos para las asas, cilindros para
- * la base) y texturas dibujadas en canvas (madera, placas, escudo), así que no hay un solo archivo
- * de modelo ni de imagen que bajar.
+ * Todo es geometría procedural (torno para el cuenco y el tallo, cintas planas extruidas para las
+ * asas, cilindros para la base) y texturas dibujadas en canvas (madera, placas, escudo), así que no
+ * hay un solo archivo de modelo ni de imagen que bajar.
  *
  * Este módulo sólo se carga con `import()` cuando la vitrina se acerca al viewport (ver
  * src/ui/historia.js): por eso importa Three.js de forma estática acá adentro, y por eso no
  * importa nada de la UI. Habla con la página sólo por eventos del DOM:
- *  - escucha 'historia:seleccion' (detail = { epocaId, anio, anios }) sobre `.hist-vitrina` y
- *    marca las placas de esos años;
+ *  - escucha 'historia:seleccion' (detail = { epocaId, anio, anios }) sobre `.hist-vitrina`: si
+ *    trae UN solo año enciende esa placa; con una época entera no enciende ninguna (doce placas
+ *    rojas a la vez eran ruido) y sólo gira la cámara hacia el grupo;
  *  - emite 'historia:elegir' (detail = { anio }) sobre el contenedor cuando se toca una placa.
  *
  * Un solo renderer y una sola escena. Las piezas (hoy la copa; la medalla es la próxima) se
@@ -169,17 +170,20 @@ function texturasEscudo() {
   const W = 512;
   const H = 640;
   const contorno = contornoEscudo();
-  const esmalte = achicar(contorno, 0.84);
+  const esmalte = achicar(contorno, 0.8);
   const trazar = (g, pts) => {
     g.beginPath();
     pts.forEach(([x, v], i) => (i ? g.lineTo(x * W, (1 - v) * H) : g.moveTo(x * W, (1 - v) * H)));
     g.closePath();
   };
+  // La "R" del escudo real es una serif gruesa (de remates marcados), no una condensada sans: por eso
+  // Georgia / Times en negrita, con las alternativas de cada sistema. Se dibuja un poco más alta
+  // que ancha, apoyada un pelo por debajo del centro como en la insignia.
   const R = (g, estilo) => {
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    g.font = `700 ${H * 0.62}px "Barlow Condensed", "Arial Narrow", sans-serif`;
-    estilo(g, W / 2, H * 0.54);
+    g.font = `900 ${H * 0.66}px Georgia, "Times New Roman", "Noto Serif", "DejaVu Serif", serif`;
+    estilo(g, W / 2, H * 0.55);
   };
 
   const [alfa, a] = lienzo(W, H);
@@ -190,33 +194,44 @@ function texturasEscudo() {
   a.fill();
 
   const [color, c] = lienzo(W, H);
-  const oro = c.createLinearGradient(0, 0, W, H);
-  oro.addColorStop(0, '#f1d58f');
-  oro.addColorStop(0.5, '#c5a059');
-  oro.addColorStop(1, '#8a6a2c');
-  c.fillStyle = oro;
+  // Borde azul esmaltado (la insignia real no lleva marco dorado).
+  const azul = c.createLinearGradient(0, 0, W, H);
+  azul.addColorStop(0, '#2f63c4');
+  azul.addColorStop(0.5, '#1d429a');
+  azul.addColorStop(1, '#122b69');
+  c.fillStyle = azul;
   trazar(c, contorno);
   c.fill();
-  const azul = c.createLinearGradient(0, 0, 0, H);
-  azul.addColorStop(0, '#2a5bb8');
-  azul.addColorStop(1, '#10285e');
-  c.fillStyle = azul;
+  // Interior claro, apenas azulado para que no sea un blanco plano.
+  const claro = c.createLinearGradient(0, 0, 0, H);
+  claro.addColorStop(0, '#f6f8fc');
+  claro.addColorStop(1, '#cfd9ea');
+  c.fillStyle = claro;
   trazar(c, esmalte);
   c.fill();
+  // Un filete azul fino adentro del claro: así el borde se lee como esmalte con marco.
+  c.strokeStyle = 'rgba(29,66,154,.55)';
+  c.lineWidth = 3;
+  trazar(c, achicar(esmalte, 0.93));
+  c.stroke();
   // Reflejo de esmalte: una franja clara en diagonal.
   c.save();
-  trazar(c, esmalte);
+  trazar(c, contorno);
   c.clip();
   const brillo = c.createLinearGradient(0, 0, W, H * 0.7);
-  brillo.addColorStop(0, 'rgba(255,255,255,.22)');
+  brillo.addColorStop(0, 'rgba(255,255,255,.2)');
   brillo.addColorStop(0.45, 'rgba(255,255,255,0)');
   c.fillStyle = brillo;
   c.fillRect(0, 0, W, H);
   c.restore();
+  // La R: contorno azul oscuro afuera, blanco adentro y relleno rojo.
   R(c, (g, x, y) => {
     g.lineJoin = 'round';
-    g.lineWidth = 16;
-    g.strokeStyle = '#f2f3f6';
+    g.lineWidth = 30;
+    g.strokeStyle = '#14286a';
+    g.strokeText('R', x, y);
+    g.lineWidth = 15;
+    g.strokeStyle = '#ffffff';
     g.strokeText('R', x, y);
     g.fillStyle = '#d3101f';
     g.fillText('R', x, y);
@@ -227,34 +242,38 @@ function texturasEscudo() {
   b.fillRect(0, 0, W, H);
   b.shadowColor = '#fff';
   b.shadowBlur = 14;
-  b.fillStyle = '#d8d8d8';
+  b.fillStyle = '#e0e0e0'; // el borde azul queda alto
   trazar(b, contorno);
   b.fill();
   b.shadowBlur = 0;
-  b.fillStyle = '#5a5a5a';
+  b.fillStyle = '#5a5a5a'; // el interior, hundido
   trazar(b, esmalte);
   b.fill();
   R(b, (g, x, y) => {
     g.shadowColor = '#fff';
-    g.shadowBlur = 12;
+    g.shadowBlur = 10;
     g.lineJoin = 'round';
-    g.lineWidth = 16;
-    g.strokeStyle = '#fff';
+    g.lineWidth = 30;
+    g.strokeStyle = '#bdbdbd'; // el contorno de la R, a media altura
     g.strokeText('R', x, y);
-    g.fillStyle = '#fff';
+    g.shadowBlur = 0;
+    g.fillStyle = '#fff'; // y el cuerpo de la R, lo más alto
     g.fillText('R', x, y);
   });
 
-  // Canal G = rugosidad, canal B = metal (lo que lee Three.js). Borde dorado: metal pulido;
-  // esmalte: brillante y poco metálico; la R: esmalte rojo.
+  // Canal G = rugosidad, canal B = metal (lo que lee Three.js). Borde: esmalte azul, brillante y
+  // poco metálico; interior y R: esmalte liso, casi sin metal.
   const [mezcla, m] = lienzo(W, H);
-  m.fillStyle = 'rgb(0,95,255)';
+  m.fillStyle = 'rgb(0,90,70)';
   m.fillRect(0, 0, W, H);
-  m.fillStyle = 'rgb(0,52,45)';
+  m.fillStyle = 'rgb(0,60,25)';
   trazar(m, esmalte);
   m.fill();
   R(m, (g, x, y) => {
     g.fillStyle = 'rgb(0,60,25)';
+    g.strokeStyle = 'rgb(0,60,25)';
+    g.lineWidth = 30;
+    g.strokeText('R', x, y);
     g.fillText('R', x, y);
   });
 
@@ -358,51 +377,81 @@ function crearCopa({ aniso }) {
   collar.position.y = 1.97;
   grupo.add(collar);
 
-  // --- Cuenco: ancho y profundo. ---
+  // --- Cuenco: alto y casi cilíndrico, que se abre apenas hacia el borde (como la copa real). ---
   const exterior = new THREE.SplineCurve([
-    [0.3, 1.95], [0.5, 2.08], [0.9, 2.38], [1.28, 2.85], [1.5, 3.4], [1.6, 3.95], [1.66, 4.35],
+    [0.3, 1.95], [0.62, 2.02], [0.98, 2.22], [1.25, 2.55], [1.4, 3.0], [1.48, 3.6], [1.55, 4.2], [1.6, 4.6], [1.64, 4.9],
   ].map(([x, y]) => new THREE.Vector2(x, y)));
   const interior = new THREE.SplineCurve([
-    [1.58, 4.33], [1.52, 3.95], [1.4, 3.4], [1.18, 2.85], [0.85, 2.45], [0.45, 2.25], [0, 2.2],
+    [1.56, 4.88], [1.5, 4.5], [1.44, 3.9], [1.34, 3.3], [1.15, 2.75], [0.8, 2.45], [0.4, 2.33], [0, 2.3],
   ].map(([x, y]) => new THREE.Vector2(x, y)));
+  const BORDE_Y = 4.9; // la altura del labio: las asas suben por encima de ésta
   const perfil = [
     ...exterior.getPoints(56),
-    new THREE.Vector2(1.69, 4.37), new THREE.Vector2(1.66, 4.41), new THREE.Vector2(1.61, 4.4),
+    new THREE.Vector2(1.67, BORDE_Y + 0.02), new THREE.Vector2(1.64, BORDE_Y + 0.05), new THREE.Vector2(1.59, BORDE_Y + 0.04),
     ...interior.getPoints(36),
   ];
   grupo.add(sombras(new THREE.Mesh(new THREE.LatheGeometry(perfil, 128), plata)));
-  const labio = sombras(new THREE.Mesh(new THREE.TorusGeometry(1.655, 0.042, 14, 128), oro));
+  const labio = sombras(new THREE.Mesh(new THREE.TorusGeometry(1.645, 0.042, 14, 128), oro));
   labio.rotation.x = Math.PI / 2;
-  labio.position.y = 4.385;
+  labio.position.y = BORDE_Y + 0.03;
   grupo.add(labio);
 
-  // --- Asas doradas altas, en "C" abierta: nacen en la cintura del cuenco, salen, suben por
-  // encima del borde y rematan curvándose hacia adentro. Una espejada de la otra. ---
-  const base = [[1.22, 2.85], [1.85, 2.72], [2.35, 3.18], [2.58, 3.9], [2.47, 4.62], [2.12, 5.02], [1.74, 5.02]];
+  // --- Asas doradas: cintas planas con forma de oreja. Nacen en la parte baja del cuenco, salen
+  // hacia afuera, suben por encima del borde y terminan en una voluta que se enrula hacia afuera.
+  // Cada una es el contorno de una cinta de ancho variable (más fina en la punta) extruido con
+  // un bisel que atrapa la luz; la izquierda es la derecha espejada. ---
+  const lineaAsa = [
+    [1.15, 2.6], [1.6, 2.5], [2.05, 2.68], [2.4, 3.1], [2.55, 3.7], [2.5, 4.3], [2.36, 4.8],
+    [2.3, 5.05], [2.44, 5.25], [2.66, 5.24], [2.74, 5.06], [2.63, 4.95], [2.52, 5.03],
+  ];
+  // Ancho de la cinta según el avance u (0 = pegada al cuenco, 1 = punta de la voluta).
+  const anchoAsa = (u) => {
+    const pie = u < 0.14 ? 0.7 + 0.3 * (u / 0.14) : 1;
+    const punta = u > 0.72 ? 1 - 0.7 * ((u - 0.72) / 0.28) ** 1.3 : 1;
+    // Más ancha en la panza, como la cinta de la copa real.
+    const panza = 1 + 0.25 * Math.sin(Math.PI * Math.min(1, u / 0.75));
+    return 0.27 * pie * punta * panza; // + 2 × el bisel (0,05) al extruir
+  };
+  const curvaAsa = new THREE.CatmullRomCurve3(lineaAsa.map(([x, y]) => new THREE.Vector3(x, y, 0)), false, 'centripetal');
+  const lados = [[], []];
+  const PASOS_ASA = 96;
+  for (let i = 0; i <= PASOS_ASA; i++) {
+    const u = i / PASOS_ASA;
+    const p = curvaAsa.getPointAt(u);
+    const t = curvaAsa.getTangentAt(u);
+    const m = anchoAsa(u) / 2;
+    lados[0].push([p.x - t.y * m, p.y + t.x * m]);
+    lados[1].push([p.x + t.y * m, p.y - t.x * m]);
+  }
+  const contornoAsa = [...lados[0], ...lados[1].reverse()];
+  const PROFUNDIDAD_ASA = 0.05;
+  // Dorado más pulido y claro que el del resto: la cinta es plana y necesita brillar en los biseles.
+  const oroAsa = new THREE.MeshStandardMaterial({ color: 0xe6bf68, metalness: 1, roughness: 0.17 });
   for (const lado of [1, -1]) {
-    const curva = new THREE.CatmullRomCurve3(base.map(([x, y]) => new THREE.Vector3(x * lado, y, 0)));
-    grupo.add(sombras(new THREE.Mesh(new THREE.TubeGeometry(curva, 90, 0.085, 18), oro)));
-    const [fx, fy] = base.at(-1);
-    const punta = sombras(new THREE.Mesh(new THREE.SphereGeometry(0.115, 24, 16), oro));
-    punta.position.set(fx * lado, fy, 0);
-    grupo.add(punta);
-    // La unión con el cuenco: una rosca dorada aplanada, que tapa el encuentro del tubo.
+    const forma = new THREE.Shape(contornoAsa.map(([x, y]) => new THREE.Vector2(x * lado, y)));
+    const geo = new THREE.ExtrudeGeometry(forma, {
+      depth: PROFUNDIDAD_ASA, steps: 1, curveSegments: 1,
+      bevelEnabled: true, bevelThickness: 0.075, bevelSize: 0.05, bevelOffset: 0, bevelSegments: 5,
+    });
+    geo.translate(0, 0, -PROFUNDIDAD_ASA / 2);
+    grupo.add(sombras(new THREE.Mesh(geo, oroAsa)));
+    // La unión con el cuenco: una pastilla dorada aplanada que tapa el encuentro de la cinta.
     const union = sombras(new THREE.Mesh(new THREE.SphereGeometry(0.2, 24, 16), oro));
-    union.scale.set(0.45, 1.1, 0.9);
-    union.position.set(1.36 * lado, 2.88, 0);
+    union.scale.set(0.4, 1.1, 0.85);
+    union.position.set(1.3 * lado, 2.62, 0);
     grupo.add(union);
   }
 
   // --- El escudo de la R, integrado al cuenco. Es un parche del mismo torno (LatheGeometry con
   // un ángulo corto) un pelo por fuera de la pared: así sigue la curva del cuenco y no flota en
-  // los bordes. La silueta sale del mapa alfa; el relieve, del bumpMap; el borde dorado es
+  // los bordes. La silueta sale del mapa alfa; el relieve, del bumpMap; el borde azul es
   // además un tubo de verdad que sube del metal. ---
   const E = texturasEscudo();
   const largo = exterior.getLength();
-  const ALTO_ESCUDO = 1.3;
-  const ANCHO_ESCUDO = 1.04;
+  const ALTO_ESCUDO = 1.5;
+  const ANCHO_ESCUDO = 1.2;
   let u0 = 0;
-  while (exterior.getPointAt(u0).y < 2.62 && u0 < 1) u0 += 0.002;
+  while (exterior.getPointAt(u0).y < 3.02 && u0 < 1) u0 += 0.002;
   const du = ALTO_ESCUDO / largo;
   const sobre = 0.014; // cuánto sobresale del metal
   const enParche = (u) => {
@@ -439,9 +488,10 @@ function crearCopa({ aniso }) {
     return new THREE.Vector3(Math.sin(fi) * (q.x + 0.006), q.y, Math.cos(fi) * (q.x + 0.006));
   };
   const borde = new THREE.CatmullRomCurve3(E.contorno.map(aLaPared), true, 'centripetal');
-  grupo.add(sombras(new THREE.Mesh(new THREE.TubeGeometry(borde, 220, 0.016, 8, true), oro)));
+  const esmalteBorde = new THREE.MeshStandardMaterial({ color: 0x1d429a, metalness: 0.3, roughness: 0.3 });
+  grupo.add(sombras(new THREE.Mesh(new THREE.TubeGeometry(borde, 220, 0.018, 8, true), esmalteBorde)));
 
-  return { grupo, placas, ancho: 5.5, alto: 5.5, centro: new THREE.Vector3(0, 2.6, 0), frente: 0 };
+  return { grupo, placas, ancho: 6.1, alto: 5.8, centro: new THREE.Vector3(0, 2.75, 0), frente: 0 };
 }
 
 // ---------------------------------------------------------------------------
@@ -653,11 +703,11 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
   };
 
   // --- Placas: marcar, tocar, señalar con el mouse. ---
-  const marcadas = new Set(anios);
+  // Sólo se enciende la placa de UN año puntual. Una época (varios años) o el arranque no encienden
+  // ninguna: doce placas rojas a la vez se leían como rosadas y ensuciaban la copa.
   const resaltar = (lista) => {
-    marcadas.clear();
-    lista.forEach((a) => marcadas.add(a));
-    copa.placas.forEach((p) => { p.userData.objetivo = marcadas.has(p.userData.anio) ? 1 : 0; });
+    const unico = lista.length === 1 ? lista[0] : null;
+    copa.placas.forEach((p) => { p.userData.objetivo = p.userData.anio === unico ? 1 : 0; });
     pedirCuadro();
   };
   resaltar(anios);
@@ -776,7 +826,10 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
       const d = p.userData;
       const dif = d.objetivo - d.brillo;
       if (Math.abs(dif) > 0.002) { d.brillo += dif * Math.min(1, dt * 7); pendiente = true; } else d.brillo = d.objetivo;
-      p.material.emissiveIntensity = d.brillo * 0.38;
+      // Encendida: el plateado se apaga (color oscuro) y el emisivo pone un rojo de club; sumar rojo
+      // sobre plata clara daba rosa.
+      p.material.color.setScalar(1 - 0.82 * d.brillo);
+      p.material.emissiveIntensity = d.brillo * 0.55;
       p.position.z = Math.cos(d.angulo) * (1.312 + d.brillo * 0.018);
       p.position.x = Math.sin(d.angulo) * (1.312 + d.brillo * 0.018);
     }
