@@ -9,7 +9,7 @@ Spec: `docs/superpowers/specs/2026-11-24-nuestra-historia-design.md`. Se trabaja
 | 2. Página sin 3D | hecha | `git log -1 -- public/historia.html` |
 | 3. Vitrina 3D | reemplazada por la 6 y la 7 | |
 | Rediseño de la línea (fuera de plan) | hecha | a51898d + ecb62a9 |
-| 5. Hero, línea viva y el Cubierto | pendiente | |
+| 5. Hero, línea viva y el Cubierto | hecha (falta que Tomás la mire) | `git log -1 -- public/css/historia.css` |
 | 6. Copa 3D | pendiente | |
 | 7. Medalla 3D y selector | pendiente | |
 | 4. Enlace desde el portal (va última) | pendiente | |

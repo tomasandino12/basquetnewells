@@ -30,8 +30,6 @@ const EPOCA_INICIAL = 'doce-seguidos';
 
 const movimientoReducido = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const fechaCorta = (iso) => iso.split('-').reverse().join('/');
-
 /** "1943 – 1954", o "1983" si la época es de un solo año. */
 export const rangoDeEpoca = (e) => (e.desde === e.hasta ? `${e.desde}` : `${e.desde} – ${e.hasta}`);
 
@@ -44,8 +42,12 @@ const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
 // Armadores de HTML (puros: devuelven fragmentos, no tocan el DOM)
 // ---------------------------------------------------------------------------
 
-/** "Fuente: medio · título (fecha)", con link. Las que no traen fecha de publicación llevan la de consulta. */
-export const htmlFuente = (f) => html`<a class="fuente" href="${f.url}" target="_blank" rel="noopener">Fuente: ${f.medio} · ${f.titulo} (${f.fecha ? fechaCorta(f.fecha) : `consultada el ${fechaCorta(f.consultada)}`})</a>`;
+/**
+ * La fuente como badge de archivo: sólo el nombre del medio, que es el link. Ni la URL ni la
+ * fecha de consulta se ven (siguen en los datos); el título de la nota queda para quien
+ * navega con lector de pantalla.
+ */
+export const htmlFuente = (f) => html`<a class="fuente" href="${f.url}" target="_blank" rel="noopener" aria-label="Fuente: ${f.medio}, ${f.titulo}">${f.medio}</a>`;
 
 const htmlFuentes = (h) => [h.fuente, ...(h.otrasFuentes ?? [])].map((f) => html`<li>${htmlFuente(f)}</li>`);
 
@@ -63,7 +65,7 @@ const htmlPlantel = (h) => (h.tecnico || h.plantel ? html`<details class="plante
 export function htmlTarjetaTitulo(t) {
   const h = hitoDeTitulo(t.anio);
   const categoria = t.torneo ? html`<span class="t-torneo">${t.torneo}</span>` : html`<span class="t-cat">Primera División</span>`;
-  return html`<li class="racha-item"><article class="t-card${h ? ' con-historia' : ''}" data-anio="${t.anio}" data-rev>
+  return html`<li class="racha-item${h ? ' grande' : ''}" data-rev><span class="nodo" aria-hidden="true"></span><article class="t-card${h ? ' con-historia' : ''}" data-anio="${t.anio}">
     <span class="t-marca" aria-hidden="true">${String(t.numero).padStart(2, '0')}</span>
     <header class="t-cab">
       <h3 class="t-anio"><button type="button" class="t-sel" data-anio="${t.anio}" aria-pressed="false" aria-label="Título ${t.numero}, ${t.anio}${t.torneo ? `, ${t.torneo}` : ''}">${t.anio}</button></h3>
@@ -74,15 +76,68 @@ export function htmlTarjetaTitulo(t) {
   </article></li>`;
 }
 
-/** La tarjeta "momento": un hito que no es un título. Ancha, con borde rojo a la izquierda y sin estrella. */
+// La categoría de cada momento: lo que lo distingue de un título. Es una etiqueta de la página, no un dato.
+const CATEGORIAS = { 'del-vecchio-mundial-1950': 'Orgullo mundial', 'cubierto-mundial-1990': 'Hito institucional' };
+const CUBIERTO = 'cubierto-mundial-1990';
+
+/**
+ * El plano del Cubierto, en tres capas que el tilt mueve a distinta profundidad: las tribunas
+ * (filas concéntricas con sus pasillos), la cancha (líneas del básquet, rojo del club) y el techo
+ * (la estructura, en trazo discontinuo). Es un dibujo estilizado: no pretende ser el plano real.
+ */
+const PLANO_CUBIERTO = crudo(`<div class="cubierto-plano" aria-hidden="true">
+  <svg class="plano-capa plano-tribunas" viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" focusable="false">
+    <rect x="10" y="14" width="340" height="172" rx="26"/>
+    <rect x="16" y="20" width="328" height="160" rx="22"/>
+    <rect x="22" y="26" width="316" height="148" rx="18"/>
+    <rect x="28" y="32" width="304" height="136" rx="15"/>
+    <rect x="34" y="38" width="292" height="124" rx="12"/>
+    <path class="pasillos" d="M90 14V38M180 14V38M270 14V38M90 162V186M180 162V186M270 162V186M10 100H34M326 100H350"/>
+  </svg>
+  <svg class="plano-capa plano-cancha" viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" focusable="false">
+    <rect class="piso" x="62" y="52" width="236" height="96"/>
+    <rect class="pintura" x="62" y="76" width="42" height="48"/>
+    <rect class="pintura" x="256" y="76" width="42" height="48"/>
+    <path d="M180 52V148M62 60H86A52 52 0 0 1 86 140H62M298 60H274A52 52 0 0 0 274 140H298"/>
+    <circle cx="180" cy="100" r="15"/><circle cx="104" cy="100" r="15"/><circle cx="256" cy="100" r="15"/>
+    <circle class="aro" cx="73" cy="100" r="3.5"/><circle class="aro" cx="287" cy="100" r="3.5"/>
+  </svg>
+  <svg class="plano-capa plano-techo" viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" focusable="false">
+    <rect x="24" y="28" width="312" height="144" rx="18"/>
+    <path d="M24 28L336 172M336 28L24 172M180 28V172"/>
+  </svg>
+</div>`);
+
+/**
+ * La tarjeta "momento": un hito que no es un título. Lleva una etiqueta de categoría y el título
+ * del hito (el nombre de su época), no el año: el año lo dice el texto, una sola vez. El Cubierto,
+ * que tiene su época con título propio, es la tarjeta destacada: plano con tilt y badge del
+ * Mundial. No se le pone fecha de inauguración: ninguna fuente la confirma.
+ */
 export function htmlMomento(h) {
-  return html`<article class="momento" data-momento="${h.id}" data-epoca="${h.epoca ?? ''}" data-rev>
-    <p class="momento-rotulo">Momento</p>
-    <h3 class="momento-anio"><button type="button" class="t-sel" data-epoca="${h.epoca}" aria-pressed="false">${h.anio}</button></h3>
+  const categoria = CATEGORIAS[h.id] ?? 'Hito';
+  const epoca = epocas().find((e) => e.id === h.epoca);
+  if (h.id === CUBIERTO) {
+    return html`<article class="momento" data-momento="${h.id}" data-epoca="${h.epoca ?? ''}" data-tilt>
+      <div class="cubierto-escena">
+        ${PLANO_CUBIERTO}
+      </div>
+      <p class="momento-rotulo"><button type="button" class="t-sel" data-epoca="${h.epoca}" aria-pressed="false">${categoria}</button></p>
+      <p class="cubierto-badge">Sede Mundial FIBA 1990 · Grupo B</p>
+      <p class="t-txt">${h.texto}</p>
+      <ul class="hito-fuentes">${htmlFuentes(h)}</ul>
+    </article>`;
+  }
+  return html`<article class="momento" data-momento="${h.id}" data-epoca="${h.epoca ?? ''}">
+    <p class="momento-rotulo">${categoria}</p>
+    <h3 class="momento-tit"><button type="button" class="t-sel" data-epoca="${h.epoca}" aria-pressed="false">${epoca?.nombre ?? h.anio}</button></h3>
     <p class="t-txt">${h.texto}</p>
     <ul class="hito-fuentes">${htmlFuentes(h)}</ul>
   </article>`;
 }
+
+/** El momento como ítem de la línea: con su nodo sobre el eje. */
+const htmlItemMomento = (h) => html`<li class="racha-item es-momento${h.id === CUBIERTO ? ' destacado' : ''}" data-rev><span class="nodo" aria-hidden="true"></span>${htmlMomento(h)}</li>`;
 
 /** Un momento pertenece a la época que lo contiene: la suya, o la que abarca a su época solapada (Del Vecchio, 1950, cae en los 12 seguidos). */
 function momentosDeEpoca(e) {
@@ -102,22 +157,25 @@ export function htmlEpoca(e) {
   // En la tira, cada momento va justo después del título de su año (o al final, si es posterior).
   const items = [...ts.map((t) => ({ t, anio: t.anio, orden: 0 })), ...ms.map((m) => ({ m, anio: m.anio, orden: 1 }))]
     .sort((a, b) => a.anio - b.anio || a.orden - b.orden);
-  const sobre = `${rangoDeEpoca(e)}${ts.length ? ` · ${plural(ts.length, 'título', 'títulos')}` : ''}`;
+  // El año se dice una sola vez por bloque: una época de varios años abre con su rango; la de un
+  // solo año lo deja para su tarjeta (y la que no tiene títulos, como el Cubierto, no lleva sobretítulo).
+  const sobre = e.desde === e.hasta
+    ? (ts.length ? plural(ts.length, 'título', 'títulos') : '')
+    : `${rangoDeEpoca(e)}${ts.length ? ` · ${plural(ts.length, 'título', 'títulos')}` : ''}`;
   return html`<section class="epoca" data-epoca="${e.id}" aria-labelledby="ep-${e.id}">
     <header class="epoca-cab" data-rev>
-      <p class="epoca-sobre">${sobre}</p>
+      ${sobre ? html`<p class="epoca-sobre">${sobre}</p>` : ''}
       <h2 class="epoca-tit" id="ep-${e.id}">${e.nombre}</h2>
     </header>
     ${intro ? html`<div class="epoca-intro" data-rev><p>${intro.texto}</p><ul class="hito-fuentes">${htmlFuentes(intro)}</ul></div>` : ''}
-    ${ts.length
-    ? html`<ol class="racha" data-linea>${items.map((i) => (i.t ? htmlTarjetaTitulo(i.t) : html`<li class="racha-item es-momento">${htmlMomento(i.m)}</li>`))}</ol>`
-    : html`<div class="momentos">${ms.map(htmlMomento)}</div>`}
+    <ol class="racha">${items.map((i) => (i.t ? htmlTarjetaTitulo(i.t) : htmlItemMomento(i.m)))}</ol>
   </section>`;
 }
 
 /**
- * La línea histórica entera: una época tras otra. Los momentos sin época (los 100 años
- * de la Asociación) no se muestran: Tomás prefirió que la línea arranque en 1943.
+ * Los bloques de la línea histórica: una época tras otra. El eje y el encabezado que la abre
+ * están en la página (public/historia.html); acá van sólo los bloques. Los momentos sin
+ * época (los 100 años de la Asociación) no se muestran: Tomás prefirió que la línea arranque en 1943.
  */
 export function htmlLinea() {
   return html`${epocas().filter((e) => !e.solapada).map(htmlEpoca)}`;
@@ -233,21 +291,73 @@ export function seleccionar({ epocaId = null, anio = null } = {}) {
   $('vitrina').dispatchEvent(new CustomEvent('historia:seleccion', { bubbles: true, detail: { epocaId: estado.epocaId, anio: estado.anio, anios } }));
 }
 
-// Con movimiento permitido, cada pieza de la línea aparece al entrar en pantalla (y la línea de la
-// tira se dibuja de arriba abajo). La clase `anim` la pone el script: si algo falla, todo se ve igual.
-function revelarLinea() {
+// La línea viva: el progreso rojo del eje llega hasta una altura fija de la pantalla (un poco más
+// abajo de la mitad) y cada nodo se enciende cuando el progreso lo alcanza; al subir, se apagan.
+// Un solo requestAnimationFrame por tanda de scroll: primero se lee todo, después se escribe.
+// La clase `anim` la pone el script: si algo falla, o con movimiento reducido (`completa`), la
+// línea se ve entera y todo encendido.
+const ALTURA_DE_LECTURA = 0.7;
+
+function iniciarEje() {
   const linea = $('hist-linea');
-  if (movimientoReducido() || typeof IntersectionObserver !== 'function') return;
+  const progreso = linea.querySelector('.hist-eje-prog');
+  const piezas = [...linea.querySelectorAll('[data-rev]')];
+  if (movimientoReducido() || typeof requestAnimationFrame !== 'function') {
+    linea.classList.add('completa');
+    piezas.forEach((p) => p.classList.add('encendido'));
+    return;
+  }
   linea.classList.add('anim');
-  const obs = new IntersectionObserver((entradas) => {
-    // Las que entran juntas (varias tarjetas compactas) lo hacen escalonadas.
-    entradas.filter((e) => e.isIntersecting).forEach((e, i) => {
-      e.target.style.transitionDelay = `${i * 70}ms`;
-      e.target.classList.add('visto');
-      obs.unobserve(e.target);
+  let pendiente = false;
+  const medir = () => {
+    pendiente = false;
+    const tope = innerHeight * ALTURA_DE_LECTURA;
+    const r = linea.getBoundingClientRect();
+    const avance = Math.min(1, Math.max(0, (tope - r.top) / r.height));
+    // Se mide el nodo (que no se mueve), no la tarjeta, que entra con un desplazamiento.
+    const lecturas = piezas.map((p) => {
+      const ancla = p.querySelector(':scope > .nodo') ?? p;
+      const b = ancla.getBoundingClientRect();
+      return b.top + b.height / 2 <= tope;
     });
-  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.1 });
-  linea.querySelectorAll('[data-rev], [data-linea]').forEach((el) => obs.observe(el));
+    progreso.style.transform = `scaleY(${avance.toFixed(4)})`;
+    piezas.forEach((p, i) => p.classList.toggle('encendido', lecturas[i]));
+  };
+  const pedir = () => {
+    if (pendiente) return;
+    pendiente = true;
+    requestAnimationFrame(medir);
+  };
+  addEventListener('scroll', pedir, { passive: true });
+  addEventListener('resize', pedir);
+  // Las fuentes y las imágenes cambian las alturas: se vuelve a medir cuando terminan de cargar.
+  document.fonts?.ready.then(pedir);
+  medir();
+}
+
+// El tilt del Cubierto: sólo con mouse (o lápiz) y con movimiento permitido. En táctil la tarjeta
+// queda quieta. El script sólo pasa la posición del puntero (de -.5 a .5); el CSS mueve las capas.
+function iniciarTilt() {
+  if (movimientoReducido() || typeof matchMedia !== 'function' || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  document.querySelectorAll('[data-tilt]').forEach((el) => {
+    let cuadro = 0;
+    let ultimo = null;
+    const aplicar = () => {
+      cuadro = 0;
+      const r = el.getBoundingClientRect();
+      el.style.setProperty('--mx', ((ultimo.clientX - r.left) / r.width - 0.5).toFixed(3));
+      el.style.setProperty('--my', ((ultimo.clientY - r.top) / r.height - 0.5).toFixed(3));
+    };
+    el.addEventListener('pointermove', (ev) => {
+      if (ev.pointerType === 'touch') return;
+      ultimo = ev;
+      if (!cuadro) cuadro = requestAnimationFrame(aplicar);
+    });
+    el.addEventListener('pointerleave', () => {
+      el.style.setProperty('--mx', '0');
+      el.style.setProperty('--my', '0');
+    });
+  });
 }
 
 // Cuando el scroll llega a otra época, la vitrina la sigue. Una franja fina a mitad de pantalla decide cuál es.
@@ -282,19 +392,33 @@ function revelarEstrellas() {
 
 /** Lleva la línea hasta lo elegido (cuando la copa pide un año o una época). */
 function llevarALinea() {
-  const sel = estado.anio != null ? `.t-card[data-anio="${estado.anio}"]` : `.epoca[data-epoca="${estado.epocaId}"], .momento[data-epoca="${estado.epocaId}"]`;
+  const sel = estado.anio != null ? `.t-card[data-anio="${estado.anio}"]` : `.epoca[data-epoca="${estado.epocaId}"]`;
   document.querySelector(sel)?.scrollIntoView({ block: 'center', behavior: movimientoReducido() ? 'auto' : 'smooth' });
 }
 
+/** El contador cuenta cuando el "15 veces campeón" entra en pantalla, no al cargar (está debajo del hero). */
+function contarAlLlegar() {
+  const el = $('hist-contador');
+  const total = titulos().length;
+  if (movimientoReducido() || typeof IntersectionObserver !== 'function') return animarContador(el, total);
+  el.textContent = '0';
+  new IntersectionObserver((entradas, obs) => {
+    if (!entradas.some((e) => e.isIntersecting)) return;
+    obs.disconnect();
+    animarContador(el, total);
+  }, { threshold: 0.6 }).observe(el);
+}
+
 export function iniciarHistoria() {
-  animarContador($('hist-contador'), titulos().length);
+  contarAlLlegar();
   $('hist-cifras').innerHTML = htmlCifras();
 
-  $('hist-linea').innerHTML = htmlLinea();
+  $('hist-bloques').innerHTML = htmlLinea();
   $('hist-estrellas').innerHTML = htmlEstrellas();
   estado.epocaId = EPOCA_INICIAL;
   pintarSeleccion();
-  revelarLinea();
+  iniciarEje();
+  iniciarTilt();
   revelarEstrellas();
   seguirEpoca();
 

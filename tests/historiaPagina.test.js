@@ -54,6 +54,98 @@ test('cada título es una tarjeta con su estrella, y los momentos no llevan estr
   assert.match(salida, /class="t-torneo">Torneo regular</);
 });
 
+/** El texto visible de un fragmento: sin etiquetas y con los espacios normalizados. */
+const textoVisible = (fragmento) => String(fragmento).replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/g, ' ').replace(/\s+/g, ' ').trim();
+/** Las cabeceras de un bloque: todo menos la prosa (.t-txt), el plantel y las fuentes, que cuentan lo que pasó y pueden nombrar el año. */
+const sinProsa = (fragmento) => String(fragmento)
+  .replace(/<p class="t-txt">[\s\S]*?<\/p>/g, '')
+  .replace(/<details class="plantel">[\s\S]*?<\/details>/g, '')
+  .replace(/<ul class="hito-fuentes">[\s\S]*?<\/ul>/g, '');
+const aniosEn = (texto) => texto.match(/\b(?:19|20)\d{2}\b/g) ?? [];
+
+test('un solo eje en la línea: ni bordes sueltos ni rieles por bloque, y cada título y hito tiene su nodo', () => {
+  assert.equal((pagina.match(/class="hist-eje"/g) ?? []).length, 1);
+  assert.match(pagina, /class="hist-eje-prog"/);
+  const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  // Ninguna regla de la línea dibuja una raya vertical propia: eso es del eje.
+  const rayas = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].filter(([, sel, cuerpo]) => /(^|[\s,])\.(racha|epoca|momento|t-card|epoca-cab)\b/.test(sel) && /border-left\s*:/.test(cuerpo));
+  assert.deepEqual(rayas.map((m) => m[1].trim()), []);
+  assert.doesNotMatch(css, /\.racha(?:-item)?::before/);
+  const salida = String(htmlLinea());
+  const nodos = (salida.match(/class="nodo"/g) ?? []).length;
+  assert.equal(nodos, titulos().length + momentos().filter((m) => m.epoca).length);
+});
+
+test('ningún bloque repite el año', () => {
+  const salida = String(htmlLinea());
+  const bloques = salida.split(/(?=<article class="(?:t-card|momento))/).slice(1).map((b) => b.split('</article>')[0]);
+  assert.ok(bloques.length >= titulos().length);
+  for (const b of bloques) {
+    const anios = aniosEn(textoVisible(sinProsa(b)));
+    assert.deepEqual(anios, [...new Set(anios)], `año repetido en: ${textoVisible(sinProsa(b)).slice(0, 80)}`);
+  }
+  // Una época de un solo año (1983, el Cubierto) dice el año en su tarjeta, no también en el encabezado.
+  for (const e of epocas().filter((x) => !x.solapada && x.desde === x.hasta)) {
+    const seccion = salida.split(`<section class="epoca" data-epoca="${e.id}"`)[1].split('</section>')[0];
+    const anios = aniosEn(textoVisible(sinProsa(seccion)));
+    assert.deepEqual(anios, [...new Set(anios)], e.id);
+  }
+});
+
+test('los momentos llevan su etiqueta de categoría', () => {
+  const salida = String(htmlLinea());
+  assert.match(salida, /Orgullo mundial/);
+  assert.match(salida, /Hito institucional/);
+});
+
+test('las fuentes no muestran la URL ni la fecha de consulta: sólo el medio, como link', () => {
+  const salida = String(htmlLinea()) + String(htmlFicha(1946)) + String(htmlFicha(1950));
+  const links = [...salida.matchAll(/<a class="fuente"[^>]*>([\s\S]*?)<\/a>/g)];
+  assert.ok(links.length > 10);
+  for (const [, dentro] of links) {
+    const visible = textoVisible(dentro);
+    assert.doesNotMatch(visible, /https?:|www\.|\.com|\.org|consultada|Fuente:/i, visible);
+  }
+  assert.match(salida, /<a class="fuente" href="https:\/\/www\.olympedia\.org\/athletes\/5986"/);
+  assert.match(salida, />\s*Olympedia\s*</);
+});
+
+test('el Cubierto: tarjeta destacada con su plano y el badge del Mundial, sin año de inauguración', () => {
+  const salida = String(htmlLinea());
+  const cubierto = salida.split('data-momento="cubierto-mundial-1990"')[1].split('</article>')[0];
+  assert.match(cubierto, /Sede Mundial FIBA 1990 · Grupo B/);
+  assert.match(cubierto, /data-tilt/);
+  assert.match(cubierto, /class="cubierto-plano"/);
+  assert.doesNotMatch(cubierto, /inaugur/i);
+  // El único año de la tarjeta es el del Mundial (1990): ni 1978, ni 1982, ni otro.
+  assert.deepEqual([...new Set(aniosEn(textoVisible(cubierto)))], ['1990']);
+  // El tilt se apaga en táctil y con movimiento reducido (lo decide el script, no el CSS).
+  const js = readFileSync('src/ui/historia.js', 'utf8');
+  assert.match(js, /hover:\s*hover\)\s*and\s*\(pointer:\s*fine/);
+  assert.match(js, /pointermove/);
+});
+
+test('el hero abre la página: sobretítulo, NUESTRA / HISTORIA, indicador para bajar, y el 15 abre la línea', () => {
+  const hero = pagina.split('class="hist-heroe"')[1].split('</section>')[0];
+  assert.match(hero, /Archivo histórico · Básquet/);
+  assert.match(hero, /class="hh-nuestra">Nuestra</);
+  assert.match(hero, /class="hh-historia">Historia</);
+  assert.match(hero, /class="hist-bajar"/);
+  assert.doesNotMatch(hero, /hist-contador/);
+  const linea = pagina.split('id="hist-linea"')[1];
+  assert.ok(linea.includes('id="hist-contador"') && linea.includes('id="hist-cifras"'));
+});
+
+test('con movimiento reducido la línea sale completa y la copa no es una caja', () => {
+  const js = readFileSync('src/ui/historia.js', 'utf8');
+  assert.match(js, /completa/);
+  const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const vitrina = css.match(/\.hist-vitrina\{[^}]*\}/g).join('');
+  assert.doesNotMatch(vitrina, /border:|border-top|overflow:hidden/);
+  assert.match(css, /position:sticky;top:0;height:100(?:svh|vh)/);
+  assert.doesNotMatch(pagina, /v-cono|polygon/);
+});
+
 test('cada tarjeta con dato publicado lleva su fuente como link', () => {
   const salida = String(htmlLinea());
   const tarjetas = salida.split(/<article class="(?:t-card con-historia|momento)/).slice(1);
@@ -70,10 +162,10 @@ test('el panel de cifras sale de los datos', () => {
   assert.doesNotMatch(salida, /Último título/);
 });
 
-test('el dorado queda sólo en las estrellas y en el filete de la vitrina', () => {
-  // Regla nueva de Tomás (24/11): el dorado es de las estrellas (un título ganado) y de algún filete de la vitrina.
+test('el dorado queda sólo en las estrellas', () => {
+  // Regla de Tomás (24/11): el dorado es de las estrellas (un título ganado). La vitrina ya no lleva filete.
   const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
-  const permitidos = /^(\.hist-vitrina|\.t-estrella|\.estrella|\.estrellas)/;
+  const permitidos = /^(\.t-estrella|\.estrella|\.estrellas)/;
   const conDorado = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].filter((m) => /--dorado|--pub-oro-fondo/.test(m[2]));
   assert.ok(conDorado.length > 0);
   for (const [, cabeza, cuerpo] of conDorado) {

@@ -46,20 +46,19 @@
   </header>
 
   <main class="historia">
-    <!-- Encabezado: el número es lo único que se anima (src/ui/historia.js lo cuenta de 0 a
-         la cantidad de títulos, salvo con movimiento reducido). El 15 escrito acá es el valor
-         sin JavaScript; un test lo compara con los datos. -->
+    <!-- Apertura: sólo tipografía. Lo que sigue (el 15 veces campeón y las cifras) abre la línea.
+         El indicador de abajo cae justo sobre el comienzo del eje rojo (mismas columnas que
+         .hist-escena, ver historia.css). -->
     <section class="hist-heroe" aria-labelledby="t-historia">
-      <p class="hist-eyebrow"><span aria-hidden="true"></span>Nuestra historia</p>
-      <div class="hist-heroe-txt">
-        <h1 id="t-historia"><span class="hist-num" id="hist-contador">15</span><span class="hist-tit">veces campeón<br><em>rosarino</em></span></h1>
-        <p class="hist-bajada">Desde el Parque de la Independencia, el básquet de Newell&#39;s Old Boys guarda su archivo: los títulos de Primera de la Asociación Rosarina, año por año.</p>
-      </div>
-      <!-- Las cifras (títulos, racha y primero) las calcula src/ui/historia.js desde los datos. -->
-      <aside class="hist-cifras" id="hist-cifras" aria-label="Los títulos en cifras"></aside>
+      <p class="hist-eyebrow"><span aria-hidden="true"></span>Archivo histórico · Básquet</p>
+      <h1 id="t-historia"><span class="hh-nuestra">Nuestra</span> <span class="hh-historia">Historia</span></h1>
+      <a class="hist-bajar" href="#hist-escena">
+        <span class="bajar-riel" aria-hidden="true"><span class="bajar-gota"></span></span>
+        <span class="bajar-txt">Bajá al archivo</span>
+      </a>
     </section>
 
-    <section class="hist-escena" aria-label="La vitrina y la línea histórica">
+    <section class="hist-escena" id="hist-escena" aria-label="La vitrina y la línea histórica">
       <!-- LA VITRINA. Hoy muestra una copa dibujada a mano (.vitrina-respaldo). La tarea 3 monta
            acá la copa en 3D y deja este SVG como respaldo si el navegador no tiene WebGL.
            Puntos de enganche:
@@ -90,11 +89,9 @@
                 <stop offset=".72" stop-color="#47291a"/><stop offset="1" stop-color="#170b05"/>
               </linearGradient>
               <radialGradient id="v-tapa" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="#7d5230"/><stop offset="1" stop-color="#3a2212"/></radialGradient>
-              <linearGradient id="v-cono" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffe9b0" stop-opacity=".2"/><stop offset="1" stop-color="#ffe9b0" stop-opacity="0"/></linearGradient>
               <radialGradient id="v-sombra" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".7"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
             </defs>
 
-            <polygon points="135,0 185,0 305,350 15,350" fill="url(#v-cono)"/>
             <ellipse cx="160" cy="350" rx="150" ry="20" fill="url(#v-sombra)"/>
 
             <!-- Base de madera: tres escalones redondos. -->
@@ -137,8 +134,24 @@
         <figcaption>Recreación inspirada en la copa actual de la Asociación Rosarina</figcaption>
       </figure>
 
+      <!-- LA LÍNEA. Un único eje vertical continuo (base + progreso rojo que crece con el scroll,
+           src/ui/historia.js) y, pegados a él, los nodos de cada título y cada hito. -->
       <div class="hist-linea" id="hist-linea">
-        <noscript><p class="hist-sinjs">La línea de tiempo necesita JavaScript para mostrarse.</p></noscript>
+        <div class="hist-eje" aria-hidden="true"><div class="hist-eje-prog"></div></div>
+        <div class="hist-contenido">
+          <!-- El número es lo único que cuenta solo (src/ui/historia.js lo anima de 0 a la cantidad
+               de títulos, salvo con movimiento reducido). El 15 escrito acá es el valor sin
+               JavaScript; un test lo compara con los datos. -->
+          <div class="hist-apertura">
+            <h2 class="hist-campeon"><span class="hist-num" id="hist-contador">15</span><span class="hist-tit">veces campeón<br><em>rosarino</em></span></h2>
+            <p class="hist-bajada">Desde el Parque de la Independencia, el básquet de Newell&#39;s Old Boys guarda su archivo: los títulos de Primera de la Asociación Rosarina, año por año.</p>
+            <!-- Las cifras (títulos, racha y primero) las calcula src/ui/historia.js desde los datos. -->
+            <aside class="hist-cifras" id="hist-cifras" aria-label="Los títulos en cifras"></aside>
+          </div>
+          <div id="hist-bloques">
+            <noscript><p class="hist-sinjs">La línea de tiempo necesita JavaScript para mostrarse.</p></noscript>
+          </div>
+        </div>
       </div>
     </section>
 
