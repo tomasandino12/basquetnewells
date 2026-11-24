@@ -98,3 +98,20 @@ test('los momentos no son títulos y el dato propio de un año nunca es un momen
   assert.equal(hitoDeTitulo(1948).tecnico, 'Héctor Carrozo');
   assert.equal(hitoDeTitulo(1944), null);
 });
+
+test('el Cubierto lleva sus dos sedes mundiales con fuente', () => {
+  const c = momentos().find((m) => m.id === 'cubierto-mundial-1990');
+  assert.deepEqual(c.sedes, ['Mundial FIBA 1990 · Grupo B', 'Mundial FIBA U17 2018']);
+  // Cada sede tiene su respaldo: la de 1990 en la fuente principal y la de 2018 en las otras.
+  assert.match(c.fuente.url, /Estadio_Cubierto/);
+  const urls = c.otrasFuentes.map((f) => f.url);
+  assert.ok(urls.includes('https://en.wikipedia.org/wiki/2018_FIBA_Under-17_Basketball_World_Cup'));
+  assert.ok(urls.includes('https://www.fiba.basketball/world/u17/2018/news/draw-results-in-for-fiba-u17-basketball-world-cup-2018'));
+  for (const f of [c.fuente, ...c.otrasFuentes]) {
+    assert.match(f.url, /^https:\/\//);
+    assert.ok(f.medio && f.titulo && (f.fecha || f.consultada), `${f.medio}: fuente incompleta`);
+  }
+  // Los medios se distinguen para que los badges no digan dos veces lo mismo.
+  const medios = [c.fuente, ...c.otrasFuentes].map((f) => f.medio);
+  assert.equal(new Set(medios).size, medios.length);
+});

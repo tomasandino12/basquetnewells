@@ -46,6 +46,24 @@ const WIKIPEDIA_CUBIERTO = {
   url: 'https://en.wikipedia.org/wiki/Estadio_Cubierto_Newell%27s_Old_Boys',
 };
 
+// El Mundial U17 de 2018: la sede y la refacción para ese torneo salen de Wikipedia; el sorteo
+// de FIBA es la fuente secundaria. Se distingue el medio para que los badges no digan dos veces "Wikipedia".
+const WIKIPEDIA_U17_2018 = {
+  medio: 'Wikipedia · Mundial U17',
+  titulo: '2018 FIBA Under-17 Basketball World Cup',
+  fecha: null,
+  consultada: CONSULTADA,
+  url: 'https://en.wikipedia.org/wiki/2018_FIBA_Under-17_Basketball_World_Cup',
+};
+
+const FIBA_SORTEO_U17_2018 = {
+  medio: 'FIBA',
+  titulo: 'Draw results in for FIBA U17 Basketball World Cup 2018',
+  fecha: null,
+  consultada: CONSULTADA,
+  url: 'https://www.fiba.basketball/world/u17/2018/news/draw-results-in-for-fiba-u17-basketball-world-cup-2018',
+};
+
 // Archivo del Centenario de la Asociación Rosarina: una nota por temporada.
 const arbb = (titulo, fecha, slug) => ({
   medio: 'Asociación Rosarina de Básquet · 100 años',
@@ -184,9 +202,13 @@ const HITOS = [
     anio: 1990,
     epoca: 'el-cubierto',
     momento: true,
-    // No se da fecha de inauguración: ninguna fuente la confirma.
-    texto: 'El Estadio Cubierto Claudio Newell fue sede del Grupo B del Mundial de básquet de 1990.',
+    nombre: 'Estadio Cubierto Dr. Claudio L. Newell',
+    // Ni fecha de inauguración ni superficie ni "acá se jugaron los títulos": ninguna fuente lo confirma
+    // (las finales de 1978 y 1983 fueron en Sportivo América). El texto no lleva años: los dicen las `sedes`.
+    texto: 'Uno de los estadios cubiertos emblemáticos del básquet argentino, en el Parque de la Independencia: sede mundialista, se refaccionó para volver a recibir al mundo.',
+    sedes: ['Mundial FIBA 1990 · Grupo B', 'Mundial FIBA U17 2018'],
     fuente: WIKIPEDIA_CUBIERTO,
+    otrasFuentes: [WIKIPEDIA_U17_2018, FIBA_SORTEO_U17_2018],
   },
   {
     // Contexto de la Asociación, no de Newell's; no pertenece a ninguna época.

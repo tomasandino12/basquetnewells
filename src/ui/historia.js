@@ -77,55 +77,64 @@ export function htmlTarjetaTitulo(t) {
 }
 
 // La categoría de cada momento: lo que lo distingue de un título. Es una etiqueta de la página, no un dato.
-const CATEGORIAS = { 'del-vecchio-mundial-1950': 'Orgullo mundial', 'cubierto-mundial-1990': 'Hito institucional' };
+const CATEGORIAS = { 'del-vecchio-mundial-1950': 'Orgullo mundial' };
 const CUBIERTO = 'cubierto-mundial-1990';
 
 /**
- * El plano del Cubierto, en tres capas que el tilt mueve a distinta profundidad: las tribunas
- * (filas concéntricas con sus pasillos), la cancha (líneas del básquet, rojo del club) y el techo
- * (la estructura, en trazo discontinuo). Es un dibujo estilizado: no pretende ser el plano real.
+ * El Cubierto, con foto: la imagen es una recreación hecha con IA a partir de fotos reales (parquet
+ * clásico y butacas rojinegras); Tomás decidió no rotularla. El piso azul actual no se muestra en
+ * ningún lado. `srcset` con la versión de 800 px para el celular.
  */
-const PLANO_CUBIERTO = crudo(`<div class="cubierto-plano" aria-hidden="true">
-  <svg class="plano-capa plano-tribunas" viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" focusable="false">
-    <rect x="10" y="14" width="340" height="172" rx="26"/>
-    <rect x="16" y="20" width="328" height="160" rx="22"/>
-    <rect x="22" y="26" width="316" height="148" rx="18"/>
-    <rect x="28" y="32" width="304" height="136" rx="15"/>
-    <rect x="34" y="38" width="292" height="124" rx="12"/>
-    <path class="pasillos" d="M90 14V38M180 14V38M270 14V38M90 162V186M180 162V186M270 162V186M10 100H34M326 100H350"/>
-  </svg>
-  <svg class="plano-capa plano-cancha" viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" focusable="false">
-    <rect class="piso" x="62" y="52" width="236" height="96"/>
-    <rect class="pintura" x="62" y="76" width="42" height="48"/>
-    <rect class="pintura" x="256" y="76" width="42" height="48"/>
-    <path d="M180 52V148M62 60H86A52 52 0 0 1 86 140H62M298 60H274A52 52 0 0 0 274 140H298"/>
-    <circle cx="180" cy="100" r="15"/><circle cx="104" cy="100" r="15"/><circle cx="256" cy="100" r="15"/>
-    <circle class="aro" cx="73" cy="100" r="3.5"/><circle class="aro" cx="287" cy="100" r="3.5"/>
-  </svg>
-  <svg class="plano-capa plano-techo" viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" focusable="false">
-    <rect x="24" y="28" width="312" height="144" rx="18"/>
-    <path d="M24 28L336 172M336 28L24 172M180 28V172"/>
-  </svg>
-</div>`);
+const FOTO_CUBIERTO = {
+  src: '/public/img/historia/cubierto-interior.webp',
+  src800: '/public/img/historia/cubierto-interior-800.webp',
+  ancho: 1376,
+  alto: 768,
+  alt: 'Interior del Estadio Cubierto Claudio Newell: parquet y tribunas rojinegras',
+};
+
+/**
+ * El sello técnico de la esquina: un corte minimalista del techo (doble bóveda curva escalonada y el
+ * tambor cilíndrico del ingreso, como se ve desde el aire). Trazo fino y apagado; el rojo del club
+ * sólo en la faja de la fachada y el aro del tambor. Es un dibujo, no un plano.
+ */
+const SELLO_TECHO = crudo(`<svg class="sello-techo" viewBox="0 0 124 60" focusable="false" aria-hidden="true">
+  <path class="s-piso" d="M2 52H122"/>
+  <path class="s-bovedas" d="M26 46C26 22 40 8 56 8C74 8 86 24 86 46M84 31C90 25 96 23 102 23C112 23 120 33 120 46"/>
+  <path class="s-nervios" d="M34 46C34 29 44 17 56 17C68 17 78 29 78 46M95 46C95 36 98 31 102 31C106 31 110 36 110 46"/>
+  <path class="s-cuerpo" d="M26 46H120M8 46H26"/>
+  <path class="s-tambor" d="M6 46V33M22 46V33"/><ellipse class="s-tambor" cx="14" cy="33" rx="8" ry="3"/>
+  <path class="s-rojo" d="M2 46a12 4 0 0 0 24 0"/>
+  <path class="s-rojo" d="M26 49H122"/>
+</svg>`);
+
+/** Las sedes mundiales (salen de los datos) como líneas del sello. */
+const htmlSedes = (h) => html`<ul class="sello-sedes">${(h.sedes ?? []).map((s) => html`<li>${s}</li>`)}</ul>`;
 
 /**
  * La tarjeta "momento": un hito que no es un título. Lleva una etiqueta de categoría y el título
- * del hito (el nombre de su época), no el año: el año lo dice el texto, una sola vez. El Cubierto,
- * que tiene su época con título propio, es la tarjeta destacada: plano con tilt y badge del
- * Mundial. No se le pone fecha de inauguración: ninguna fuente la confirma.
+ * del hito (el nombre de su época), no el año: el año lo dice el texto, una sola vez. El Cubierto
+ * es la tarjeta protagonista: foto con viñeteado, texto encima, sello técnico y tilt por capas.
+ * No se le pone fecha de inauguración ni superficie: ninguna fuente las confirma.
  */
 export function htmlMomento(h) {
   const categoria = CATEGORIAS[h.id] ?? 'Hito';
   const epoca = epocas().find((e) => e.id === h.epoca);
   if (h.id === CUBIERTO) {
+    // Cuatro capas que el tilt mueve a distinta profundidad: foto, viñeta, sello y texto.
     return html`<article class="momento" data-momento="${h.id}" data-epoca="${h.epoca ?? ''}" data-tilt>
-      <div class="cubierto-escena">
-        ${PLANO_CUBIERTO}
+      <div class="cubierto-capas">
+        <img class="capa-foto" src="${FOTO_CUBIERTO.src}" srcset="${FOTO_CUBIERTO.src800} 800w, ${FOTO_CUBIERTO.src} ${FOTO_CUBIERTO.ancho}w"
+          sizes="(min-width: 64rem) 30rem, 100vw" width="${FOTO_CUBIERTO.ancho}" height="${FOTO_CUBIERTO.alto}" loading="lazy" decoding="async" alt="${FOTO_CUBIERTO.alt}">
+        <div class="capa-vineta" aria-hidden="true"></div>
+        <div class="capa-sello">${SELLO_TECHO}${htmlSedes(h)}</div>
+        <div class="capa-texto">
+          <p class="momento-rotulo">El templo rojinegro</p>
+          <h3 class="momento-tit"><button type="button" class="t-sel" data-epoca="${h.epoca}" aria-pressed="false">${h.nombre}</button></h3>
+          <p class="t-txt">${h.texto}</p>
+          <ul class="hito-fuentes">${htmlFuentes(h)}</ul>
+        </div>
       </div>
-      <p class="momento-rotulo"><button type="button" class="t-sel" data-epoca="${h.epoca}" aria-pressed="false">${categoria}</button></p>
-      <p class="cubierto-badge">Sede Mundial FIBA 1990 · Grupo B</p>
-      <p class="t-txt">${h.texto}</p>
-      <ul class="hito-fuentes">${htmlFuentes(h)}</ul>
     </article>`;
   }
   return html`<article class="momento" data-momento="${h.id}" data-epoca="${h.epoca ?? ''}">

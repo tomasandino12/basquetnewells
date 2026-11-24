@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { titulos, datosPublicables, datosPendientes, epocas, momentos } from '../src/data/historia.js';
 import { htmlLinea, htmlEstrellas, htmlFicha, htmlCifras } from '../src/ui/historia.js';
 
@@ -95,7 +96,8 @@ test('ningún bloque repite el año', () => {
 test('los momentos llevan su etiqueta de categoría', () => {
   const salida = String(htmlLinea());
   assert.match(salida, /Orgullo mundial/);
-  assert.match(salida, /Hito institucional/);
+  // El Cubierto, la tarjeta protagonista, lleva la suya: "El templo rojinegro".
+  assert.match(salida, /class="momento-rotulo">El templo rojinegro</);
 });
 
 test('las fuentes no muestran la URL ni la fecha de consulta: sólo el medio, como link', () => {
@@ -110,19 +112,46 @@ test('las fuentes no muestran la URL ni la fecha de consulta: sólo el medio, co
   assert.match(salida, />\s*Olympedia\s*</);
 });
 
-test('el Cubierto: tarjeta destacada con su plano y el badge del Mundial, sin año de inauguración', () => {
-  const salida = String(htmlLinea());
-  const cubierto = salida.split('data-momento="cubierto-mundial-1990"')[1].split('</article>')[0];
-  assert.match(cubierto, /Sede Mundial FIBA 1990 · Grupo B/);
-  assert.match(cubierto, /data-tilt/);
-  assert.match(cubierto, /class="cubierto-plano"/);
-  assert.doesNotMatch(cubierto, /inaugur/i);
-  // El único año de la tarjeta es el del Mundial (1990): ni 1978, ni 1982, ni otro.
-  assert.deepEqual([...new Set(aniosEn(textoVisible(cubierto)))], ['1990']);
+/** La tarjeta del Cubierto, entera. */
+const tarjetaCubierto = () => String(htmlLinea()).split('data-momento="cubierto-mundial-1990"')[1].split('</article>')[0];
+
+test('el Cubierto no lleva año de inauguración ni superficie, ni que ahí se jugaron los títulos', () => {
+  const c = momentos().find((m) => m.id === 'cubierto-mundial-1990');
+  // Los datos tampoco lo dicen: ninguna fuente lo confirma (las finales de 1978 y 1983 fueron en Sportivo América).
+  const datos = JSON.stringify({ nombre: c.nombre, texto: c.texto, sedes: c.sedes });
+  // En la tarjeta se mira lo que se lee: el dibujo del sello (SVG) y la foto son otra cosa.
+  const visible = tarjetaCubierto().replace(/<svg[\s\S]*?<\/svg>|<img[^>]*>/g, '');
+  for (const t of [datos, visible]) {
+    assert.doesNotMatch(t, /inaugur|m²|\bm2\b|metros|superficie|7\.?800|\bt[ií]tulos?\b|campeon|1978|1982|1983/i);
+  }
+  // Los únicos años de la tarjeta son los de las dos sedes mundiales, una vez cada uno.
+  const anios = aniosEn(textoVisible(tarjetaCubierto().replace(/<img[^>]*>/g, '')));
+  assert.deepEqual(anios, ['1990', '2018']);
+  // Y las dos sedes salen de los datos, con el sello técnico en SVG.
+  for (const sede of c.sedes) assert.ok(tarjetaCubierto().includes(sede), sede);
+  assert.match(tarjetaCubierto(), /class="sello-techo"/);
+  assert.match(tarjetaCubierto(), /class="t-sel"[^>]*>Estadio Cubierto Dr\. Claudio L\. Newell</);
+  assert.match(tarjetaCubierto(), /data-tilt/);
   // El tilt se apaga en táctil y con movimiento reducido (lo decide el script, no el CSS).
   const js = readFileSync('src/ui/historia.js', 'utf8');
   assert.match(js, /hover:\s*hover\)\s*and\s*\(pointer:\s*fine/);
   assert.match(js, /pointermove/);
+});
+
+test('la foto del Cubierto tiene alt, width y height, y el piso azul no aparece', () => {
+  const img = tarjetaCubierto().match(/<img[^>]*>/)[0];
+  assert.match(img, /src="\/public\/img\/historia\/cubierto-interior\.webp"/);
+  assert.match(img, /srcset="\/public\/img\/historia\/cubierto-interior-800\.webp 800w, /);
+  assert.match(img, /alt="Interior del Estadio Cubierto Claudio Newell: parquet y tribunas rojinegras"/);
+  assert.match(img, /width="1376"/);
+  assert.match(img, /height="768"/);
+  assert.match(img, /loading="lazy"/);
+  for (const f of ['cubierto-interior.webp', 'cubierto-interior-800.webp']) assert.ok(existsSync(`public/img/historia/${f}`), f);
+  // Sin rótulo de recreación (lo decidió Tomás) y sin mención al piso azul en ningún lado.
+  assert.doesNotMatch(tarjetaCubierto(), /recreaci|\bIA\b|azul/i);
+  const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(css, /\.cubierto-capas\{[^}]*border:1px solid rgba\(255,255,255,\.08\)/);
+  assert.match(css, /\.momento\[data-tilt\]:hover\{--esc:1\.03\}/);
 });
 
 test('el hero abre la página: sobretítulo, NUESTRA / HISTORIA, indicador para bajar, y el 15 abre la línea', () => {
