@@ -136,15 +136,16 @@ function texturasPlaca(anio, numero) {
 }
 
 /**
- * La silueta del escudo heráldico de la insignia, en coordenadas de 0 a 1 (v hacia arriba): borde
- * superior recto con las esquinas apenas recortadas, lados rectos y una punta redondeada abajo.
+ * La silueta del escudo del logo de la Asociación Rosarina, en coordenadas de 0 a 1 (v hacia arriba):
+ * borde superior recto con las esquinas vivas, lados rectos hasta la mitad y abajo una curva que cierra
+ * en una punta bien marcada.
  */
 function contornoEscudo(pasos = 48) {
   const mitad = 0.46;
-  const der = [[0.5 + mitad - 0.07, 0.995], [0.5 + mitad, 0.94], [0.5 + mitad, 0.5]];
+  const der = [[0.5 + mitad, 0.995], [0.5 + mitad, 0.5]];
   for (let k = 1; k <= pasos; k++) {
     const s = k / pasos;
-    der.push([0.5 + mitad * (1 - s ** 1.85) ** 0.72, 0.5 * (1 - s)]);
+    der.push([0.5 + mitad * (1 - s ** 1.5), 0.5 * (1 - s)]); // exponente bajo: la curva llega a la punta en ángulo
   }
   // Lado izquierdo: el espejo, de la punta hacia arriba.
   const izq = der.slice(0, -1).reverse().map(([x, v]) => [1 - x, v]);
@@ -198,7 +199,7 @@ function texturasEscudo() {
   trazar(c, contorno);
   c.clip();
   c.lineJoin = 'round';
-  c.lineWidth = 14;
+  c.lineWidth = 8;
   c.strokeStyle = '#dde3f0';
   trazar(c, contorno);
   c.stroke();
@@ -360,7 +361,9 @@ function crearCopa({ aniso }) {
     [0.5, -1.92], [0.4, -1.96], [0.34, -2.0], [0.43, -2.07], [0.48, -2.16], [0.43, -2.3], [0.27, -2.45], [0.3, -2.54],
     [0.4, -2.62], [0.66, -2.68], [0.8, -2.78], [0.86, -2.92], [0.855, -3.01], [0.83, -3.04],
   ].map(P));
-  torno([...pie.getPoints(140), P([0.5, -3.04]), P([0, -3.04])], plata, 96);
+  // El torno se recorre de abajo hacia arriba: al revés, las normales miran hacia adentro y el pie se
+  // ve transparente (se descartan las caras de adelante).
+  torno([P([0, -3.04]), P([0.5, -3.04]), ...pie.getPoints(140).reverse()], plata, 96);
   const anillo = sombras(new THREE.Mesh(new THREE.CylinderGeometry(X(0.51), X(0.5), Y(-1.8) - Y(-1.92), 64, 1), plata));
   anillo.position.y = (Y(-1.8) + Y(-1.92)) / 2;
   grupo.add(anillo);
@@ -375,17 +378,24 @@ function crearCopa({ aniso }) {
     ...interior.getPoints(30),
   ], plata, 128);
 
-  // --- Asas: chapa dorada plana (latón pulido), con la forma medida sobre la foto. Están en el plano
-  // radial, así que de frente se ve su contorno: un brazo superior que sale del borde, una esquina
-  // redondeada y un brazo inferior que baja en diagonal hacia el cuenco. El hueco es una lágrima
-  // alargada. Los dos extremos entran en la pared del cuenco: nada queda suelto. La izquierda es
-  // la derecha espejada. ---
+  // --- Asas: chapa dorada plana (latón pulido) con el contorno medido sobre la foto del asa izquierda
+  // ampliada (la derecha sale cortada en la foto, así que la derecha es la izquierda espejada). Están
+  // en el plano radial, así que de frente se ve su contorno: un brazo superior plano de ~0,2 R que
+  // termina junto al cuenco en una punta y un chaflán, una muesca en V antes de la diagonal recta
+  // hasta la esquina exterior, un escalón hacia adentro en el borde exterior y un brazo inferior que
+  // baja curvándose hasta el cuenco. El hueco es una lágrima alargada con una cuña colgando junto al
+  // cuenco. Los dos extremos entran en la pared: nada queda suelto. ---
   const trazo = (pts) => new THREE.CatmullRomCurve3(pts.map(([r, y]) => new THREE.Vector3(X(r), Y(y), 0)), false, 'centripetal')
-    .getPoints(60).map((v) => [v.x, v.y]);
+    .getPoints(50).map((v) => [v.x, v.y]);
+  const recto = (pts) => pts.map(([r, y]) => [X(r), Y(y)]); // aristas vivas: punta, muesca, escalón y cuña
   const contornoAsa = [
-    ...trazo([[0.97, 0.07], [1.0, 0.08], [1.16, 0.15], [1.22, 0.11], [1.65, 0.21], [1.89, 0.02], [1.93, -0.16], [1.77, -0.65], [1.52, -1.07], [1.22, -1.44], [0.85, -1.68]]),
-    ...[[0.72, -1.6]].map(([r, y]) => [X(r), Y(y)]),
-    ...trazo([[0.74, -1.56], [0.79, -1.56], [1.28, -1.26], [1.59, -0.77], [1.71, -0.28], [1.59, -0.1], [1.04, -0.1], [0.97, -0.1]]),
+    ...recto([[0.96, -0.03], [0.97, 0.0], [1.12, 0.16], [1.57, 0.15], [1.6, 0.085], [1.65, 0.12], [2.03, -0.23]]),
+    ...trazo([[2.03, -0.23], [1.97, -0.42], [1.93, -0.52], [1.9, -0.6]]),
+    ...recto([[1.89, -0.62], [1.86, -0.65]]),
+    ...trazo([[1.86, -0.65], [1.78, -0.82], [1.69, -0.96], [1.53, -1.14], [1.38, -1.31], [1.2, -1.5], [1.07, -1.62], [0.9, -1.69]]),
+    ...recto([[0.74, -1.62]]),
+    ...trazo([[0.78, -1.6], [0.98, -1.55], [1.17, -1.37], [1.31, -1.14], [1.4, -0.93], [1.47, -0.7], [1.53, -0.43], [1.55, -0.2], [1.53, -0.13], [1.45, -0.085], [1.34, -0.07], [1.23, -0.085]]),
+    ...recto([[1.22, -0.27], [1.08, -0.14], [0.97, -0.12]]),
   ];
   const ESPESOR_ASA = 0.07 * R;
   const BISEL_ASA = 0.019;
@@ -447,7 +457,7 @@ function crearCopa({ aniso }) {
     return new THREE.Vector3(Math.sin(fi) * (q.x + 0.006), q.y, Math.cos(fi) * (q.x + 0.006));
   };
   const borde = new THREE.CatmullRomCurve3(E.contorno.map(aLaPared), true, 'centripetal');
-  grupo.add(sombras(new THREE.Mesh(new THREE.TubeGeometry(borde, 220, 0.012, 8, true), plata)));
+  grupo.add(sombras(new THREE.Mesh(new THREE.TubeGeometry(borde, 220, 0.008, 8, true), plata)));
 
   return { grupo, placas, ancho: 5.5, alto: 6.3, centro: new THREE.Vector3(0, 3.05, 0), frente: 0 };
 }
