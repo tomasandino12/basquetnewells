@@ -292,17 +292,16 @@ export function resumenDeTitulos() {
 }
 
 /**
- * Las placas de la copa: una por título, repartidas parejas alrededor de la base. `angulo` (radianes)
- * es la posición de la placa vista desde arriba, con 0 mirando al frente y positivo hacia la derecha:
- * la placa del medio de la lista queda justo de frente y el resto se abre hacia los costados, así
- * los títulos seguidos (1943–1954) se leen como un friso y no hay placas apiladas ni que se pisen.
- * Es pura y vive acá para que el test pueda comprobar que cada título tiene la suya; la copa 3D
- * (src/ui/vitrina3d.js) sólo la dibuja.
+ * Las placas de la copa, en las dos filas del tambor de madera (como en la copa real): arriba las
+ * ocho primeras (1943–1950) y abajo las otras siete. Cada placa lleva su año, su número de título y
+ * su lugar en la fila (`i`); la fila dice cuántas entran en la vuelta (`n`), así el ángulo de cada una
+ * es i·360°/n. El marcado de las placas está escrito en public/historia.html (se ven sin JavaScript)
+ * y un test lo compara con esto.
  */
-export function placasDeCopa() {
-  const n = T.length;
-  const paso = (Math.PI * 2) / n;
-  return T.map((t, i) => ({ anio: t.anio, numero: t.numero, angulo: (i - (n - 1) / 2) * paso }));
+const PLACAS_ARRIBA = 8;
+export function filasDePlacas() {
+  const placa = (t, i) => ({ anio: t.anio, numero: t.numero, i });
+  return [T.slice(0, PLACAS_ARRIBA), T.slice(PLACAS_ARRIBA)].map((fila) => ({ n: fila.length, placas: fila.map(placa) }));
 }
 
 /**

@@ -1,6 +1,7 @@
 import { html, crudo } from './html.js';
 import { $ } from './dom.js';
 import { montarMedalla } from './medalla.js';
+import { montarCopa } from './copa.js';
 import { titulos, epocas, datosPublicables, epocaDeAnio, microDato, momentos, hitoDeTitulo, resumenDeTitulos } from '../data/historia.js';
 
 /**
@@ -14,20 +15,21 @@ import { titulos, epocas, datosPublicables, epocaDeAnio, microDato, momentos, hi
  * propio son tarjetas compactas; los hitos que no son un título (Del Vecchio, el
  * Cubierto, los 100 años de la Rosarina) van como tarjetas "momento", sin estrella.
  *
- * Contrato con la vitrina (la copa 3D de src/ui/vitrina3d.js; un SVG de respaldo si no hay WebGL):
+ * Contrato con la vitrina (la foto de la copa con el tambor de placas en CSS 3D, src/ui/copa.js):
  *  - 'historia:seleccion' se emite sobre #vitrina (y sube por el DOM) cada vez que
  *    cambia lo elegido: al tocar una tarjeta o una estrella, o al llegar con el
  *    scroll a otra época. detail = { epocaId, anio, anios }: `anios` son los años
- *    de título a marcar en la copa (una época → los suyos; un año → ése; nada → []).
+ *    de título elegidos (una época → los suyos; un año → ése; nada → []).
+ *  - 'historia:foco' se emite sobre #vitrina cuando la tarjeta de un título cruza la
+ *    franja de lectura. detail = { anio }: la copa trae esa placa al frente.
  *  - 'historia:elegir' se escucha sobre #vitrina. detail = { anio } o { epocaId }:
  *    es como la copa pide elegir cuando se toca una placa. La línea se desplaza
  *    hasta esa tarjeta.
  *  - `seleccionar()` hace lo mismo desde código.
- * Los eventos van por el DOM, y no por imports, para que la vitrina se cargue
- * recién cuando se acerca al viewport y pueda no estar nunca (sin WebGL).
+ * Los eventos van por el DOM, y no por imports: la copa no sabe nada de la línea.
  *
- * La medalla no es parte de la vitrina: tiene su propia sección de cierre (#medalla) y es CSS 3D
- * puro (src/ui/medalla.js le da el giro): no usa WebGL, así que la copa es el único renderer.
+ * La medalla no es parte de la vitrina: tiene su propia sección de cierre (#medalla). Las dos son CSS 3D
+ * sobre fotos recortadas: en la página no hay WebGL.
  */
 
 const EPOCA_INICIAL = 'doce-seguidos';
@@ -279,7 +281,7 @@ function pintarSeleccion() {
   pintarFicha();
 }
 
-/** Los años de título que la copa tiene que marcar con lo elegido ahora (un año → ése; una época → los suyos; nada → []). */
+/** Los años de título elegidos ahora (un año → ése; una época → los suyos; nada → []). */
 function aniosElegidos() {
   if (estado.anio != null) return [estado.anio];
   const epoca = epocas().find((e) => e.id === estado.epocaId);
@@ -298,44 +300,6 @@ export function seleccionar({ epocaId = null, anio = null } = {}) {
   estado.previa = null;
   pintarSeleccion();
   $('vitrina').dispatchEvent(new CustomEvent('historia:seleccion', { bubbles: true, detail: { epocaId: estado.epocaId, anio: estado.anio, anios: aniosElegidos() } }));
-}
-
-/**
- * La copa en 3D. Se monta recién cuando la vitrina se acerca a la pantalla (`import()` del módulo,
- * que a su vez trae Three.js: ~190 KB comprimidos que no tienen por qué bajar quien no llega hasta
- * acá). `data-estado` de #vitrina cuenta cómo va: 'estatica' (el SVG de respaldo), 'cargando' y
- * '3d'. Si no hay WebGL, o algo falla al bajar o al armar la escena, vuelve a 'estatica' y
- * la página sigue igual: es una mejora, no una dependencia.
- */
-function montarVitrina() {
-  const vitrina = $('vitrina');
-  const escenario = $('vitrina-escenario');
-  const volverAEstatica = (motivo) => {
-    vitrina.dataset.estado = 'estatica';
-    if (motivo) console.warn('Vitrina 3D no disponible:', motivo);
-  };
-  if (typeof IntersectionObserver !== 'function') return;
-  let iniciada = false;
-  const iniciar = async () => {
-    if (iniciada) return;
-    iniciada = true;
-    vitrina.dataset.estado = 'cargando';
-    try {
-      const m = await import('./vitrina3d.js');
-      if (!m.hayWebGL()) return volverAEstatica();
-      await m.crearVitrina(escenario, { escena: $('hist-escena'), anios: aniosElegidos() });
-      vitrina.dataset.estado = '3d';
-    } catch (e) {
-      volverAEstatica(e);
-    }
-  };
-  new IntersectionObserver((entradas, obs) => {
-    if (!entradas.some((e) => e.isIntersecting)) return;
-    obs.disconnect();
-    iniciar();
-  }, { rootMargin: '600px 0px' }).observe(escenario);
-  // Si el contexto WebGL se pierde (GPU ocupada, pestaña en segundo plano mucho tiempo), se vuelve al SVG.
-  escenario.addEventListener('vitrina:perdida', () => volverAEstatica('se perdió el contexto WebGL'));
 }
 
 // La línea viva: el progreso rojo del eje llega hasta una altura fija de la pantalla (un poco más
@@ -444,6 +408,18 @@ function revelarEstrellas() {
   }, { threshold: 0.25 }).observe(grilla);
 }
 
+// El año que se está leyendo: cuando la tarjeta de un título cruza la franja de lectura, la copa gira hasta su placa.
+function seguirAnio() {
+  if (typeof IntersectionObserver !== 'function') return;
+  const vitrina = $('vitrina');
+  const obs = new IntersectionObserver((entradas) => {
+    for (const en of entradas) {
+      if (en.isIntersecting) vitrina.dispatchEvent(new CustomEvent('historia:foco', { detail: { anio: Number(en.target.dataset.anio) } }));
+    }
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  document.querySelectorAll('.t-card[data-anio]').forEach((el) => obs.observe(el));
+}
+
 /** Lleva la línea hasta lo elegido (cuando la copa pide un año o una época). */
 function llevarALinea() {
   const sel = estado.anio != null ? `.t-card[data-anio="${estado.anio}"]` : `.epoca[data-epoca="${estado.epocaId}"]`;
@@ -475,7 +451,8 @@ export function iniciarHistoria() {
   iniciarTilt();
   revelarEstrellas();
   seguirEpoca();
-  montarVitrina();
+  seguirAnio();
+  montarCopa($('vitrina-escenario'));
   montarMedalla($('medalla-escenario'));
 
   $('hist-linea').addEventListener('click', (ev) => {

@@ -75,77 +75,43 @@
     </section>
 
     <section class="hist-escena" id="hist-escena" aria-label="La vitrina y la línea histórica">
-      <!-- LA VITRINA. Muestra una copa dibujada a mano (.vitrina-respaldo) hasta que src/ui/vitrina3d.js
-           monta la copa en 3D; si el navegador no tiene WebGL, o la carga falla, el SVG se queda.
-           Puntos de enganche:
-             - #vitrina-escenario: el contenedor donde va el canvas.
-             - 'historia:seleccion' (se emite sobre #vitrina y sube por el DOM): cada vez que cambia
-               la época o el año elegidos. detail = { epocaId, anio, anios }, con `anios` la lista
-               de años de título a marcar en la copa (vacía si no hay nada elegido).
-             - 'historia:elegir' (se emite sobre #vitrina): pide elegir un año o una época.
-               detail = { anio } o { epocaId }; la página responde con 'historia:seleccion'.
-             - data-estado: "estatica" (SVG), "cargando" (se está bajando la 3D) o "3d" (montada). -->
-      <figure class="hist-vitrina" id="vitrina" data-estado="estatica">
+      <!-- LA VITRINA. La copa es una foto (public/img/historia/copa-arbb.webp, recortada y con la madera del
+           tambor limpia por scripts/copa-arbb/recortar.py) y, encima del tambor, las 15 placas en CSS 3D: dos filas
+           (8 arriba, 7 abajo) que giran juntas como un cilindro. Sin WebGL. src/ui/copa.js le da el movimiento;
+           sin JavaScript se ve la copa quieta con 1943 y 1951 de frente.
+           Puntos de enganche (src/ui/historia.js):
+             - 'historia:seleccion' (se emite sobre #vitrina): cambió la época o el año elegidos.
+               detail = { epocaId, anio, anios }; con un solo año, la copa enciende y trae al frente esa placa.
+             - 'historia:foco' (se emite sobre #vitrina): el año que se está leyendo en la línea. detail = { anio }.
+             - 'historia:elegir' (lo emite la copa): se tocó una placa. detail = { anio }. -->
+      <figure class="hist-vitrina" id="vitrina">
         <div class="vitrina-escenario" id="vitrina-escenario">
-          <svg class="vitrina-respaldo" viewBox="0 0 320 380" role="img" aria-labelledby="copa-t copa-d">
-            <title id="copa-t">La copa de Primera</title>
-            <desc id="copa-d">Una copa con el cuenco plateado y ancho, dos asas doradas altas, el escudo del club al frente y una base redonda escalonada de madera.</desc>
-            <defs>
-              <linearGradient id="v-plata" x1="0" x2="1">
-                <stop offset="0" stop-color="#6d7078"/><stop offset=".18" stop-color="#c9ccd2"/><stop offset=".38" stop-color="#f4f5f7"/>
-                <stop offset=".58" stop-color="#aeb2ba"/><stop offset=".82" stop-color="#8a8e97"/><stop offset="1" stop-color="#4f525a"/>
-              </linearGradient>
-              <linearGradient id="v-interior" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#101114"/><stop offset="1" stop-color="#3a3c44"/></linearGradient>
-              <linearGradient id="v-oro" x1="0" x2="1">
-                <stop offset="0" stop-color="#7a5a22"/><stop offset=".3" stop-color="#e6c26e"/><stop offset=".45" stop-color="#fbe7a6"/>
-                <stop offset=".65" stop-color="#c5a059"/><stop offset="1" stop-color="#6e4f1c"/>
-              </linearGradient>
-              <linearGradient id="v-madera" x1="0" x2="1">
-                <stop offset="0" stop-color="#1d1009"/><stop offset=".3" stop-color="#5a3920"/><stop offset=".48" stop-color="#7a4f2d"/>
-                <stop offset=".72" stop-color="#47291a"/><stop offset="1" stop-color="#170b05"/>
-              </linearGradient>
-              <radialGradient id="v-tapa" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="#7d5230"/><stop offset="1" stop-color="#3a2212"/></radialGradient>
-              <radialGradient id="v-sombra" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".7"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
-            </defs>
-
-            <ellipse cx="160" cy="350" rx="150" ry="20" fill="url(#v-sombra)"/>
-
-            <!-- Base de madera: tres escalones redondos. -->
-            <path d="M40 322v22a120 16 0 0 0 240 0v-22z" fill="url(#v-madera)"/>
-            <ellipse cx="160" cy="322" rx="120" ry="16" fill="url(#v-tapa)"/>
-            <path d="M68 304v18a92 12 0 0 0 184 0v-18z" fill="url(#v-madera)"/>
-            <ellipse cx="160" cy="304" rx="92" ry="12" fill="url(#v-tapa)"/>
-            <path d="M98 288v14a62 9 0 0 0 124 0v-14z" fill="url(#v-madera)"/>
-            <ellipse cx="160" cy="288" rx="62" ry="9" fill="url(#v-tapa)"/>
-            <ellipse cx="160" cy="288" rx="62" ry="9" fill="none" stroke="url(#v-plata)" stroke-width="1.5" opacity=".7"/>
-
-            <!-- Asas doradas, altas: salen de la cintura del cuenco y suben por encima del borde. -->
-            <g fill="none" stroke-linecap="round">
-              <path d="M70 154C20 154 12 68 42 56C66 48 78 74 68 124" stroke="#2d1f08" stroke-width="10"/>
-              <path d="M70 154C20 154 12 68 42 56C66 48 78 74 68 124" stroke="url(#v-oro)" stroke-width="7"/>
-              <path d="M66 148C26 148 20 74 44 62" stroke="#fbe7a6" stroke-width="1.6" opacity=".6"/>
-              <path d="M250 154C300 154 308 68 278 56C254 48 242 74 252 124" stroke="#2d1f08" stroke-width="10"/>
-              <path d="M250 154C300 154 308 68 278 56C254 48 242 74 252 124" stroke="url(#v-oro)" stroke-width="7"/>
-              <path d="M254 148C294 148 300 74 276 62" stroke="#fbe7a6" stroke-width="1.6" opacity=".6"/>
-            </g>
-
-            <!-- Tallo plateado con anillos. -->
-            <path d="M147 292L150 234H170L173 292z" fill="url(#v-plata)"/>
-            <ellipse cx="160" cy="288" rx="26" ry="6" fill="url(#v-plata)"/>
-            <ellipse cx="160" cy="268" rx="15" ry="4" fill="url(#v-plata)" stroke="#2a2b30" stroke-opacity=".35"/>
-            <ellipse cx="160" cy="252" rx="13" ry="3.5" fill="url(#v-plata)" stroke="#2a2b30" stroke-opacity=".35"/>
-            <ellipse cx="160" cy="237" rx="17" ry="4.5" fill="url(#v-plata)" stroke="#2a2b30" stroke-opacity=".35"/>
-
-            <!-- Cuenco plateado ancho. -->
-            <path d="M64 124C64 188 118 226 146 236L174 236C202 226 256 188 256 124z" fill="url(#v-plata)"/>
-            <path d="M86 142C92 182 118 208 140 220" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".5"/>
-            <ellipse cx="160" cy="124" rx="96" ry="11" fill="url(#v-interior)"/>
-            <ellipse cx="160" cy="124" rx="96" ry="11" fill="none" stroke="url(#v-plata)" stroke-width="3"/>
-
-            <!-- Escudo al frente. -->
-            <path d="M141 156h38v22c0 14-10 22-19 26-9-4-19-12-19-26z" fill="#1b3a7a" stroke="url(#v-oro)" stroke-width="2"/>
-            <text x="160" y="187" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-weight="700" font-size="28" fill="#d9122e">R</text>
-          </svg>
+          <div class="copa" id="copa">
+            <img class="copa-foto" src="/public/img/historia/copa-arbb.webp" width="862" height="1105" decoding="async" draggable="false"
+                 alt="La copa de Primera de la Asociación Rosarina: cuenco plateado con el escudo de la R, dos asas de bronce y una base redonda de madera con las placas de los títulos.">
+            <span class="copa-brillo" aria-hidden="true"></span>
+            <div class="copa-tambor" id="copa-tambor" role="group" aria-label="Las placas de los 15 títulos. Arrastrá la copa para girarlas; tocá un año para ir a ese título.">
+            <ol class="copa-fila copa-fila-arriba" style="--n:8">
+              <li style="--i:0"><button type="button" class="placa" data-anio="1943" aria-label="Título 1, 1943">1943</button></li>
+              <li style="--i:1"><button type="button" class="placa" data-anio="1944" aria-label="Título 2, 1944">1944</button></li>
+              <li style="--i:2"><button type="button" class="placa" data-anio="1945" aria-label="Título 3, 1945">1945</button></li>
+              <li style="--i:3"><button type="button" class="placa" data-anio="1946" aria-label="Título 4, 1946">1946</button></li>
+              <li style="--i:4"><button type="button" class="placa" data-anio="1947" aria-label="Título 5, 1947">1947</button></li>
+              <li style="--i:5"><button type="button" class="placa" data-anio="1948" aria-label="Título 6, 1948">1948</button></li>
+              <li style="--i:6"><button type="button" class="placa" data-anio="1949" aria-label="Título 7, 1949">1949</button></li>
+              <li style="--i:7"><button type="button" class="placa" data-anio="1950" aria-label="Título 8, 1950">1950</button></li>
+            </ol>
+            <ol class="copa-fila copa-fila-abajo" style="--n:7">
+              <li style="--i:0"><button type="button" class="placa" data-anio="1951" aria-label="Título 9, 1951">1951</button></li>
+              <li style="--i:1"><button type="button" class="placa" data-anio="1952" aria-label="Título 10, 1952">1952</button></li>
+              <li style="--i:2"><button type="button" class="placa" data-anio="1953" aria-label="Título 11, 1953">1953</button></li>
+              <li style="--i:3"><button type="button" class="placa" data-anio="1954" aria-label="Título 12, 1954">1954</button></li>
+              <li style="--i:4"><button type="button" class="placa" data-anio="1977" aria-label="Título 13, 1977">1977</button></li>
+              <li style="--i:5"><button type="button" class="placa" data-anio="1978" aria-label="Título 14, 1978">1978</button></li>
+              <li style="--i:6"><button type="button" class="placa" data-anio="1983" aria-label="Título 15, 1983">1983</button></li>
+            </ol>
+            </div>
+          </div>
         </div>
         <figcaption>Recreación inspirada en la copa actual de la Asociación Rosarina</figcaption>
       </figure>

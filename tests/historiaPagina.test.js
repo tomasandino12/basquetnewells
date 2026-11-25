@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { titulos, datosPublicables, datosPendientes, epocas, momentos } from '../src/data/historia.js';
+import { titulos, datosPublicables, datosPendientes, epocas, momentos, filasDePlacas } from '../src/data/historia.js';
 import { htmlLinea, htmlEstrellas, htmlFicha, htmlCifras } from '../src/ui/historia.js';
 
 /**
@@ -28,7 +28,7 @@ test('/historia tiene su rewrite, su no-store y su lugar en el sitemap', () => {
   assert.match(readFileSync('public/sitemap.xml', 'utf8'), /<loc>https:\/\/basquetnewells\.com\.ar\/historia<\/loc>/);
 });
 
-test('la vitrina deja el punto de enganche para la copa 3D y la leyenda obligatoria', () => {
+test('la vitrina deja el punto de enganche para la copa y la leyenda obligatoria', () => {
   assert.match(pagina, /id="vitrina"/);
   assert.match(pagina, /id="vitrina-escenario"/);
   assert.match(pagina, /Recreación inspirada en la copa actual de la Asociación Rosarina/);
@@ -239,15 +239,76 @@ test('la ficha de un año sin dato propio usa el de su época y lo dice', () => 
 
 test('la vitrina muestra sólo la copa: sin selector de pieza ni cambio automático', () => {
   const js = readFileSync('src/ui/historia.js', 'utf8');
-  const vitrina = readFileSync('src/ui/vitrina3d.js', 'utf8');
+  const copa = readFileSync('src/ui/copa.js', 'utf8');
   const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
   assert.doesNotMatch(js, /historia:pieza|htmlSelectorPieza|elegirPieza|pasarAMedalla|vitrina-selector/);
   assert.doesNotMatch(css, /vitrina-selector|vitrina-pieza/);
   assert.doesNotMatch(pagina, /Medalla oficial|Trofeo ARBB|historia:pieza/);
-  // La copa no sabe nada de la medalla.
-  assert.doesNotMatch(vitrina, /medalla3d|historia:pieza|registrarPieza|mostrarPieza/);
-  // Y frena su bucle cuando sale de pantalla.
-  assert.match(vitrina, /new IntersectionObserver\(\(\[e\]\) => \{\s*visible = e\.isIntersecting;[\s\S]*?cancelAnimationFrame\(idRaf\)/);
+  // La copa no sabe nada de la medalla ni de la UI, y frena su bucle cuando sale de pantalla.
+  assert.doesNotMatch(copa, /medalla|^import /m);
+  assert.match(copa, /new IntersectionObserver\(\(\[e\]\) => \{\s*visible = e\.isIntersecting;[\s\S]*?cancelAnimationFrame\(idRaf\)/);
+  assert.match(copa, /if \(!quieta\) idRaf = requestAnimationFrame\(cuadro\)/);
+});
+
+test('la copa es la foto recortada con las 15 placas encima, en dos filas como en los datos', () => {
+  // La foto: WebP con alfa (VP8X), de 862×1105 y liviana.
+  const ruta = 'public/img/historia/copa-arbb.webp';
+  const b = readFileSync(ruta);
+  assert.equal(b.toString('latin1', 8, 16), 'WEBPVP8X');
+  assert.ok(b[20] & 0x10, 'sin canal alfa');
+  assert.equal(1 + b.readUIntLE(24, 3), 862);
+  assert.equal(1 + b.readUIntLE(27, 3), 1105);
+  assert.ok(b.length < 120 * 1024, `${b.length} bytes`);
+  assert.match(pagina, /<img class="copa-foto" src="\/public\/img\/historia\/copa-arbb\.webp" width="862" height="1105"[^>]*alt="[^"]{40,}"/);
+  // Las placas están escritas en la página (se ven sin JavaScript) y son las de filasDePlacas(), en orden.
+  const filas = [...pagina.matchAll(/<ol class="copa-fila copa-fila-(?:arriba|abajo)" style="--n:(\d+)">([\s\S]*?)<\/ol>/g)];
+  assert.equal(filas.length, 2);
+  filasDePlacas().forEach((f, k) => {
+    assert.equal(Number(filas[k][1]), f.n);
+    const placas = [...filas[k][2].matchAll(/<li style="--i:(\d+)"><button type="button" class="placa" data-anio="(\d+)" aria-label="Título (\d+), \2">\2<\/button><\/li>/g)];
+    assert.deepEqual(placas.map((m) => [Number(m[1]), Number(m[2]), Number(m[3])]), f.placas.map((p) => [p.i, p.anio, p.numero]));
+  });
+});
+
+test('el tambor de placas es CSS 3D y la placa activa es plata bruñida, nunca roja', () => {
+  const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const reglas = (sel) => [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => m[1].split(',').some((x) => x.trim() === sel)).map((m) => m[2]).join(';');
+  assert.match(reglas('.copa-fila'), /transform-style:preserve-3d/);
+  assert.match(reglas('.copa-fila'), /rotateY\(var\(--giro,0deg\)\)/);
+  assert.match(reglas('.copa-fila li'), /rotateY\(calc\(var\(--i\) \* 360deg \/ var\(--n\)\)\) translateZ\(var\(--radio\)\)/);
+  assert.match(reglas('.copa-fila li'), /backface-visibility:hidden/);
+  assert.match(reglas('.copa-fila li.activa'), /scale\(1\.14\)/);
+  assert.match(reglas('.vitrina-escenario'), /touch-action:pan-y/);
+  // Inactiva: plata ahumada con el año gris carbón; activa: platino con el año negro y halo detrás.
+  assert.match(reglas('.placa'), /linear-gradient\(135deg,#8A8F98,#686D75\)/);
+  assert.match(reglas('.placa'), /color:#1E2024/);
+  assert.match(reglas('.placa'), /opacity:\.85/);
+  const activa = reglas('.placa.activa');
+  assert.match(activa, /linear-gradient\(135deg,#FFFFFF 0%,#E6E9EF 45%,#FFFFFF 55%,#C8CDD6 100%\)/);
+  assert.match(activa, /color:#09090B/);
+  assert.match(activa, /font-weight:700/);
+  assert.match(activa, /text-shadow:0 1px 0 rgba\(255,255,255,\.6\)/);
+  assert.match(activa, /border-color:#FFFFFF/);
+  assert.match(activa, /box-shadow:0 0 16px rgba\(255,255,255,\.55\),0 4px 12px rgba\(0,0,0,\.8\)/);
+  // Ninguna regla de las placas usa rojo.
+  const dePlacas = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => /\.placa|\.copa-fila/.test(m[1])).map((m) => m[2]).join(';');
+  assert.doesNotMatch(dePlacas, /--primario|--hist-rojo|--rojo|#e30613|#d9122e|\bred\b/i);
+});
+
+test('la copa gira sola hasta el año que se lee, se arrastra y avisa qué placa se tocó', () => {
+  const js = readFileSync('src/ui/historia.js', 'utf8');
+  const copa = readFileSync('src/ui/copa.js', 'utf8');
+  assert.match(js, /^import \{ montarCopa \} from '\.\/copa\.js';/m);
+  assert.match(js, /montarCopa\(\$\('vitrina-escenario'\)\)/);
+  // La línea avisa el año que se está leyendo; la copa lo escucha junto con la selección.
+  assert.match(js, /new CustomEvent\('historia:foco', \{ detail: \{ anio: Number\(en\.target\.dataset\.anio\) \} \}\)/);
+  assert.match(js, /querySelectorAll\('\.t-card\[data-anio\]'\)/);
+  for (const ev of ["'historia:seleccion'", "'historia:foco'", "'historia:elegir'"]) assert.ok(copa.includes(ev), ev);
+  // Gira por el camino corto y, con movimiento reducido, salta sin inercia ni inclinación.
+  assert.match(copa, /return a \+ 360 \* Math\.round\(\(meta - a\) \/ 360\)/);
+  assert.match(copa, /if \(reducido\) \{\s*giro = meta;\s*incl\.x = incl\.y = 0;/);
+  for (const ev of ['pointerdown', 'pointermove', 'pointerup', 'setPointerCapture']) assert.ok(copa.includes(ev), ev);
+  assert.match(copa, /boton\.textContent = 'Volver al frente'/);
 });
 
 test('la medalla va en una sección de cierre propia, con su leyenda, sus dos caras y su botón', () => {
@@ -276,16 +337,14 @@ test('la medalla va en una sección de cierre propia, con su leyenda, sus dos ca
   assert.match(css, /\.medal-dorso \.medal-brillo\{[^}]*mask-image:url\(\/public\/img\/historia\/medalla-dorso-full\.webp\)/);
 });
 
-test('la medalla no usa WebGL', () => {
+test('la página no usa WebGL: ni la copa ni la medalla', () => {
   const js = readFileSync('src/ui/historia.js', 'utf8');
-  assert.doesNotMatch(js, /medalla3d/);
-  assert.ok(!existsSync('src/ui/medalla3d.js'));
-  // En toda la interfaz queda un único WebGLRenderer: el de la copa.
+  assert.doesNotMatch(js, /medalla3d|vitrina3d/);
+  for (const f of ['src/ui/medalla3d.js', 'src/ui/vitrina3d.js', 'public/vendor/three']) assert.ok(!existsSync(f), f);
   const usos = readdirSync('src/ui', { recursive: true })
     .filter((f) => String(f).endsWith('.js'))
-    .filter((f) => /new THREE\.WebGLRenderer/.test(readFileSync(join('src/ui', String(f)), 'utf8')));
-  assert.deepEqual(usos.map(String), ['vitrina3d.js']);
-  assert.doesNotMatch(readFileSync('src/ui/medalla.js', 'utf8'), /from '[^']*three|WebGLRenderer|getContext\(/);
+    .filter((f) => /WebGLRenderer|getContext\(['"]webgl|from '[^']*three/.test(readFileSync(join('src/ui', String(f)), 'utf8')));
+  assert.deepEqual(usos, []);
   // Los dos recortes nuevos existen, son WebP con pérdida y alfa (VP8X), de 512×704, y pesan menos de 80 KB.
   for (const cara of ['frente', 'dorso']) {
     const ruta = `public/img/historia/medalla-${cara}-full.webp`;

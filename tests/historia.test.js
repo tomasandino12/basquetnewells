@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { titulos, epocas, datosPublicables, datosPendientes, epocaDeAnio, microDato, momentos, hitoDeTitulo, resumenDeTitulos, placasDeCopa, piezasDeVitrina } from '../src/data/historia.js';
+import { titulos, epocas, datosPublicables, datosPendientes, epocaDeAnio, microDato, momentos, hitoDeTitulo, resumenDeTitulos, filasDePlacas, piezasDeVitrina } from '../src/data/historia.js';
 
 const AÑOS_EXACTOS = [
   1943, 1944, 1945, 1946, 1947, 1948, 1949, 1950, 1951, 1952, 1953, 1954,
@@ -116,19 +116,16 @@ test('el Cubierto lleva sus dos sedes mundiales con fuente', () => {
   assert.equal(new Set(medios).size, medios.length);
 });
 
-test('cada título tiene su placa', () => {
-  const placas = placasDeCopa();
-  const ts = titulos();
-  assert.equal(placas.length, ts.length);
-  assert.deepEqual(placas.map((p) => p.anio), ts.map((t) => t.anio));
-  assert.deepEqual(placas.map((p) => p.numero), ts.map((t) => t.numero));
-  // Ninguna se superpone: los ángulos son distintos y entran en una vuelta (-π, π).
-  const angulos = placas.map((p) => p.angulo);
-  assert.equal(new Set(angulos.map((a) => a.toFixed(6))).size, placas.length);
-  for (const a of angulos) assert.ok(a > -Math.PI && a < Math.PI);
-  // Simétricas respecto del frente: la del medio (1950) mira justo de frente.
-  assert.ok(Math.abs(placas[7].angulo) < 1e-9);
-  assert.ok(Math.abs(placas[0].angulo + placas[14].angulo) < 1e-9);
+test('cada título tiene su placa, en dos filas de 8 y 7', () => {
+  const filas = filasDePlacas();
+  assert.deepEqual(filas.map((f) => f.n), [8, 7]);
+  assert.deepEqual(filas[0].placas.map((p) => p.anio), [1943, 1944, 1945, 1946, 1947, 1948, 1949, 1950]);
+  assert.deepEqual(filas[1].placas.map((p) => p.anio), [1951, 1952, 1953, 1954, 1977, 1978, 1983]);
+  const todas = filas.flatMap((f) => f.placas);
+  assert.deepEqual(todas.map((p) => p.anio), titulos().map((t) => t.anio));
+  assert.deepEqual(todas.map((p) => p.numero), titulos().map((t) => t.numero));
+  // El lugar en la fila va de 0 a n-1: cada placa tiene su ángulo y ninguna se pisa.
+  for (const f of filas) assert.deepEqual(f.placas.map((p) => p.i), [...Array(f.n).keys()]);
 });
 
 test('la vitrina alterna dos piezas, cada una con su leyenda de recreación', () => {
