@@ -809,6 +809,37 @@ html:not(.js-anim) .portal-cinta-pausa{display:none}
 .portal-info-cat ul{list-style:none;margin:var(--sp-2) 0 0;padding:0;display:grid;gap:var(--sp-1);font-size:var(--fs-145)}
 .portal-info-dir{margin:0 0 var(--sp-4);font-style:normal;font-size:var(--fs-145);line-height:1.5}
 @media (min-width:48rem){.portal-info-cats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Nuestra historia: una tarjeta que es un solo link a /historia. Foto de archivo arriba (a la izquierda en compu)
+   y, debajo, el dato grande con sus 15 estrellas. El dorado es sólo de las estrellas; lo demás, blanco, gris y rojo. */
+.portal-info-palmares a{color:inherit;text-decoration:underline;text-decoration-color:var(--primario);text-decoration-thickness:2px;text-underline-offset:.2em}
+@media (hover:hover){.portal-info-palmares a:hover{color:var(--sobre-oscuro)}}
+.portal-historia-card{position:relative;display:grid;overflow:hidden;border:1px solid var(--pub-borde);border-radius:var(--r);background:var(--pub-tarjeta);color:var(--sobre-oscuro);text-decoration:none}
+.portal-historia-card:focus-visible{outline:2px solid var(--sobre-oscuro);outline-offset:3px}
+.ph-simbolos{position:absolute;width:0;height:0}
+.ph-foto{display:block;width:100%;height:auto;aspect-ratio:16 / 10;object-fit:cover;object-position:50% 40%;transition:transform var(--dur-3) var(--ease-salida)}
+.ph-cuerpo{display:block;padding:var(--sp-5) var(--sp-4) var(--sp-4)}
+.portal-historia .ph-cuerpo h2{margin-bottom:var(--sp-3)}
+.ph-estrellas{display:flex;flex-wrap:wrap;gap:var(--sp-1);margin-bottom:var(--sp-3)}
+.ph-estrella{flex:none;width:.9375rem;height:.9375rem;fill:var(--dorado)}
+.portal-historia .ph-cuerpo .intro{display:block;margin-bottom:var(--sp-4)}
+.ph-cta{display:inline-flex;align-items:center;gap:var(--sp-2);min-height:var(--tap);font-family:var(--ff-titulo);font-weight:600;font-size:var(--fs-145);letter-spacing:.14em;text-transform:uppercase;color:var(--sobre-oscuro)}
+.ph-cta svg{width:1.25rem;height:1.25rem;fill:none;stroke:var(--primario);stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round;transition:transform var(--dur-2) var(--ease-salida)}
+@media (hover:hover){
+  .portal-historia-card:hover{border-color:var(--primario)}
+  .portal-historia-card:hover .ph-foto{transform:scale(1.03)}
+  .portal-historia-card:hover .ph-cta svg{transform:translateX(.25rem)}
+}
+.portal-historia-card:active .ph-cta svg{transform:translateX(.25rem)}
+@media (min-width:48rem){
+  .portal-historia-card{grid-template-columns:minmax(0,5fr) minmax(0,6fr);align-items:stretch}
+  .ph-foto{height:100%;aspect-ratio:auto;min-height:20rem}
+  .ph-cuerpo{align-self:center;padding:var(--sp-6)}
+  .ph-estrella{width:1.125rem;height:1.125rem}
+}
+@media (prefers-reduced-motion:reduce){
+  .portal-historia-card:hover .ph-foto,.portal-historia-card:hover .ph-cta svg,.portal-historia-card:active .ph-cta svg{transform:none}
+}
 .portal-mapa{
   position:relative;aspect-ratio:16 / 9;overflow:hidden;border:1px solid var(--pub-borde);border-radius:var(--r);
   background:

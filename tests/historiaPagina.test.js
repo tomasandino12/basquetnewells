@@ -307,3 +307,20 @@ test('las caras de la medalla son la foto (1024×1024) con relieve y rugosidad d
   assert.match(medalla, /PELTRE = 0x9e9b93/);
   assert.match(medalla, /color: PELTRE/);
 });
+
+test('el portal enlaza a la historia', () => {
+  const portal = readFileSync('public/portal.html', 'utf8');
+  // La tarjeta entera y la línea del palmarés: dos links a /historia.
+  assert.match(portal, /<a class="portal-historia-card" href="\/historia">/);
+  assert.match(portal, /<p class="intro portal-info-palmares"><a href="\/historia">/);
+  // La foto de la tarjeta existe, y la de las metas para compartir es una de la carpeta de la historia, con URL absoluta.
+  assert.ok(existsSync(portal.match(/class="ph-foto" src="\/([^"]+)"/)[1]));
+  const og = pagina.match(/<meta property="og:image" content="(https:\/\/basquetnewells\.com\.ar\/public\/img\/historia\/[^"]+)"/);
+  assert.ok(og, 'historia.html debe tener og:image con URL absoluta');
+  assert.ok(existsSync(og[1].replace('https://basquetnewells.com.ar/', '')));
+  for (const meta of ['og:title', 'og:description', 'og:url']) assert.match(pagina, new RegExp(`property="${meta}"`));
+  assert.match(pagina, /name="twitter:card" content="summary_large_image"/);
+  assert.match(pagina, /<meta name="description"/);
+  // Y se vuelve: encabezado y pie de la historia llevan al portal.
+  assert.equal((pagina.match(/href="\/"/g) ?? []).length >= 2, true);
+});
