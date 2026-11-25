@@ -122,7 +122,7 @@ function texturaBronce() {
     const y = r() * 256;
     const rad = 20 + r() * 44;
     const m = g.createRadialGradient(x, y, 0, x, y, rad);
-    m.addColorStop(0, `rgba(80,72,56,${0.05 + r() * 0.12})`);
+    m.addColorStop(0, `rgba(80,72,56,${0.015 + r() * 0.03})`); // apenas una variación: bronce satinado, no manchado
     m.addColorStop(1, 'rgba(80,72,56,0)');
     g.fillStyle = m;
     // El círculo se dibuja también corrido una vuelta, para que la textura empalme al repetirse.
@@ -130,7 +130,7 @@ function texturaBronce() {
   }
   const img = g.getImageData(0, 0, 256, 256);
   for (let i = 0; i < img.data.length; i += 4) { // grano
-    const d = (r() - 0.5) * 46;
+    const d = (r() - 0.5) * 20; // grano fino, ±4% de luminosidad
     img.data[i] += d;
     img.data[i + 1] += d;
     img.data[i + 2] += d;
@@ -398,9 +398,9 @@ function crearCopa({ aniso }) {
     ...curva([[1.19, -4.485], [1.12, -4.445], [1.07, -4.405], [1.052, -4.37]], 14), // primera moldura: gola cóncava
     ...curva([[1.052, -4.37], [1.085, -4.33], [1.1, -4.255], [1.08, -4.18], [1.02, -4.13]], 14), // segunda: toro
     ...curva([[1.02, -4.13], [0.93, -4.09], [0.84, -4.04], [RADIO_DRUM + 0.005, -3.96]], 12), // cuello de la base al tambor
-    ...aristas([[RADIO_DRUM, -3.92], [RADIO_DRUM, -3.35]]), // el tambor
-    ...curva([[RADIO_DRUM, -3.35], [0.805, -3.3], [0.87, -3.275], [0.93, -3.26]], 10), // empalme con la tapa
-    ...curva([[0.93, -3.26], [0.968, -3.235], [0.985, -3.17], [0.97, -3.1], [0.93, -3.06], [0.88, -3.05]], 16), // alero redondeado
+    ...aristas([[RADIO_DRUM, -3.92], [RADIO_DRUM, -3.26]]), // el tambor
+    ...curva([[RADIO_DRUM, -3.26], [0.805, -3.225], [0.87, -3.2], [0.93, -3.188]], 10), // empalme con la tapa
+    ...curva([[0.93, -3.188], [0.968, -3.172], [0.985, -3.128], [0.97, -3.083], [0.93, -3.057], [0.88, -3.05]], 16), // alero redondeado, fino
     ...aristas([[0.8, -3.05], [0, -3.05]]),
   ], madera, 128);
 
@@ -485,8 +485,8 @@ function crearCopa({ aniso }) {
     m([0.955, -0.03]);
     l([0.975, 0.045]);
     b([1.0, 0.15], [1.06, 0.168], [1.16, 0.168]); // sube y se acuesta en el hombro
-    b([1.3, 0.168], [1.45, 0.165], [1.56, 0.135]); // hombro superior, apenas caído
-    b([1.61, 0.03], [1.72, 0.0], [1.9, -0.27]); // muesca cóncava hasta el espolón
+    l([1.56, 0.168]); // hombro superior: recto y horizontal, termina en una esquina viva
+    b([1.5, 0.06], [1.58, -0.1], [1.9, -0.27]); // desde la esquina, una mordida cóncava hacia adentro que se abre hasta el espolón
     l([1.72, -0.325]); // el espolón vuelve sobre sí mismo
     b([1.66, -0.48], [1.6, -0.78], [1.5, -1.04]); // arco exterior
     b([1.36, -1.4], [1.12, -1.64], [0.84, -1.74]);
