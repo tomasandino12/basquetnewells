@@ -13,7 +13,7 @@ Spec: `docs/superpowers/specs/2026-11-24-nuestra-historia-design.md`. Se trabaja
 | 5b. El Cubierto con foto | hecha (falta que Tomás la mire) | `git log -1 -- tests/historiaPagina.test.js` |
 | 6. Copa 3D | hecha (falta que Tomás la mire) | `git log -1 -- src/ui/vitrina3d.js` |
 | 6b. Copa fiel y una placa roja | hecha (falta que Tomás la mire) | `git log -1 -- src/ui/vitrina3d.js` |
-| 7. Medalla 3D y selector | pendiente | |
+| 7. Medalla 3D y selector | hecha (falta que Tomás la mire) | `git log -1 -- src/ui/medalla3d.js` |
 | 4. Enlace desde el portal (va última) | pendiente | |
 
 ## Revisión 2: tasks 5–7 (spec, sección "Revisión 2")

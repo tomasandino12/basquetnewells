@@ -68,6 +68,9 @@
                de años de título a marcar en la copa (vacía si no hay nada elegido).
              - 'historia:elegir' (se emite sobre #vitrina): pide elegir un año o una época.
                detail = { anio } o { epocaId }; la página responde con 'historia:seleccion'.
+             - 'historia:pieza' (se emite sobre #vitrina): qué pieza muestra la vitrina, detail = { pieza:
+               'copa' | 'medalla' }. El selector de pieza lo arma src/ui/historia.js entre el escenario y
+               este pie (sólo se ve con la 3D montada), y el pie cambia con la pieza.
              - data-estado: "estatica" (SVG), "cargando" (se está bajando la 3D) o "3d" (montada). -->
       <figure class="hist-vitrina" id="vitrina" data-estado="estatica">
         <div class="vitrina-escenario" id="vitrina-escenario">

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { existsSync } from 'node:fs';
 import { titulos, datosPublicables, datosPendientes, epocas, momentos } from '../src/data/historia.js';
-import { htmlLinea, htmlEstrellas, htmlFicha, htmlCifras } from '../src/ui/historia.js';
+import { htmlLinea, htmlEstrellas, htmlFicha, htmlCifras, htmlSelectorPieza } from '../src/ui/historia.js';
 
 /**
  * La página pública /historia: lo que no cambia con los datos (la CSP no admite scripts en
@@ -214,4 +214,28 @@ test('las 15 estrellas y la ficha de 1983 con su aclaración del torneo', () => 
 test('la ficha de un año sin dato propio usa el de su época y lo dice', () => {
   assert.match(String(htmlFicha(1944)), /Dato de la época/);
   assert.doesNotMatch(String(htmlFicha(1946)), /Dato de la época/);
+});
+
+test('el selector de pieza tiene sus dos botones con aria-pressed y el pie de la medalla', () => {
+  const salida = String(htmlSelectorPieza('medalla'));
+  assert.match(salida, /data-pieza="copa" aria-pressed="false">Trofeo ARBB</);
+  assert.match(salida, /data-pieza="medalla" aria-pressed="true">Medalla oficial</);
+  const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  // Sólo se ve con la 3D montada, y el canvas se apaga un instante al cambiar de pieza.
+  assert.match(css, /:not\(\[data-estado="3d"\]\) \.vitrina-selector\{display:none\}|\.vitrina-selector\{display:none\}/);
+  assert.match(css, /\.vitrina-canvas\.cambia\{opacity:0/);
+  const js = readFileSync('src/ui/historia.js', 'utf8');
+  assert.match(js, /historia:pieza/);
+});
+
+test('la medalla se arma bajo demanda y comparte el renderer de la copa', () => {
+  const vitrina = readFileSync('src/ui/vitrina3d.js', 'utf8');
+  const medalla = readFileSync('src/ui/medalla3d.js', 'utf8');
+  // vitrina3d la trae con import() (no estático) y la medalla no crea un WebGLRenderer propio.
+  assert.match(vitrina, /await import\('\.\/medalla3d\.js'\)/);
+  assert.doesNotMatch(vitrina, /^import .*medalla3d/m);
+  assert.doesNotMatch(medalla, /WebGLRenderer/);
+  assert.equal((vitrina.match(/new THREE.WebGLRenderer/g) ?? []).length, 1);
+  // Con movimiento reducido la medalla no se balancea.
+  assert.match(medalla, /if \(reducido\)/);
 });

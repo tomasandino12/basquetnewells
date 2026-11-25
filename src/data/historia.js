@@ -304,3 +304,14 @@ export function placasDeCopa() {
   const paso = (Math.PI * 2) / n;
   return T.map((t, i) => ({ anio: t.anio, numero: t.numero, angulo: (i - (n - 1) / 2) * paso }));
 }
+
+/**
+ * Las piezas que alternan en la vitrina 3D: el trofeo (la copa) y la medalla oficial. `etiqueta` es
+ * el texto del selector y `leyenda` lo que dice el pie de la vitrina cuando la pieza está a la vista.
+ * Las dos son recreaciones: no hay fotos de época, así que no se las presenta como tales.
+ */
+const PIEZAS = [
+  { id: 'copa', etiqueta: 'Trofeo ARBB', leyenda: 'Recreación inspirada en la copa actual de la Asociación Rosarina' },
+  { id: 'medalla', etiqueta: 'Medalla oficial', leyenda: 'Recreación inspirada en la medalla actual de la Asociación Rosarina' },
+];
+export const piezasDeVitrina = () => PIEZAS.map((p) => ({ ...p }));

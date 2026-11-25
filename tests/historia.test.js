@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { titulos, epocas, datosPublicables, datosPendientes, epocaDeAnio, microDato, momentos, hitoDeTitulo, resumenDeTitulos, placasDeCopa } from '../src/data/historia.js';
+import { titulos, epocas, datosPublicables, datosPendientes, epocaDeAnio, microDato, momentos, hitoDeTitulo, resumenDeTitulos, placasDeCopa, piezasDeVitrina } from '../src/data/historia.js';
 
 const AÑOS_EXACTOS = [
   1943, 1944, 1945, 1946, 1947, 1948, 1949, 1950, 1951, 1952, 1953, 1954,
@@ -129,4 +129,14 @@ test('cada título tiene su placa', () => {
   // Simétricas respecto del frente: la del medio (1950) mira justo de frente.
   assert.ok(Math.abs(placas[7].angulo) < 1e-9);
   assert.ok(Math.abs(placas[0].angulo + placas[14].angulo) < 1e-9);
+});
+
+test('la vitrina alterna dos piezas, cada una con su leyenda de recreación', () => {
+  const piezas = piezasDeVitrina();
+  assert.deepEqual(piezas.map((p) => p.id), ['copa', 'medalla']);
+  assert.deepEqual(piezas.map((p) => p.etiqueta), ['Trofeo ARBB', 'Medalla oficial']);
+  for (const p of piezas) assert.match(p.leyenda, /^Recreación inspirada en la (copa|medalla) actual de la Asociación Rosarina$/);
+  // Es una copia: tocarla no cambia la lista.
+  piezas[0].etiqueta = 'x';
+  assert.equal(piezasDeVitrina()[0].etiqueta, 'Trofeo ARBB');
 });
