@@ -178,15 +178,36 @@
       <div id="hist-estrellas"></div>
     </section>
 
-    <!-- LA MEDALLA, en su propia sección de cierre. Su visor (src/ui/medalla3d.js, con renderer propio) se arma
-         recién cuando la sección se acerca a la pantalla. data-estado: "espera" (caja oscura vacía), "cargando",
-         "3d", o "estatica" (sin WebGL: la sección entera se esconde). -->
+    <!-- LA MEDALLA, en su propia sección de cierre. CSS 3D, sin WebGL: dos recortes (frente y dorso) y siete capas
+         de canto con la misma imagen. src/ui/medalla.js sólo le da el giro, la inercia y el botón; sin JS se ve
+         el frente quieto. -->
     <section class="portal-sec hist-sec hist-medalla-sec" aria-labelledby="t-medalla">
       <p class="portal-st">Para cerrar</p>
       <h2 id="t-medalla">La medalla</h2>
       <p class="intro">Girala con el dedo o el mouse para ver el frente y el dorso.</p>
-      <figure class="hist-medalla" id="medalla" data-estado="espera">
-        <div class="medalla-escenario" id="medalla-escenario"></div>
+      <figure class="hist-medalla" id="medalla">
+        <div class="medalla-escenario" id="medalla-escenario" role="group" tabindex="0"
+             aria-label="La medalla de la Asociación Rosarina, colgando de su cinta roja y azul. Arrastrala para girarla; las flechas del teclado también.">
+          <div class="medal-3d" id="medal-3d">
+            <span class="medal-canto" style="--i:0" aria-hidden="true"></span>
+            <span class="medal-canto" style="--i:1" aria-hidden="true"></span>
+            <span class="medal-canto" style="--i:2" aria-hidden="true"></span>
+            <span class="medal-canto" style="--i:3" aria-hidden="true"></span>
+            <span class="medal-canto" style="--i:4" aria-hidden="true"></span>
+            <span class="medal-canto" style="--i:5" aria-hidden="true"></span>
+            <span class="medal-canto" style="--i:6" aria-hidden="true"></span>
+            <div class="medal-cara medal-frente">
+              <img src="/public/img/historia/medalla-frente-full.webp" width="512" height="704" decoding="async" draggable="false"
+                   alt="Frente de la medalla: el escudo ARBB con la R, rodeado por la leyenda «Asociación Rosarina de Basquetbol, fundada en 1926», colgando de una cinta roja y azul.">
+              <span class="medal-brillo" aria-hidden="true"><i></i></span>
+            </div>
+            <div class="medal-cara medal-dorso">
+              <img src="/public/img/historia/medalla-dorso-full.webp" width="512" height="704" decoding="async" draggable="false"
+                   alt="Dorso de la medalla: una pelota de básquet en bajorrelieve, colgando de una cinta roja y azul.">
+              <span class="medal-brillo" aria-hidden="true"><i></i></span>
+            </div>
+          </div>
+        </div>
         <figcaption>Recreación inspirada en la medalla actual de la Asociación Rosarina</figcaption>
       </figure>
     </section>

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { titulos, datosPublicables, datosPendientes, epocas, momentos } from '../src/data/historia.js';
 import { htmlLinea, htmlEstrellas, htmlFicha, htmlCifras } from '../src/ui/historia.js';
 
@@ -250,62 +250,75 @@ test('la vitrina muestra sólo la copa: sin selector de pieza ni cambio automát
   assert.match(vitrina, /new IntersectionObserver\(\(\[e\]\) => \{\s*visible = e\.isIntersecting;[\s\S]*?cancelAnimationFrame\(idRaf\)/);
 });
 
-test('la medalla va en una sección de cierre propia, con su leyenda, su visor y su botón', () => {
+test('la medalla va en una sección de cierre propia, con su leyenda, sus dos caras y su botón', () => {
   assert.match(pagina, /<section class="[^"]*hist-medalla-sec"[^>]*aria-labelledby="t-medalla"/);
   assert.match(pagina, /id="medalla-escenario"/);
   assert.match(pagina, /<figcaption>Recreación inspirada en la medalla actual de la Asociación Rosarina<\/figcaption>/);
   // Va después de "Las 15 estrellas" y no adentro de la vitrina de la copa.
   assert.ok(pagina.indexOf('id="t-medalla"') > pagina.indexOf('id="t-estrellas"'));
   assert.ok(pagina.indexOf('id="t-medalla"') > pagina.indexOf('</figure>'));
-  const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
-  assert.match(css, /\.medalla-escenario\{[^}]*background:#0A0A0C/);
-  assert.match(css, /\.medalla-canvas\{[^}]*touch-action:pan-y/);
-  // Sin WebGL, la sección se esconde.
-  assert.match(css, /\.hist-medalla-sec:has\(\.hist-medalla\[data-estado="estatica"\]\)\{display:none\}/);
-});
-
-test('el visor de la medalla se arma bajo demanda, con renderer propio, giro libre, péndulo y sin balanceo si hay movimiento reducido', () => {
-  const js = readFileSync('src/ui/historia.js', 'utf8');
-  const medalla = readFileSync('src/ui/medalla3d.js', 'utf8');
-  // historia.js la trae con import() (no estático) cuando la sección se acerca.
-  assert.match(js, /await import\('\.\/medalla3d\.js'\)/);
-  assert.doesNotMatch(js, /^import .*medalla3d/m);
-  assert.match(js, /rootMargin: '\d+px 0px'/);
-  // Renderer propio (uno solo) y sin depender de la copa.
-  assert.equal((medalla.match(/new THREE\.WebGLRenderer/g) ?? []).length, 1);
-  assert.doesNotMatch(medalla, /^import .*vitrina3d/m);
-  assert.match(medalla, /RoomEnvironment/);
-  // Rotación libre de 360° en horizontal.
-  assert.match(medalla, /minAzimuthAngle = -Infinity/);
-  assert.match(medalla, /maxAzimuthAngle = Infinity/);
-  assert.match(medalla, /touchAction = 'pan-y'/);
-  // El bucle sólo corre mientras se ve (y se frena al salir de pantalla).
-  assert.match(medalla, /new IntersectionObserver\(\(\[e\]\) => \{\s*visible = e\.isIntersecting;[\s\S]*?cancelAnimationFrame\(idRaf\)/);
-  // Con movimiento reducido no hay balanceo.
-  assert.match(medalla, /const empujar = \(v\) => \{ if \(!reducido\)/);
-  assert.match(medalla, /if \(reducido\) \{\s*const hubo = theta !== 0;/);
-  // El botón discreto y los textos de la medalla.
-  assert.match(medalla, /boton\.textContent = 'Ver frente \/ dorso'/);
-});
-
-test('las caras de la medalla son la foto (1024×1024) con relieve y rugosidad derivados, sin dibujo por canvas', () => {
-  const medalla = readFileSync('src/ui/medalla3d.js', 'utf8');
-  assert.match(medalla, /const N = 1024/);
-  for (const k of ['map:', 'bumpMap:', 'roughnessMap:', 'TextureLoader', 'SRGBColorSpace']) assert.ok(medalla.includes(k), k);
-  // El texto, el escudo y la pelota ya no se dibujan: están en la foto.
-  assert.doesNotMatch(medalla, /fillText|ctx\.|costurasPelota|contornoEscudo|texturasFrente|texturasDorso|INCLINACION_PELOTA/);
-  // Las dos fotos existen, son WebP con pérdida de exactamente 1024×1024.
+  // Las dos caras llevan texto alternativo; el canto son 7 capas (de 6 a 8) y no se anuncian.
   for (const cara of ['frente', 'dorso']) {
-    const ruta = `public/img/historia/medalla-${cara}.webp`;
-    assert.ok(medalla.includes(ruta), ruta);
+    assert.match(pagina, new RegExp(`<img src="/public/img/historia/medalla-${cara}-full\.webp"[^>]*alt="[^"]{20,}"`));
+  }
+  assert.equal((pagina.match(/<span class="medal-canto"[^>]*aria-hidden="true"><\/span>/g) ?? []).length, 7);
+  const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  // Flota libre: sin caja gris ni borde, con perspectiva y 3D preservado.
+  assert.doesNotMatch(css, /\.medalla-escenario\{[^}]*(background:|border:)/);
+  assert.match(css, /\.medalla-escenario\{[^}]*perspective:1200px/);
+  assert.match(css, /\.medalla-escenario\{[^}]*touch-action:pan-y/);
+  assert.match(css, /\.medal-3d\{[^}]*transform-style:preserve-3d/);
+  assert.match(css, /\.medal-cara\{[^}]*backface-visibility:hidden/);
+  assert.match(css, /\.medal-dorso\{transform:rotateY\(180deg\) translateZ\(/);
+  assert.match(css, /\.medal-canto\{[^}]*filter:brightness\(\.45\)/);
+  assert.match(css, /\.medal-brillo\{[^}]*mix-blend-mode:soft-light/);
+  assert.match(css, /\.medal-frente \.medal-brillo\{[^}]*mask-image:url\(\/public\/img\/historia\/medalla-frente-full\.webp\)/);
+  assert.match(css, /\.medal-dorso \.medal-brillo\{[^}]*mask-image:url\(\/public\/img\/historia\/medalla-dorso-full\.webp\)/);
+});
+
+test('la medalla no usa WebGL', () => {
+  const js = readFileSync('src/ui/historia.js', 'utf8');
+  assert.doesNotMatch(js, /medalla3d/);
+  assert.ok(!existsSync('src/ui/medalla3d.js'));
+  // En toda la interfaz queda un único WebGLRenderer: el de la copa.
+  const usos = readdirSync('src/ui', { recursive: true })
+    .filter((f) => String(f).endsWith('.js'))
+    .filter((f) => /new THREE\.WebGLRenderer/.test(readFileSync(join('src/ui', String(f)), 'utf8')));
+  assert.deepEqual(usos.map(String), ['vitrina3d.js']);
+  assert.doesNotMatch(readFileSync('src/ui/medalla.js', 'utf8'), /from '[^']*three|WebGLRenderer|getContext\(/);
+  // Los dos recortes nuevos existen, son WebP con pérdida y alfa (VP8X), de 512×704, y pesan menos de 80 KB.
+  for (const cara of ['frente', 'dorso']) {
+    const ruta = `public/img/historia/medalla-${cara}-full.webp`;
+    assert.ok(existsSync(ruta), ruta);
     const b = readFileSync(ruta);
     assert.equal(b.toString('latin1', 8, 12), 'WEBP');
-    assert.equal(b.toString('latin1', 12, 16), 'VP8 ');
-    assert.equal((b.readUInt16LE(26) & 0x3fff) + 'x' + (b.readUInt16LE(28) & 0x3fff), '1024x1024', cara);
+    assert.equal(b.toString('latin1', 12, 16), 'VP8X');
+    assert.ok(b[20] & 0x10, `${cara}: sin canal alfa`);
+    assert.equal(1 + b.readUIntLE(24, 3), 512, cara);
+    assert.equal(1 + b.readUIntLE(27, 3), 704, cara);
+    assert.ok(b.length < 80 * 1024, `${cara}: ${b.length} bytes`);
   }
-  // El cuerpo, el aro y la ojuela comparten el peltre de la foto.
-  assert.match(medalla, /PELTRE = 0x9e9b93/);
-  assert.match(medalla, /color: PELTRE/);
+  // Las fotos viejas, sin dueño, ya no están.
+  for (const cara of ['frente', 'dorso']) assert.ok(!existsSync(`public/img/historia/medalla-${cara}.webp`));
+});
+
+test('la medalla gira por arrastre con inercia, péndulo, botón y sin movimiento si se pide reducido', () => {
+  const js = readFileSync('src/ui/historia.js', 'utf8');
+  const medalla = readFileSync('src/ui/medalla.js', 'utf8');
+  assert.match(js, /^import \{ montarMedalla \} from '\.\/medalla\.js';/m);
+  assert.doesNotMatch(medalla, /^import /m);
+  // Pointer events con captura y rotateY libre.
+  for (const ev of ['pointerdown', 'pointermove', 'pointerup', 'setPointerCapture']) assert.ok(medalla.includes(ev), ev);
+  assert.match(medalla, /rotateY\(\$\{giro\.toFixed\(2\)\}deg\)/);
+  assert.match(medalla, /rotateX\(\$\{tilt\.toFixed\(2\)\}deg\)/);
+  // El bucle se corta de verdad fuera de pantalla y sólo sigue mientras algo se mueve.
+  assert.match(medalla, /new IntersectionObserver\(\(\[e\]\) => \{\s*visible = e\.isIntersecting;[\s\S]*?cancelAnimationFrame\(idRaf\)/);
+  assert.match(medalla, /if \(!quieta\) idRaf = requestAnimationFrame\(cuadro\)/);
+  // Con movimiento reducido: sin inercia ni péndulo, el botón da vuelta sin animación.
+  assert.match(medalla, /if \(reducido\) \{\s*giro = meta;\s*tilt = tiltV = 0;/);
+  assert.match(medalla, /if \(!reducido && performance\.now\(\) - ultimoMov < 80\) meta \+=/);
+  assert.match(medalla, /boton\.textContent = 'Ver frente \/ dorso'/);
+  assert.match(medalla, /meta = \(Math\.round\(meta \/ 180\) \+ 1\) \* 180/);
 });
 
 test('el portal enlaza a la historia', () => {

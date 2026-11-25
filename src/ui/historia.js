@@ -1,5 +1,6 @@
 import { html, crudo } from './html.js';
 import { $ } from './dom.js';
+import { montarMedalla } from './medalla.js';
 import { titulos, epocas, datosPublicables, epocaDeAnio, microDato, momentos, hitoDeTitulo, resumenDeTitulos } from '../data/historia.js';
 
 /**
@@ -25,9 +26,8 @@ import { titulos, epocas, datosPublicables, epocaDeAnio, microDato, momentos, hi
  * Los eventos van por el DOM, y no por imports, para que la vitrina se cargue
  * recién cuando se acerca al viewport y pueda no estar nunca (sin WebGL).
  *
- * La medalla no es parte de la vitrina: tiene su propia sección de cierre (#medalla) y su propio
- * visor (src/ui/medalla3d.js), que se arma recién cuando esa sección se acerca. Sin WebGL la
- * sección no se muestra.
+ * La medalla no es parte de la vitrina: tiene su propia sección de cierre (#medalla) y es CSS 3D
+ * puro (src/ui/medalla.js le da el giro): no usa WebGL, así que la copa es el único renderer.
  */
 
 const EPOCA_INICIAL = 'doce-seguidos';
@@ -338,42 +338,6 @@ function montarVitrina() {
   escenario.addEventListener('vitrina:perdida', () => volverAEstatica('se perdió el contexto WebGL'));
 }
 
-/**
- * La medalla en 3D, en su sección de cierre. Se arma recién cuando la sección se acerca a la pantalla
- * (`import()` del módulo, con su propio renderer: son dos visores en dos lugares de la página). `data-estado`
- * de #medalla: 'espera' (la caja vacía, oscura), 'cargando' y '3d'; sin WebGL, o si algo falla, 'estatica' y
- * la sección entera se esconde (es una mejora, no una dependencia).
- */
-function montarMedalla() {
-  const caja = $('medalla');
-  const escenario = $('medalla-escenario');
-  const sinMedalla = (motivo) => {
-    caja.dataset.estado = 'estatica';
-    if (motivo) console.warn('Medalla 3D no disponible:', motivo);
-  };
-  if (typeof IntersectionObserver !== 'function') return sinMedalla();
-  let iniciada = false;
-  const iniciar = async () => {
-    if (iniciada) return;
-    iniciada = true;
-    caja.dataset.estado = 'cargando';
-    try {
-      const m = await import('./medalla3d.js');
-      if (!m.hayWebGL()) return sinMedalla();
-      await m.crearVisorMedalla(escenario);
-      caja.dataset.estado = '3d';
-    } catch (e) {
-      sinMedalla(e);
-    }
-  };
-  new IntersectionObserver((entradas, obs) => {
-    if (!entradas.some((e) => e.isIntersecting)) return;
-    obs.disconnect();
-    iniciar();
-  }, { rootMargin: '500px 0px' }).observe(escenario);
-  escenario.addEventListener('medalla:perdida', () => sinMedalla('se perdió el contexto WebGL'));
-}
-
 // La línea viva: el progreso rojo del eje llega hasta una altura fija de la pantalla (un poco más
 // abajo de la mitad) y cada nodo se enciende cuando el progreso lo alcanza; al subir, se apagan.
 // Un solo requestAnimationFrame por tanda de scroll: primero se lee todo, después se escribe.
@@ -512,7 +476,7 @@ export function iniciarHistoria() {
   revelarEstrellas();
   seguirEpoca();
   montarVitrina();
-  montarMedalla();
+  montarMedalla($('medalla-escenario'));
 
   $('hist-linea').addEventListener('click', (ev) => {
     const btn = ev.target.closest('.t-sel');

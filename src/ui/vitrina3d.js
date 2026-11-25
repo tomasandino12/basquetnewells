@@ -613,7 +613,7 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
   mqReducido.addEventListener?.('change', alCambiarReducido);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -729,7 +729,7 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
     if (!w || !h || (w === ancho && h === alto)) return;
     ancho = w;
     alto = h;
-    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
     renderer.setSize(w, h, false);
     camara.aspect = w / h;
     camara.updateProjectionMatrix();

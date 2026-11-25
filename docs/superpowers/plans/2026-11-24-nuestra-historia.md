@@ -16,6 +16,7 @@ Spec: `docs/superpowers/specs/2026-11-24-nuestra-historia-design.md`. Se trabaja
 | 7. Medalla 3D y selector | hecha (falta que Tomás la mire) | `git log -1 -- src/ui/medalla3d.js` |
 | 8. Cubierto nítido, sin sello y con chips | hecha (falta que Tomás la mire) | `git log -1 --grep='task 8'` |
 | 9. La medalla al cierre, frente y dorso fieles | hecha (falta que Tomás la mire) | `git log -1 --grep='task 9'` |
+| 10. Medalla en CSS 3D | hecha (falta que Tomás la mire) | `git log -1 --grep='task 10'` |
 | 4. Enlace desde el portal (va última) | hecha | `git log -1 --grep="task 4"` |
 
 ## Revisión 2: tasks 5–7 (spec, sección "Revisión 2")
