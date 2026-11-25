@@ -86,10 +86,16 @@ function entornoDeEstudio(renderer) {
       let l = 0.02 + techo;
       l += 8 * alto * (franja(u, 0.63, 0.02) + franja(u, 0.87, 0.024)); // izquierda y derecha, adelante
       l += 3 * alto * (franja(u, 0.35, 0.025) + franja(u, 0.15, 0.025)); // un contraluz más débil atrás
-      l += 1.6 * alto * franja(u, 0.75, 0.09); // el frente, ancho: el cromo de la foto es claro con franjas oscuras
-      l += 0.5 * Math.max(0, (v - 0.55) / 0.45); // el piso de la mesa de estudio, gris
+      // El frente, ancho y gris claro: sin esto, lo que el cromo refleja de frente (el medio del cáliz y del
+      // tallo) es negro y se ve un manchón vertical oscuro.
+      l += 0.9 * alto * franja(u, 0.75, 0.1);
+      l += 0.12 * franja(u, 0.75, 0.2);
+      // Abajo, el rebote cálido de la mesa de estudio.
+      const piso = Math.max(0, (v - 0.55) / 0.45);
       const k = ((h - 1 - j) * w + i) * 4;
-      datos[k] = datos[k + 1] = datos[k + 2] = l;
+      datos[k] = l + 0.45 * piso;
+      datos[k + 1] = l + 0.32 * piso;
+      datos[k + 2] = l + 0.22 * piso;
       datos[k + 3] = 1;
     }
   }
@@ -111,8 +117,9 @@ function entornoDeEstudio(renderer) {
 function texturaMadera() {
   const [c, g] = lienzo(1024, 512);
   const r = azar(1943);
-  const oscuro = [0x2a, 0x0e, 0x07];
-  const claro = [0x59, 0x1f, 0x11];
+  // Un punto más claros que la foto: contra el fondo casi negro de la página, la caoba real se perdía.
+  const oscuro = [0x4a, 0x19, 0x0e];
+  const claro = [0x7d, 0x2e, 0x1b];
   const img = g.createImageData(c.width, c.height);
   // Ondas chicas y lentas: la veta de la caoba corre casi derecha alrededor de la base.
   const ondas = Array.from({ length: 5 }, () => ({ f: 1 + Math.floor(r() * 5), a: 0.4 + r() * 1.8, p: r() * 7 }));
@@ -182,16 +189,22 @@ function atlasDePlacas(placas, encendida) {
       g.arc(rx, ry, 5.5, 0, Math.PI * 2);
       g.fill();
     }
-    // El año (o la leyenda), grabado.
-    const especial = p.anio == null;
-    g.font = `${encendida ? 700 : 600} ${especial ? 42 : 96}px "Barlow Condensed", "Barlow Condensed Respaldo", sans-serif`;
+    // El año, grabado. La placa de cabecera va en dos líneas grandes ("★ 15 ★" y "TÍTULOS"), para que pese
+    // lo mismo que un año.
+    const fuente = (peso, px) => `${peso} ${px}px "Barlow Condensed", "Barlow Condensed Respaldo", sans-serif`;
+    const peso = encendida ? 700 : 600;
+    const lineas = p.anio == null
+      ? [{ texto: `★ ${p.texto.match(/\d+/)[0]} ★`, font: fuente(peso, 70), y: 42 }, { texto: 'TÍTULOS', font: fuente(700, 58), y: 95 }]
+      : [{ texto: p.texto, font: fuente(peso, 96), y: CELDA.h / 2 + 5 }];
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    const ty = CELDA.h / 2 + (especial ? 2 : 5);
-    g.fillStyle = encendida ? 'rgba(255,255,255,.6)' : 'rgba(255,255,255,.22)';
-    g.fillText(p.texto, CELDA.w / 2, ty + 1.5);
-    g.fillStyle = encendida ? '#09090B' : '#1E2024';
-    g.fillText(p.texto, CELDA.w / 2, ty);
+    for (const l of lineas) {
+      g.font = l.font;
+      g.fillStyle = encendida ? 'rgba(255,255,255,.6)' : 'rgba(255,255,255,.22)';
+      g.fillText(l.texto, CELDA.w / 2, l.y + 1.5);
+      g.fillStyle = encendida ? '#09090B' : '#1E2024';
+      g.fillText(l.texto, CELDA.w / 2, l.y);
+    }
     g.restore();
   });
   return c;
@@ -258,7 +271,7 @@ async function crearCopa({ aniso }) {
   const fondoInterior = 4.2; // hasta dónde se ve por dentro desde la cámara de la foto
   const dentro = metal.filter(([, y]) => y > fondoInterior).map(([r, y]) => new THREE.Vector2(Math.max(0.05, r - pared), y));
   const perfil = [...fuera, new THREE.Vector2(boca[0] - pared, boca[1]), ...dentro.slice(1), new THREE.Vector2(0, fondoInterior)];
-  const cromo = new THREE.MeshStandardMaterial({ color: 0xf2f3f6, metalness: 1, roughness: 0.06 });
+  const cromo = new THREE.MeshStandardMaterial({ color: 0xf2f3f6, metalness: 1, roughness: 0.06, envMapIntensity: 1.4 });
   const caliz = new THREE.Mesh(new THREE.LatheGeometry(perfil, 64), cromo);
   grupo.add(caliz);
 
@@ -285,8 +298,8 @@ async function crearCopa({ aniso }) {
   const t = COPA.asa.textura;
   texAsa.repeat.set(1 / t.ancho, 1 / t.alto);
   texAsa.offset.set(-t.x0 / t.ancho, -(t.y1 - t.alto) / t.alto);
-  const bronceFoto = new THREE.MeshStandardMaterial({ map: texAsa, emissiveMap: texAsa, emissive: 0xffffff, emissiveIntensity: 0.28, metalness: 0.75, roughness: 0.38 });
-  const bronceCanto = new THREE.MeshStandardMaterial({ color: 0x9c8148, metalness: 0.85, roughness: 0.35 });
+  const bronceFoto = new THREE.MeshStandardMaterial({ map: texAsa, emissiveMap: texAsa, emissive: 0xffffff, emissiveIntensity: 0.1, metalness: 0.75, roughness: 0.38, envMapIntensity: 1.4 });
+  const bronceCanto = new THREE.MeshStandardMaterial({ color: 0x9c8148, metalness: 0.85, roughness: 0.35, envMapIntensity: 1.4 });
   const asaIzq = new THREE.Mesh(geoAsa, [bronceFoto, bronceCanto]);
   const asaDer = new THREE.Mesh(geoAsa, [bronceFoto, bronceCanto]);
   asaDer.scale.x = -1;
@@ -300,7 +313,7 @@ async function crearCopa({ aniso }) {
   const arco = 2 * Math.asin(Math.min(0.99, e.ancho / 2 / rMedio));
   const geoEscudo = new THREE.CylinderGeometry(rArriba, rAbajo, e.arriba - e.abajo, 32, 1, true, -arco / 2 + e.centroX / rMedio, arco);
   const escudo = new THREE.Mesh(geoEscudo, new THREE.MeshStandardMaterial({
-    map: texEscudo, emissiveMap: texEscudo, emissive: 0xffffff, emissiveIntensity: 0.45,
+    map: texEscudo, emissiveMap: texEscudo, emissive: 0xffffff, emissiveIntensity: 0.15,
     metalness: 0.35, roughness: 0.28, transparent: true, alphaTest: 0.35,
   }));
   escudo.position.y = (e.arriba + e.abajo) / 2;
@@ -367,7 +380,7 @@ export async function crearVitrina(contenedor, { anios = [] } = {}) {
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  renderer.toneMappingExposure = 1.35;
   const canvas = renderer.domElement;
   canvas.className = 'vitrina-canvas';
   canvas.setAttribute('role', 'img');
@@ -382,6 +395,13 @@ export async function crearVitrina(contenedor, { anios = [] } = {}) {
   const luz = new THREE.DirectionalLight(0xfff1e0, 1.4);
   luz.position.set(-3, 12, 10);
   scene.add(luz);
+  // La base no se tiene que perder contra el fondo negro: una luz cálida de frente y abajo que pega en el
+  // pedestal, y un contraluz bajo desde atrás que recorta el canto curvo de abajo.
+  const pedestal = new THREE.PointLight(0xffb27a, 22, 16, 2);
+  pedestal.position.set(0, 0.6, 6.5);
+  const contraluz = new THREE.DirectionalLight(0xffd6b8, 1.1);
+  contraluz.position.set(0, -2, -8);
+  scene.add(pedestal, contraluz);
 
   const camara = new THREE.PerspectiveCamera(22, 1, 1, 80);
   camara.position.set(0, CAMARA.y, CAMARA.z);

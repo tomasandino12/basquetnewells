@@ -56,9 +56,10 @@
 /* La vitrina: sin caja ni borde ni foco 2D. En el celular va arriba y no es fija. */
 .hist-vitrina{position:relative;margin:0;padding-top:var(--sp-8)}
 .vitrina-escenario{position:relative;display:grid;place-items:end center;width:100%;height:min(30rem,68svh);margin-inline:auto}
-/* Un velo de luz muy tenue detrás de la copa (opacidad menor a .08: no es un haz dibujado). */
-.vitrina-escenario::before{content:"";position:absolute;inset:-10% 0 20%;pointer-events:none;
-  background:radial-gradient(ellipse 50% 60% at 50% 30%,color-mix(in srgb,var(--sobre-oscuro) 6%,transparent),transparent 70%)}
+/* La luz de la vitrina: un resplandor apenas visible detrás de la copa (no es un haz dibujado), para que el
+   cromo y la caoba no floten sobre negro puro. */
+.vitrina-escenario::before{content:"";position:absolute;inset:-6% -4% 0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.045),transparent 60%)}
 /* La foto del trofeo: lo que se ve mientras baja la 3D, o siempre si no hay WebGL. */
 .vitrina-foto{position:relative;display:block;width:100%;height:100%;object-fit:contain;object-position:50% 50%;pointer-events:none;
   transition:opacity .6s var(--ease-salida),visibility 0s .6s}
