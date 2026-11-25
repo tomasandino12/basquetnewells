@@ -207,48 +207,42 @@
 @media (hover:hover){.momento:has(.t-sel):hover{border-color:var(--gris-osc)}}
 
 /* El Cubierto: la tarjeta protagonista. Una foto del interior (parquet y butacas rojinegras) a todo el ancho, con un
-   viñeteado oscuro abajo para que el texto se lea encima y un sello técnico del techo en la esquina. Cuatro capas
-   (foto, viñeta, sello y texto) se desplazan distinto con el mouse: el script sólo escribe --mx y --my (de -.5 a .5) y
-   el CSS hace el resto. En táctil y con movimiento reducido quedan en 0 y no hay tilt. El marco recorta (overflow) y el
-   que se inclina y crece en hover es el marco, no el artículo, así el nodo del eje no se mueve. */
-.momento[data-tilt]{padding:0;background:none;border:0;border-radius:0;perspective:900px}
+   viñeteado oscuro abajo para que el texto se lea encima. NITIDEZ: el texto no tiene transform ni will-change ni escala
+   en ningún ancestro, porque Chrome rasteriza lo que se transforma y desenfoca el texto blanco. Lo único que se mueve
+   es el marco de la foto (inclinación de ±3° como máximo con el mouse, vuelve a `none` al salir) y, en hover, la <img>
+   (scale 1.04, recortada por el overflow del marco). Con táctil y con movimiento reducido no se mueve nada. */
+.momento[data-tilt]{padding:0;background:none;border:0;border-radius:0}
 .momento[data-tilt]::before{display:none}
 .cubierto-capas{position:relative;isolation:isolate;display:grid;align-content:end;overflow:hidden;min-height:42rem;
-  background:var(--pub-fondo);border:1px solid rgba(255,255,255,.08);border-radius:var(--r);
-  transform:rotateX(calc(var(--my,0) * -5deg)) rotateY(calc(var(--mx,0) * 7deg)) scale(var(--esc,1));
-  transition:transform .45s var(--ease-salida)}
+  background:var(--pub-fondo);border:1px solid rgba(255,255,255,.08);border-radius:var(--r)}
 .momento[data-tilt].on .cubierto-capas{border-color:var(--club-texto)}
-@media (hover:hover) and (pointer:fine){.momento[data-tilt]:hover{--esc:1.03}}
 
-.capa-foto,.capa-vineta,.capa-sello,.capa-texto{transition:transform .45s var(--ease-salida)}
-/* La foto y la viñeta son más grandes que el marco para que, al moverse, no asome el borde. */
-.capa-foto{position:absolute;z-index:-2;inset:-.75rem;width:calc(100% + 1.5rem);height:calc(100% + 1.5rem);max-width:none;object-fit:cover;object-position:50% 38%;
-  transform:translate3d(calc(var(--mx,0) * -10px),calc(var(--my,0) * -7px),0)}
-.capa-vineta{position:absolute;z-index:-1;inset:-.75rem;
+/* El marco es más grande que la tarjeta (la tarjeta recorta) para que, al inclinarse, no asomen las esquinas. */
+.cubierto-marco{position:absolute;z-index:-1;inset:-.75rem;overflow:hidden;transition:transform .45s var(--ease-salida)}
+.momento[data-tilt].inclinando .cubierto-marco{transform:perspective(900px) rotateX(calc(var(--my,0) * -6deg)) rotateY(calc(var(--mx,0) * 6deg))}
+.capa-foto{display:block;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 38%;transition:transform .6s var(--ease-salida)}
+@media (hover:hover) and (pointer:fine){.momento[data-tilt]:hover .capa-foto{transform:scale(1.04)}}
+.capa-vineta{position:absolute;inset:0;
   background:linear-gradient(to top,rgba(10,10,12,.95) 0,rgba(10,10,12,.8) 30%,rgba(10,10,12,.28) 52%,transparent 68%),
-    linear-gradient(to bottom,rgba(10,10,12,.5),transparent 26%);
-  transform:translate3d(calc(var(--mx,0) * -4px),calc(var(--my,0) * -3px),0)}
+    linear-gradient(to bottom,rgba(10,10,12,.5),transparent 26%)}
 
-/* El sello: corte del techo y las dos sedes mundiales. Trazo fino y apagado; el rojo del club en dos detalles. */
-.capa-sello{position:absolute;top:var(--sp-4);right:var(--sp-4);display:grid;justify-items:end;gap:var(--sp-2);text-align:right;
-  transform:translate3d(calc(var(--mx,0) * 12px),calc(var(--my,0) * 8px),0)}
-.sello-techo{display:block;width:7rem;height:auto;fill:none;stroke:rgba(255,255,255,.3);stroke-width:1;stroke-linecap:round;stroke-linejoin:round}
-.sello-techo .s-nervios{stroke:rgba(255,255,255,.18)}
-.sello-techo .s-piso{stroke:rgba(255,255,255,.2)}
-.sello-techo .s-rojo{stroke:var(--hist-rojo);stroke-width:1.4}
-.sello-sedes{margin:0;padding:0;list-style:none;font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.06em;line-height:1.4;text-transform:uppercase;white-space:nowrap;color:rgba(255,255,255,.78);text-shadow:0 1px 6px rgba(0,0,0,.7)}
-.sello-sedes li + li{margin-top:.125rem}
-
-.capa-texto{position:relative;padding:var(--sp-5);transform:translate3d(calc(var(--mx,0) * 6px),calc(var(--my,0) * 4px),0)}
+.capa-texto{position:relative;padding:var(--sp-5)}
+/* Las sedes mundiales: chips tipográficos junto al título (sólo datos con fuente). */
+.cubierto-chips{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin:var(--sp-3) 0 0;padding:0;list-style:none}
+.chip-sede{display:inline-flex;align-items:center;gap:.5rem;min-height:1.75rem;padding:.125rem .75rem;border:1px solid rgba(255,255,255,.28);border-radius:var(--r-btn);
+  font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.08em;line-height:1.3;text-transform:uppercase;color:var(--sobre-oscuro)}
+.chip-sede::before{content:"";flex:none;width:.375rem;height:.375rem;border-radius:50%;background:var(--hist-rojo)}
 /* En el celular la tarjeta es angosta y alta: con la foto de fondo sólo se veía el techo, y el
    parquet (lo que importa) quedaba debajo del texto. Ahí la foto va arriba, apaisada y fundida
    hacia abajo, y el texto debajo. */
 @media (max-width:39.99rem){
   .cubierto-capas{display:block;min-height:0}
-  .capa-foto{position:relative;inset:auto;display:block;width:100%;height:auto;aspect-ratio:4/3;object-position:38% 70%;
+  .cubierto-marco{position:relative;z-index:auto;inset:auto;aspect-ratio:4/3;
     -webkit-mask-image:linear-gradient(to bottom,#000 62%,transparent);mask-image:linear-gradient(to bottom,#000 62%,transparent)}
+  .capa-foto{object-position:38% 70%}
   .capa-vineta{display:none}
   .capa-texto{margin-top:calc(var(--sp-6) * -1)}
+  .chip-sede{padding-inline:.5rem;letter-spacing:.02em}
 }
 /* El viñeteado que acompaña al texto: empieza unos renglones antes de su primera línea, así que se adapta al largo
    (en el celular el texto ocupa más foto que en escritorio). */
@@ -331,6 +325,6 @@
   .nodo::before{opacity:1;transform:none}
   .nodo::after{transform:none}
   .bajar-gota{height:100%;transform:none;animation:none}
-  .cubierto-capas,.capa-foto,.capa-vineta,.capa-sello,.capa-texto{transform:none !important}
+  .cubierto-marco,.capa-foto{transform:none !important}
   .estrellas.anim:not(.visto) li{opacity:1;transform:none}
 }

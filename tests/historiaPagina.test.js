@@ -119,7 +119,7 @@ test('el Cubierto no lleva año de inauguración ni superficie, ni que ahí se j
   const c = momentos().find((m) => m.id === 'cubierto-mundial-1990');
   // Los datos tampoco lo dicen: ninguna fuente lo confirma (las finales de 1978 y 1983 fueron en Sportivo América).
   const datos = JSON.stringify({ nombre: c.nombre, texto: c.texto, sedes: c.sedes });
-  // En la tarjeta se mira lo que se lee: el dibujo del sello (SVG) y la foto son otra cosa.
+  // En la tarjeta se mira lo que se lee: la foto es otra cosa.
   const visible = tarjetaCubierto().replace(/<svg[\s\S]*?<\/svg>|<img[^>]*>/g, '');
   for (const t of [datos, visible]) {
     assert.doesNotMatch(t, /inaugur|m²|\bm2\b|metros|superficie|7\.?800|\bt[ií]tulos?\b|campeon|1978|1982|1983/i);
@@ -127,9 +127,10 @@ test('el Cubierto no lleva año de inauguración ni superficie, ni que ahí se j
   // Los únicos años de la tarjeta son los de las dos sedes mundiales, una vez cada uno.
   const anios = aniosEn(textoVisible(tarjetaCubierto().replace(/<img[^>]*>/g, '')));
   assert.deepEqual(anios, ['1990', '2018']);
-  // Y las dos sedes salen de los datos, con el sello técnico en SVG.
-  for (const sede of c.sedes) assert.ok(tarjetaCubierto().includes(sede), sede);
-  assert.match(tarjetaCubierto(), /class="sello-techo"/);
+  // Y las dos sedes salen de los datos, como chips tipográficos; el sello SVG ya no está.
+  for (const sede of c.sedes) assert.ok(tarjetaCubierto().includes(`<li class="chip-sede">${sede}</li>`), sede);
+  assert.equal((tarjetaCubierto().match(/class="chip-sede"/g) ?? []).length, c.sedes.length);
+  assert.doesNotMatch(tarjetaCubierto(), /sello-techo|capa-sello|<svg/);
   assert.match(tarjetaCubierto(), /class="t-sel"[^>]*>Estadio Cubierto Dr\. Claudio L\. Newell</);
   assert.match(tarjetaCubierto(), /data-tilt/);
   // El tilt se apaga en táctil y con movimiento reducido (lo decide el script, no el CSS).
@@ -151,7 +152,27 @@ test('la foto del Cubierto tiene alt, width y height, y el piso azul no aparece'
   assert.doesNotMatch(tarjetaCubierto(), /recreaci|\bIA\b|azul/i);
   const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
   assert.match(css, /\.cubierto-capas\{[^}]*border:1px solid rgba\(255,255,255,\.08\)/);
-  assert.match(css, /\.momento\[data-tilt\]:hover\{--esc:1\.03\}/);
+  // El zoom de hover va sólo en la <img>, dentro de un marco que recorta.
+  assert.match(css, /\.momento\[data-tilt\]:hover \.capa-foto\{transform:scale\(1\.04\)\}/);
+  assert.match(css, /\.cubierto-marco\{[^}]*overflow:hidden/);
+});
+
+test('el texto del Cubierto queda nítido: sin will-change, sin escala ni transform en el contenedor del texto', () => {
+  const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.doesNotMatch(css, /will-change/);
+  const reglas = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].map(([, sel, cuerpo]) => [sel.trim(), cuerpo]);
+  // Ningún ancestro del texto se transforma ni se escala (el reducido sólo lo apaga: `none`).
+  for (const [sel, cuerpo] of reglas.filter(([sel]) => !/cubierto-marco|capa-foto/.test(sel) && /(^|[\s,])\.(cubierto-capas|capa-texto|momento\[data-tilt\])(?![-\w])/.test(sel))) {
+    assert.doesNotMatch(cuerpo, /(^|;)\s*(transform|scale|perspective|will-change)\s*:(?!\s*none)/, sel);
+  }
+  // Y la inclinación del marco no pasa de 3°: el puntero va de -.5 a .5 y el factor es 6° por unidad.
+  const inclinacion = reglas.find(([sel]) => /inclinando \.cubierto-marco/.test(sel))[1];
+  const grados = [...inclinacion.matchAll(/\* (-?\d+(?:\.\d+)?)deg/g)].map((m) => Math.abs(Number(m[1])) * 0.5);
+  assert.ok(grados.length === 2 && grados.every((g) => g <= 3), inclinacion);
+  // Al salir el marco vuelve a `none` (la regla de reposo no lleva transform) y el script suelta la clase.
+  assert.doesNotMatch(reglas.find(([sel]) => sel === '.cubierto-marco')[1], /transform\s*:/);
+  const js = readFileSync('src/ui/historia.js', 'utf8');
+  assert.match(js, /pointerleave[\s\S]*?classList\.remove\('inclinando'\)/);
 });
 
 test('el hero abre la página: sobretítulo, NUESTRA / HISTORIA, indicador para bajar, y el 15 abre la línea', () => {

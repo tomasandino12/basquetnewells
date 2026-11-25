@@ -98,43 +98,34 @@ const FOTO_CUBIERTO = {
 };
 
 /**
- * El sello técnico de la esquina: un corte minimalista del techo (doble bóveda curva escalonada y el
- * tambor cilíndrico del ingreso, como se ve desde el aire). Trazo fino y apagado; el rojo del club
- * sólo en la faja de la fachada y el aro del tambor. Es un dibujo, no un plano.
+ * Las sedes mundiales (salen de los datos) como chips tipográficos junto al título. Sólo van las que
+ * tienen fuente; no se agrega inauguración ni superficie: ninguna fuente las confirma.
  */
-const SELLO_TECHO = crudo(`<svg class="sello-techo" viewBox="0 0 124 60" focusable="false" aria-hidden="true">
-  <path class="s-piso" d="M2 52H122"/>
-  <path class="s-bovedas" d="M26 46C26 22 40 8 56 8C74 8 86 24 86 46M84 31C90 25 96 23 102 23C112 23 120 33 120 46"/>
-  <path class="s-nervios" d="M34 46C34 29 44 17 56 17C68 17 78 29 78 46M95 46C95 36 98 31 102 31C106 31 110 36 110 46"/>
-  <path class="s-cuerpo" d="M26 46H120M8 46H26"/>
-  <path class="s-tambor" d="M6 46V33M22 46V33"/><ellipse class="s-tambor" cx="14" cy="33" rx="8" ry="3"/>
-  <path class="s-rojo" d="M2 46a12 4 0 0 0 24 0"/>
-  <path class="s-rojo" d="M26 49H122"/>
-</svg>`);
-
-/** Las sedes mundiales (salen de los datos) como líneas del sello. */
-const htmlSedes = (h) => html`<ul class="sello-sedes">${(h.sedes ?? []).map((s) => html`<li>${s}</li>`)}</ul>`;
+const htmlSedes = (h) => html`<ul class="cubierto-chips" aria-label="Sedes mundiales">${(h.sedes ?? []).map((s) => html`<li class="chip-sede">${s}</li>`)}</ul>`;
 
 /**
  * La tarjeta "momento": un hito que no es un título. Lleva una etiqueta de categoría y el título
  * del hito (el nombre de su época), no el año: el año lo dice el texto, una sola vez. El Cubierto
- * es la tarjeta protagonista: foto con viñeteado, texto encima, sello técnico y tilt por capas.
+ * es la tarjeta protagonista: foto con viñeteado, texto encima, chips con las sedes y un tilt leve sólo en el marco de la foto.
  * No se le pone fecha de inauguración ni superficie: ninguna fuente las confirma.
  */
 export function htmlMomento(h) {
   const categoria = CATEGORIAS[h.id] ?? 'Hito';
   const epoca = epocas().find((e) => e.id === h.epoca);
   if (h.id === CUBIERTO) {
-    // Cuatro capas que el tilt mueve a distinta profundidad: foto, viñeta, sello y texto.
+    // El marco (foto + viñeta) es lo único que se inclina o crece: el texto va aparte y nunca lleva
+    // transform, para que Chrome no lo rasterice y lo desenfoque.
     return html`<article class="momento" data-momento="${h.id}" data-epoca="${h.epoca ?? ''}" data-tilt>
       <div class="cubierto-capas">
-        <img class="capa-foto" src="${FOTO_CUBIERTO.src}" srcset="${FOTO_CUBIERTO.src800} 800w, ${FOTO_CUBIERTO.src} ${FOTO_CUBIERTO.ancho}w"
-          sizes="(min-width: 64rem) 30rem, 100vw" width="${FOTO_CUBIERTO.ancho}" height="${FOTO_CUBIERTO.alto}" loading="lazy" decoding="async" alt="${FOTO_CUBIERTO.alt}">
-        <div class="capa-vineta" aria-hidden="true"></div>
-        <div class="capa-sello">${SELLO_TECHO}${htmlSedes(h)}</div>
+        <div class="cubierto-marco">
+          <img class="capa-foto" src="${FOTO_CUBIERTO.src}" srcset="${FOTO_CUBIERTO.src800} 800w, ${FOTO_CUBIERTO.src} ${FOTO_CUBIERTO.ancho}w"
+            sizes="(min-width: 64rem) 30rem, 100vw" width="${FOTO_CUBIERTO.ancho}" height="${FOTO_CUBIERTO.alto}" loading="lazy" decoding="async" alt="${FOTO_CUBIERTO.alt}">
+          <div class="capa-vineta" aria-hidden="true"></div>
+        </div>
         <div class="capa-texto">
           <p class="momento-rotulo">El templo rojinegro</p>
           <h3 class="momento-tit"><button type="button" class="t-sel" data-epoca="${h.epoca}" aria-pressed="false">${h.nombre}</button></h3>
+          ${htmlSedes(h)}
           <p class="t-txt">${h.texto}</p>
           <ul class="hito-fuentes">${htmlFuentes(h)}</ul>
         </div>
@@ -441,7 +432,9 @@ function iniciarEje() {
 }
 
 // El tilt del Cubierto: sólo con mouse (o lápiz) y con movimiento permitido. En táctil la tarjeta
-// queda quieta. El script sólo pasa la posición del puntero (de -.5 a .5); el CSS mueve las capas.
+// queda quieta. El script pasa la posición del puntero (de -.5 a .5) y marca `inclinando`; el CSS
+// inclina el marco de la foto ±3° como máximo. Al salir se sueltan las dos cosas y el `transform`
+// del marco vuelve a `none`: nada queda rasterizado de más sobre el texto.
 function iniciarTilt() {
   if (movimientoReducido() || typeof matchMedia !== 'function' || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
   document.querySelectorAll('[data-tilt]').forEach((el) => {
@@ -449,9 +442,11 @@ function iniciarTilt() {
     let ultimo = null;
     const aplicar = () => {
       cuadro = 0;
+      if (!ultimo) return;
       const r = el.getBoundingClientRect();
       el.style.setProperty('--mx', ((ultimo.clientX - r.left) / r.width - 0.5).toFixed(3));
       el.style.setProperty('--my', ((ultimo.clientY - r.top) / r.height - 0.5).toFixed(3));
+      el.classList.add('inclinando');
     };
     el.addEventListener('pointermove', (ev) => {
       if (ev.pointerType === 'touch') return;
@@ -459,8 +454,11 @@ function iniciarTilt() {
       if (!cuadro) cuadro = requestAnimationFrame(aplicar);
     });
     el.addEventListener('pointerleave', () => {
-      el.style.setProperty('--mx', '0');
-      el.style.setProperty('--my', '0');
+      ultimo = null;
+      if (cuadro) { cancelAnimationFrame(cuadro); cuadro = 0; }
+      el.classList.remove('inclinando');
+      el.style.removeProperty('--mx');
+      el.style.removeProperty('--my');
     });
   });
 }
