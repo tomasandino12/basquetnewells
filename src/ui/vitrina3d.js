@@ -60,27 +60,82 @@ function azar(semilla) {
   };
 }
 
-/** Caoba rojiza lustrada, con veta vertical. Sirve de color y de relieve. */
+/**
+ * Caoba rojiza lustrada con la veta HORIZONTAL (corre alrededor del torno: en un LatheGeometry la
+ * coordenada u da la vuelta y la v sube). Las ondas tienen períodos enteros en u, así que la textura
+ * empalma sin costura al repetirse. Sirve de color y de relieve.
+ */
 function texturaMadera() {
-  const [c, g] = lienzo(512, 256);
-  const lin = g.createLinearGradient(0, 0, 512, 0);
-  lin.addColorStop(0, '#3a1307');
-  lin.addColorStop(0.5, '#5e2610');
-  lin.addColorStop(1, '#3a1307');
-  g.fillStyle = lin;
-  g.fillRect(0, 0, 512, 256);
-  const r = azar(7);
-  for (let i = 0; i < 340; i++) {
-    const x = r() * 512;
-    const claro = r() > 0.55;
-    g.strokeStyle = claro ? `rgba(214,128,72,${0.05 + r() * 0.12})` : `rgba(44,14,5,${0.08 + r() * 0.2})`;
-    g.lineWidth = 0.6 + r() * 2.2;
-    g.beginPath();
-    g.moveTo(x, 0);
-    const onda = (r() - 0.5) * 14;
-    g.bezierCurveTo(x + onda, 85, x - onda, 170, x + onda * 0.4, 256);
-    g.stroke();
+  const W = 1024;
+  const H = 512;
+  const [c, g] = lienzo(W, H);
+  const img = g.createImageData(W, H);
+  const r = azar(11);
+  // Ruido de valor periódico en u: manchas suaves que doblan la veta.
+  const GU = 12;
+  const GV = 48;
+  const red = Float32Array.from({ length: GU * GV }, () => r());
+  const liso = (t) => t * t * (3 - 2 * t);
+  const ruido = (u, v) => {
+    const x = u * GU;
+    const y = v * GV;
+    const x0 = Math.floor(x);
+    const y0 = Math.floor(y);
+    const fx = liso(x - x0);
+    const fy = liso(y - y0);
+    const q = (i, j) => red[(j % GV) * GU + (i % GU)];
+    return (q(x0, y0) * (1 - fx) + q(x0 + 1, y0) * fx) * (1 - fy) + (q(x0, y0 + 1) * (1 - fx) + q(x0 + 1, y0 + 1) * fx) * fy;
+  };
+  const OSC = [59, 23, 14]; // #3b170e
+  const CLA = [110, 44, 27]; // #6e2c1b
+  const TAU = Math.PI * 2;
+  for (let y = 0; y < H; y++) {
+    const v = y / H;
+    for (let x = 0; x < W; x++) {
+      const u = x / W;
+      // Ondas suaves que sólo doblan un poco las vetas: las líneas siguen horizontales.
+      const onda = 0.9 * Math.sin(TAU * 2 * u + v * 3.1) + 0.5 * Math.sin(TAU * 5 * u - v * 7.3) + 0.25 * Math.sin(TAU * 3 * u + v * 11);
+      const t = v * 34 + onda * 0.28 + ruido(u, v) * 0.9;
+      const grande = 0.5 + 0.5 * Math.sin(TAU * t);
+      const fina = 0.5 + 0.5 * Math.sin(TAU * (v * 150 + onda * 0.5 + ruido(u * 2 % 1, v * 2 % 1) * 1.6));
+      let k = 0.5 * grande + 0.28 * fina + 0.22 * ruido(u, v * 0.5);
+      k = Math.min(1, Math.max(0, (k - 0.5) * 1.5 + 0.5)) + (r() - 0.5) * 0.05;
+      const i = (y * W + x) * 4;
+      img.data[i] = OSC[0] + (CLA[0] - OSC[0]) * k;
+      img.data[i + 1] = OSC[1] + (CLA[1] - OSC[1]) * k;
+      img.data[i + 2] = OSC[2] + (CLA[2] - OSC[2]) * k;
+      img.data[i + 3] = 255;
+    }
   }
+  g.putImageData(img, 0, 0);
+  return c;
+}
+
+/** Grano fino y manchas de pátina para el bronce de las asas: sirve de relieve y de rugosidad. */
+function texturaBronce() {
+  const [c, g] = lienzo(256, 256);
+  const r = azar(23);
+  g.fillStyle = '#e2e2e2';
+  g.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 30; i++) { // manchas de pátina, de a poco más oscuras
+    const x = r() * 256;
+    const y = r() * 256;
+    const rad = 20 + r() * 44;
+    const m = g.createRadialGradient(x, y, 0, x, y, rad);
+    m.addColorStop(0, `rgba(80,72,56,${0.05 + r() * 0.12})`);
+    m.addColorStop(1, 'rgba(80,72,56,0)');
+    g.fillStyle = m;
+    // El círculo se dibuja también corrido una vuelta, para que la textura empalme al repetirse.
+    for (const dx of [-256, 0, 256]) for (const dy of [-256, 0, 256]) { g.save(); g.translate(dx, dy); g.fillRect(x - rad, y - rad, rad * 2, rad * 2); g.restore(); }
+  }
+  const img = g.getImageData(0, 0, 256, 256);
+  for (let i = 0; i < img.data.length; i += 4) { // grano
+    const d = (r() - 0.5) * 46;
+    img.data[i] += d;
+    img.data[i + 1] += d;
+    img.data[i + 2] += d;
+  }
+  g.putImageData(img, 0, 0);
   return c;
 }
 
@@ -142,7 +197,8 @@ function texturasPlaca(anio, numero) {
  */
 function contornoEscudo(pasos = 48) {
   const mitad = 0.46;
-  const der = [[0.5 + mitad, 0.995], [0.5 + mitad, 0.5]];
+  // Las dos puntas de arriba abren apenas hacia afuera; después los lados bajan rectos.
+  const der = [[0.5 + mitad + 0.025, 1], [0.5 + mitad, 0.94], [0.5 + mitad, 0.5]];
   for (let k = 1; k <= pasos; k++) {
     const s = k / pasos;
     der.push([0.5 + mitad * (1 - s ** 1.5), 0.5 * (1 - s)]); // exponente bajo: la curva llega a la punta en ángulo
@@ -189,8 +245,9 @@ function texturasEscudo() {
   const [color, c] = lienzo(W, H);
   // Azul rey, apenas más claro arriba (esmalte que toma la luz del cuarto).
   const azul = c.createLinearGradient(0, 0, 0, H);
-  azul.addColorStop(0, '#2850b0');
-  azul.addColorStop(1, '#173488');
+  // Azul Francia intenso (#0d47a1). Se pinta un escalón más oscuro: el metal y el cuarto lo aclaran al renderizar.
+  azul.addColorStop(0, '#0a3a8e');
+  azul.addColorStop(1, '#072c72');
   c.fillStyle = azul;
   trazar(c, contorno);
   c.fill();
@@ -199,13 +256,13 @@ function texturasEscudo() {
   trazar(c, contorno);
   c.clip();
   c.lineJoin = 'round';
-  c.lineWidth = 8;
-  c.strokeStyle = '#dde3f0';
+  c.lineWidth = 9;
+  c.strokeStyle = '#e2c46e'; // filete dorado fino
   trazar(c, contorno);
   c.stroke();
   // Reflejo de esmalte: una franja clara en diagonal.
   const brillo = c.createLinearGradient(0, 0, W, H * 0.7);
-  brillo.addColorStop(0, 'rgba(255,255,255,.16)');
+  brillo.addColorStop(0, 'rgba(255,255,255,.08)');
   brillo.addColorStop(0.45, 'rgba(255,255,255,0)');
   c.fillStyle = brillo;
   c.fillRect(0, 0, W, H);
@@ -213,10 +270,10 @@ function texturasEscudo() {
   // La R: roja, de palo, con un contorno blanco fino.
   R(c, (g, x, y) => {
     g.lineJoin = 'round';
-    g.lineWidth = 12;
+    g.lineWidth = 22; // filete blanco grueso
     g.strokeStyle = '#ffffff';
     g.strokeText('R', x, y);
-    g.fillStyle = '#e0262b';
+    g.fillStyle = '#a81e1e'; // rojo #d32f2f, un escalón más oscuro: el esmalte brilla y lo aclara
     g.fillText('R', x, y);
   });
 
@@ -236,7 +293,7 @@ function texturasEscudo() {
     g.shadowColor = '#fff';
     g.shadowBlur = 8;
     g.lineJoin = 'round';
-    g.lineWidth = 12;
+    g.lineWidth = 22;
     g.strokeStyle = '#fff';
     g.strokeText('R', x, y);
     g.shadowBlur = 0;
@@ -249,7 +306,7 @@ function texturasEscudo() {
   const [mezcla, m] = lienzo(W, H);
   m.fillStyle = 'rgb(0,70,190)';
   m.fillRect(0, 0, W, H);
-  m.fillStyle = 'rgb(0,60,25)';
+  m.fillStyle = 'rgb(0,105,25)'; // esmalte: brillante pero no espejo (si no, el azul y el rojo se lavan)
   trazar(m, interior);
   m.fill();
 
@@ -300,39 +357,69 @@ function crearCopa({ aniso }) {
   const grupo = new THREE.Group();
   grupo.name = 'copa';
   const R = 1.4;
-  const ALTURA_R = 4.18; // de la base de madera al borde, en R
+  const ALTURA_R = 4.7; // de la base de madera al borde, en R
   const X = (r) => r * R;
   const Y = (y) => (ALTURA_R + y) * R;
   const P = ([r, y]) => new THREE.Vector2(X(r), Y(y));
   // Cromo espejo: el cuenco y el pie de la copa real reflejan todo el cuarto.
-  const plata = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0.07 });
-  const mapaMadera = aTextura(texturaMadera(), { color: true, aniso, repetir: [3, 1] });
-  // Caoba rojiza lustrada: barniz (clearcoat) sobre la veta.
+  const plata = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0.08 });
+  const mapaMadera = aTextura(texturaMadera(), { color: true, aniso, repetir: [2, 1] });
+  // Caoba rojiza laqueada: la veta va por el color y por el relieve, y el barniz da el brillo.
   const madera = new THREE.MeshPhysicalMaterial({
-    map: mapaMadera, bumpMap: mapaMadera, bumpScale: 0.45, color: 0xffffff, metalness: 0.05, roughness: 0.4,
-    clearcoat: 0.5, clearcoatRoughness: 0.22,
+    map: mapaMadera, bumpMap: mapaMadera, bumpScale: 0.25, color: 0xc4c4c4, metalness: 0.05, roughness: 0.25,
+    clearcoat: 0.85, clearcoatRoughness: 0.15,
   });
   const sombras = (m) => { m.castShadow = true; m.receiveShadow = true; return m; };
   const torno = (puntos, material, segmentos = 96) => {
-    const m = sombras(new THREE.Mesh(new THREE.LatheGeometry(puntos, segmentos), material));
+    const geo = new THREE.LatheGeometry(puntos, segmentos);
+    // La v de LatheGeometry reparte por índice de punto: un tramo recto de dos puntos quedaría con la
+    // textura estirada. Se reescribe por largo recorrido, así la veta tiene el mismo tamaño en todo el perfil.
+    const acum = [0];
+    for (let j = 1; j < puntos.length; j++) acum.push(acum[j - 1] + puntos[j].distanceTo(puntos[j - 1]));
+    const uv = geo.attributes.uv;
+    for (let i = 0; i < uv.count; i++) uv.setY(i, acum[i % puntos.length] / acum[acum.length - 1]);
+    const m = sombras(new THREE.Mesh(geo, material));
     grupo.add(m);
     return m;
   };
+  /** Una curva suave (centrípeta: no se pasa de largo) por los puntos [r, y], repartida por largo de arco. */
+  const curva = (pts, n) => new THREE.CatmullRomCurve3(pts.map((p) => { const v = P(p); return new THREE.Vector3(v.x, v.y, 0); }), false, 'centripetal')
+    .getSpacedPoints(n).map((v) => new THREE.Vector2(v.x, v.y));
+  const aristas = (pts) => pts.map(P); // cantos vivos
 
-  // --- Base de madera en dos cuerpos, casi tan alta como el cuenco: arriba un tambor (donde van las
-  // placas) y abajo un plato mucho más ancho, con el canto moldurado (ogee). ---
+  // --- Base de caoba, de abajo hacia arriba: zócalo ancho con doble moldura escalonada (pecho de
+  // paloma), tambor alto donde van las placas y, arriba, la tapa fina con alero redondeado: el disco
+  // de arriba sobresale más que el tambor. Un solo torno, así la veta empalma de punta a punta. ---
+  const Y_TAPA = -3.05; // cara de arriba de la madera: ahí apoya el pie de plata
+  const RADIO_DRUM = 0.79;
   torno([
-    [0.915, -3.43], [0.905, -3.2], [0.92, -3.05], [0.97, -2.985], [0.985, -2.95], [0.95, -2.94], [0.88, -3.0], [0, -3.0],
-  ].map(P), madera);
-  torno([
-    [0, -4.18], [1.3, -4.18], [1.38, -4.15], [1.42, -4.06], [1.41, -3.9], [1.36, -3.8], [1.39, -3.7], [1.43, -3.6],
-    [1.42, -3.5], [1.36, -3.455], [1.15, -3.435], [0.9, -3.42],
-  ].map(P), madera, 128);
+    ...aristas([[0, -4.7], [1.14, -4.7]]),
+    ...curva([[1.14, -4.7], [1.2, -4.675], [1.225, -4.61], [1.222, -4.54], [1.19, -4.485]], 12), // zócalo: borde redondeado
+    ...curva([[1.19, -4.485], [1.12, -4.445], [1.07, -4.405], [1.052, -4.37]], 14), // primera moldura: gola cóncava
+    ...curva([[1.052, -4.37], [1.085, -4.33], [1.1, -4.255], [1.08, -4.18], [1.02, -4.13]], 14), // segunda: toro
+    ...curva([[1.02, -4.13], [0.93, -4.09], [0.84, -4.04], [RADIO_DRUM + 0.005, -3.96]], 12), // cuello de la base al tambor
+    ...aristas([[RADIO_DRUM, -3.92], [RADIO_DRUM, -3.35]]), // el tambor
+    ...curva([[RADIO_DRUM, -3.35], [0.805, -3.3], [0.87, -3.275], [0.93, -3.26]], 10), // empalme con la tapa
+    ...curva([[0.93, -3.26], [0.968, -3.235], [0.985, -3.17], [0.97, -3.1], [0.93, -3.06], [0.88, -3.05]], 16), // alero redondeado
+    ...aristas([[0.8, -3.05], [0, -3.05]]),
+  ], madera, 128);
 
-  // --- Las 15 placas, una por título, chicas, sobre el tambor. ---
+  // --- Las 15 placas, una por título, curvas, sobre el tambor, cada una con sus dos remaches. ---
   const placas = [];
-  const RADIO_TAMBOR = X(0.915);
-  const Y_PLACAS = Y(-3.2);
+  const RADIO_TAMBOR = X(RADIO_DRUM);
+  const Y_PLACAS = Y(-3.55);
+  const radioPlaca = RADIO_TAMBOR + 0.012;
+  const ANCHO_PLACA = 0.3;
+  const remache = new THREE.SphereGeometry(0.014, 12, 8);
+  // La caja se dobla sobre el tambor: cada vértice se lleva a su arco, así la placa abraza la madera.
+  const geoPlaca = new THREE.BoxGeometry(ANCHO_PLACA, 0.19, 0.03, 12, 1, 1);
+  const pos = geoPlaca.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const rho = radioPlaca + pos.getZ(i);
+    const fi = pos.getX(i) / radioPlaca;
+    pos.setXYZ(i, Math.sin(fi) * rho, pos.getY(i), Math.cos(fi) * rho - radioPlaca);
+  }
+  geoPlaca.computeVertexNormals();
   for (const p of placasDeCopa()) {
     const { color, relieve } = texturasPlaca(p.anio, p.numero);
     const mat = new THREE.MeshStandardMaterial({
@@ -345,8 +432,16 @@ function crearCopa({ aniso }) {
       emissive: new THREE.Color(ROJO_CLUB),
       emissiveIntensity: 0,
     });
-    const placa = sombras(new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.19, 0.03), mat));
-    const radio = RADIO_TAMBOR + 0.012;
+    const placa = sombras(new THREE.Mesh(geoPlaca, mat));
+    for (const lado of [-1, 1]) {
+      const fi = (lado * (ANCHO_PLACA / 2 - 0.024)) / radioPlaca;
+      const rem = sombras(new THREE.Mesh(remache, plata));
+      rem.scale.z = 0.55;
+      rem.position.set(Math.sin(fi) * (radioPlaca + 0.015), 0, Math.cos(fi) * (radioPlaca + 0.015) - radioPlaca);
+      rem.rotation.y = fi;
+      placa.add(rem);
+    }
+    const radio = radioPlaca;
     // El ángulo sale de una función pura (src/data/historia.js): 0 es el frente, positivo a la derecha.
     placa.position.set(Math.sin(p.angulo) * radio, Y_PLACAS, Math.cos(p.angulo) * radio);
     placa.rotation.y = p.angulo;
@@ -355,70 +450,80 @@ function crearCopa({ aniso }) {
     placas.push(placa);
   }
 
-  // --- Pie en campana ancha, nudo gordo tipo balaustre (urna), cuello y anillo de unión. Una sola
-  // curva suave pasa por cada medida. ---
-  const pie = new THREE.SplineCurve([
-    [0.5, -1.92], [0.4, -1.96], [0.34, -2.0], [0.43, -2.07], [0.48, -2.16], [0.43, -2.3], [0.27, -2.45], [0.3, -2.54],
-    [0.4, -2.62], [0.66, -2.68], [0.8, -2.78], [0.86, -2.92], [0.855, -3.01], [0.83, -3.04],
-  ].map(P));
-  // El torno se recorre de abajo hacia arriba: al revés, las normales miran hacia adentro y el pie se
-  // ve transparente (se descartan las caras de adelante).
-  torno([P([0, -3.04]), P([0.5, -3.04]), ...pie.getPoints(140).reverse()], plata, 96);
-  const anillo = sombras(new THREE.Mesh(new THREE.CylinderGeometry(X(0.51), X(0.5), Y(-1.8) - Y(-1.92), 64, 1), plata));
-  anillo.position.y = (Y(-1.8) + Y(-1.92)) / 2;
-  grupo.add(anillo);
-
-  // --- Cuenco cromado, casi recto, con el labio fino. ---
-  const exterior = new THREE.SplineCurve([[0.62, -1.75], [0.8, -1.55], [0.9, -1.25], [0.96, -0.65], [1.0, 0]].map(P));
-  const interior = new THREE.SplineCurve([[0.965, -0.02], [0.94, -0.65], [0.86, -1.25], [0.74, -1.5], [0.5, -1.62], [0, -1.65]].map(P));
+  // --- Pie y fuste en un solo torno, de abajo hacia arriba: campana ancha con borde, garganta cóncava
+  // estrecha, nudo central bulboso, y el collarín fino bajo el cuenco. Al revés, las normales miran
+  // hacia adentro y el pie se vería transparente. ---
   torno([
-    P([0, -1.78]), P([0.4, -1.78]),
-    ...exterior.getPoints(48),
-    P([1.008, 0.01]), P([0.99, 0.025]), P([0.972, 0.01]),
+    ...aristas([[0, Y_TAPA - 0.04], [0.74, Y_TAPA - 0.04]]),
+    ...curva([[0.74, Y_TAPA - 0.04], [0.775, -3.02], [0.78, -2.98], [0.76, -2.92], [0.7, -2.86], [0.6, -2.8], [0.48, -2.74], [0.37, -2.68], [0.3, -2.6], [0.27, -2.52], [0.265, -2.44]], 70), // campana y garganta
+    ...curva([[0.265, -2.44], [0.37, -2.4], [0.45, -2.33], [0.48, -2.235], [0.445, -2.14], [0.35, -2.09], [0.3, -2.075]], 50), // el nudo
+    ...aristas([[0.4, -2.07], [0.475, -2.055], [0.485, -2.03], [0.485, -1.94], [0.465, -1.9]]), // collarín
+  ], plata, 128);
+
+  // --- Cuenco cromado: paredes altas, casi rectas, que se cierran en una curva amplia y continua hacia
+  // el cuello, y el labio: un anillo saliente redondeado en la boca. ---
+  const exterior = new THREE.SplineCurve([[0.47, -1.9], [0.58, -1.83], [0.74, -1.66], [0.86, -1.38], [0.93, -0.95], [0.975, -0.42], [0.993, -0.07]].map(P));
+  const interior = new THREE.SplineCurve([[0.966, -0.02], [0.945, -0.65], [0.87, -1.25], [0.75, -1.52], [0.52, -1.65], [0, -1.68]].map(P));
+  torno([
+    P([0, -1.9]), P([0.4, -1.9]),
+    ...exterior.getPoints(56),
+    ...curva([[0.993, -0.07], [1.014, -0.05], [1.024, -0.015], [1.016, 0.022], [0.994, 0.036], [0.975, 0.024], [0.967, 0]], 16), // el labio
     ...interior.getPoints(30),
   ], plata, 128);
 
-  // --- Asas: chapa dorada plana (latón pulido) con el contorno medido sobre la foto del asa izquierda
-  // ampliada (la derecha sale cortada en la foto, así que la derecha es la izquierda espejada). Están
-  // en el plano radial, así que de frente se ve su contorno: un brazo superior plano de ~0,2 R que
-  // termina junto al cuenco en una punta y un chaflán, una muesca en V antes de la diagonal recta
-  // hasta la esquina exterior, un escalón hacia adentro en el borde exterior y un brazo inferior que
-  // baja curvándose hasta el cuenco. El hueco es una lágrima alargada con una cuña colgando junto al
-  // cuenco. Los dos extremos entran en la pared: nada queda suelto. ---
-  const trazo = (pts) => new THREE.CatmullRomCurve3(pts.map(([r, y]) => new THREE.Vector3(X(r), Y(y), 0)), false, 'centripetal')
-    .getPoints(50).map((v) => [v.x, v.y]);
-  const recto = (pts) => pts.map(([r, y]) => [X(r), Y(y)]); // aristas vivas: punta, muesca, escalón y cuña
-  const contornoAsa = [
-    ...recto([[0.96, -0.03], [0.97, 0.0], [1.12, 0.16], [1.57, 0.15], [1.6, 0.085], [1.65, 0.12], [2.03, -0.23]]),
-    ...trazo([[2.03, -0.23], [1.97, -0.42], [1.93, -0.52], [1.9, -0.6]]),
-    ...recto([[1.89, -0.62], [1.86, -0.65]]),
-    ...trazo([[1.86, -0.65], [1.78, -0.82], [1.69, -0.96], [1.53, -1.14], [1.38, -1.31], [1.2, -1.5], [1.07, -1.62], [0.9, -1.69]]),
-    ...recto([[0.74, -1.62]]),
-    ...trazo([[0.78, -1.6], [0.98, -1.55], [1.17, -1.37], [1.31, -1.14], [1.4, -0.93], [1.47, -0.7], [1.53, -0.43], [1.55, -0.2], [1.53, -0.13], [1.45, -0.085], [1.34, -0.07], [1.23, -0.085]]),
-    ...recto([[1.22, -0.27], [1.08, -0.14], [0.97, -0.12]]),
-  ];
-  const ESPESOR_ASA = 0.07 * R;
-  const BISEL_ASA = 0.019;
-  const oroAsa = new THREE.MeshStandardMaterial({ color: 0xcfae4c, metalness: 1, roughness: 0.24 });
+  // --- Asas de bronce fundido: cintas planas, con el perfil dibujado con curvas Bézier. Nacen un
+  // poco por encima del labio, tienen un hombro corto y horizontal, una muesca cóncava que termina en
+  // un espolón agudo hacia afuera, y bajan en un arco que se afina hasta entrar en la panza del cuenco.
+  // El hueco es una lágrima con una cuña colgando junto al cuenco. Los dos extremos entran en la
+  // pared: nada queda suelto. ---
+  const perfilAsa = (lado) => {
+    const pt = ([r, y]) => [lado * X(r), Y(y)];
+    const forma = new THREE.Shape();
+    const m = (a) => forma.moveTo(...pt(a));
+    const l = (a) => forma.lineTo(...pt(a));
+    const b = (c1, c2, e) => forma.bezierCurveTo(...pt(c1), ...pt(c2), ...pt(e));
+    m([0.955, -0.03]);
+    l([0.975, 0.045]);
+    b([1.0, 0.15], [1.06, 0.168], [1.16, 0.168]); // sube y se acuesta en el hombro
+    b([1.3, 0.168], [1.45, 0.165], [1.56, 0.135]); // hombro superior, apenas caído
+    b([1.61, 0.03], [1.72, 0.0], [1.9, -0.27]); // muesca cóncava hasta el espolón
+    l([1.72, -0.325]); // el espolón vuelve sobre sí mismo
+    b([1.66, -0.48], [1.6, -0.78], [1.5, -1.04]); // arco exterior
+    b([1.36, -1.4], [1.12, -1.64], [0.84, -1.74]);
+    l([0.64, -1.7]);
+    l([0.66, -1.58]);
+    b([0.95, -1.52], [1.17, -1.3], [1.29, -0.98]); // borde interior, que se afina hacia el cuenco
+    b([1.38, -0.72], [1.42, -0.45], [1.415, -0.24]);
+    b([1.41, -0.12], [1.36, -0.075], [1.26, -0.075]);
+    l([1.1, -0.31]); // la cuña colgante
+    l([0.975, -0.13]);
+    forma.closePath();
+    return forma;
+  };
+  const ESPESOR_ASA = 0.07;
+  const mapaBronce = aTextura(texturaBronce(), { aniso, repetir: [1.4, 1.4] });
+  const bronce = new THREE.MeshStandardMaterial({
+    color: 0xb89b5e, metalness: 0.85, roughness: 0.35, bumpMap: mapaBronce, bumpScale: 0.7, roughnessMap: mapaBronce,
+    map: aTextura(texturaBronce(), { color: true, aniso, repetir: [1.4, 1.4] }), // la pátina también oscurece un poco
+  });
   for (const lado of [1, -1]) {
-    const forma = new THREE.Shape(contornoAsa.map(([x, y]) => new THREE.Vector2(x * lado, y)));
-    const geo = new THREE.ExtrudeGeometry(forma, {
-      depth: ESPESOR_ASA - 2 * BISEL_ASA, steps: 1, curveSegments: 1,
-      bevelEnabled: true, bevelThickness: BISEL_ASA, bevelSize: 0.012, bevelOffset: 0, bevelSegments: 2,
+    const geo = new THREE.ExtrudeGeometry(perfilAsa(lado), {
+      depth: ESPESOR_ASA, steps: 1, curveSegments: 28,
+      bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.012, bevelOffset: 0, bevelSegments: 4,
     });
-    geo.translate(0, 0, -(ESPESOR_ASA - 2 * BISEL_ASA) / 2);
-    grupo.add(sombras(new THREE.Mesh(geo, oroAsa)));
+    geo.translate(0, 0, -ESPESOR_ASA / 2);
+    grupo.add(sombras(new THREE.Mesh(geo, bronce)));
   }
 
   // --- El escudo de la R, integrado al cuenco. Es un parche del mismo torno (LatheGeometry con
   // un ángulo corto) un pelo por fuera de la pared: así sigue la curva del cuenco y no flota en
-  // los bordes. La silueta sale del mapa alfa; el relieve, del bumpMap; el filete plateado es
+  // los bordes. La silueta sale del mapa alfa; el relieve, del bumpMap; el filete dorado es
   // además un tubo de verdad que sube del metal. ---
   const E = texturasEscudo();
   const largo = exterior.getLength();
-  const ALTO_ESCUDO = 0.83 * R;
-  const ANCHO_ESCUDO = 0.65 * R;
-  const BASE_ESCUDO = Y(-0.5) - ALTO_ESCUDO / 2;
+  const ALTO_ESCUDO = 0.92 * R;
+  const ANCHO_ESCUDO = 0.76 * R;
+  const BASE_ESCUDO = Y(-0.57) - ALTO_ESCUDO / 2;
   let u0 = 0;
   while (exterior.getPointAt(u0).y < BASE_ESCUDO && u0 < 1) u0 += 0.002;
   const du = ALTO_ESCUDO / largo;
@@ -450,16 +555,24 @@ function crearCopa({ aniso }) {
   parche.name = 'escudo';
   parche.receiveShadow = true;
   grupo.add(parche);
-  // Filete: el contorno del escudo llevado a 3D sobre el mismo parche.
+  // Filete: el contorno del escudo llevado a 3D sobre el mismo parche. Se densifica antes de la
+  // curva suave: sin eso, la spline se pasa de largo en las esquinas de arriba y el tubo sale del escudo.
   const aLaPared = ([u, v]) => {
     const q = enParche(u0 + v * du);
     const fi = (u - 0.5) * giro;
     return new THREE.Vector3(Math.sin(fi) * (q.x + 0.006), q.y, Math.cos(fi) * (q.x + 0.006));
   };
-  const borde = new THREE.CatmullRomCurve3(E.contorno.map(aLaPared), true, 'centripetal');
-  grupo.add(sombras(new THREE.Mesh(new THREE.TubeGeometry(borde, 220, 0.008, 8, true), plata)));
+  const denso = [];
+  E.contorno.forEach((a, i) => {
+    const b = E.contorno[(i + 1) % E.contorno.length];
+    const n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 0.025));
+    for (let k = 0; k < n; k++) denso.push([a[0] + ((b[0] - a[0]) * k) / n, a[1] + ((b[1] - a[1]) * k) / n]);
+  });
+  const borde = new THREE.CatmullRomCurve3(denso.map(aLaPared), true, 'centripetal');
+  const oroFilete = new THREE.MeshStandardMaterial({ color: 0xd9b45e, metalness: 1, roughness: 0.22 });
+  grupo.add(sombras(new THREE.Mesh(new THREE.TubeGeometry(borde, 320, 0.0085, 8, true), oroFilete)));
 
-  return { grupo, placas, ancho: 5.5, alto: 6.3, centro: new THREE.Vector3(0, 3.05, 0), frente: 0 };
+  return { grupo, placas, ancho: 5.8, alto: 7.1, centro: new THREE.Vector3(0, 3.4, 0), frente: 0 };
 }
 
 // ---------------------------------------------------------------------------
