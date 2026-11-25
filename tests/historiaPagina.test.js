@@ -286,15 +286,24 @@ test('el visor de la medalla se arma bajo demanda, con renderer propio, giro lib
   assert.match(medalla, /if \(reducido\) \{\s*const hubo = theta !== 0;/);
   // El botón discreto y los textos de la medalla.
   assert.match(medalla, /boton\.textContent = 'Ver frente \/ dorso'/);
-  for (const t of ['ASOCIACION ROSARINA DE BASQUETBOL', 'FUNDADA EN 1926', 'ARBB']) assert.ok(medalla.includes(t), t);
 });
 
-test('las texturas de la medalla son de 1024×1024 (color, relieve y rugosidad) y el dorso sólo lleva las 4 costuras reales', () => {
+test('las caras de la medalla son la foto (1024×1024) con relieve y rugosidad derivados, sin dibujo por canvas', () => {
   const medalla = readFileSync('src/ui/medalla3d.js', 'utf8');
   assert.match(medalla, /const N = 1024/);
-  for (const k of ['map:', 'bumpMap:', 'roughnessMap:']) assert.ok(medalla.includes(k), k);
-  // El meridiano, el ecuador y las dos curvas laterales: cuatro, no cinco.
-  const costuras = medalla.match(/function costurasPelota\(\) \{[\s\S]*?\n\}/)[0];
-  assert.match(costuras, /return \[\[\[-1, 0\], \[1, 0\]\], \[\[0, -1\], \[0, 1\]\], lateral\(1\), lateral\(-1\)\];/);
-  assert.match(medalla, /INCLINACION_PELOTA = -40/);
+  for (const k of ['map:', 'bumpMap:', 'roughnessMap:', 'TextureLoader', 'SRGBColorSpace']) assert.ok(medalla.includes(k), k);
+  // El texto, el escudo y la pelota ya no se dibujan: están en la foto.
+  assert.doesNotMatch(medalla, /fillText|ctx\.|costurasPelota|contornoEscudo|texturasFrente|texturasDorso|INCLINACION_PELOTA/);
+  // Las dos fotos existen, son WebP con pérdida de exactamente 1024×1024.
+  for (const cara of ['frente', 'dorso']) {
+    const ruta = `public/img/historia/medalla-${cara}.webp`;
+    assert.ok(medalla.includes(ruta), ruta);
+    const b = readFileSync(ruta);
+    assert.equal(b.toString('latin1', 8, 12), 'WEBP');
+    assert.equal(b.toString('latin1', 12, 16), 'VP8 ');
+    assert.equal((b.readUInt16LE(26) & 0x3fff) + 'x' + (b.readUInt16LE(28) & 0x3fff), '1024x1024', cara);
+  }
+  // El cuerpo, el aro y la ojuela comparten el peltre de la foto.
+  assert.match(medalla, /PELTRE = 0x9e9b93/);
+  assert.match(medalla, /color: PELTRE/);
 });
