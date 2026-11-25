@@ -1,7 +1,6 @@
 import { html, crudo } from './html.js';
 import { $ } from './dom.js';
 import { montarMedalla } from './medalla.js';
-import { montarCopa } from './copa.js';
 import { titulos, epocas, datosPublicables, epocaDeAnio, microDato, momentos, hitoDeTitulo, resumenDeTitulos } from '../data/historia.js';
 
 /**
@@ -15,7 +14,7 @@ import { titulos, epocas, datosPublicables, epocaDeAnio, microDato, momentos, hi
  * propio son tarjetas compactas; los hitos que no son un título (Del Vecchio, el
  * Cubierto, los 100 años de la Rosarina) van como tarjetas "momento", sin estrella.
  *
- * Contrato con la vitrina (la foto de la copa con el tambor de placas en CSS 3D, src/ui/copa.js):
+ * Contrato con la vitrina (la copa 3D de src/ui/copa3d.js; la foto del trofeo si no hay WebGL):
  *  - 'historia:seleccion' se emite sobre #vitrina (y sube por el DOM) cada vez que
  *    cambia lo elegido: al tocar una tarjeta o una estrella, o al llegar con el
  *    scroll a otra época. detail = { epocaId, anio, anios }: `anios` son los años
@@ -26,10 +25,11 @@ import { titulos, epocas, datosPublicables, epocaDeAnio, microDato, momentos, hi
  *    es como la copa pide elegir cuando se toca una placa. La línea se desplaza
  *    hasta esa tarjeta.
  *  - `seleccionar()` hace lo mismo desde código.
- * Los eventos van por el DOM, y no por imports: la copa no sabe nada de la línea.
+ * Los eventos van por el DOM, y no por imports, para que la copa se cargue recién cuando se
+ * acerca al viewport y pueda no estar nunca (sin WebGL).
  *
- * La medalla no es parte de la vitrina: tiene su propia sección de cierre (#medalla). Las dos son CSS 3D
- * sobre fotos recortadas: en la página no hay WebGL.
+ * La medalla no es parte de la vitrina: tiene su propia sección de cierre (#medalla) y es CSS 3D
+ * puro (src/ui/medalla.js le da el giro): no usa WebGL, así que la copa es el único canvas.
  */
 
 const EPOCA_INICIAL = 'doce-seguidos';
@@ -302,6 +302,43 @@ export function seleccionar({ epocaId = null, anio = null } = {}) {
   $('vitrina').dispatchEvent(new CustomEvent('historia:seleccion', { bubbles: true, detail: { epocaId: estado.epocaId, anio: estado.anio, anios: aniosElegidos() } }));
 }
 
+/**
+ * La copa en 3D. Se monta recién cuando la vitrina se acerca a la pantalla (`import()` del módulo, que trae
+ * Three.js: no lo baja quien no llega hasta acá). `data-estado` de #vitrina cuenta cómo va: 'foto' (la foto
+ * del trofeo), 'cargando' y '3d'. Si no hay WebGL, o algo falla al bajar o al armar la escena, vuelve a
+ * 'foto' y la página sigue igual: es una mejora, no una dependencia.
+ */
+function montarVitrina() {
+  const vitrina = $('vitrina');
+  const escenario = $('vitrina-escenario');
+  const volverAFoto = (motivo) => {
+    vitrina.dataset.estado = 'foto';
+    if (motivo) console.warn('Copa 3D no disponible:', motivo);
+  };
+  if (typeof IntersectionObserver !== 'function') return;
+  let iniciada = false;
+  const iniciar = async () => {
+    if (iniciada) return;
+    iniciada = true;
+    vitrina.dataset.estado = 'cargando';
+    try {
+      const m = await import('./copa3d.js');
+      if (!m.hayWebGL()) return volverAFoto();
+      await m.crearVitrina(escenario, { anios: estado.anio != null ? [estado.anio] : [] });
+      vitrina.dataset.estado = '3d';
+    } catch (e) {
+      volverAFoto(e);
+    }
+  };
+  new IntersectionObserver((entradas, obs) => {
+    if (!entradas.some((e) => e.isIntersecting)) return;
+    obs.disconnect();
+    iniciar();
+  }, { rootMargin: '600px 0px' }).observe(escenario);
+  // Si el contexto WebGL se pierde (GPU ocupada, pestaña en segundo plano mucho tiempo), vuelve la foto.
+  escenario.addEventListener('vitrina:perdida', () => volverAFoto('se perdió el contexto WebGL'));
+}
+
 // La línea viva: el progreso rojo del eje llega hasta una altura fija de la pantalla (un poco más
 // abajo de la mitad) y cada nodo se enciende cuando el progreso lo alcanza; al subir, se apagan.
 // Un solo requestAnimationFrame por tanda de scroll: primero se lee todo, después se escribe.
@@ -452,7 +489,7 @@ export function iniciarHistoria() {
   revelarEstrellas();
   seguirEpoca();
   seguirAnio();
-  montarCopa($('vitrina-escenario'));
+  montarVitrina();
   montarMedalla($('medalla-escenario'));
 
   $('hist-linea').addEventListener('click', (ev) => {

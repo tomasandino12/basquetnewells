@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { titulos, epocas, datosPublicables, datosPendientes, epocaDeAnio, microDato, momentos, hitoDeTitulo, resumenDeTitulos, filasDePlacas, piezasDeVitrina } from '../src/data/historia.js';
+import { titulos, epocas, datosPublicables, datosPendientes, epocaDeAnio, microDato, momentos, hitoDeTitulo, resumenDeTitulos, placasDeCopa, COLUMNAS_COPA, piezasDeVitrina } from '../src/data/historia.js';
 
 const AÑOS_EXACTOS = [
   1943, 1944, 1945, 1946, 1947, 1948, 1949, 1950, 1951, 1952, 1953, 1954,
@@ -116,16 +116,18 @@ test('el Cubierto lleva sus dos sedes mundiales con fuente', () => {
   assert.equal(new Set(medios).size, medios.length);
 });
 
-test('cada título tiene su placa, en dos filas de 8 y 7', () => {
-  const filas = filasDePlacas();
-  assert.deepEqual(filas.map((f) => f.n), [8, 7]);
-  assert.deepEqual(filas[0].placas.map((p) => p.anio), [1943, 1944, 1945, 1946, 1947, 1948, 1949, 1950]);
-  assert.deepEqual(filas[1].placas.map((p) => p.anio), [1951, 1952, 1953, 1954, 1977, 1978, 1983]);
-  const todas = filas.flatMap((f) => f.placas);
-  assert.deepEqual(todas.map((p) => p.anio), titulos().map((t) => t.anio));
-  assert.deepEqual(todas.map((p) => p.numero), titulos().map((t) => t.numero));
-  // El lugar en la fila va de 0 a n-1: cada placa tiene su ángulo y ninguna se pisa.
-  for (const f of filas) assert.deepEqual(f.placas.map((p) => p.i), [...Array(f.n).keys()]);
+test('la copa tiene una grilla de 8 × 2 placas: la de los títulos al frente y un año en cada otra', () => {
+  const placas = placasDeCopa();
+  assert.equal(COLUMNAS_COPA, 8);
+  assert.equal(placas.length, 16);
+  // Cada lugar de la grilla una sola vez: ninguna placa se pisa y las dos filas van en las mismas columnas.
+  assert.equal(new Set(placas.map((p) => `${p.fila}-${p.columna}`)).size, 16);
+  for (const fila of [0, 1]) assert.deepEqual(placas.filter((p) => p.fila === fila).map((p) => p.columna), [0, 1, 2, 3, 4, 5, 6, 7]);
+  assert.deepEqual(placas[0], { fila: 0, columna: 0, anio: null, numero: null, texto: `★ ${titulos().length} TÍTULOS ★` });
+  const conAnio = placas.filter((p) => p.anio != null);
+  assert.deepEqual(conAnio.map((p) => p.anio), titulos().map((t) => t.anio));
+  assert.deepEqual(conAnio.map((p) => p.numero), titulos().map((t) => t.numero));
+  for (const p of conAnio) assert.equal(p.texto, String(p.anio));
 });
 
 test('la vitrina alterna dos piezas, cada una con su leyenda de recreación', () => {

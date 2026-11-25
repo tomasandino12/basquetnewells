@@ -292,16 +292,22 @@ export function resumenDeTitulos() {
 }
 
 /**
- * Las placas de la copa, en las dos filas del tambor de madera (como en la copa real): arriba las
- * ocho primeras (1943–1950) y abajo las otras siete. Cada placa lleva su año, su número de título y
- * su lugar en la fila (`i`); la fila dice cuántas entran en la vuelta (`n`), así el ángulo de cada una
- * es i·360°/n. El marcado de las placas está escrito en public/historia.html (se ven sin JavaScript)
- * y un test lo compara con esto.
+ * Las placas de la copa 3D (src/ui/copa3d.js): una grilla de 8 columnas × 2 filas alrededor del tambor, las
+ * dos filas cada 45°, así cada placa de abajo queda justo debajo de la de arriba. La primera (arriba, de
+ * frente, bajo el escudo) es la placa grabada con la cantidad de títulos; las otras 15 son los años, en
+ * orden: la fila de arriba de izquierda a derecha y después la de abajo. `columna` · 45° es el ángulo de la
+ * placa (0 = frente, positivo hacia la derecha).
  */
-const PLACAS_ARRIBA = 8;
-export function filasDePlacas() {
-  const placa = (t, i) => ({ anio: t.anio, numero: t.numero, i });
-  return [T.slice(0, PLACAS_ARRIBA), T.slice(PLACAS_ARRIBA)].map((fila) => ({ n: fila.length, placas: fila.map(placa) }));
+export const COLUMNAS_COPA = 8;
+export function placasDeCopa() {
+  const lugares = [{ especial: true }, ...T];
+  return lugares.map((t, k) => ({
+    fila: Math.floor(k / COLUMNAS_COPA),
+    columna: k % COLUMNAS_COPA,
+    anio: t.especial ? null : t.anio,
+    numero: t.especial ? null : t.numero,
+    texto: t.especial ? `★ ${T.length} TÍTULOS ★` : String(t.anio),
+  }));
 }
 
 /**

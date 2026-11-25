@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { titulos, datosPublicables, datosPendientes, epocas, momentos, filasDePlacas } from '../src/data/historia.js';
+import { titulos, datosPublicables, datosPendientes, epocas, momentos } from '../src/data/historia.js';
+import { COPA } from '../src/data/copaMedidas.js';
 import { htmlLinea, htmlEstrellas, htmlFicha, htmlCifras } from '../src/ui/historia.js';
 
 /**
@@ -239,76 +240,74 @@ test('la ficha de un año sin dato propio usa el de su época y lo dice', () => 
 
 test('la vitrina muestra sólo la copa: sin selector de pieza ni cambio automático', () => {
   const js = readFileSync('src/ui/historia.js', 'utf8');
-  const copa = readFileSync('src/ui/copa.js', 'utf8');
+  const copa = readFileSync('src/ui/copa3d.js', 'utf8');
   const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
   assert.doesNotMatch(js, /historia:pieza|htmlSelectorPieza|elegirPieza|pasarAMedalla|vitrina-selector/);
   assert.doesNotMatch(css, /vitrina-selector|vitrina-pieza/);
   assert.doesNotMatch(pagina, /Medalla oficial|Trofeo ARBB|historia:pieza/);
-  // La copa no sabe nada de la medalla ni de la UI, y frena su bucle cuando sale de pantalla.
-  assert.doesNotMatch(copa, /medalla|^import /m);
+  // La copa no sabe nada de la medalla ni de la UI, y frena su bucle cuando sale de pantalla o se queda quieta.
+  assert.doesNotMatch(copa, /medalla|from '\.\/(?!\.)/);
   assert.match(copa, /new IntersectionObserver\(\(\[e\]\) => \{\s*visible = e\.isIntersecting;[\s\S]*?cancelAnimationFrame\(idRaf\)/);
-  assert.match(copa, /if \(!quieta\) idRaf = requestAnimationFrame\(cuadro\)/);
+  assert.match(copa, /if \(!quieta \|\| placas \|\| arrastrando\) idRaf = requestAnimationFrame\(cuadro\)/);
 });
 
-test('la copa es la foto recortada con las 15 placas encima, en dos filas como en los datos', () => {
-  // La foto: WebP con alfa (VP8X), de 862×1105 y liviana.
-  const ruta = 'public/img/historia/copa-arbb.webp';
-  const b = readFileSync(ruta);
-  assert.equal(b.toString('latin1', 8, 16), 'WEBPVP8X');
-  assert.ok(b[20] & 0x10, 'sin canal alfa');
-  assert.equal(1 + b.readUIntLE(24, 3), 862);
-  assert.equal(1 + b.readUIntLE(27, 3), 1105);
-  assert.ok(b.length < 120 * 1024, `${b.length} bytes`);
-  assert.match(pagina, /<img class="copa-foto" src="\/public\/img\/historia\/copa-arbb\.webp" width="862" height="1105"[^>]*alt="[^"]{40,}"/);
-  // Las placas están escritas en la página (se ven sin JavaScript) y son las de filasDePlacas(), en orden.
-  const filas = [...pagina.matchAll(/<ol class="copa-fila copa-fila-(?:arriba|abajo)" style="--n:(\d+)">([\s\S]*?)<\/ol>/g)];
-  assert.equal(filas.length, 2);
-  filasDePlacas().forEach((f, k) => {
-    assert.equal(Number(filas[k][1]), f.n);
-    const placas = [...filas[k][2].matchAll(/<li style="--i:(\d+)"><button type="button" class="placa" data-anio="(\d+)" aria-label="Título (\d+), \2">\2<\/button><\/li>/g)];
-    assert.deepEqual(placas.map((m) => [Number(m[1]), Number(m[2]), Number(m[3])]), f.placas.map((p) => [p.i, p.anio, p.numero]));
-  });
+test('la copa 3D se arma con lo medido en la foto, y la foto queda de respaldo', () => {
+  // Los tres recortes: WebP con alfa (VP8X) y livianos.
+  for (const [nombre, max] of [['copa-arbb', 120], ['escudo-arbb', 40], ['asa-arbb', 40]]) {
+    const b = readFileSync(`public/img/historia/${nombre}.webp`);
+    assert.equal(b.toString('latin1', 8, 16), 'WEBPVP8X', nombre);
+    assert.ok(b[20] & 0x10, `${nombre}: sin canal alfa`);
+    assert.ok(b.length < max * 1024, `${nombre}: ${b.length} bytes`);
+  }
+  // Sin WebGL se ve la foto; el estado arranca en "foto".
+  assert.match(pagina, /<figure class="hist-vitrina" id="vitrina" data-estado="foto">/);
+  assert.match(pagina, /<img class="vitrina-foto" src="\/public\/img\/historia\/copa-arbb\.webp" width="862" height="1105"[^>]*alt="[^"]{40,}"/);
+  // Las medidas que deja el script: la boca arriba, la base abajo, el tambor recto y un asa con forma de verdad.
+  assert.ok(COPA.metal.length > 20 && COPA.madera.length > 15);
+  assert.ok(COPA.metal[0][1] > 9 && COPA.metal[0][0] > 2, 'la boca');
+  assert.ok(Math.min(...COPA.madera.map(([, y]) => y)) < 0, 'el fondo de la base');
+  assert.equal(COPA.tambor.radio, 1.72);
+  assert.ok(COPA.tambor.arriba > COPA.tambor.abajo);
+  assert.ok(COPA.asa.puntos.length > 50 && COPA.asa.puntos.every(([x]) => x < 0), 'el asa izquierda');
+  assert.deepEqual(Object.keys(COPA.camara), ['y', 'z', 'miraY']);
+  const copa = readFileSync('src/ui/copa3d.js', 'utf8');
+  // Nada a ojo: el escudo y el asa son los recortes de la foto, el torno y el asa salen de COPA.
+  assert.match(copa, /\/public\/img\/historia\/escudo-arbb\.webp/);
+  assert.match(copa, /\/public\/img\/historia\/asa-arbb\.webp/);
+  assert.match(copa, /new THREE\.LatheGeometry\(perfil, 64\)/);
+  assert.match(copa, /new THREE\.LatheGeometry\(perfilMadera, 64\)/);
+  assert.match(copa, /new THREE\.ExtrudeGeometry\(forma,/);
+  assert.match(copa, /const CAMARA = COPA\.camara;/);
 });
 
-test('el tambor de placas es CSS 3D y la placa activa es plata bruñida, nunca roja', () => {
-  const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
-  const reglas = (sel) => [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => m[1].split(',').some((x) => x.trim() === sel)).map((m) => m[2]).join(';');
-  assert.match(reglas('.copa-fila'), /transform-style:preserve-3d/);
-  assert.match(reglas('.copa-fila'), /rotateY\(var\(--giro,0deg\)\)/);
-  assert.match(reglas('.copa-fila li'), /rotateY\(calc\(var\(--i\) \* 360deg \/ var\(--n\)\)\) translateZ\(var\(--radio\)\)/);
-  assert.match(reglas('.copa-fila li'), /backface-visibility:hidden/);
-  assert.match(reglas('.copa-fila li.activa'), /scale\(1\.14\)/);
-  assert.match(reglas('.vitrina-escenario'), /touch-action:pan-y/);
-  // Inactiva: plata ahumada con el año gris carbón; activa: platino con el año negro y halo detrás.
-  assert.match(reglas('.placa'), /linear-gradient\(135deg,#8A8F98,#686D75\)/);
-  assert.match(reglas('.placa'), /color:#1E2024/);
-  assert.match(reglas('.placa'), /opacity:\.85/);
-  const activa = reglas('.placa.activa');
-  assert.match(activa, /linear-gradient\(135deg,#FFFFFF 0%,#E6E9EF 45%,#FFFFFF 55%,#C8CDD6 100%\)/);
-  assert.match(activa, /color:#09090B/);
-  assert.match(activa, /font-weight:700/);
-  assert.match(activa, /text-shadow:0 1px 0 rgba\(255,255,255,\.6\)/);
-  assert.match(activa, /border-color:#FFFFFF/);
-  assert.match(activa, /box-shadow:0 0 16px rgba\(255,255,255,\.55\),0 4px 12px rgba\(0,0,0,\.8\)/);
-  // Ninguna regla de las placas usa rojo.
-  const dePlacas = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => /\.placa|\.copa-fila/.test(m[1])).map((m) => m[2]).join(';');
-  assert.doesNotMatch(dePlacas, /--primario|--hist-rojo|--rojo|#e30613|#d9122e|\bred\b/i);
+test('las placas son una grilla de 8 × 2 cada 45° y la encendida es plata bruñida, nunca roja', () => {
+  const copa = readFileSync('src/ui/copa3d.js', 'utf8');
+  assert.match(copa, /const PASO = \(Math\.PI \* 2\) \/ COLUMNAS_COPA;/);
+  assert.match(copa, /m\.rotation\.y = p\.columna \* PASO;/);
+  // Apagada: plata ahumada y año gris carbón; encendida: platino y año negro.
+  for (const color of ["'#8A8F98'", "'#686D75'", "'#1E2024'", "'#FFFFFF'", "'#E6E9EF'", "'#C8CDD6'", "'#09090B'"]) assert.ok(copa.includes(color), color);
+  // Se busca en el código, no en los comentarios (el que explica por qué no es roja nombra el rojo).
+  const codigo = copa.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
+  assert.doesNotMatch(codigo, /e30613|d9122e|ROJO|'red'|#f00\b/i);
+  // Las texturas se dibujan una sola vez (dos atlas), no por cuadro.
+  assert.equal((copa.match(/atlasDePlacas\(placas, (?:true|false)\)/g) ?? []).length, 2);
 });
 
-test('la copa gira sola hasta el año que se lee, se arrastra y avisa qué placa se tocó', () => {
+test('toda la copa gira junta: con el arrastre, hasta el año que se lee y de vuelta al frente', () => {
   const js = readFileSync('src/ui/historia.js', 'utf8');
-  const copa = readFileSync('src/ui/copa.js', 'utf8');
-  assert.match(js, /^import \{ montarCopa \} from '\.\/copa\.js';/m);
-  assert.match(js, /montarCopa\(\$\('vitrina-escenario'\)\)/);
-  // La línea avisa el año que se está leyendo; la copa lo escucha junto con la selección.
+  const copa = readFileSync('src/ui/copa3d.js', 'utf8');
+  assert.match(js, /await import\('\.\/copa3d\.js'\)/);
   assert.match(js, /new CustomEvent\('historia:foco', \{ detail: \{ anio: Number\(en\.target\.dataset\.anio\) \} \}\)/);
-  assert.match(js, /querySelectorAll\('\.t-card\[data-anio\]'\)/);
   for (const ev of ["'historia:seleccion'", "'historia:foco'", "'historia:elegir'"]) assert.ok(copa.includes(ev), ev);
-  // Gira por el camino corto y, con movimiento reducido, salta sin inercia ni inclinación.
-  assert.match(copa, /return a \+ 360 \* Math\.round\(\(meta - a\) \/ 360\)/);
-  assert.match(copa, /if \(reducido\) \{\s*giro = meta;\s*incl\.x = incl\.y = 0;/);
-  for (const ev of ['pointerdown', 'pointermove', 'pointerup', 'setPointerCapture']) assert.ok(copa.includes(ev), ev);
-  assert.match(copa, /boton\.textContent = 'Volver al frente'/);
+  // Un solo grupo: lo que gira es copa.grupo; la meta deja la columna de frente por el camino corto.
+  assert.match(copa, /copa\.grupo\.rotation\.y = giro;/);
+  assert.match(copa, /const a = -columna \* PASO;\s*return a \+ Math\.PI \* 2 \* Math\.round\(\(meta - a\) \/ \(Math\.PI \* 2\)\);/);
+  assert.match(copa, /frente\.textContent = 'Volver al frente'/);
+  assert.match(copa, /meta = Math\.PI \* 2 \* Math\.round\(meta \/ \(Math\.PI \* 2\)\);/);
+  // Rendimiento: pixelRatio hasta 1,5 y el dedo vertical sigue siendo scroll.
+  assert.match(copa, /renderer\.setPixelRatio\(Math\.min\(window\.devicePixelRatio \|\| 1, 1\.5\)\)/);
+  const css = readFileSync('public/css/historia.css', 'utf8');
+  assert.match(css, /\.vitrina-canvas\{[^}]*touch-action:pan-y/);
 });
 
 test('la medalla va en una sección de cierre propia, con su leyenda, sus dos caras y su botón', () => {
@@ -337,14 +336,15 @@ test('la medalla va en una sección de cierre propia, con su leyenda, sus dos ca
   assert.match(css, /\.medal-dorso \.medal-brillo\{[^}]*mask-image:url\(\/public\/img\/historia\/medalla-dorso-full\.webp\)/);
 });
 
-test('la página no usa WebGL: ni la copa ni la medalla', () => {
+test('la medalla no usa WebGL: el único canvas de la página es el de la copa', () => {
   const js = readFileSync('src/ui/historia.js', 'utf8');
   assert.doesNotMatch(js, /medalla3d|vitrina3d/);
-  for (const f of ['src/ui/medalla3d.js', 'src/ui/vitrina3d.js', 'public/vendor/three']) assert.ok(!existsSync(f), f);
+  for (const f of ['src/ui/medalla3d.js', 'src/ui/vitrina3d.js', 'src/ui/copa.js']) assert.ok(!existsSync(f), f);
   const usos = readdirSync('src/ui', { recursive: true })
     .filter((f) => String(f).endsWith('.js'))
-    .filter((f) => /WebGLRenderer|getContext\(['"]webgl|from '[^']*three/.test(readFileSync(join('src/ui', String(f)), 'utf8')));
-  assert.deepEqual(usos, []);
+    .filter((f) => /new THREE\.WebGLRenderer/.test(readFileSync(join('src/ui', String(f)), 'utf8')));
+  assert.deepEqual(usos.map(String), ['copa3d.js']);
+  assert.doesNotMatch(readFileSync('src/ui/medalla.js', 'utf8'), /from '[^']*three|WebGLRenderer|getContext\(/);
   // Los dos recortes nuevos existen, son WebP con pérdida y alfa (VP8X), de 512×704, y pesan menos de 80 KB.
   for (const cara of ['frente', 'dorso']) {
     const ruta = `public/img/historia/medalla-${cara}-full.webp`;

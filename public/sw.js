@@ -20,7 +20,7 @@
  *
  * Script clásico y no módulo: Safari tardó en aceptar service workers módulo.
  */
-const VERSION = 'fc450fe3a8ef';
+const VERSION = 'b02e36d13ff3';
 const PREFIJO = 'inferiores-';
 const CACHE = PREFIJO + VERSION;
 const FIJOS = /^\/public\/(?:vendor|fonts|icons)\/|^\/public\/escudo\.png$/;

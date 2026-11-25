@@ -75,43 +75,20 @@
     </section>
 
     <section class="hist-escena" id="hist-escena" aria-label="La vitrina y la línea histórica">
-      <!-- LA VITRINA. La copa es una foto (public/img/historia/copa-arbb.webp, recortada y con la madera del
-           tambor limpia por scripts/copa-arbb/recortar.py) y, encima del tambor, las 15 placas en CSS 3D: dos filas
-           (8 arriba, 7 abajo) que giran juntas como un cilindro. Sin WebGL. src/ui/copa.js le da el movimiento;
-           sin JavaScript se ve la copa quieta con 1943 y 1951 de frente.
+      <!-- LA VITRINA. Muestra la foto del trofeo (copa-arbb.webp) hasta que src/ui/copa3d.js monta la copa en 3D:
+           un solo objeto que gira entero (cáliz, asas, escudo, base de caoba y una grilla de 8 × 2 placas), armado
+           con medidas sacadas de esa misma foto (scripts/copa-arbb/preparar.py). Si no hay WebGL, la foto se queda.
            Puntos de enganche (src/ui/historia.js):
-             - 'historia:seleccion' (se emite sobre #vitrina): cambió la época o el año elegidos.
-               detail = { epocaId, anio, anios }; con un solo año, la copa enciende y trae al frente esa placa.
+             - #vitrina-escenario: donde va el canvas.
+             - 'historia:seleccion' (se emite sobre #vitrina): cambió lo elegido. detail = { epocaId, anio, anios };
+               con un solo año, la copa enciende esa placa y gira hasta dejarla de frente.
              - 'historia:foco' (se emite sobre #vitrina): el año que se está leyendo en la línea. detail = { anio }.
-             - 'historia:elegir' (lo emite la copa): se tocó una placa. detail = { anio }. -->
-      <figure class="hist-vitrina" id="vitrina">
+             - 'historia:elegir' (lo emite la copa): se tocó una placa. detail = { anio }.
+             - data-estado: "foto", "cargando" o "3d". -->
+      <figure class="hist-vitrina" id="vitrina" data-estado="foto">
         <div class="vitrina-escenario" id="vitrina-escenario">
-          <div class="copa" id="copa">
-            <img class="copa-foto" src="/public/img/historia/copa-arbb.webp" width="862" height="1105" decoding="async" draggable="false"
-                 alt="La copa de Primera de la Asociación Rosarina: cuenco plateado con el escudo de la R, dos asas de bronce y una base redonda de madera con las placas de los títulos.">
-            <span class="copa-brillo" aria-hidden="true"></span>
-            <div class="copa-tambor" id="copa-tambor" role="group" aria-label="Las placas de los 15 títulos. Arrastrá la copa para girarlas; tocá un año para ir a ese título.">
-            <ol class="copa-fila copa-fila-arriba" style="--n:8">
-              <li style="--i:0"><button type="button" class="placa" data-anio="1943" aria-label="Título 1, 1943">1943</button></li>
-              <li style="--i:1"><button type="button" class="placa" data-anio="1944" aria-label="Título 2, 1944">1944</button></li>
-              <li style="--i:2"><button type="button" class="placa" data-anio="1945" aria-label="Título 3, 1945">1945</button></li>
-              <li style="--i:3"><button type="button" class="placa" data-anio="1946" aria-label="Título 4, 1946">1946</button></li>
-              <li style="--i:4"><button type="button" class="placa" data-anio="1947" aria-label="Título 5, 1947">1947</button></li>
-              <li style="--i:5"><button type="button" class="placa" data-anio="1948" aria-label="Título 6, 1948">1948</button></li>
-              <li style="--i:6"><button type="button" class="placa" data-anio="1949" aria-label="Título 7, 1949">1949</button></li>
-              <li style="--i:7"><button type="button" class="placa" data-anio="1950" aria-label="Título 8, 1950">1950</button></li>
-            </ol>
-            <ol class="copa-fila copa-fila-abajo" style="--n:7">
-              <li style="--i:0"><button type="button" class="placa" data-anio="1951" aria-label="Título 9, 1951">1951</button></li>
-              <li style="--i:1"><button type="button" class="placa" data-anio="1952" aria-label="Título 10, 1952">1952</button></li>
-              <li style="--i:2"><button type="button" class="placa" data-anio="1953" aria-label="Título 11, 1953">1953</button></li>
-              <li style="--i:3"><button type="button" class="placa" data-anio="1954" aria-label="Título 12, 1954">1954</button></li>
-              <li style="--i:4"><button type="button" class="placa" data-anio="1977" aria-label="Título 13, 1977">1977</button></li>
-              <li style="--i:5"><button type="button" class="placa" data-anio="1978" aria-label="Título 14, 1978">1978</button></li>
-              <li style="--i:6"><button type="button" class="placa" data-anio="1983" aria-label="Título 15, 1983">1983</button></li>
-            </ol>
-            </div>
-          </div>
+          <img class="vitrina-foto" src="/public/img/historia/copa-arbb.webp" width="862" height="1105" decoding="async" draggable="false"
+               alt="La copa de Primera de la Asociación Rosarina: cuenco plateado con el escudo de la R, dos asas de bronce y una base redonda de madera con placas de los títulos.">
         </div>
         <figcaption>Recreación inspirada en la copa actual de la Asociación Rosarina</figcaption>
       </figure>
