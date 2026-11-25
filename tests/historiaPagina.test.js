@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { existsSync } from 'node:fs';
 import { titulos, datosPublicables, datosPendientes, epocas, momentos } from '../src/data/historia.js';
-import { htmlLinea, htmlEstrellas, htmlFicha, htmlCifras, htmlSelectorPieza } from '../src/ui/historia.js';
+import { htmlLinea, htmlEstrellas, htmlFicha, htmlCifras } from '../src/ui/historia.js';
 
 /**
  * La página pública /historia: lo que no cambia con los datos (la CSP no admite scripts en
@@ -237,26 +237,64 @@ test('la ficha de un año sin dato propio usa el de su época y lo dice', () => 
   assert.doesNotMatch(String(htmlFicha(1946)), /Dato de la época/);
 });
 
-test('el selector de pieza tiene sus dos botones con aria-pressed y el pie de la medalla', () => {
-  const salida = String(htmlSelectorPieza('medalla'));
-  assert.match(salida, /data-pieza="copa" aria-pressed="false">Trofeo ARBB</);
-  assert.match(salida, /data-pieza="medalla" aria-pressed="true">Medalla oficial</);
-  const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
-  // Sólo se ve con la 3D montada, y el canvas se apaga un instante al cambiar de pieza.
-  assert.match(css, /:not\(\[data-estado="3d"\]\) \.vitrina-selector\{display:none\}|\.vitrina-selector\{display:none\}/);
-  assert.match(css, /\.vitrina-canvas\.cambia\{opacity:0/);
+test('la vitrina muestra sólo la copa: sin selector de pieza ni cambio automático', () => {
   const js = readFileSync('src/ui/historia.js', 'utf8');
-  assert.match(js, /historia:pieza/);
+  const vitrina = readFileSync('src/ui/vitrina3d.js', 'utf8');
+  const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.doesNotMatch(js, /historia:pieza|htmlSelectorPieza|elegirPieza|pasarAMedalla|vitrina-selector/);
+  assert.doesNotMatch(css, /vitrina-selector|vitrina-pieza/);
+  assert.doesNotMatch(pagina, /Medalla oficial|Trofeo ARBB|historia:pieza/);
+  // La copa no sabe nada de la medalla.
+  assert.doesNotMatch(vitrina, /medalla3d|historia:pieza|registrarPieza|mostrarPieza/);
+  // Y frena su bucle cuando sale de pantalla.
+  assert.match(vitrina, /new IntersectionObserver\(\(\[e\]\) => \{\s*visible = e\.isIntersecting;[\s\S]*?cancelAnimationFrame\(idRaf\)/);
 });
 
-test('la medalla se arma bajo demanda y comparte el renderer de la copa', () => {
-  const vitrina = readFileSync('src/ui/vitrina3d.js', 'utf8');
+test('la medalla va en una sección de cierre propia, con su leyenda, su visor y su botón', () => {
+  assert.match(pagina, /<section class="[^"]*hist-medalla-sec"[^>]*aria-labelledby="t-medalla"/);
+  assert.match(pagina, /id="medalla-escenario"/);
+  assert.match(pagina, /<figcaption>Recreación inspirada en la medalla actual de la Asociación Rosarina<\/figcaption>/);
+  // Va después de "Las 15 estrellas" y no adentro de la vitrina de la copa.
+  assert.ok(pagina.indexOf('id="t-medalla"') > pagina.indexOf('id="t-estrellas"'));
+  assert.ok(pagina.indexOf('id="t-medalla"') > pagina.indexOf('</figure>'));
+  const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(css, /\.medalla-escenario\{[^}]*background:#0A0A0C/);
+  assert.match(css, /\.medalla-canvas\{[^}]*touch-action:pan-y/);
+  // Sin WebGL, la sección se esconde.
+  assert.match(css, /\.hist-medalla-sec:has\(\.hist-medalla\[data-estado="estatica"\]\)\{display:none\}/);
+});
+
+test('el visor de la medalla se arma bajo demanda, con renderer propio, giro libre, péndulo y sin balanceo si hay movimiento reducido', () => {
+  const js = readFileSync('src/ui/historia.js', 'utf8');
   const medalla = readFileSync('src/ui/medalla3d.js', 'utf8');
-  // vitrina3d la trae con import() (no estático) y la medalla no crea un WebGLRenderer propio.
-  assert.match(vitrina, /await import\('\.\/medalla3d\.js'\)/);
-  assert.doesNotMatch(vitrina, /^import .*medalla3d/m);
-  assert.doesNotMatch(medalla, /WebGLRenderer/);
-  assert.equal((vitrina.match(/new THREE.WebGLRenderer/g) ?? []).length, 1);
-  // Con movimiento reducido la medalla no se balancea.
-  assert.match(medalla, /if \(reducido\)/);
+  // historia.js la trae con import() (no estático) cuando la sección se acerca.
+  assert.match(js, /await import\('\.\/medalla3d\.js'\)/);
+  assert.doesNotMatch(js, /^import .*medalla3d/m);
+  assert.match(js, /rootMargin: '\d+px 0px'/);
+  // Renderer propio (uno solo) y sin depender de la copa.
+  assert.equal((medalla.match(/new THREE\.WebGLRenderer/g) ?? []).length, 1);
+  assert.doesNotMatch(medalla, /^import .*vitrina3d/m);
+  assert.match(medalla, /RoomEnvironment/);
+  // Rotación libre de 360° en horizontal.
+  assert.match(medalla, /minAzimuthAngle = -Infinity/);
+  assert.match(medalla, /maxAzimuthAngle = Infinity/);
+  assert.match(medalla, /touchAction = 'pan-y'/);
+  // El bucle sólo corre mientras se ve (y se frena al salir de pantalla).
+  assert.match(medalla, /new IntersectionObserver\(\(\[e\]\) => \{\s*visible = e\.isIntersecting;[\s\S]*?cancelAnimationFrame\(idRaf\)/);
+  // Con movimiento reducido no hay balanceo.
+  assert.match(medalla, /const empujar = \(v\) => \{ if \(!reducido\)/);
+  assert.match(medalla, /if \(reducido\) \{\s*const hubo = theta !== 0;/);
+  // El botón discreto y los textos de la medalla.
+  assert.match(medalla, /boton\.textContent = 'Ver frente \/ dorso'/);
+  for (const t of ['ASOCIACION ROSARINA DE BASQUETBOL', 'FUNDADA EN 1926', 'ARBB']) assert.ok(medalla.includes(t), t);
+});
+
+test('las texturas de la medalla son de 1024×1024 (color, relieve y rugosidad) y el dorso sólo lleva las 4 costuras reales', () => {
+  const medalla = readFileSync('src/ui/medalla3d.js', 'utf8');
+  assert.match(medalla, /const N = 1024/);
+  for (const k of ['map:', 'bumpMap:', 'roughnessMap:']) assert.ok(medalla.includes(k), k);
+  // El meridiano, el ecuador y las dos curvas laterales: cuatro, no cinco.
+  const costuras = medalla.match(/function costurasPelota\(\) \{[\s\S]*?\n\}/)[0];
+  assert.match(costuras, /return \[\[\[-1, 0\], \[1, 0\]\], \[\[0, -1\], \[0, 1\]\], lateral\(1\), lateral\(-1\)\];/);
+  assert.match(medalla, /INCLINACION_PELOTA = -40/);
 });

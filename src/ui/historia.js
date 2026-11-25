@@ -1,6 +1,6 @@
 import { html, crudo } from './html.js';
 import { $ } from './dom.js';
-import { titulos, epocas, datosPublicables, epocaDeAnio, microDato, momentos, hitoDeTitulo, resumenDeTitulos, piezasDeVitrina } from '../data/historia.js';
+import { titulos, epocas, datosPublicables, epocaDeAnio, microDato, momentos, hitoDeTitulo, resumenDeTitulos } from '../data/historia.js';
 
 /**
  * Página "Nuestra historia" (public/historia.html). Todo el texto que se ve sale
@@ -22,12 +22,12 @@ import { titulos, epocas, datosPublicables, epocaDeAnio, microDato, momentos, hi
  *    es como la copa pide elegir cuando se toca una placa. La línea se desplaza
  *    hasta esa tarjeta.
  *  - `seleccionar()` hace lo mismo desde código.
- *  - 'historia:pieza' se emite sobre #vitrina cuando cambia la pieza que se muestra:
- *    detail = { pieza: 'copa' | 'medalla' }. Lo dispara el selector ("Trofeo ARBB" / "Medalla
- *    oficial") y también el scroll: al llegar a "Las 15 estrellas" la vitrina pasa sola a la
- *    medalla y vuelve a la copa al subir, salvo que se haya elegido una a mano.
  * Los eventos van por el DOM, y no por imports, para que la vitrina se cargue
  * recién cuando se acerca al viewport y pueda no estar nunca (sin WebGL).
+ *
+ * La medalla no es parte de la vitrina: tiene su propia sección de cierre (#medalla) y su propio
+ * visor (src/ui/medalla3d.js), que se arma recién cuando esa sección se acerca. Sin WebGL la
+ * sección no se muestra.
  */
 
 const EPOCA_INICIAL = 'doce-seguidos';
@@ -211,11 +211,6 @@ export function htmlEstrellas() {
     ${aclarados.length ? html`<p class="estrellas-nota">${aclarados.map((t) => html`<span>* ${t.anio}: ${t.torneo}.</span>`)}</p>` : ''}`;
 }
 
-/** El selector sutil de la vitrina: alterna el trofeo y la medalla. Va entre el escenario y el pie. */
-export function htmlSelectorPieza(actual = 'copa') {
-  return html`<div class="vitrina-selector" role="group" aria-label="Pieza de la vitrina">${piezasDeVitrina().map((p) => html`<button type="button" class="vitrina-pieza" data-pieza="${p.id}" aria-pressed="${p.id === actual ? 'true' : 'false'}">${p.etiqueta}</button>`)}</div>`;
-}
-
 /** La ficha de un año de título: su dato propio o, si no tiene, el de su época. */
 export function htmlFicha(anio) {
   const t = titulos().find((x) => x.anio === anio);
@@ -236,9 +231,7 @@ export function htmlFicha(anio) {
 // Página
 // ---------------------------------------------------------------------------
 
-// `pieza` es la que muestra la vitrina; `piezaManual` dice si el usuario la eligió con el selector
-// (desde ahí el scroll ya no la cambia).
-const estado = { epocaId: null, anio: null, previa: null, pieza: 'copa', piezaManual: false };
+const estado = { epocaId: null, anio: null, previa: null };
 
 /** Cuenta de 0 al total en poco más de un segundo; con movimiento reducido, directo al número. */
 function animarContador(el, total) {
@@ -308,46 +301,6 @@ export function seleccionar({ epocaId = null, anio = null } = {}) {
 }
 
 /**
- * Cambia la pieza de la vitrina (la copa o la medalla): marca el botón, cambia el pie y avisa con
- * 'historia:pieza'. `manual` es el selector: desde ahí el scroll ya no la cambia.
- */
-export function elegirPieza(id, { manual = false } = {}) {
-  const pieza = piezasDeVitrina().find((p) => p.id === id);
-  if (!pieza) return;
-  if (manual) estado.piezaManual = true;
-  if (pieza.id === estado.pieza) return;
-  estado.pieza = pieza.id;
-  pintarPieza();
-  $('vitrina').dispatchEvent(new CustomEvent('historia:pieza', { bubbles: true, detail: { pieza: pieza.id } }));
-}
-
-/** Sin la vitrina 3D el SVG de respaldo sigue siendo la copa: el pie y el selector sólo cambian cuando hay 3D. */
-function pintarPieza() {
-  const vitrina = $('vitrina');
-  const id = vitrina.dataset.estado === '3d' ? estado.pieza : 'copa';
-  vitrina.querySelectorAll('.vitrina-pieza').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pieza === id)));
-  const leyenda = piezasDeVitrina().find((p) => p.id === id)?.leyenda;
-  const pie = vitrina.querySelector('figcaption');
-  if (leyenda && pie) pie.textContent = leyenda;
-}
-
-/**
- * Al llegar a "Las 15 estrellas" la vitrina pasa sola a la medalla, y vuelve a la copa al subir. Se
- * dispara medio alto de pantalla antes de que la sección entre: la vitrina fija todavía se ve entera
- * y el cambio se nota. Si el usuario eligió una pieza a mano, no se le cambia.
- */
-function pasarAMedallaEnLasEstrellas() {
-  const seccion = document.querySelector('.hist-estrellas-sec');
-  if (!seccion || typeof IntersectionObserver !== 'function') return;
-  new IntersectionObserver(([e]) => {
-    if (estado.piezaManual) return;
-    // "Llegó" es que el tope de la sección ya pasó la línea de abajo: también vale si se la dejó atrás.
-    const llego = e.boundingClientRect.top <= (e.rootBounds?.bottom ?? innerHeight);
-    elegirPieza(llego ? 'medalla' : 'copa');
-  }, { rootMargin: '0px 0px 50% 0px' }).observe(seccion);
-}
-
-/**
  * La copa en 3D. Se monta recién cuando la vitrina se acerca a la pantalla (`import()` del módulo,
  * que a su vez trae Three.js: ~190 KB comprimidos que no tienen por qué bajar quien no llega hasta
  * acá). `data-estado` de #vitrina cuenta cómo va: 'estatica' (el SVG de respaldo), 'cargando' y
@@ -370,10 +323,8 @@ function montarVitrina() {
     try {
       const m = await import('./vitrina3d.js');
       if (!m.hayWebGL()) return volverAEstatica();
-      const api = await m.crearVitrina(escenario, { escena: $('hist-escena'), anios: aniosElegidos(), pieza: estado.pieza });
+      await m.crearVitrina(escenario, { escena: $('hist-escena'), anios: aniosElegidos() });
       vitrina.dataset.estado = '3d';
-      pintarPieza();
-      api.elegirPieza(estado.pieza); // por si se eligió otra mientras cargaba
     } catch (e) {
       volverAEstatica(e);
     }
@@ -385,6 +336,42 @@ function montarVitrina() {
   }, { rootMargin: '600px 0px' }).observe(escenario);
   // Si el contexto WebGL se pierde (GPU ocupada, pestaña en segundo plano mucho tiempo), se vuelve al SVG.
   escenario.addEventListener('vitrina:perdida', () => volverAEstatica('se perdió el contexto WebGL'));
+}
+
+/**
+ * La medalla en 3D, en su sección de cierre. Se arma recién cuando la sección se acerca a la pantalla
+ * (`import()` del módulo, con su propio renderer: son dos visores en dos lugares de la página). `data-estado`
+ * de #medalla: 'espera' (la caja vacía, oscura), 'cargando' y '3d'; sin WebGL, o si algo falla, 'estatica' y
+ * la sección entera se esconde (es una mejora, no una dependencia).
+ */
+function montarMedalla() {
+  const caja = $('medalla');
+  const escenario = $('medalla-escenario');
+  const sinMedalla = (motivo) => {
+    caja.dataset.estado = 'estatica';
+    if (motivo) console.warn('Medalla 3D no disponible:', motivo);
+  };
+  if (typeof IntersectionObserver !== 'function') return sinMedalla();
+  let iniciada = false;
+  const iniciar = async () => {
+    if (iniciada) return;
+    iniciada = true;
+    caja.dataset.estado = 'cargando';
+    try {
+      const m = await import('./medalla3d.js');
+      if (!m.hayWebGL()) return sinMedalla();
+      await m.crearVisorMedalla(escenario);
+      caja.dataset.estado = '3d';
+    } catch (e) {
+      sinMedalla(e);
+    }
+  };
+  new IntersectionObserver((entradas, obs) => {
+    if (!entradas.some((e) => e.isIntersecting)) return;
+    obs.disconnect();
+    iniciar();
+  }, { rootMargin: '500px 0px' }).observe(escenario);
+  escenario.addEventListener('medalla:perdida', () => sinMedalla('se perdió el contexto WebGL'));
 }
 
 // La línea viva: el progreso rojo del eje llega hasta una altura fija de la pantalla (un poco más
@@ -525,12 +512,7 @@ export function iniciarHistoria() {
   revelarEstrellas();
   seguirEpoca();
   montarVitrina();
-  $('vitrina').querySelector('figcaption').insertAdjacentHTML('beforebegin', String(htmlSelectorPieza(estado.pieza)));
-  $('vitrina').querySelector('.vitrina-selector').addEventListener('click', (ev) => {
-    const b = ev.target.closest('.vitrina-pieza');
-    if (b) elegirPieza(b.dataset.pieza, { manual: true });
-  });
-  pasarAMedallaEnLasEstrellas();
+  montarMedalla();
 
   $('hist-linea').addEventListener('click', (ev) => {
     const btn = ev.target.closest('.t-sel');

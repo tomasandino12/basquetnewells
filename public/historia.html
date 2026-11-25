@@ -68,9 +68,6 @@
                de años de título a marcar en la copa (vacía si no hay nada elegido).
              - 'historia:elegir' (se emite sobre #vitrina): pide elegir un año o una época.
                detail = { anio } o { epocaId }; la página responde con 'historia:seleccion'.
-             - 'historia:pieza' (se emite sobre #vitrina): qué pieza muestra la vitrina, detail = { pieza:
-               'copa' | 'medalla' }. El selector de pieza lo arma src/ui/historia.js entre el escenario y
-               este pie (sólo se ve con la 3D montada), y el pie cambia con la pieza.
              - data-estado: "estatica" (SVG), "cargando" (se está bajando la 3D) o "3d" (montada). -->
       <figure class="hist-vitrina" id="vitrina" data-estado="estatica">
         <div class="vitrina-escenario" id="vitrina-escenario">
@@ -163,6 +160,19 @@
       <h2 id="t-estrellas">Las 15 estrellas</h2>
       <p class="intro">Tocá un año para ver qué se sabe de ese título.</p>
       <div id="hist-estrellas"></div>
+    </section>
+
+    <!-- LA MEDALLA, en su propia sección de cierre. Su visor (src/ui/medalla3d.js, con renderer propio) se arma
+         recién cuando la sección se acerca a la pantalla. data-estado: "espera" (caja oscura vacía), "cargando",
+         "3d", o "estatica" (sin WebGL: la sección entera se esconde). -->
+    <section class="portal-sec hist-sec hist-medalla-sec" aria-labelledby="t-medalla">
+      <p class="portal-st">Para cerrar</p>
+      <h2 id="t-medalla">La medalla</h2>
+      <p class="intro">Girala con el dedo o el mouse para ver el frente y el dorso.</p>
+      <figure class="hist-medalla" id="medalla" data-estado="espera">
+        <div class="medalla-escenario" id="medalla-escenario"></div>
+        <figcaption>Recreación inspirada en la medalla actual de la Asociación Rosarina</figcaption>
+      </figure>
     </section>
 
     <section class="portal-sec hist-sec hist-foto-sec" aria-labelledby="t-archivo">

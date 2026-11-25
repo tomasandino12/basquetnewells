@@ -14,6 +14,8 @@ Spec: `docs/superpowers/specs/2026-11-24-nuestra-historia-design.md`. Se trabaja
 | 6. Copa 3D | hecha (falta que Tomás la mire) | `git log -1 -- src/ui/vitrina3d.js` |
 | 6b. Copa fiel y una placa roja | hecha (falta que Tomás la mire) | `git log -1 -- src/ui/vitrina3d.js` |
 | 7. Medalla 3D y selector | hecha (falta que Tomás la mire) | `git log -1 -- src/ui/medalla3d.js` |
+| 8. Cubierto nítido, sin sello y con chips | hecha (falta que Tomás la mire) | `git log -1 --grep='task 8'` |
+| 9. La medalla al cierre, frente y dorso fieles | hecha (falta que Tomás la mire) | `git log -1 --grep='task 9'` |
 | 4. Enlace desde el portal (va última) | pendiente | |
 
 ## Revisión 2: tasks 5–7 (spec, sección "Revisión 2")

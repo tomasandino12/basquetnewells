@@ -68,9 +68,7 @@
 .vitrina-canvas:active{cursor:grabbing}
 .hist-vitrina[data-estado="3d"] .vitrina-canvas{opacity:1}
 .hist-vitrina[data-estado="3d"] .vitrina-respaldo{opacity:0;visibility:hidden}
-/* Al cambiar de pieza el canvas se apaga rápido, se cambia atrás y vuelve a aparecer. */
-.hist-vitrina[data-estado="3d"] .vitrina-canvas.cambia{opacity:0;transition-duration:.2s}
-.hist-vitrina:not([data-estado="3d"]) .vitrina-frente,.hist-vitrina:not([data-estado="3d"]) .vitrina-pista,.hist-vitrina:not([data-estado="3d"]) .vitrina-selector{display:none}
+.hist-vitrina:not([data-estado="3d"]) .vitrina-frente,.hist-vitrina:not([data-estado="3d"]) .vitrina-pista{display:none}
 
 /* "Ver de frente" arriba a la derecha y la pista de gestos abajo, los dos sobre el escenario. */
 .vitrina-frente{position:absolute;z-index:2;top:var(--sp-2);right:0;min-height:2.75rem;padding:0 var(--sp-4);background:transparent;border:1px solid var(--pub-borde);border-radius:var(--r-btn);
@@ -80,13 +78,6 @@
 .vitrina-pista{position:absolute;z-index:2;left:0;right:0;bottom:var(--sp-1);margin:0;text-align:center;pointer-events:none;
   font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.12em;text-transform:uppercase;color:var(--gris-osc);transition:opacity .6s var(--ease-salida)}
 .vitrina-pista.oculta{opacity:0}
-/* El selector de pieza: dos textos chicos con un subrayado rojo en el elegido. Sin dorado (es de las estrellas). */
-.vitrina-selector{display:flex;justify-content:center;gap:var(--sp-5);margin-top:var(--sp-3)}
-.vitrina-pieza{min-height:2.75rem;padding:0 var(--sp-1);background:transparent;border:0;border-bottom:2px solid transparent;border-radius:0;
-  font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.14em;text-transform:uppercase;color:var(--gris-osc);cursor:pointer;transition:color .2s var(--ease-salida),border-color .2s var(--ease-salida)}
-.vitrina-pieza[aria-pressed="true"]{color:var(--sobre-oscuro);border-bottom-color:var(--hist-rojo)}
-.vitrina-pieza:focus-visible{outline:2px solid var(--sobre-oscuro);outline-offset:2px}
-@media (hover:hover){.vitrina-pieza:hover{color:var(--sobre-oscuro)}}
 .hist-vitrina figcaption{margin-top:var(--sp-4);text-align:center;font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.04em;line-height:1.5;color:var(--gris-osc)}
 
 /* La línea: un único eje vertical continuo. La base (2 px) va de punta a punta; encima, el progreso rojo
@@ -285,6 +276,24 @@
 .ficha-txt{margin:var(--sp-3) 0 0;font-size:var(--fs-160);line-height:1.6}
 .ficha-epoca{margin:var(--sp-2) 0 0;font-size:var(--fs-125);font-style:italic;color:var(--gris-osc)}
 .estrellas-nota{display:flex;flex-wrap:wrap;gap:0 var(--sp-3);margin:var(--sp-3) 0 0;font-size:var(--fs-125);color:var(--gris-osc)}
+
+/* ---- La medalla: sección de cierre, con su propio visor sobre #0A0A0C ----
+   El canvas se funde hacia arriba (la cinta sigue fuera de cuadro) y a los costados. touch-action:pan-y: el dedo
+   vertical sigue siendo scroll de la página; sólo el gesto horizontal la gira. */
+.hist-medalla{position:relative;margin:var(--sp-6) auto 0;max-width:30rem}
+.medalla-escenario{position:relative;height:min(36rem,78svh);background:#0A0A0C;border:1px solid var(--pub-borde);border-radius:var(--r);overflow:hidden}
+.medalla-canvas{position:absolute;inset:0;display:block;width:100%;height:100%;opacity:0;touch-action:pan-y;cursor:grab;outline:none;transition:opacity .6s var(--ease-salida);
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 16%);mask-image:linear-gradient(to bottom,transparent,#000 16%)}
+.medalla-canvas:active{cursor:grabbing}
+.medalla-canvas:focus-visible{outline:2px solid var(--sobre-oscuro);outline-offset:-4px}
+.hist-medalla[data-estado="3d"] .medalla-canvas{opacity:1}
+.medalla-giro{display:block;min-height:2.75rem;margin:var(--sp-3) auto 0;padding:0 var(--sp-4);background:transparent;border:1px solid var(--pub-borde);border-radius:var(--r-btn);
+  font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;color:var(--gris-osc);cursor:pointer}
+.medalla-giro:focus-visible{outline:2px solid var(--sobre-oscuro);outline-offset:3px}
+@media (hover:hover){.medalla-giro:hover{border-color:var(--gris-osc);color:var(--sobre-oscuro)}}
+.hist-medalla figcaption{margin-top:var(--sp-4);text-align:center;font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.04em;line-height:1.5;color:var(--gris-osc)}
+/* Sin WebGL no hay medalla: la sección entera se esconde (la caja vacía y su título no cuentan nada). */
+.hist-medalla-sec:has(.hist-medalla[data-estado="estatica"]){display:none}
 
 /* ---- Foto de archivo ---- */
 .hist-foto{margin:0;max-width:30rem;padding:var(--sp-3);background:var(--pub-tarjeta);border:1px solid var(--pub-borde)}

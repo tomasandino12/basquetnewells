@@ -18,12 +18,8 @@ import { placasDeCopa } from '../data/historia.js';
  *    rojas a la vez eran ruido) y sólo gira la cámara hacia el grupo;
  *  - emite 'historia:elegir' (detail = { anio }) sobre el contenedor cuando se toca una placa.
  *
- * Un solo renderer y una sola escena. Las piezas (la copa y la medalla de src/ui/medalla3d.js) se
- * registran con `registrarPieza` y se alternan con `mostrarPieza`: no se crean dos contextos WebGL.
- * La medalla no se arma hasta que se la pide: la página emite 'historia:pieza' (detail = { pieza:
- * 'copa' | 'medalla' }) sobre `.hist-vitrina` y `elegirPieza` hace el `import()`, el fundido y el cambio.
- * Una pieza puede traer sus propios ganchos (`orbitar`, `polar`, `piso`, `animar`, `puntero`,
- * `alVerDeFrente`, `objetivos`, `etiqueta`, `pista`): la copa usa los de por defecto.
+ * La vitrina sólo muestra la copa. La medalla tiene su propio visor, en su propia sección de la página
+ * (otro módulo), con su renderer: este módulo no sabe nada de ella.
  */
 
 // Los colores del club y de las placas. Los metales y la madera se definen en crearCopa.
@@ -595,7 +591,7 @@ function crearCopa({ aniso }) {
  *   un poco la pieza.
  * @param {number[]} [opciones.anios]  años a marcar desde el primer cuadro (la selección de la página).
  */
-export async function crearVitrina(contenedor, { glbUrl = null, escena = null, anios = [], pieza = 'copa' } = {}) {
+export async function crearVitrina(contenedor, { glbUrl = null, escena = null, anios = [] } = {}) {
   if (glbUrl) console.warn('vitrina3d: glbUrl todavía no está soportado; se muestra la copa procedural.');
 
   // Las fuentes de las placas (Barlow Condensed) tienen que estar listas antes de dibujarlas en canvas.
@@ -682,18 +678,11 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
 
   const camara = new THREE.PerspectiveCamera(30, 1, 0.1, 80);
 
-  // --- Piezas: hoy la copa; la medalla se suma con `registrarPieza`. ---
-  const piezas = new Map();
-  let actual = null;
-  const registrarPieza = (nombre, pieza) => {
-    pieza.grupo.visible = false;
-    scene.add(pieza.grupo);
-    piezas.set(nombre, pieza);
-  };
+  // --- La copa cuelga de un pivote: lo que gira con el scroll y se mece en reposo. ---
   const copa = crearCopa({ aniso });
-  registrarPieza('copa', copa);
-  // Pivote: lo que gira con el scroll y se mece en reposo. La pieza que se muestra cuelga de él.
   const pivote = new THREE.Group();
+  pivote.add(copa.grupo);
+  scene.add(pivote);
 
   contenedor.append(canvas);
 
@@ -713,8 +702,6 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
   const POLAR_FRENTE = THREE.MathUtils.degToRad(80);
   const home = { az: 0, pol: POLAR_FRENTE, dist: 14, target: new THREE.Vector3() };
   const limitarPolar = () => {
-    // Una pieza sin órbita (la medalla) fija la cámara a su ángulo.
-    if (actual?.orbitar === false) { controles.minPolarAngle = controles.maxPolarAngle = actual.polar ?? POLAR_FRENTE; return; }
     // En el celular sólo se gira en horizontal: la altura queda fija (y el gesto vertical es del scroll).
     if (mqTactil.matches) controles.minPolarAngle = controles.maxPolarAngle = POLAR_FRENTE;
     else { controles.minPolarAngle = THREE.MathUtils.degToRad(58); controles.maxPolarAngle = THREE.MathUtils.degToRad(94); }
@@ -726,12 +713,12 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
   let alto = 0;
   let enHome = true; // mientras nadie mueve la cámara, un resize la reencuadra
   const encuadrar = () => {
-    if (!actual || !ancho) return;
+    if (!ancho) return;
     const tanV = Math.tan(THREE.MathUtils.degToRad(camara.fov) / 2);
     const aspecto = ancho / alto;
-    const dist = Math.max(actual.alto / 2 / tanV, actual.ancho / 2 / (tanV * aspecto)) * 1.1;
+    const dist = Math.max(copa.alto / 2 / tanV, copa.ancho / 2 / (tanV * aspecto)) * 1.1;
     home.dist = dist;
-    home.target.copy(actual.centro);
+    home.target.copy(copa.centro);
     controles.minDistance = dist * 0.42;
     controles.maxDistance = dist * 1.15;
     if (enHome) aplicarVista({ az: pivote.rotation.y, pol: home.pol, dist, target: home.target });
@@ -804,7 +791,6 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
   const raycaster = new THREE.Raycaster();
   const puntero = new THREE.Vector2();
   const placaBajo = (ev) => {
-    if (actual !== copa) return null;
     const r = canvas.getBoundingClientRect();
     puntero.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
     raycaster.setFromCamera(puntero, camara);
@@ -855,7 +841,7 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
   const alSeleccionar = (ev) => {
     const lista = ev.detail?.anios ?? [];
     resaltar(lista);
-    if (usuario || actual !== copa) return;
+    if (usuario) return;
     if (lista.length === 1) acercarA(placaDe(lista[0]));
     else if (lista.length > 1) mostrarGrupo(lista);
   };
@@ -870,7 +856,6 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
     enHome = true;
     volarA({ az: pivote.rotation.y, pol: home.pol, dist: home.dist, target: home.target });
     enHome = true;
-    actual?.alVerDeFrente?.(reducido);
     pedirCuadro();
   });
   const pista = document.createElement('p');
@@ -879,95 +864,16 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
   function ocultarPista() { pista.classList.add('oculta'); }
   contenedor.append(frente, pista);
 
-  // --- Mostrar piezas y movimiento. ---
-  const mostrarPieza = (nombre) => {
-    const p = piezas.get(nombre);
-    if (!p) return;
-    piezas.forEach((x) => { x.grupo.visible = x === p; });
-    actual = p;
-    pivote.add(p.grupo);
-    scene.add(pivote);
-    piso.visible = p.piso !== false;
-    controles.enabled = p.orbitar !== false;
-    home.pol = p.polar ?? POLAR_FRENTE;
+  // --- La pieza al empezar: de frente, con el encuadre calculado. ---
+  const iniciarPieza = () => {
     limitarPolar();
-    canvas.setAttribute('aria-label', p.etiqueta ?? ETIQUETA_COPA);
-    pista.textContent = p.pista ?? PISTA_COPA;
-    pista.classList.remove('oculta'); // el gesto cambió: la pista vuelve hasta que se lo toque
-    // La cámara se encuadra de frente a la pieza: la copa trae el giro del scroll; la medalla, ninguno.
-    pivote.rotation.set(0, p === copa ? giro : 0, 0);
+    canvas.setAttribute('aria-label', ETIQUETA_COPA);
+    pista.textContent = PISTA_COPA;
+    pivote.rotation.set(0, 0, 0);
     enHome = true;
     encuadrar();
     pedirCuadro();
   };
-
-  // --- Elegir pieza: la medalla se baja y se arma recién la primera vez que se pide. ---
-  let pedida = 'copa';
-  let destruida = false;
-  const elegirPieza = async (nombre) => {
-    pedida = nombre;
-    if (!piezas.has(nombre)) {
-      if (nombre !== 'medalla') return;
-      try {
-        const m = await import('./medalla3d.js');
-        if (destruida) return;
-        if (!piezas.has('medalla')) registrarPieza('medalla', m.crearMedalla({ aniso }));
-      } catch (e) {
-        console.warn('Vitrina 3D: no se pudo armar la medalla:', e);
-        return;
-      }
-    }
-    // Mientras cargaba pudo llegar otro pedido: manda el último.
-    if (pedida !== nombre || actual === piezas.get(nombre)) return;
-    if (reducido) { mostrarPieza(nombre); return; }
-    canvas.classList.add('cambia'); // se apaga rápido, se cambia atrás y vuelve a aparecer
-    await new Promise((ok) => setTimeout(ok, 220));
-    if (destruida) return;
-    if (pedida === nombre) mostrarPieza(nombre);
-    requestAnimationFrame(() => canvas.classList.remove('cambia'));
-  };
-  const alElegirPieza = (ev) => { elegirPieza(ev.detail?.pieza === 'medalla' ? 'medalla' : 'copa'); };
-  raiz.addEventListener('historia:pieza', alElegirPieza);
-
-  // --- Punteros de una pieza con movimiento propio (la medalla): arrastre, mouse encima y velocidad. ---
-  const sobreLaPieza = (ev) => {
-    if (!actual?.objetivos) return false;
-    const r = canvas.getBoundingClientRect();
-    puntero.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
-    raycaster.setFromCamera(puntero, camara);
-    return raycaster.intersectObjects(actual.objetivos, false).length > 0;
-  };
-  let ultimoPuntero = null;
-  let arrastre = false; // hay un gesto en curso sobre la pieza
-  const avisarPieza = (tipo, ev) => {
-    const pieza = actual;
-    if (!pieza?.puntero) return;
-    // Si se soltó fuera de la ventana el 'up' no llega: un movimiento sin botón cierra el gesto.
-    if (tipo === 'move' && arrastre && ev.pointerType === 'mouse' && !ev.buttons) avisarPieza('up', ev);
-    if (tipo === 'up' || tipo === 'cancel') { if (!arrastre) return; arrastre = false; }
-    if (tipo === 'down') arrastre = true;
-    const r = canvas.getBoundingClientRect();
-    const ahora = performance.now();
-    let dx = 0;
-    let vx = 0;
-    if (tipo === 'move' && ultimoPuntero) {
-      dx = (ev.clientX - ultimoPuntero.x) / r.width;
-      vx = dx / Math.max(0.004, (ahora - ultimoPuntero.t) / 1000);
-    }
-    if (tipo === 'up') vx = ultimoPuntero && ahora - ultimoPuntero.t < 90 ? ultimoPuntero.vx : 0; // soltó quieto: sin inercia
-    if (tipo === 'down' || tipo === 'move') ultimoPuntero = { x: ev.clientX, t: ahora, vx };
-    pieza.puntero({ tipo, dx, vx, sobre: tipo === 'move' && !ev.buttons ? sobreLaPieza(ev) : false, mouse: ev.pointerType === 'mouse', reducido });
-    pedirCuadro();
-  };
-  canvas.addEventListener('pointerdown', (ev) => {
-    if (!actual?.puntero) return;
-    try { canvas.setPointerCapture(ev.pointerId); } catch { /* sin captura el arrastre sigue dentro del canvas */ }
-    avisarPieza('down', ev);
-  });
-  canvas.addEventListener('pointermove', (ev) => avisarPieza('move', ev));
-  canvas.addEventListener('pointerup', (ev) => avisarPieza('up', ev));
-  canvas.addEventListener('pointercancel', (ev) => avisarPieza('cancel', ev));
-  canvas.addEventListener('lostpointercapture', (ev) => avisarPieza('up', ev));
 
   let progreso = 0;
   const leerScroll = () => {
@@ -982,12 +888,6 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
 
   let giro = 0;
   const animar = (t, dt) => {
-    // Una pieza con movimiento propio (la medalla) se mueve sola; el pivote queda quieto.
-    if (actual !== copa) {
-      pivote.rotation.set(0, 0, 0);
-      pivote.position.y = 0;
-      return !!actual?.animar?.(t, dt, reducido);
-    }
     // Con movimiento reducido: pose fija. El arrastre sigue, porque lo maneja OrbitControls.
     if (reducido) { pivote.rotation.set(0, 0, 0); pivote.position.y = 0; return false; }
     const meta = progreso * 1.3; // arranca de frente y gira unos 75° a lo largo de la línea
@@ -1055,25 +955,16 @@ export async function crearVitrina(contenedor, { glbUrl = null, escena = null, a
 
   // Primer cuadro: se mide, se elige la copa y se dibuja una vez antes de devolver el control.
   medir();
-  mostrarPieza('copa');
+  iniciarPieza();
   renderer.render(scene, camara);
   pedirCuadro();
-  // Si la página ya pedía la medalla (se llegó a las estrellas antes de que la vitrina existiera), se la trae ahora.
-  if (pieza === 'medalla') elegirPieza('medalla');
 
   return {
     canvas,
-    piezas,
-    registrarPieza,
-    mostrarPieza,
-    elegirPieza,
-    pieza: () => (actual === piezas.get('medalla') ? 'medalla' : 'copa'),
     verDeFrente: () => frente.click(),
     resaltar,
     /** Libera la GPU y los escuchadores: para cuando la página sale de escena. */
     destruir() {
-      destruida = true;
-      raiz.removeEventListener('historia:pieza', alElegirPieza);
       cancelAnimationFrame(idRaf);
       idRaf = 0;
       visible = false;
