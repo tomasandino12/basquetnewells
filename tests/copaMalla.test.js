@@ -83,22 +83,26 @@ test('el tambor medido es el de la malla: un cilindro liso donde caben las 16 pl
   assert.ok(MALLA.escudo.abajo > MALLA.tambor.arriba + 3 && MALLA.escudo.arriba < COPA.metal[0][1]);
 });
 
-test('el HDRI de estudio se lee entero: 512 × 256, con luces fuertes y la fila de abajo primero', () => {
+test('el HDRI de estudio se lee entero: 1024 × 512, con luces fuertes, sin pozos negros y la fila de abajo primero', () => {
   const { ancho, alto, datos } = leerRgbe(buffer('public/img/historia/estudio.hdr'));
-  assert.equal(ancho, 512);
-  assert.equal(alto, 256);
-  assert.equal(datos.length, 512 * 256 * 4);
+  assert.equal(ancho, 1024);
+  assert.equal(alto, 512);
+  assert.equal(datos.length, 1024 * 512 * 4);
   let pico = 0;
   for (let i = 0; i < datos.length; i += 4) pico = Math.max(pico, datos[i]);
   assert.ok(pico > 100, 'las luces del estudio pasan de 1');
-  assert.ok(readFileSync('public/img/historia/estudio.hdr').length < 600 * 1024);
+  assert.ok(readFileSync('public/img/historia/estudio.hdr').length < 1500 * 1024);
+  // Ningún ángulo refleja negro puro (las vetas finas entre paneles son gris oscuro, no #000): el cromo es un espejo y un pozo negro se ve como un manchón.
+  let oscuro = Infinity;
+  for (let y = 0; y < alto; y++) for (let x = 0; x < ancho; x++) oscuro = Math.min(oscuro, datos[(y * ancho + x) * 4 + 1]);
+  assert.ok(oscuro > 0.03, `el punto más oscuro del estudio vale ${oscuro}`);
   const media = (desde, hasta) => {
     let s = 0;
     for (let y = desde; y < hasta; y++) for (let x = 0; x < ancho; x++) s += datos[(y * ancho + x) * 4 + 1];
     return s / ((hasta - desde) * ancho);
   };
   // El piso del estudio es gris claro y el cielo, negro: con la fila de abajo primero, el piso queda en las filas bajas.
-  assert.ok(media(0, 40) > media(alto - 40, alto) * 5, 'el piso está en las primeras filas');
+  assert.ok(media(0, 80) > media(alto - 80, alto) * 1.5, 'el piso está en las primeras filas');
 });
 
 // Un THREE de mentira: el decal sólo necesita crear una geometría con tres atributos.

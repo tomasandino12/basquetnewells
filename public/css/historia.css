@@ -73,9 +73,12 @@
 .hist-vitrina[data-estado="3d"] .vitrina-foto{opacity:0;visibility:hidden}
 .hist-vitrina:not([data-estado="3d"]) .vitrina-frente,.hist-vitrina:not([data-estado="3d"]) .vitrina-pista{display:none}
 
-/* "Volver al frente" arriba a la derecha y la pista del gesto abajo, los dos sobre el escenario (los pone src/ui/copa3d.js). */
-.vitrina-frente{position:absolute;z-index:2;top:var(--sp-2);right:0;min-height:2.75rem;padding:0 var(--sp-4);background:transparent;border:1px solid var(--pub-borde);border-radius:var(--r-btn);
-  font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.14em;text-transform:uppercase;color:var(--gris-osc);cursor:pointer}
+/* "Volver al frente" va centrado debajo de la copa, entre el escenario y la leyenda, y sólo se enciende cuando la copa
+   está girada lejos del frente (lo marca src/ui/copa3d.js con .visible). Apagado ocupa su lugar igual: no mueve nada. */
+.vitrina-frente{display:block;margin:var(--sp-2) auto 0;min-height:2.75rem;padding:0 var(--sp-4);background:transparent;border:1px solid var(--pub-borde);border-radius:var(--r-btn);
+  font-family:var(--ff-mono);font-weight:500;font-size:var(--fs-100);letter-spacing:.14em;text-transform:uppercase;color:var(--gris-osc);cursor:pointer;
+  opacity:0;visibility:hidden;pointer-events:none;transition:opacity .35s var(--ease-salida),visibility 0s .35s,border-color .2s,color .2s}
+.vitrina-frente.visible{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .35s var(--ease-salida),visibility 0s,border-color .2s,color .2s}
 .vitrina-frente:focus-visible{outline:2px solid var(--sobre-oscuro);outline-offset:3px}
 @media (hover:hover){.vitrina-frente:hover{border-color:var(--gris-osc);color:var(--sobre-oscuro)}}
 .vitrina-pista{position:absolute;z-index:2;left:0;right:0;bottom:var(--sp-1);margin:0;text-align:center;pointer-events:none;

@@ -1,7 +1,7 @@
 /**
  * Lector de HDRI en formato Radiance (.hdr, RGBE), con o sin compresión por tandas. Es el RGBELoader de
  * three/examples en lo que la copa usa (una imagen equirectangular en float), sin traer ese archivo.
- * scripts/copa-arbb/hdri.py deja el estudio de Poly Haven (CC0) achicado a 512 × 256.
+ * scripts/copa-arbb/hdri.py deja el estudio de Poly Haven (CC0) con luz de relleno, a 1024 × 512.
  */
 
 /** @returns {{ ancho: number, alto: number, datos: Float32Array }} datos en RGBA float, con la fila de abajo primero (lo que espera una DataTexture sin flipY). */

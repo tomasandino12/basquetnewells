@@ -32,6 +32,7 @@ const GRADOS_POR_PX = 0.45;
 const INERCIA_S = 0.35;
 const VEL_MAX = 14; // rad/s
 const UMBRAL_PX = 6;
+const UMBRAL_FRENTE = 0.15; // rad: desde cuánto girada se ofrece "Volver al frente"
 const PAUSA_FOCO_MS = 1500;
 const ETIQUETA = 'La copa de Primera de la Asociación Rosarina en 3D, con una placa por cada título. Arrastrá para girarla y tocá una placa para ir a ese año.';
 const PISTA = 'Arrastrá para girar · Tocá una placa';
@@ -170,8 +171,8 @@ function atlasDePlacas(placas, encendida) {
       fondo.addColorStop(0.55, '#FFFFFF');
       fondo.addColorStop(1, '#C8CDD6');
     } else {
-      fondo.addColorStop(0, '#8A8F98');
-      fondo.addColorStop(1, '#686D75');
+      fondo.addColorStop(0, '#A6ACB5');
+      fondo.addColorStop(1, '#858B94');
     }
     g.fillStyle = fondo;
     g.fillRect(0, 0, CELDA.w, CELDA.h);
@@ -282,18 +283,20 @@ async function crearCopa({ aniso }) {
   ]);
 
   // --- Las tres piezas de la malla, cada una con su material de verdad. ---
-  // Cromo espejo: cáliz, tallo y pie. Todo el aspecto sale del entorno.
-  const cromo = new THREE.MeshStandardMaterial({ color: 0xf5f7fa, metalness: 1, roughness: 0.035, envMapIntensity: 1.25 });
+  // Plata pulida de trofeo: cáliz, tallo y pie. Todo el aspecto sale del entorno; con un poco de rugosidad (no
+  // espejo puro) el brillo blanco se abre por toda la panza en vez de quedar en un hilo con manchones negros al lado.
+  const cromo = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0.09, envMapIntensity: 1.35 });
   // Bronce fundido satinado: las asas, con un grano muy fino de relieve.
   const grano = aTextura(texturaGrano(), { color: false, aniso });
   grano.wrapS = grano.wrapT = THREE.RepeatWrapping;
   grano.repeat.set(4, 4);
-  const bronce = new THREE.MeshStandardMaterial({ color: 0xb09455, metalness: 0.9, roughness: 0.3, envMapIntensity: 1.0, bumpMap: grano, bumpScale: 0.35 });
+  const bronce = new THREE.MeshStandardMaterial({ color: 0xc6a664, metalness: 0.9, roughness: 0.25, envMapIntensity: 1.25, bumpMap: grano, bumpScale: 0.35 });
   // Caoba barnizada: la veta es la de la foto; el barniz, el clearcoat.
   texCaoba.wrapS = texCaoba.wrapT = THREE.RepeatWrapping;
   texCaoba.repeat.set(2, 1);
-  // El color atenúa un poco la textura: bajo un entorno tan claro la caoba se lavaba hacia el naranja.
-  const caoba = new THREE.MeshPhysicalMaterial({ map: texCaoba, color: 0x9a8880, roughness: 0.18, metalness: 0, clearcoat: 0.9, clearcoatRoughness: 0.1, envMapIntensity: 0.7 });
+  // Sin tinte: los tonos (bordó en la veta, rojo cálido en lo claro, casi sin verde para que no vire a naranja) ya vienen
+  // en la textura, que está en sRGB.
+  const caoba = new THREE.MeshPhysicalMaterial({ map: texCaoba, color: 0xffffff, roughness: 0.18, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 0.95 });
   grupo.add(new THREE.Mesh(geos.cromo, cromo), new THREE.Mesh(geos.bronce, bronce), new THREE.Mesh(geos.madera, caoba));
 
   // --- El escudo: el recorte de la foto proyectado sobre la pared real del cáliz, donde la malla tenía el suyo. ---
@@ -374,7 +377,7 @@ export async function crearVitrina(contenedor, { anios = [] } = {}) {
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMappingExposure = 1.18;
   const canvas = renderer.domElement;
   canvas.className = 'vitrina-canvas';
   canvas.setAttribute('role', 'img');
@@ -384,12 +387,12 @@ export async function crearVitrina(contenedor, { anios = [] } = {}) {
   const scene = new THREE.Scene();
   // El entorno (HDRI de estudio) llega con la copa, más abajo: se bajan a la vez.
   // Una luz suave de arriba y adelante: el brillo de la laca de la madera y de las placas.
-  const luz = new THREE.DirectionalLight(0xfff1e0, 0.5);
+  const luz = new THREE.DirectionalLight(0xfff1e0, 1.0);
   luz.position.set(-3, 12, 10);
   scene.add(luz);
   // La base no se tiene que perder contra el fondo negro: una luz cálida de frente y abajo que pega en el
   // pedestal, y un contraluz bajo desde atrás que recorta el canto curvo de abajo.
-  const pedestal = new THREE.PointLight(0xffb27a, 6, 16, 2);
+  const pedestal = new THREE.PointLight(0xffd0a8, 8, 16, 2);
   pedestal.position.set(0, 0.6, 6.5);
   const contraluz = new THREE.DirectionalLight(0xffd6b8, 0.5);
   contraluz.position.set(0, -2, -8);
@@ -401,7 +404,7 @@ export async function crearVitrina(contenedor, { anios = [] } = {}) {
 
   const [copa, entorno] = await Promise.all([crearCopa({ aniso }), entornoDeEstudio(renderer)]);
   scene.environment = entorno.texture;
-  scene.environmentIntensity = 1.3;
+  scene.environmentIntensity = 0.75; // el HDRI ya trae relleno: más y el cromo se lava hacia el blanco
   scene.environmentRotation.y = ROTACION_ENTORNO;
   scene.add(copa.grupo);
   contenedor.append(canvas);
@@ -484,6 +487,7 @@ export async function crearVitrina(contenedor, { anios = [] } = {}) {
     const quieta = Math.abs(meta - giro) < 0.0005;
     if (quieta) giro = meta;
     copa.grupo.rotation.y = giro;
+    actualizarFrente();
     const placas = animarPlacas(dt);
     renderer.render(scene, camara);
     if (!quieta || placas || arrastrando) idRaf = requestAnimationFrame(cuadro);
@@ -572,7 +576,8 @@ export async function crearVitrina(contenedor, { anios = [] } = {}) {
   canvas.addEventListener('pointerup', soltar);
   canvas.addEventListener('pointercancel', soltar);
 
-  // --- "Volver al frente" (el escudo de frente) y la pista del gesto. ---
+  // --- "Volver al frente" (el escudo de frente) y la pista del gesto. El botón va debajo de la copa y sólo se ve
+  // cuando la copa está girada lejos del frente; en el frente se apaga (sigue ocupando su lugar: no mueve la página). ---
   const frente = document.createElement('button');
   frente.type = 'button';
   frente.className = 'vitrina-frente';
@@ -584,7 +589,15 @@ export async function crearVitrina(contenedor, { anios = [] } = {}) {
   const pista = document.createElement('p');
   pista.className = 'vitrina-pista';
   pista.textContent = PISTA;
-  contenedor.append(frente, pista);
+  contenedor.append(pista);
+  raiz.insertBefore(frente, raiz.querySelector('figcaption'));
+  let frenteVisible = false;
+  function actualizarFrente() {
+    const lejos = Math.abs(envolver(giro)) > UMBRAL_FRENTE;
+    if (lejos === frenteVisible) return;
+    frenteVisible = lejos;
+    frente.classList.toggle('visible', lejos);
+  }
 
   const alCambiarReducido = () => { reducido = mqReducido.matches; pedirCuadro(); };
   mqReducido.addEventListener?.('change', alCambiarReducido);
@@ -608,6 +621,7 @@ export async function crearVitrina(contenedor, { anios = [] } = {}) {
   medir();
   if (anios.length === 1) activar(anios[0]);
   copa.grupo.rotation.y = giro = meta;
+  actualizarFrente();
   animarPlacas(1);
   renderer.render(scene, camara);
   pedirCuadro();

@@ -275,14 +275,14 @@ test('la copa 3D es la malla limpia con materiales de verdad; la foto queda de r
   assert.match(copa, /const CAMARA = COPA\.camara;/);
   assert.doesNotMatch(copa, /LatheGeometry|ExtrudeGeometry|baseColorTexture/);
   // Los tres materiales PBR con los valores pedidos: cromo espejo, bronce satinado y caoba con laca.
-  assert.match(copa, /new THREE\.MeshStandardMaterial\(\{ color: 0xf5f7fa, metalness: 1, roughness: 0\.035, envMapIntensity: 1\.25 \}\)/);
-  assert.match(copa, /color: 0xb09455, metalness: 0\.9, roughness: 0\.3, envMapIntensity: 1\.0, bumpMap: grano/);
-  assert.match(copa, /new THREE\.MeshPhysicalMaterial\(\{ map: texCaoba, [^}]*roughness: 0\.18, metalness: 0, clearcoat: 0\.9, clearcoatRoughness: 0\.1/);
+  assert.match(copa, /new THREE\.MeshStandardMaterial\(\{ color: 0xffffff, metalness: 1, roughness: 0\.09, envMapIntensity: 1\.35 \}\)/);
+  assert.match(copa, /color: 0xc6a664, metalness: 0\.9, roughness: 0\.25, envMapIntensity: 1\.25, bumpMap: grano/);
+  assert.match(copa, /new THREE\.MeshPhysicalMaterial\(\{ map: texCaoba, color: 0xffffff, roughness: 0\.18, metalness: 0, clearcoat: 1, clearcoatRoughness: 0\.08, envMapIntensity: 0\.95/);
   // El escudo es un decal sobre el cáliz con polygonOffset; un solo renderer, tonemapping ACES y pixelRatio <= 1,5.
   assert.match(copa, /crearDecal\(THREE, geos\.cromo,/);
   assert.match(copa, /polygonOffset: true/);
   assert.equal((copa.match(/new THREE\.WebGLRenderer\(/g) ?? []).length, 1);
-  assert.match(copa, /renderer\.toneMapping = THREE\.ACESFilmicToneMapping;\s*renderer\.toneMappingExposure = 1\.05;/);
+  assert.match(copa, /renderer\.toneMapping = THREE\.ACESFilmicToneMapping;\s*renderer\.toneMappingExposure = 1\.18;/);
   assert.match(copa, /Math\.min\(window\.devicePixelRatio \|\| 1, 1\.5\)/);
 });
 
@@ -291,12 +291,26 @@ test('las placas son una grilla de 8 × 2 cada 45° y la encendida es plata bru�
   assert.match(copa, /const PASO = \(Math\.PI \* 2\) \/ COLUMNAS_COPA;/);
   assert.match(copa, /m\.rotation\.y = p\.columna \* PASO;/);
   // Apagada: plata ahumada y año gris carbón; encendida: platino y año negro.
-  for (const color of ["'#8A8F98'", "'#686D75'", "'#1E2024'", "'#FFFFFF'", "'#E6E9EF'", "'#C8CDD6'", "'#09090B'"]) assert.ok(copa.includes(color), color);
+  for (const color of ["'#A6ACB5'", "'#858B94'", "'#1E2024'", "'#FFFFFF'", "'#E6E9EF'", "'#C8CDD6'", "'#09090B'"]) assert.ok(copa.includes(color), color);
   // Se busca en el código, no en los comentarios (el que explica por qué no es roja nombra el rojo).
   const codigo = copa.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
   assert.doesNotMatch(codigo, /e30613|d9122e|ROJO|'red'|#f00\b/i);
   // Las texturas se dibujan una sola vez (dos atlas), no por cuadro.
   assert.equal((copa.match(/atlasDePlacas\(placas, (?:true|false)\)/g) ?? []).length, 2);
+});
+
+test('"Volver al frente" va debajo de la copa y sólo aparece con la copa girada lejos del frente', () => {
+  const copa = readFileSync('src/ui/copa3d.js', 'utf8');
+  const css = readFileSync('public/css/historia.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(copa, /const UMBRAL_FRENTE = 0\.15;/);
+  assert.match(copa, /Math\.abs\(envolver\(giro\)\) > UMBRAL_FRENTE/);
+  assert.match(copa, /frente\.classList\.toggle\('visible', lejos\)/);
+  // Va en la figura, entre el escenario y la leyenda (no flotando arriba a la derecha sobre el canvas).
+  assert.match(copa, /raiz\.insertBefore\(frente, raiz\.querySelector\('figcaption'\)\)/);
+  assert.doesNotMatch(css, /\.vitrina-frente\{[^}]*position:absolute/);
+  // Apagado no se ve ni se puede tocar ni enfocar, pero ocupa su lugar; encendido, en fundido.
+  assert.match(css, /\.vitrina-frente\{[^}]*opacity:0;visibility:hidden;pointer-events:none/);
+  assert.match(css, /\.vitrina-frente\.visible\{opacity:1;visibility:visible;pointer-events:auto/);
 });
 
 test('toda la copa gira junta: con el arrastre, hasta el año que se lee y de vuelta al frente', () => {

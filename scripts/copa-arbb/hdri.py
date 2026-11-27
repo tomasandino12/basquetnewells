@@ -1,8 +1,13 @@
 """
-Achica el HDRI de estudio de Poly Haven (studio_small_03, CC0: https://polyhaven.com/a/studio_small_03) a
-512 × 256 y lo deja como RGBE con compresión por tandas en public/img/historia/estudio.hdr. Es lo que
+Prepara el HDRI de estudio de Poly Haven (studio_small_03, CC0: https://polyhaven.com/a/studio_small_03) y lo
+deja como RGBE con compresión por tandas en public/img/historia/estudio.hdr (1024 × 512). Es lo que
 src/ui/copa3d.js carga (con su lector de RGBE) y pasa por PMREMGenerator para el reflejo del cromo y de la laca.
-Por qué achicarlo: el reflejo ya sale desenfocado de PMREM, y el original de 1k pesa 1,6 MB.
+
+El estudio original tiene cortinas casi negras en tres cuartos del contorno: el cromo, que es un espejo, se
+llenaba de manchones negros al girar. Por eso se le suma luz de relleno (como las tarjetas blancas de un estudio
+de producto): un piso de luminancia que nunca baja de gris oscuro, dos paneles verticales suaves a 120° y 240°, un
+rebote suave desde abajo y unas vetas finas oscuras entre los paneles, para que el reflejo tenga contraste sin
+pozos negros.
 
 Uso (desde la raíz del repo; el original va en una carpeta aparte, no se versiona):
   python scripts/copa-arbb/hdri.py RUTA/studio_small_03_1k.hdr
@@ -106,12 +111,34 @@ def escribir_rgbe(ruta, rgbe):
     Path(ruta).write_bytes(bytes(datos))
 
 
-if __name__ == '__main__':
-    rgb = a_float(leer_rgbe(sys.argv[1]))
+def suave(x, a, b):
+    t = np.clip((x - a) / (b - a), 0, 1)
+    return t * t * (3 - 2 * t)
+
+
+def con_relleno(rgb):
+    """Suma luz de relleno al estudio. u va de 0 a 1 por el contorno (360°), v de 0 arriba a 1 abajo."""
     h, w, _ = rgb.shape
-    chico = rgb.reshape(h // 2, 2, w // 2, 2, 3).mean(axis=(1, 3))
-    escribir_rgbe(SALIDA, a_rgbe(chico))
+    u, v = np.meshgrid((np.arange(w) + 0.5) / w, (np.arange(h) + 0.5) / h)
+
+    def banda(centro, sigma):
+        d = ((u - centro + 0.5) % 1) - 0.5
+        return np.exp(-d * d / (2 * sigma * sigma))
+
+    # Piso: nunca negro. Sube hacia abajo (el rebote de la mesa) y baja en las vetas oscuras entre los paneles.
+    vetas = 1 - 0.8 * (banda(0.0, 0.006) + banda(0.5, 0.006) + banda(1 / 6, 0.004) + banda(5 / 6, 0.004)).clip(0, 1)
+    piso = (0.2 + 0.25 * suave(v, 0.45, 1.0)) * vetas
+    # Paneles verticales suaves a 120° y 240°: altos, con los bordes que se apagan.
+    alto = suave(v, 0.12, 0.3) * (1 - suave(v, 0.68, 0.88))
+    paneles = 2.2 * alto * (banda(1 / 3, 0.035) + banda(2 / 3, 0.035))
+    return rgb + (piso + paneles)[..., None]
+
+
+if __name__ == '__main__':
+    rgb = con_relleno(a_float(leer_rgbe(sys.argv[1])))
+    h, w, _ = rgb.shape
+    escribir_rgbe(SALIDA, a_rgbe(rgb))
     # Una vuelta de prueba: se lee lo escrito y se compara con lo que se quería escribir.
     vuelta = a_float(leer_rgbe(SALIDA))
-    err = np.abs(vuelta - chico).max() / chico.max()
-    print(f'{SALIDA.relative_to(RAIZ)}: {w // 2} × {h // 2}, {SALIDA.stat().st_size / 1024:.0f} KB, error máximo {err:.4f} del pico ({chico.max():.1f})')
+    err = np.abs(vuelta - rgb).max() / rgb.max()
+    print(f'{SALIDA.relative_to(RAIZ)}: {w} × {h}, {SALIDA.stat().st_size / 1024:.0f} KB, error máximo {err:.4f} del pico ({rgb.max():.1f})')

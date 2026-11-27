@@ -6,7 +6,7 @@ Los tres scripts usan sólo `numpy` y `Pillow`, y se corren desde la raíz del r
 |---|---|---|
 | `malla.py` | `malla-fuente.glb` (malla generada por IA, sólo geometría) | `public/img/historia/copa-arbb.glb` y `src/data/copaMalla.js` |
 | `texturas.py` | `referencia-sin-chapitas.webp` (la foto del trofeo) | `escudo-arbb-hd.webp` (decal del escudo) y `caoba-real.webp` (veta de la base) |
-| `hdri.py` | el `.hdr` de Poly Haven | `estudio.hdr` (512 × 256) |
+| `hdri.py` | el `.hdr` de Poly Haven | `estudio.hdr` (1024 × 512, con luz de relleno sumada) |
 | `preparar.py` | `copa-arbb-original.jpg` | la foto de respaldo sin WebGL y `src/data/copaMedidas.js` (la cámara) |
 
 - **La malla** se alisa (el escudo esculpido y la chapita del dorso del tambor se aplanan), se decima a ~27.000

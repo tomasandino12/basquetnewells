@@ -7,8 +7,8 @@ usa src/ui/copa3d.js sobre la malla de la copa:
 
 El escudo se recorta por color: azul, rojo y el marco dorado son saturados, el cromo de alrededor no; lo que
 queda adentro (el contorno blanco de la R) se rellena. La caoba se saca del tambor: se le quita el sombreado del
-cilindro y los reflejos (se divide por la versión muy desenfocada) y se la vuelve a pintar con el color medio de
-la madera, así queda sólo la veta; después se hace repetible cruzando la costura.
+cilindro y los reflejos (se divide por la versión muy desenfocada) y lo que queda (sólo la veta) se pinta entre dos
+caobas rojizas, #3A120A y #7A2816; después se hace repetible cruzando la costura.
 
 Uso (desde la raíz del repo):  python scripts/copa-arbb/texturas.py
 Sólo Pillow y numpy. Lo fijo (las cajas del escudo y del tambor) es de esta foto.
@@ -97,21 +97,22 @@ def caoba():
     d_img = Image.fromarray((np.clip(detalle, 0, 2) * 127).astype(np.uint8))
     lento = np.asarray(d_img.resize((w // 8, h // 2), Image.BILINEAR).filter(ImageFilter.GaussianBlur(3)).resize((w, h), Image.BILINEAR), dtype=np.float32) / 127
     detalle = np.clip(detalle / np.maximum(lento, 0.3), 0.5, 1.7)
-    # El color de la madera: la mediana de lo que no es reflejo.
-    suave = np.asarray(Image.fromarray((lum * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(14)), dtype=np.float32) / 255
-    sano = suave < 0.5
-    color_medio = np.median(tira[sano], axis=0) * 1.12
-    print('color medio de la caoba:', (color_medio * 255).astype(int))
-    tex = np.clip(color_medio[None, None, :] * detalle[:, :, None], 0, 1)
-    # A 2:1 y repetible en los dos sentidos: se agranda a 512 × 256 y se cruzan las mitades (los bordes se
-    # reemplazan por lo del medio, que no tiene costura).
-    img = Image.fromarray((tex * 255).astype(np.uint8)).resize((512, 256), Image.LANCZOS)
-    t = np.asarray(img, dtype=np.float32)
+    # La veta en un solo canal, a 2:1 y repetible en los dos sentidos: se agranda a 512 × 256 y se cruzan las mitades
+    # (los bordes se reemplazan por lo del medio, que no tiene costura).
+    veta = Image.fromarray((np.clip((detalle - 0.5) / 1.2, 0, 1) * 255).astype(np.uint8)).resize((512, 256), Image.LANCZOS)
+    t = np.asarray(veta, dtype=np.float32)
     for eje, n in ((1, 512), (0, 256)):
         peso = np.clip(np.abs(np.arange(n) - n // 2) / (n // 2), 0, 1)
-        peso = peso[None, :, None] if eje == 1 else peso[:, None, None]
+        peso = peso[None, :] if eje == 1 else peso[:, None]
         t = t * (1 - peso) + np.roll(t, n // 2, axis=eje) * peso
-    Image.fromarray(np.clip(t, 0, 255).astype(np.uint8)).save(IMG / 'caoba-real.webp', quality=88, method=6)
+    # Se estira el contraste y se pinta entre dos caobas: bordó casi negro en las vetas y rojo cálido en la madera clara.
+    # Con poco verde: nunca naranja.
+    lo, hi = np.percentile(t, [2, 98])
+    t = np.clip((t - lo) / (hi - lo), 0, 1)[..., None]
+    oscuro = np.array([0x3A, 0x12, 0x0A], dtype=np.float32)
+    calido = np.array([0x7A, 0x28, 0x16], dtype=np.float32)
+    rgb = oscuro + (calido - oscuro) * t
+    Image.fromarray(np.clip(rgb, 0, 255).astype(np.uint8)).save(IMG / 'caoba-real.webp', quality=90, method=6)
     print(f"caoba-real.webp: 512 × 256, {(IMG / 'caoba-real.webp').stat().st_size / 1024:.0f} KB")
 
 
