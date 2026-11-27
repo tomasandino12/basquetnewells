@@ -127,7 +127,8 @@ def con_relleno(rgb):
 
     # Piso: nunca negro. Sube hacia abajo (el rebote de la mesa) y baja en las vetas oscuras entre los paneles.
     vetas = 1 - 0.8 * (banda(0.0, 0.006) + banda(0.5, 0.006) + banda(1 / 6, 0.004) + banda(5 / 6, 0.004)).clip(0, 1)
-    piso = (0.2 + 0.25 * suave(v, 0.45, 1.0)) * vetas
+    # A la mitad de lo que era: el estudio original conserva medio contraste oscuro y el cromo no se lava a aluminio.
+    piso = 0.5 * (0.2 + 0.25 * suave(v, 0.45, 1.0)) * vetas
     # Paneles verticales suaves a 120° y 240°: altos, con los bordes que se apagan.
     alto = suave(v, 0.12, 0.3) * (1 - suave(v, 0.68, 0.88))
     paneles = 2.2 * alto * (banda(1 / 3, 0.035) + banda(2 / 3, 0.035))

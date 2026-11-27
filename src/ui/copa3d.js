@@ -285,7 +285,7 @@ async function crearCopa({ aniso }) {
   // --- Las tres piezas de la malla, cada una con su material de verdad. ---
   // Plata pulida de trofeo: cáliz, tallo y pie. Todo el aspecto sale del entorno; con un poco de rugosidad (no
   // espejo puro) el brillo blanco se abre por toda la panza en vez de quedar en un hilo con manchones negros al lado.
-  const cromo = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0.09, envMapIntensity: 1.35 });
+  const cromo = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0.045, envMapIntensity: 1.35 });
   // Bronce fundido satinado: las asas, con un grano muy fino de relieve.
   const grano = aTextura(texturaGrano(), { color: false, aniso });
   grano.wrapS = grano.wrapT = THREE.RepeatWrapping;
@@ -296,7 +296,7 @@ async function crearCopa({ aniso }) {
   texCaoba.repeat.set(2, 1);
   // Sin tinte: los tonos (bordó en la veta, rojo cálido en lo claro, casi sin verde para que no vire a naranja) ya vienen
   // en la textura, que está en sRGB.
-  const caoba = new THREE.MeshPhysicalMaterial({ map: texCaoba, color: 0xffffff, roughness: 0.18, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 0.95 });
+  const caoba = new THREE.MeshPhysicalMaterial({ map: texCaoba, color: 0x6e4238, roughness: 0.18, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 0.65 });
   grupo.add(new THREE.Mesh(geos.cromo, cromo), new THREE.Mesh(geos.bronce, bronce), new THREE.Mesh(geos.madera, caoba));
 
   // --- El escudo: el recorte de la foto proyectado sobre la pared real del cáliz, donde la malla tenía el suyo. ---
@@ -377,7 +377,7 @@ export async function crearVitrina(contenedor, { anios = [] } = {}) {
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.18;
+  renderer.toneMappingExposure = 1.02;
   const canvas = renderer.domElement;
   canvas.className = 'vitrina-canvas';
   canvas.setAttribute('role', 'img');

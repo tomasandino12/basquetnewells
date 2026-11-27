@@ -95,7 +95,7 @@ test('el HDRI de estudio se lee entero: 1024 × 512, con luces fuertes, sin pozo
   // Ningún ángulo refleja negro puro (las vetas finas entre paneles son gris oscuro, no #000): el cromo es un espejo y un pozo negro se ve como un manchón.
   let oscuro = Infinity;
   for (let y = 0; y < alto; y++) for (let x = 0; x < ancho; x++) oscuro = Math.min(oscuro, datos[(y * ancho + x) * 4 + 1]);
-  assert.ok(oscuro > 0.03, `el punto más oscuro del estudio vale ${oscuro}`);
+  assert.ok(oscuro > 0.015, `el punto más oscuro del estudio vale ${oscuro}`);
   const media = (desde, hasta) => {
     let s = 0;
     for (let y = desde; y < hasta; y++) for (let x = 0; x < ancho; x++) s += datos[(y * ancho + x) * 4 + 1];

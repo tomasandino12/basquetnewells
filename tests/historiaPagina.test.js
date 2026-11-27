@@ -275,14 +275,14 @@ test('la copa 3D es la malla limpia con materiales de verdad; la foto queda de r
   assert.match(copa, /const CAMARA = COPA\.camara;/);
   assert.doesNotMatch(copa, /LatheGeometry|ExtrudeGeometry|baseColorTexture/);
   // Los tres materiales PBR con los valores pedidos: cromo espejo, bronce satinado y caoba con laca.
-  assert.match(copa, /new THREE\.MeshStandardMaterial\(\{ color: 0xffffff, metalness: 1, roughness: 0\.09, envMapIntensity: 1\.35 \}\)/);
+  assert.match(copa, /new THREE\.MeshStandardMaterial\(\{ color: 0xffffff, metalness: 1, roughness: 0\.045, envMapIntensity: 1\.35 \}\)/);
   assert.match(copa, /color: 0xc6a664, metalness: 0\.9, roughness: 0\.25, envMapIntensity: 1\.25, bumpMap: grano/);
-  assert.match(copa, /new THREE\.MeshPhysicalMaterial\(\{ map: texCaoba, color: 0xffffff, roughness: 0\.18, metalness: 0, clearcoat: 1, clearcoatRoughness: 0\.08, envMapIntensity: 0\.95/);
+  assert.match(copa, /new THREE\.MeshPhysicalMaterial\(\{ map: texCaoba, color: 0x6e4238, roughness: 0\.18, metalness: 0, clearcoat: 1, clearcoatRoughness: 0\.08, envMapIntensity: 0\.65/);
   // El escudo es un decal sobre el cáliz con polygonOffset; un solo renderer, tonemapping ACES y pixelRatio <= 1,5.
   assert.match(copa, /crearDecal\(THREE, geos\.cromo,/);
   assert.match(copa, /polygonOffset: true/);
   assert.equal((copa.match(/new THREE\.WebGLRenderer\(/g) ?? []).length, 1);
-  assert.match(copa, /renderer\.toneMapping = THREE\.ACESFilmicToneMapping;\s*renderer\.toneMappingExposure = 1\.18;/);
+  assert.match(copa, /renderer\.toneMapping = THREE\.ACESFilmicToneMapping;\s*renderer\.toneMappingExposure = 1\.02;/);
   assert.match(copa, /Math\.min\(window\.devicePixelRatio \|\| 1, 1\.5\)/);
 });
 
