@@ -1,4 +1,5 @@
 import { iniciarPortal } from './portal.js';
+import { iniciarCopaCursor } from './copaCursor.js';
 import { iniciarRise, iniciarParallax, iniciarDock, iniciarCintaPausa, iniciarGiroSponsor } from './animaciones.js';
 
 // Aparte de portal.js para que los tests importen los armadores de HTML sin
@@ -9,3 +10,4 @@ iniciarParallax();
 iniciarDock();
 iniciarCintaPausa();
 iniciarGiroSponsor();
+iniciarCopaCursor();

@@ -280,7 +280,7 @@
       <div class="portal-st">El club</div>
       <h2 id="t-info-club">Básquet formativo en Rosario</h2>
       <p class="intro">El básquet formativo de Newell&#39;s Old Boys funciona en el Parque de la Independencia, en Rosario. Si buscás básquet infantil para tu hijo o hija, las inferiores empiezan en la U9, mixta, para chicos y chicas nacidos en 2018 y 2019; de ahí sigue el camino por las categorías hasta la Primera.</p>
-      <p class="intro portal-info-palmares"><a href="/historia">15 veces campeón de la Asociación Rosarina de Básquetbol (1943 al 54, 77, 78 y 83).</a></p>
+      <p class="intro portal-info-palmares"><a href="/historia" data-vista-copa>15 veces campeón de la Asociación Rosarina de Básquetbol (1943 al 54, 77, 78 y 83).</a></p>
     </section>
 
     <!-- Nuestra historia (/historia): la tarjeta entera es un solo link. Los datos (15 títulos, 1943 al 54,
@@ -288,8 +288,11 @@
          archivo "El plantel que triunfó". Las estrellas son lo único dorado. Se mantiene a mano, como el resto
          del marcado estático: si cambia el conteo de títulos, cambian acá las 15 estrellas y los textos. -->
     <section class="portal-sec portal-historia rise" id="nuestra-historia" aria-labelledby="t-historia">
-      <a class="portal-historia-card" href="/historia">
+      <a class="portal-historia-card" href="/historia" data-vista-copa>
         <svg class="ph-simbolos" aria-hidden="true" focusable="false"><symbol id="ph-estrella" viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z"/></symbol></svg>
+        <!-- Sólo en pantallas sin hover (celulares y tablets): la copa asomada con su rótulo. En compu no se ve (display:none, y como es
+             lazy ni se baja): ahí la vista previa es la que sigue al puntero (src/ui/copaCursor.js). -->
+        <span class="ph-copa" aria-hidden="true"><img src="/public/img/historia/copa-cursor-preview.webp" width="164" height="220" loading="lazy" decoding="async" alt="La copa de la vitrina, de plata con el escudo R y las placas de los títulos"><span class="ph-copa-rotulo">15 Títulos · Vitrina 3D</span></span>
         <img class="ph-foto" src="/public/img/historia/plantel-que-triunfo.png" width="642" height="632" loading="lazy" alt="Fotografía de archivo en blanco y negro: un plantel de básquet de Newell&#39;s posa junto a dos hombres de traje.">
         <span class="ph-cuerpo">
           <span class="portal-st">Nuestra historia</span>

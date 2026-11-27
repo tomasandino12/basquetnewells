@@ -403,8 +403,8 @@ test('la medalla gira por arrastre con inercia, péndulo, botón y sin movimient
 test('el portal enlaza a la historia', () => {
   const portal = readFileSync('public/portal.html', 'utf8');
   // La tarjeta entera y la línea del palmarés: dos links a /historia.
-  assert.match(portal, /<a class="portal-historia-card" href="\/historia">/);
-  assert.match(portal, /<p class="intro portal-info-palmares"><a href="\/historia">/);
+  assert.match(portal, /<a class="portal-historia-card" href="\/historia" data-vista-copa>/);
+  assert.match(portal, /<p class="intro portal-info-palmares"><a href="\/historia" data-vista-copa>/);
   // La foto de la tarjeta existe, y la de las metas para compartir es una de la carpeta de la historia, con URL absoluta.
   assert.ok(existsSync(portal.match(/class="ph-foto" src="\/([^"]+)"/)[1]));
   const og = pagina.match(/<meta property="og:image" content="(https:\/\/basquetnewells\.com\.ar\/public\/img\/historia\/[^"]+)"/);

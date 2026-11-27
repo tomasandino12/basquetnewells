@@ -96,6 +96,15 @@
   --mascara-1:#000;
   --mascara-55:rgba(0,0,0,.55);
   --mascara-45:rgba(0,0,0,.45);
+  /* La copa de /historia en el portal (vista previa que sigue al puntero y copa asomada en el celular). */
+  --copa-rojo:#E30613;                       /* el punto del rótulo */
+  --copa-rotulo-fondo:rgba(10,10,12,.82);
+  --copa-rotulo-borde:rgba(255,255,255,.18);
+  --copa-sombra:rgba(0,0,0,.65);
+  --copa-halo-rojo:rgba(227,6,19,.34);
+  --copa-halo-calido:rgba(242,179,61,.14);
+  --copa-halo-oscuro:rgba(10,10,12,.7);      /* detrás de la copa sobre la foto de archivo: le da contraste */
+  --copa-halo-oscuro-2:rgba(10,10,12,.45);
   /* Velos del hero del portal: el color de --pub-fondo con distinta opacidad.
      Cada uno lleva su propio cero (no "transparent") para que el degradé no
      pase por un gris. */
