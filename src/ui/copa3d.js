@@ -1,21 +1,29 @@
 import * as THREE from '/public/vendor/three/three.module.min.js';
 import { COPA } from '../data/copaMedidas.js';
+import { MALLA } from '../data/copaMalla.js';
 import { placasDeCopa, COLUMNAS_COPA } from '../data/historia.js';
+import { cargarGlb } from './copa/glb.js';
+import { crearDecal } from './copa/decal.js';
+import { leerRgbe } from './copa/rgbe.js';
 
 /**
  * La copa 3D de "Nuestra historia": un solo objeto que gira entero (cáliz, asas, escudo, base y placas en un
- * mismo THREE.Group). Nada está a ojo: el perfil del torno, el contorno del asa y el escudo salen de la foto
- * del trofeo (scripts/copa-arbb/preparar.py deja src/data/copaMedidas.js y los recortes escudo-arbb.webp y
- * asa-arbb.webp). La cámara repite la de la foto: a la altura de la boca y a ~30 unidades, así la base se ve
- * desde arriba y la boca casi de canto.
+ * mismo THREE.Group). La forma es la malla de public/img/historia/copa-arbb.glb (la generó una IA; la limpia y
+ * la separa en tres piezas scripts/copa-arbb/malla.py) con materiales PBR de verdad encima: cromo espejo, bronce
+ * satinado y caoba con laca. El escudo es el recorte de la foto (escudo-arbb-hd.webp) proyectado como decal sobre
+ * la superficie real del cáliz, y la caoba son píxeles del tambor de esa misma foto (scripts/copa-arbb/texturas.py).
+ * Nada del color sale de la textura horneada de la malla generada: se veía de plástico y el escudo, derretido.
+ * La cámara repite la de la foto (scripts/copa-arbb/preparar.py deja src/data/copaMedidas.js): a la altura de la
+ * boca y a ~30 unidades, así la base se ve desde arriba y la boca casi de canto.
  *
  * Se carga con import() cuando la vitrina se acerca (src/ui/historia.js) y habla con la página por eventos:
  *  - escucha 'historia:seleccion' (un solo año en `anios`) y 'historia:foco' { anio } sobre .hist-vitrina:
  *    enciende esa placa y gira la copa hasta dejar su columna de frente. Gana la última señal, salvo un foco
  *    que llega justo después de una elección (la línea desplazándose hacia lo elegido);
  *  - emite 'historia:elegir' { anio } cuando se toca una placa.
- * Rendimiento: un solo canvas en la página, pixelRatio hasta 1,5, texturas de las placas dibujadas una sola
- * vez (dos atlas: apagadas y encendida), y el bucle sólo corre mientras algo se mueve y la copa se ve.
+ * Rendimiento: un solo canvas en la página, pixelRatio hasta 1,5, ~27.000 triángulos, texturas de las placas
+ * dibujadas una sola vez (dos atlas: apagadas y encendida), y el bucle sólo corre mientras algo se mueve y la copa
+ * se ve.
  */
 
 const PASO = (Math.PI * 2) / COLUMNAS_COPA; // 45°: las dos filas van en las mismas columnas
@@ -32,6 +40,9 @@ const PISTA = 'Arrastrá para girar · Tocá una placa';
 // la boca, mirando al medio de la copa.
 const CAMARA = COPA.camara;
 // Lo que tiene que entrar en cuadro (con las asas y la elipse de la base vista desde arriba).
+// Cuánto se gira el estudio: así detrás de la cámara queda la pared gris clara (la que llena de plata el cáliz) y el
+// paraguas de luz cae a un costado, que es lo que dibuja la franja brillante de los bordes.
+const ROTACION_ENTORNO = -Math.PI / 2;
 const CUADRO = { ancho: 8.6, arriba: 10.0, abajo: -1.2 };
 
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
@@ -64,11 +75,12 @@ function azar(semilla) {
 }
 
 // ---------------------------------------------------------------------------
-// Entorno de estudio: fondo negro y grandes franjas blancas verticales a los costados de la cámara, como
-// en la foto de producto. Es lo que dibuja en el cromo los reflejos claros y oscuros.
+// Entorno de estudio. Lo normal es el HDRI real de un estudio fotográfico (estudio.hdr: studio_small_03 de
+// Poly Haven, CC0), que es lo que le da al cromo y a la laca de la caoba sus reflejos. Si no se puede bajar, queda
+// este de respaldo: fondo negro y grandes franjas blancas verticales a los costados de la cámara, como en la foto.
 // ---------------------------------------------------------------------------
 
-function entornoDeEstudio(renderer) {
+function entornoDeRespaldo(renderer) {
   const w = 512;
   const h = 256;
   const datos = new Float32Array(w * h * 4);
@@ -109,40 +121,35 @@ function entornoDeEstudio(renderer) {
   return rt;
 }
 
+/**
+ * El HDRI de estudio, pasado por PMREM. Va en half float: el filtrado lineal de float de 32 bits no existe en muchos
+ * celulares. La rotación del entorno (en la escena) deja el paraguas de luz a un costado de la cámara.
+ */
+async function entornoDeEstudio(renderer) {
+  try {
+    const resp = await fetch('/public/img/historia/estudio.hdr');
+    if (!resp.ok) throw new Error(String(resp.status));
+    const { ancho, alto, datos } = leerRgbe(await resp.arrayBuffer());
+    const mitad = new Uint16Array(datos.length);
+    for (let i = 0; i < datos.length; i++) mitad[i] = THREE.DataUtils.toHalfFloat(Math.min(datos[i], 65000));
+    const tex = new THREE.DataTexture(mitad, ancho, alto, THREE.RGBAFormat, THREE.HalfFloatType);
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    tex.minFilter = tex.magFilter = THREE.LinearFilter;
+    tex.generateMipmaps = false;
+    tex.needsUpdate = true;
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const rt = pmrem.fromEquirectangular(tex);
+    tex.dispose();
+    pmrem.dispose();
+    return rt;
+  } catch {
+    return entornoDeRespaldo(renderer);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Texturas dibujadas una vez
 // ---------------------------------------------------------------------------
-
-/** Caoba oscura con veta horizontal (a lo largo de la vuelta), en los tonos de la foto. */
-function texturaMadera() {
-  const [c, g] = lienzo(1024, 512);
-  const r = azar(1943);
-  // Un punto más claros que la foto: contra el fondo casi negro de la página, la caoba real se perdía.
-  const oscuro = [0x4a, 0x19, 0x0e];
-  const claro = [0x7d, 0x2e, 0x1b];
-  const img = g.createImageData(c.width, c.height);
-  // Ondas chicas y lentas: la veta de la caoba corre casi derecha alrededor de la base.
-  const ondas = Array.from({ length: 5 }, () => ({ f: 1 + Math.floor(r() * 5), a: 0.4 + r() * 1.8, p: r() * 7 }));
-  const vetas = Array.from({ length: 160 }, () => ({ y: r() * c.height, a: 0.2 + r() * 0.5, w: 0.5 + r() * 1.6 }));
-  for (let y = 0; y < c.height; y++) {
-    for (let x = 0; x < c.width; x++) {
-      const u = (x / c.width) * Math.PI * 2;
-      let yy = y;
-      for (const o of ondas) yy += o.a * Math.sin(u * o.f + o.p);
-      let t = 0.42 + 0.14 * Math.sin(yy * 0.07) + 0.08 * Math.sin(yy * 0.53 + 1.3);
-      for (const v of vetas) {
-        const d = Math.abs(yy - v.y);
-        if (d < v.w * 3) t -= v.a * Math.exp(-(d * d) / (v.w * v.w)) * 0.5;
-      }
-      t = clamp(t + (r() - 0.5) * 0.05, 0, 1);
-      const k = (y * c.width + x) * 4;
-      for (let i = 0; i < 3; i++) img.data[k + i] = oscuro[i] + (claro[i] - oscuro[i]) * t;
-      img.data[k + 3] = 255;
-    }
-  }
-  g.putImageData(img, 0, 0);
-  return c;
-}
 
 /**
  * Los dos atlas de placas (4 × 4 celdas de 256 × 128, una por lugar de la grilla): apagadas en plata ahumada y
@@ -244,84 +251,71 @@ function cargarTextura(url, aniso) {
 // La copa
 // ---------------------------------------------------------------------------
 
-/** Radio del metal a una altura dada, interpolando el perfil medido. */
-function radioMetal(y) {
-  const p = COPA.metal;
-  for (let i = 0; i < p.length - 1; i++) {
-    const [r0, y0] = p[i];
-    const [r1, y1] = p[i + 1];
-    if ((y <= y0 && y >= y1) || (y >= y0 && y <= y1)) return r0 + ((r1 - r0) * (y - y0)) / (y1 - y0 || 1);
+/** Grano fino y sutil para el bump del bronce: ruido repetible, dibujado una sola vez. */
+function texturaGrano() {
+  const [c, g] = lienzo(256, 256);
+  const r = azar(1950);
+  const img = g.createImageData(256, 256);
+  for (let i = 0; i < 256 * 256; i++) {
+    const v = 128 + (r() - 0.5) * 70;
+    img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v;
+    img.data[i * 4 + 3] = 255;
   }
-  return p[p.length - 1][0];
+  g.putImageData(img, 0, 0);
+  return c;
+}
+
+/** Hasta dónde llega el cáliz por el frente a una altura dada (para centrar la caja del decal sobre la pared). */
+function zFrontal(geo, y) {
+  const p = geo.attributes.position;
+  let z = 0;
+  for (let i = 0; i < p.count; i++) if (Math.abs(p.getY(i) - y) < 0.1 && Math.abs(p.getX(i)) < 0.3) z = Math.max(z, p.getZ(i));
+  return z;
 }
 
 async function crearCopa({ aniso }) {
   const grupo = new THREE.Group();
-  const [texEscudo, texAsa] = await Promise.all([
-    cargarTextura('/public/img/historia/escudo-arbb.webp', aniso),
-    cargarTextura('/public/img/historia/asa-arbb.webp', aniso),
+  const [geos, texEscudo, texCaoba] = await Promise.all([
+    cargarGlb(THREE, '/public/img/historia/copa-arbb.glb'),
+    cargarTextura('/public/img/historia/escudo-arbb-hd.webp', aniso),
+    cargarTextura('/public/img/historia/caoba-real.webp', aniso),
   ]);
 
-  // --- El cáliz, el tallo y el pie: un torno con el perfil de la foto, de pared fina y hueco por dentro. ---
-  const metal = COPA.metal; // de la boca al pie
-  const pie = metal[metal.length - 1];
-  const fuera = [new THREE.Vector2(0, pie[1]), ...[...metal].reverse().map(([r, y]) => new THREE.Vector2(r, y))];
-  const pared = 0.035;
-  const boca = metal[0];
-  const fondoInterior = 4.2; // hasta dónde se ve por dentro desde la cámara de la foto
-  const dentro = metal.filter(([, y]) => y > fondoInterior).map(([r, y]) => new THREE.Vector2(Math.max(0.05, r - pared), y));
-  const perfil = [...fuera, new THREE.Vector2(boca[0] - pared, boca[1]), ...dentro.slice(1), new THREE.Vector2(0, fondoInterior)];
-  const cromo = new THREE.MeshStandardMaterial({ color: 0xf2f3f6, metalness: 1, roughness: 0.06, envMapIntensity: 1.4 });
-  const caliz = new THREE.Mesh(new THREE.LatheGeometry(perfil, 64), cromo);
-  grupo.add(caliz);
+  // --- Las tres piezas de la malla, cada una con su material de verdad. ---
+  // Cromo espejo: cáliz, tallo y pie. Todo el aspecto sale del entorno.
+  const cromo = new THREE.MeshStandardMaterial({ color: 0xf5f7fa, metalness: 1, roughness: 0.035, envMapIntensity: 1.25 });
+  // Bronce fundido satinado: las asas, con un grano muy fino de relieve.
+  const grano = aTextura(texturaGrano(), { color: false, aniso });
+  grano.wrapS = grano.wrapT = THREE.RepeatWrapping;
+  grano.repeat.set(4, 4);
+  const bronce = new THREE.MeshStandardMaterial({ color: 0xb09455, metalness: 0.9, roughness: 0.3, envMapIntensity: 1.0, bumpMap: grano, bumpScale: 0.35 });
+  // Caoba barnizada: la veta es la de la foto; el barniz, el clearcoat.
+  texCaoba.wrapS = texCaoba.wrapT = THREE.RepeatWrapping;
+  texCaoba.repeat.set(2, 1);
+  // El color atenúa un poco la textura: bajo un entorno tan claro la caoba se lavaba hacia el naranja.
+  const caoba = new THREE.MeshPhysicalMaterial({ map: texCaoba, color: 0x9a8880, roughness: 0.18, metalness: 0, clearcoat: 0.9, clearcoatRoughness: 0.1, envMapIntensity: 0.7 });
+  grupo.add(new THREE.Mesh(geos.cromo, cromo), new THREE.Mesh(geos.bronce, bronce), new THREE.Mesh(geos.madera, caoba));
 
-  // --- La base de caoba: otro torno con el perfil medido, hasta su fondo. ---
-  const madera = COPA.madera; // de arriba (bajo el pie) hasta el fondo de la base
-  const perfilMadera = [
-    new THREE.Vector2(0, madera[madera.length - 1][1]),
-    ...[...madera].reverse().map(([r, y]) => new THREE.Vector2(r, y)),
-    new THREE.Vector2(0, madera[0][1]),
-  ];
-  const texMadera = aTextura(texturaMadera(), { aniso });
-  texMadera.wrapS = THREE.RepeatWrapping;
-  texMadera.repeat.set(2, 1);
-  // La laca brilla, pero la madera de la foto es oscura: el entorno se refleja poco, si no el tambor se ve gris.
-  const caoba = new THREE.MeshPhysicalMaterial({ map: texMadera, roughness: 0.2, clearcoat: 0.9, clearcoatRoughness: 0.08, envMapIntensity: 0.3 });
-  grupo.add(new THREE.Mesh(new THREE.LatheGeometry(perfilMadera, 64), caoba));
-
-  // --- Las asas: el contorno real del asa izquierda, extruido con bisel; la derecha es su espejo. ---
-  const forma = new THREE.Shape(COPA.asa.puntos.map(([x, y]) => new THREE.Vector2(x, y)));
-  const espesor = 0.2;
-  const geoAsa = new THREE.ExtrudeGeometry(forma, { depth: espesor, bevelEnabled: true, bevelThickness: 0.035, bevelSize: 0.025, bevelSegments: 3, curveSegments: 4 });
-  geoAsa.translate(0, 0, -espesor / 2);
-  // Las caras grandes llevan la foto del asa: sus UV son las coordenadas de la forma, que se llevan al recorte.
-  const t = COPA.asa.textura;
-  texAsa.repeat.set(1 / t.ancho, 1 / t.alto);
-  texAsa.offset.set(-t.x0 / t.ancho, -(t.y1 - t.alto) / t.alto);
-  const bronceFoto = new THREE.MeshStandardMaterial({ map: texAsa, emissiveMap: texAsa, emissive: 0xffffff, emissiveIntensity: 0.1, metalness: 0.75, roughness: 0.38, envMapIntensity: 1.4 });
-  const bronceCanto = new THREE.MeshStandardMaterial({ color: 0x9c8148, metalness: 0.85, roughness: 0.35, envMapIntensity: 1.4 });
-  const asaIzq = new THREE.Mesh(geoAsa, [bronceFoto, bronceCanto]);
-  const asaDer = new THREE.Mesh(geoAsa, [bronceFoto, bronceCanto]);
-  asaDer.scale.x = -1;
-  grupo.add(asaIzq, asaDer);
-
-  // --- El escudo: el recorte de la foto sobre un parche curvo pegado al frente del cáliz. ---
-  const e = COPA.escudo;
-  const rArriba = radioMetal(e.arriba) + 0.012;
-  const rAbajo = radioMetal(e.abajo) + 0.012;
-  const rMedio = (rArriba + rAbajo) / 2;
-  const arco = 2 * Math.asin(Math.min(0.99, e.ancho / 2 / rMedio));
-  const geoEscudo = new THREE.CylinderGeometry(rArriba, rAbajo, e.arriba - e.abajo, 32, 1, true, -arco / 2 + e.centroX / rMedio, arco);
-  const escudo = new THREE.Mesh(geoEscudo, new THREE.MeshStandardMaterial({
-    map: texEscudo, emissiveMap: texEscudo, emissive: 0xffffff, emissiveIntensity: 0.15,
-    metalness: 0.35, roughness: 0.28, transparent: true, alphaTest: 0.35,
-  }));
-  escudo.position.y = (e.arriba + e.abajo) / 2;
+  // --- El escudo: el recorte de la foto proyectado sobre la pared real del cáliz, donde la malla tenía el suyo. ---
+  const e = MALLA.escudo;
+  const alto = (e.arriba - e.abajo) * 1.06;
+  const ancho = alto * (texEscudo.image.width / texEscudo.image.height);
+  const yMedio = (e.arriba + e.abajo) / 2;
+  const zPared = zFrontal(geos.cromo, yMedio);
+  const geoEscudo = crearDecal(THREE, geos.cromo, { centro: [0, yMedio, zPared], ancho, alto, profundidad: 0.8, separacion: 0.012 });
+  // Esmalte con un barniz suave; el pequeño brillo propio evita que el azul se hunda en el negro de la página.
+  const esmalte = new THREE.MeshPhysicalMaterial({
+    map: texEscudo, emissiveMap: texEscudo, emissive: 0xffffff, emissiveIntensity: 0.1,
+    metalness: 0.15, roughness: 0.3, clearcoat: 0.6, clearcoatRoughness: 0.15, envMapIntensity: 0.9,
+    transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4,
+  });
+  const escudo = new THREE.Mesh(geoEscudo, esmalte);
+  escudo.renderOrder = 1;
   grupo.add(escudo);
 
   // --- Las placas: 8 columnas × 2 filas sobre el tambor, cada 45°, curvas como el tambor. ---
   const placas = placasDeCopa();
-  const tam = COPA.tambor;
+  const tam = MALLA.tambor;
   const altoFila = (tam.arriba - tam.abajo) / 2;
   const altoPlaca = altoFila * 0.84;
   const radio = tam.radio + 0.015;
@@ -380,7 +374,7 @@ export async function crearVitrina(contenedor, { anios = [] } = {}) {
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.35;
+  renderer.toneMappingExposure = 1.05;
   const canvas = renderer.domElement;
   canvas.className = 'vitrina-canvas';
   canvas.setAttribute('role', 'img');
@@ -388,18 +382,16 @@ export async function crearVitrina(contenedor, { anios = [] } = {}) {
   const aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
 
   const scene = new THREE.Scene();
-  const entorno = entornoDeEstudio(renderer);
-  scene.environment = entorno.texture;
-  scene.environmentIntensity = 1.0;
+  // El entorno (HDRI de estudio) llega con la copa, más abajo: se bajan a la vez.
   // Una luz suave de arriba y adelante: el brillo de la laca de la madera y de las placas.
-  const luz = new THREE.DirectionalLight(0xfff1e0, 1.4);
+  const luz = new THREE.DirectionalLight(0xfff1e0, 0.5);
   luz.position.set(-3, 12, 10);
   scene.add(luz);
   // La base no se tiene que perder contra el fondo negro: una luz cálida de frente y abajo que pega en el
   // pedestal, y un contraluz bajo desde atrás que recorta el canto curvo de abajo.
-  const pedestal = new THREE.PointLight(0xffb27a, 22, 16, 2);
+  const pedestal = new THREE.PointLight(0xffb27a, 6, 16, 2);
   pedestal.position.set(0, 0.6, 6.5);
-  const contraluz = new THREE.DirectionalLight(0xffd6b8, 1.1);
+  const contraluz = new THREE.DirectionalLight(0xffd6b8, 0.5);
   contraluz.position.set(0, -2, -8);
   scene.add(pedestal, contraluz);
 
@@ -407,7 +399,10 @@ export async function crearVitrina(contenedor, { anios = [] } = {}) {
   camara.position.set(0, CAMARA.y, CAMARA.z);
   camara.lookAt(0, CAMARA.miraY, 0);
 
-  const copa = await crearCopa({ aniso });
+  const [copa, entorno] = await Promise.all([crearCopa({ aniso }), entornoDeEstudio(renderer)]);
+  scene.environment = entorno.texture;
+  scene.environmentIntensity = 1.3;
+  scene.environmentRotation.y = ROTACION_ENTORNO;
   scene.add(copa.grupo);
   contenedor.append(canvas);
 

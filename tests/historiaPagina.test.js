@@ -246,38 +246,44 @@ test('la vitrina muestra sólo la copa: sin selector de pieza ni cambio automát
   assert.doesNotMatch(css, /vitrina-selector|vitrina-pieza/);
   assert.doesNotMatch(pagina, /Medalla oficial|Trofeo ARBB|historia:pieza/);
   // La copa no sabe nada de la medalla ni de la UI, y frena su bucle cuando sale de pantalla o se queda quieta.
-  assert.doesNotMatch(copa, /medalla|from '\.\/(?!\.)/);
+  assert.doesNotMatch(copa, /medalla|from '\.\/(?!\.|copa\/)/);
   assert.match(copa, /new IntersectionObserver\(\(\[e\]\) => \{\s*visible = e\.isIntersecting;[\s\S]*?cancelAnimationFrame\(idRaf\)/);
   assert.match(copa, /if \(!quieta \|\| placas \|\| arrastrando\) idRaf = requestAnimationFrame\(cuadro\)/);
 });
 
-test('la copa 3D se arma con lo medido en la foto, y la foto queda de respaldo', () => {
-  // Los tres recortes: WebP con alfa (VP8X) y livianos.
-  for (const [nombre, max] of [['copa-arbb', 120], ['escudo-arbb', 40], ['asa-arbb', 40]]) {
+test('la copa 3D es la malla limpia con materiales de verdad; la foto queda de respaldo', () => {
+  // Los recortes de la foto: WebP con alfa (VP8X) y livianos. El escudo HD y la caoba salen de la foto de referencia.
+  for (const [nombre, max, alfa] of [['copa-arbb', 120, true], ['escudo-arbb-hd', 60, true], ['caoba-real', 20, false]]) {
     const b = readFileSync(`public/img/historia/${nombre}.webp`);
-    assert.equal(b.toString('latin1', 8, 16), 'WEBPVP8X', nombre);
-    assert.ok(b[20] & 0x10, `${nombre}: sin canal alfa`);
+    if (alfa) {
+      assert.equal(b.toString('latin1', 8, 16), 'WEBPVP8X', nombre);
+      assert.ok(b[20] & 0x10, `${nombre}: sin canal alfa`);
+    }
     assert.ok(b.length < max * 1024, `${nombre}: ${b.length} bytes`);
   }
   // Sin WebGL se ve la foto; el estado arranca en "foto".
   assert.match(pagina, /<figure class="hist-vitrina" id="vitrina" data-estado="foto">/);
   assert.match(pagina, /<img class="vitrina-foto" src="\/public\/img\/historia\/copa-arbb\.webp" width="862" height="1105"[^>]*alt="[^"]{40,}"/);
-  // Las medidas que deja el script: la boca arriba, la base abajo, el tambor recto y un asa con forma de verdad.
-  assert.ok(COPA.metal.length > 20 && COPA.madera.length > 15);
-  assert.ok(COPA.metal[0][1] > 9 && COPA.metal[0][0] > 2, 'la boca');
-  assert.ok(Math.min(...COPA.madera.map(([, y]) => y)) < 0, 'el fondo de la base');
-  assert.equal(COPA.tambor.radio, 1.72);
-  assert.ok(COPA.tambor.arriba > COPA.tambor.abajo);
-  assert.ok(COPA.asa.puntos.length > 50 && COPA.asa.puntos.every(([x]) => x < 0), 'el asa izquierda');
+  // Lo que queda de la foto en COPA es la cámara (y el perfil con que se la recortó).
   assert.deepEqual(Object.keys(COPA.camara), ['y', 'z', 'miraY']);
   const copa = readFileSync('src/ui/copa3d.js', 'utf8');
-  // Nada a ojo: el escudo y el asa son los recortes de la foto, el torno y el asa salen de COPA.
-  assert.match(copa, /\/public\/img\/historia\/escudo-arbb\.webp/);
-  assert.match(copa, /\/public\/img\/historia\/asa-arbb\.webp/);
-  assert.match(copa, /new THREE\.LatheGeometry\(perfil, 64\)/);
-  assert.match(copa, /new THREE\.LatheGeometry\(perfilMadera, 64\)/);
-  assert.match(copa, /new THREE\.ExtrudeGeometry\(forma,/);
+  // La forma es la malla, no un torno inventado; el escudo y la caoba son de la foto; el entorno, un HDRI de estudio.
+  assert.match(copa, /cargarGlb\(THREE, '\/public\/img\/historia\/copa-arbb\.glb'\)/);
+  assert.match(copa, /\/public\/img\/historia\/escudo-arbb-hd\.webp/);
+  assert.match(copa, /\/public\/img\/historia\/caoba-real\.webp/);
+  assert.match(copa, /\/public\/img\/historia\/estudio\.hdr/);
   assert.match(copa, /const CAMARA = COPA\.camara;/);
+  assert.doesNotMatch(copa, /LatheGeometry|ExtrudeGeometry|baseColorTexture/);
+  // Los tres materiales PBR con los valores pedidos: cromo espejo, bronce satinado y caoba con laca.
+  assert.match(copa, /new THREE\.MeshStandardMaterial\(\{ color: 0xf5f7fa, metalness: 1, roughness: 0\.035, envMapIntensity: 1\.25 \}\)/);
+  assert.match(copa, /color: 0xb09455, metalness: 0\.9, roughness: 0\.3, envMapIntensity: 1\.0, bumpMap: grano/);
+  assert.match(copa, /new THREE\.MeshPhysicalMaterial\(\{ map: texCaoba, [^}]*roughness: 0\.18, metalness: 0, clearcoat: 0\.9, clearcoatRoughness: 0\.1/);
+  // El escudo es un decal sobre el cáliz con polygonOffset; un solo renderer, tonemapping ACES y pixelRatio <= 1,5.
+  assert.match(copa, /crearDecal\(THREE, geos\.cromo,/);
+  assert.match(copa, /polygonOffset: true/);
+  assert.equal((copa.match(/new THREE\.WebGLRenderer\(/g) ?? []).length, 1);
+  assert.match(copa, /renderer\.toneMapping = THREE\.ACESFilmicToneMapping;\s*renderer\.toneMappingExposure = 1\.05;/);
+  assert.match(copa, /Math\.min\(window\.devicePixelRatio \|\| 1, 1\.5\)/);
 });
 
 test('las placas son una grilla de 8 × 2 cada 45° y la encendida es plata bruñida, nunca roja', () => {
